@@ -1,0 +1,15 @@
+{
+  "name": "group-phoebe",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "db:generate-types": "pnpm --filter @group-phoebe/database generate-types"
+  },
+  "packageManager": "pnpm@10.30.0",
+  "devDependencies": {
+    "turbo": "^2.10.4"
+  }
+}
