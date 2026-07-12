@@ -11,7 +11,10 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export interface Database {
+export type Tables<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Row"];
+
+export type Database = {
   public: {
     Tables: {
       agences: {
@@ -33,6 +36,7 @@ export interface Database {
           ville?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       users: {
         Row: {
@@ -77,6 +81,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       chauffeurs: {
         Row: {
@@ -106,6 +111,7 @@ export interface Database {
           actif?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       vehicules: {
         Row: {
@@ -186,6 +192,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       vehicule_photos: {
         Row: {
@@ -206,6 +213,7 @@ export interface Database {
           url?: string;
           ordre?: number;
         };
+        Relationships: [];
       };
       disponibilites_vehicule: {
         Row: {
@@ -226,6 +234,7 @@ export interface Database {
           periode?: string;
           type?: "reservation" | "maintenance" | "bloque";
         };
+        Relationships: [];
       };
       disponibilites_chauffeur: {
         Row: {
@@ -243,6 +252,7 @@ export interface Database {
           chauffeur_id?: string;
           periode?: string;
         };
+        Relationships: [];
       };
       demandes_transport: {
         Row: {
@@ -308,6 +318,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       conducteurs_secondaires: {
         Row: {
@@ -334,6 +345,7 @@ export interface Database {
           statut_verification?: "documents_soumis" | "verifie" | "rejete";
           created_at?: string;
         };
+        Relationships: [];
       };
       contrats_recurrents: {
         Row: {
@@ -372,6 +384,7 @@ export interface Database {
           statut?: "actif" | "suspendu" | "resilie";
           created_at?: string;
         };
+        Relationships: [];
       };
       avis_transport: {
         Row: {
@@ -395,6 +408,7 @@ export interface Database {
           commentaire?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       livreurs: {
         Row: {
@@ -418,6 +432,7 @@ export interface Database {
           capacite_max_par_jour?: number;
           actif?: boolean;
         };
+        Relationships: [];
       };
       expeditions: {
         Row: {
@@ -486,6 +501,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       expedition_statut_historique: {
         Row: {
@@ -506,6 +522,7 @@ export interface Database {
           statut?: string;
           horodatage?: string;
         };
+        Relationships: [];
       };
       agents_immobiliers: {
         Row: {
@@ -523,6 +540,7 @@ export interface Database {
           user_id?: string;
           zone_couverture?: string | null;
         };
+        Relationships: [];
       };
       biens: {
         Row: {
@@ -573,6 +591,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       bien_medias: {
         Row: {
@@ -596,6 +615,7 @@ export interface Database {
           url?: string;
           ordre?: number;
         };
+        Relationships: [];
       };
       visites: {
         Row: {
@@ -625,6 +645,7 @@ export interface Database {
           statut?: "proposee" | "confirmee" | "realisee" | "annulee";
           created_at?: string;
         };
+        Relationships: [];
       };
       demandes_immobilier: {
         Row: {
@@ -660,6 +681,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       dossiers_voyage: {
         Row: {
@@ -692,6 +714,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       documents_dossier_voyage: {
         Row: {
@@ -718,6 +741,7 @@ export interface Database {
           statut?: "soumis" | "valide" | "rejete";
           created_at?: string;
         };
+        Relationships: [];
       };
       paiements: {
         Row: {
@@ -756,6 +780,7 @@ export interface Database {
           webhook_reference?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       notifications_log: {
         Row: {
@@ -785,6 +810,7 @@ export interface Database {
           statut_envoi?: "envoye" | "echoue" | "lu";
           created_at?: string;
         };
+        Relationships: [];
       };
       audit_log: {
         Row: {
@@ -814,6 +840,7 @@ export interface Database {
           details?: Json | null;
           created_at?: string;
         };
+        Relationships: [];
       };
     };
     Views: {};

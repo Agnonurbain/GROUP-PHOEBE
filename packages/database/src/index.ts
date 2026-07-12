@@ -1,2 +1,2 @@
 export { createSupabaseClient, createSupabaseServerClient } from "./client";
-export type { Database } from "./types";
+export type { Database, Tables } from "./types";
