@@ -7,6 +7,7 @@ import type { Database } from "@group-phoebe/database/types";
 import { creerSessionStripe } from "@/lib/payments/stripe";
 import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
+import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
 
 const TAUX_CAUTION_DEFAUT = 0.3;
 
@@ -92,7 +93,11 @@ export async function creerReservation(
 
   const periode = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
 
-  await expirerReservationsAbandonnees();
+  await Promise.all([
+    expirerReservationsAbandonnees(),
+    expirerDemandesSansReponse(),
+    expirerNonPresentations(),
+  ]);
 
   const admin = getAdmin();
 

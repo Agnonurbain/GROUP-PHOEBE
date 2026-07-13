@@ -24,6 +24,11 @@ export default async function AdminShellLayout({
     .select("id", { count: "exact", head: true })
     .eq("statut", "remboursement_requis");
 
+  const { count: nbDemandesEnAttente } = await supabase
+    .from("demandes_transport")
+    .select("id", { count: "exact", head: true })
+    .eq("statut", "en_attente_validation");
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
       <aside className="w-56 border-r border-phoebe-pearl bg-white p-4">
@@ -31,6 +36,17 @@ export default async function AdminShellLayout({
           Back-office
         </h2>
         <nav className="space-y-1">
+          <Link
+            href="/admin/demandes"
+            className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
+          >
+            Demandes
+            {!!nbDemandesEnAttente && nbDemandesEnAttente > 0 && (
+              <span className="rounded-full bg-phoebe-gold px-2 py-0.5 text-xs font-bold text-white">
+                {nbDemandesEnAttente}
+              </span>
+            )}
+          </Link>
           <Link
             href="/admin/vehicules"
             className="block rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"

@@ -272,10 +272,15 @@ export type Database = {
           montant: number | null;
           caution: number | null;
           methode_paiement: "cinetpay" | "stripe" | "agence" | null;
-          statut: "en_attente_paiement" | "en_attente_validation" | "acceptee" | "refusee" | "annulee" | "terminee";
+          statut: "en_attente_paiement" | "en_attente_validation" | "acceptee" | "en_cours" | "refusee" | "annulee" | "terminee";
           devis_expire_at: string | null;
           etat_lieux_depart_photos: string[] | null;
           etat_lieux_retour_photos: string[] | null;
+          kilometrage_depart: number | null;
+          kilometrage_retour: number | null;
+          carburant_depart: "vide" | "quart" | "demi" | "trois_quarts" | "plein" | null;
+          carburant_retour: "vide" | "quart" | "demi" | "trois_quarts" | "plein" | null;
+          caution_retenue: number;
           created_at: string;
           updated_at: string;
         };
@@ -297,6 +302,11 @@ export type Database = {
           devis_expire_at?: string | null;
           etat_lieux_depart_photos?: string[] | null;
           etat_lieux_retour_photos?: string[] | null;
+          kilometrage_depart?: number | null;
+          kilometrage_retour?: number | null;
+          carburant_depart?: "vide" | "quart" | "demi" | "trois_quarts" | "plein" | null;
+          carburant_retour?: "vide" | "quart" | "demi" | "trois_quarts" | "plein" | null;
+          caution_retenue?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -314,10 +324,15 @@ export type Database = {
           montant?: number | null;
           caution?: number | null;
           methode_paiement?: "cinetpay" | "stripe" | "agence" | null;
-          statut?: "en_attente_paiement" | "en_attente_validation" | "acceptee" | "refusee" | "annulee" | "terminee";
+          statut?: "en_attente_paiement" | "en_attente_validation" | "acceptee" | "en_cours" | "refusee" | "annulee" | "terminee";
           devis_expire_at?: string | null;
           etat_lieux_depart_photos?: string[] | null;
           etat_lieux_retour_photos?: string[] | null;
+          kilometrage_depart?: number | null;
+          kilometrage_retour?: number | null;
+          carburant_depart?: "vide" | "quart" | "demi" | "trois_quarts" | "plein" | null;
+          carburant_retour?: "vide" | "quart" | "demi" | "trois_quarts" | "plein" | null;
+          caution_retenue?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -755,7 +770,7 @@ export type Database = {
           type: "montant" | "caution" | "acompte" | "commission";
           montant: number;
           methode: "cinetpay" | "stripe" | "agence" | "virement";
-          statut: "en_attente" | "capture" | "echoue" | "rembourse" | "remboursement_requis";
+          statut: "en_attente" | "capture" | "echoue" | "rembourse" | "remboursement_requis" | "remboursement_partiel";
           webhook_reference: string | null;
           created_at: string;
         };
@@ -767,7 +782,7 @@ export type Database = {
           type: "montant" | "caution" | "acompte" | "commission";
           montant: number;
           methode: "cinetpay" | "stripe" | "agence" | "virement";
-          statut?: "en_attente" | "capture" | "echoue" | "rembourse" | "remboursement_requis";
+          statut?: "en_attente" | "capture" | "echoue" | "rembourse" | "remboursement_requis" | "remboursement_partiel";
           webhook_reference?: string | null;
           created_at?: string;
         };
@@ -779,7 +794,7 @@ export type Database = {
           type?: "montant" | "caution" | "acompte" | "commission";
           montant?: number;
           methode?: "cinetpay" | "stripe" | "agence" | "virement";
-          statut?: "en_attente" | "capture" | "echoue" | "rembourse" | "remboursement_requis";
+          statut?: "en_attente" | "capture" | "echoue" | "rembourse" | "remboursement_requis" | "remboursement_partiel";
           webhook_reference?: string | null;
           created_at?: string;
         };
@@ -895,6 +910,14 @@ export type Database = {
         Returns: undefined;
       };
       expirer_reservations_abandonnees: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      expirer_demandes_sans_reponse: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+      expirer_non_presentations: {
         Args: Record<string, never>;
         Returns: number;
       };

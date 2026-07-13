@@ -46,6 +46,12 @@ export async function Header() {
                 </Link>
               )}
               <Link
+                href="/profil/reservations"
+                className="text-phoebe-anthracite/70 hover:text-phoebe-green"
+              >
+                Mes réservations
+              </Link>
+              <Link
                 href="/profil"
                 className="text-phoebe-anthracite/70 hover:text-phoebe-green"
               >

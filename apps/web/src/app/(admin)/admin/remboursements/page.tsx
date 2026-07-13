@@ -14,7 +14,7 @@ export default async function RemboursementsPage() {
   const { data: traites } = await supabase
     .from("paiements")
     .select("*")
-    .eq("statut", "rembourse")
+    .in("statut", ["rembourse", "remboursement_partiel"])
     .order("created_at", { ascending: false })
     .limit(20);
 
@@ -27,8 +27,8 @@ export default async function RemboursementsPage() {
             Remboursements à traiter
           </h1>
           <p className="mt-1 text-sm text-phoebe-anthracite/60">
-            Paiements encaissés après expiration de la réservation (30 min) —
-            le créneau a été libéré, l'argent du client doit être remboursé.
+            Remboursements en attente : paiements tardifs, refus, annulations,
+            ou libération de caution (CinetPay). À traiter manuellement.
           </p>
         </div>
 

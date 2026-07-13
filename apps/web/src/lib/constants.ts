@@ -1,0 +1,2 @@
+export const DELAI_NON_PRESENTATION_HEURES = 4;
+export const DELAI_SANS_REPONSE_HEURES = 24;

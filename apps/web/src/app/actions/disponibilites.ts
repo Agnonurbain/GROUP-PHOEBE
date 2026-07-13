@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
+import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
 
 async function requireStaff() {
   const supabase = await createClient();
@@ -145,7 +146,11 @@ export async function verifierDisponibilite(
   fin: string,
   avecChauffeur: boolean
 ): Promise<{ disponible: boolean; raison?: string }> {
-  await expirerReservationsAbandonnees();
+  await Promise.all([
+    expirerReservationsAbandonnees(),
+    expirerDemandesSansReponse(),
+    expirerNonPresentations(),
+  ]);
 
   const supabase = await createClient();
 

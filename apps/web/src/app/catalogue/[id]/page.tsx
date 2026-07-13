@@ -66,6 +66,17 @@ export default async function VehiculeDetailPage({
     isFavori = !!data;
   }
 
+  const { data: avisData } = await supabase
+    .from("avis_transport")
+    .select("note, demandes_transport!inner(vehicule_id)")
+    .eq("demandes_transport.vehicule_id", id);
+
+  const avisNotes = avisData?.map((a) => Number(a.note)) ?? [];
+  const moyenneAvis =
+    avisNotes.length > 0
+      ? avisNotes.reduce((s, n) => s + n, 0) / avisNotes.length
+      : null;
+
   const s = STATUT_LABELS[v.statut];
 
   return (
@@ -132,6 +143,13 @@ export default async function VehiculeDetailPage({
               <p className="mt-1 text-sm text-phoebe-anthracite/50">
                 {CAT_LABELS[v.categorie] ?? v.categorie}
                 {v.annee ? ` · ${v.annee}` : ""}
+                {moyenneAvis !== null && (
+                  <span className="ml-2">
+                    {"★".repeat(Math.round(moyenneAvis))}
+                    {"☆".repeat(5 - Math.round(moyenneAvis))}{" "}
+                    {moyenneAvis.toFixed(1)}/5 ({avisNotes.length} avis)
+                  </span>
+                )}
               </p>
             </div>
 
