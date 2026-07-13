@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Header } from "@/components/header";
 import { createClient } from "@/lib/supabase/server";
 import { EtatLieuxForm } from "./etat-lieux-form";
 
@@ -20,12 +19,10 @@ export default async function EtatLieuxPage({
 
   if (!demande) notFound();
 
-  const v = demande.vehicules as unknown as { marque: string; modele: string } | null;
+  const v = demande.vehicules;
 
   return (
-    <>
-      <Header />
-      <div className="mx-auto max-w-2xl space-y-6">
+    <div className="mx-auto max-w-2xl space-y-6">
         <Link
           href="/admin/demandes"
           className="inline-block text-sm text-phoebe-anthracite/60 hover:text-phoebe-green"
@@ -103,7 +100,6 @@ export default async function EtatLieuxPage({
             Location terminée — les deux états des lieux sont enregistrés.
           </p>
         )}
-      </div>
-    </>
+    </div>
   );
 }

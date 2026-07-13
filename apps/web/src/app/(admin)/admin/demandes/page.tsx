@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { Header } from "@/components/header";
 import { DemandeActions } from "./demande-actions";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
 
@@ -31,9 +30,7 @@ export default async function DemandesPage() {
     .limit(20);
 
   return (
-    <>
-      <Header />
-      <div className="space-y-8">
+    <div className="space-y-8">
         <h1 className="text-2xl font-bold text-phoebe-anthracite">
           Demandes de transport
         </h1>
@@ -45,14 +42,15 @@ export default async function DemandesPage() {
         ) : (
           <div className="space-y-4">
             {demandes.map((d) => {
-              const v = d.vehicules as unknown as { marque: string; modele: string } | null;
-              const u = d.users as unknown as { nom: string; telephone: string } | null;
+              const v = d.vehicules;
+              const u = d.users;
               const s = STATUT_LABELS[d.statut];
-              const debut = d.periode
-                ? new Date(d.periode.replace("[", "").split(",")[0])
+              const p = d.periode as string | null;
+              const debut = p
+                ? new Date(p.replace("[", "").split(",")[0])
                 : null;
-              const fin = d.periode
-                ? new Date(d.periode.split(",")[1].replace(")", ""))
+              const fin = p
+                ? new Date(p.split(",")[1].replace(")", ""))
                 : null;
 
               return (
@@ -108,7 +106,7 @@ export default async function DemandesPage() {
             </h2>
             <div className="space-y-2">
               {historique.map((d) => {
-                const v = d.vehicules as unknown as { marque: string; modele: string } | null;
+                const v = d.vehicules;
                 const s = STATUT_LABELS[d.statut];
                 return (
                   <div
@@ -130,7 +128,6 @@ export default async function DemandesPage() {
             </div>
           </div>
         )}
-      </div>
-    </>
+    </div>
   );
 }

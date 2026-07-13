@@ -20,7 +20,7 @@ export default async function ConfirmationPage({
       .single();
 
     if (data?.vehicules) {
-      const v = data.vehicules as unknown as { marque: string; modele: string };
+      const v = data.vehicules;
       vehiculeLabel = `${v.marque} ${v.modele}`;
     }
   }

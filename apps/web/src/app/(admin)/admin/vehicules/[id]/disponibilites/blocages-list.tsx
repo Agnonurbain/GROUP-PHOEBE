@@ -8,11 +8,12 @@ import {
 
 type Blocage = {
   id: string;
-  periode: string;
+  periode: string | null;
   type?: string;
 };
 
-function parsePeriode(raw: string): { debut: string; fin: string } {
+function parsePeriode(raw: string | null): { debut: string; fin: string } {
+  if (!raw) return { debut: "—", fin: "—" };
   const cleaned = raw.replace(/[\[\]()]/g, "");
   const [debut, fin] = cleaned.split(",");
   return {

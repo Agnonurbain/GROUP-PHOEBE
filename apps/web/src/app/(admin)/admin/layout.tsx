@@ -19,68 +19,101 @@ export default async function AdminShellLayout({
 
   const isProprietaire = profile?.role === "proprietaire";
 
-  const { count: nbRemboursements } = await supabase
-    .from("paiements")
-    .select("id", { count: "exact", head: true })
-    .eq("statut", "remboursement_requis");
-
-  const { count: nbDemandesEnAttente } = await supabase
-    .from("demandes_transport")
-    .select("id", { count: "exact", head: true })
-    .eq("statut", "en_attente_validation");
+  const [
+    { count: nbRemboursements },
+    { count: nbDemandesEnAttente },
+    { count: nbPropositions },
+  ] = await Promise.all([
+    supabase
+      .from("paiements")
+      .select("id", { count: "exact", head: true })
+      .eq("statut", "remboursement_requis"),
+    supabase
+      .from("demandes_transport")
+      .select("id", { count: "exact", head: true })
+      .eq("statut", "en_attente_validation"),
+    supabase
+      .from("propositions_prix")
+      .select("id", { count: "exact", head: true })
+      .eq("statut", "en_attente"),
+  ]);
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
-      <aside className="w-56 border-r border-phoebe-pearl bg-white p-4">
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
-          Back-office
-        </h2>
-        <nav className="space-y-1">
-          <Link
-            href="/admin/demandes"
-            className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
-          >
-            Demandes
-            {!!nbDemandesEnAttente && nbDemandesEnAttente > 0 && (
-              <span className="rounded-full bg-phoebe-gold px-2 py-0.5 text-xs font-bold text-white">
-                {nbDemandesEnAttente}
-              </span>
+      <aside className="w-56 shrink-0 border-r border-phoebe-pearl bg-white p-4 space-y-6">
+        {isProprietaire && (
+          <div>
+            <NavLink href="/admin">Tableau de bord</NavLink>
+          </div>
+        )}
+
+        <div>
+          <SectionTitle>Transport</SectionTitle>
+          <nav className="space-y-0.5">
+            <NavLink href="/admin/demandes" badge={nbDemandesEnAttente}>
+              Demandes
+            </NavLink>
+            <NavLink href="/admin/vehicules">Véhicules</NavLink>
+            <NavLink href="/admin/verifications">Vérifications</NavLink>
+            {isProprietaire && (
+              <NavLink href="/admin/remboursements" badge={nbRemboursements} badgeColor="bg-error">
+                Remboursements
+              </NavLink>
             )}
-          </Link>
-          <Link
-            href="/admin/vehicules"
-            className="block rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
-          >
-            Véhicules
-          </Link>
-          <Link
-            href="/admin/verifications"
-            className="block rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
-          >
-            Vérifications
-          </Link>
-          <Link
-            href="/admin/remboursements"
-            className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
-          >
-            Remboursements
-            {!!nbRemboursements && nbRemboursements > 0 && (
-              <span className="rounded-full bg-error px-2 py-0.5 text-xs font-bold text-white">
-                {nbRemboursements}
-              </span>
+            {isProprietaire && (
+              <NavLink href="/admin/propositions" badge={nbPropositions}>
+                Propositions de prix
+              </NavLink>
             )}
-          </Link>
-          {isProprietaire && (
-            <Link
-              href="/admin/comptes"
-              className="block rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
-            >
-              Comptes internes
-            </Link>
-          )}
-        </nav>
+          </nav>
+        </div>
+
+        {/* Placeholder: Livraison sera ajoutée ici au Prompt 11 */}
+
+        {isProprietaire && (
+          <div>
+            <SectionTitle>Administration</SectionTitle>
+            <nav className="space-y-0.5">
+              <NavLink href="/admin/comptes">Comptes internes</NavLink>
+            </nav>
+          </div>
+        )}
       </aside>
       <div className="flex-1 p-6">{children}</div>
     </div>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+      {children}
+    </h2>
+  );
+}
+
+function NavLink({
+  href,
+  children,
+  badge,
+  badgeColor = "bg-phoebe-gold",
+}: {
+  href: string;
+  children: React.ReactNode;
+  badge?: number | null;
+  badgeColor?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
+    >
+      {children}
+      {!!badge && badge > 0 && (
+        <span className={`rounded-full ${badgeColor} px-2 py-0.5 text-xs font-bold text-white`}>
+          {badge}
+        </span>
+      )}
+    </Link>
   );
 }

@@ -17,6 +17,15 @@ const CAT_LABELS: Record<string, string> = {
 
 export default async function VehiculesListPage() {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user!.id)
+    .single();
+  const isProprietaire = profile?.role === "proprietaire";
 
   const { data: vehicules } = await supabase
     .from("vehicules")
@@ -44,12 +53,14 @@ export default async function VehiculesListPage() {
         <h1 className="text-2xl font-bold text-phoebe-anthracite">
           Véhicules
         </h1>
-        <Link
-          href="/admin/vehicules/nouveau"
-          className="rounded-lg bg-phoebe-green px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-phoebe-green-deep"
-        >
-          + Nouveau véhicule
-        </Link>
+        {isProprietaire && (
+          <Link
+            href="/admin/vehicules/nouveau"
+            className="rounded-lg bg-phoebe-green px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-phoebe-green-deep"
+          >
+            + Nouveau véhicule
+          </Link>
+        )}
       </div>
 
       {vehicules && vehicules.length > 0 ? (

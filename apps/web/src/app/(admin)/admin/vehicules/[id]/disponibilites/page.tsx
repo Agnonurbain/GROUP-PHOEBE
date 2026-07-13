@@ -35,7 +35,7 @@ export default async function DisponibilitesPage({
     id: string;
     nom: string;
     telephone: string;
-    blocages: { id: string; periode: string }[];
+    blocages: { id: string; periode: string | null }[];
   };
 
   const chauffeursAvecBlocages: ChauffeurAvecBlocages[] = [];

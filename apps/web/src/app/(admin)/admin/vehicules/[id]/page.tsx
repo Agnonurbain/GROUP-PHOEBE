@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import VehiculeForm from "../vehicule-form";
 import PhotosManager from "./photos-manager";
+import { ProposerPrixForm } from "./proposer-prix-form";
 import { modifierVehicule, supprimerVehicule } from "@/app/actions/vehicules";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -13,6 +14,19 @@ export default async function EditVehiculePage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/connexion");
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  const isProprietaire = profile?.role === "proprietaire";
 
   const { data: vehicule } = await supabase
     .from("vehicules")
@@ -86,22 +100,35 @@ export default async function EditVehiculePage({
 
       <PhotosManager vehiculeId={id} photos={photos ?? []} />
 
-      <VehiculeForm
-        vehicule={vehicule}
-        action={modifierVehicule}
-        documentUrls={{ carteGrise: carteGriseUrl, certificat: certificatUrl }}
-        chauffeurs={chauffeurs ?? []}
-        chauffeurIds={chauffeurIds}
-      />
+      {isProprietaire ? (
+        <>
+          <VehiculeForm
+            vehicule={vehicule}
+            action={modifierVehicule}
+            documentUrls={{ carteGrise: carteGriseUrl, certificat: certificatUrl }}
+            chauffeurs={chauffeurs ?? []}
+            chauffeurIds={chauffeurIds}
+          />
 
-      <section className="rounded-xl border border-error/30 p-4">
-        <h2 className="mb-2 text-sm font-semibold text-error">Zone danger</h2>
-        <form action={handleDelete}>
-          <SubmitButton variant="danger">
-            Supprimer ce véhicule
-          </SubmitButton>
-        </form>
-      </section>
+          <section className="rounded-xl border border-error/30 p-4">
+            <h2 className="mb-2 text-sm font-semibold text-error">Zone danger</h2>
+            <form action={handleDelete}>
+              <SubmitButton variant="danger">
+                Supprimer ce véhicule
+              </SubmitButton>
+            </form>
+          </section>
+        </>
+      ) : (
+        <ProposerPrixForm
+          vehiculeId={id}
+          prixActuels={{
+            prix_journalier: vehicule.prix_journalier,
+            prix_mensuel: vehicule.prix_mensuel,
+            prix_vente: vehicule.prix_vente,
+          }}
+        />
+      )}
     </div>
   );
 }

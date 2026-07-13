@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { Header } from "@/components/header";
 import { MarquerRembourse } from "./marquer-rembourse";
 
 export default async function RemboursementsPage() {
@@ -19,9 +18,7 @@ export default async function RemboursementsPage() {
     .limit(20);
 
   return (
-    <>
-      <Header />
-      <div className="space-y-8">
+    <div className="space-y-8">
         <div>
           <h1 className="text-2xl font-bold text-phoebe-anthracite">
             Remboursements à traiter
@@ -127,7 +124,6 @@ export default async function RemboursementsPage() {
             </div>
           </div>
         )}
-      </div>
-    </>
+    </div>
   );
 }

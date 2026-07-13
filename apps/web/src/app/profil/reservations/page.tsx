@@ -44,7 +44,7 @@ export default async function ReservationsPage() {
               <ReservationCard
                 key={d.id}
                 demande={d}
-                vehicule={d.vehicules as unknown as { marque: string; modele: string } | null}
+                vehicule={d.vehicules}
                 dejaNote={avisSet.has(d.id)}
               />
             ))}
