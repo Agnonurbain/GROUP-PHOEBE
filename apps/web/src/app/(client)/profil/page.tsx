@@ -105,6 +105,20 @@ export default async function ProfilPage() {
           </p>
         )}
       </div>
+
+      <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-phoebe-anthracite">
+            Favoris
+          </h2>
+          <Link
+            href="/profil/favoris"
+            className="text-sm text-phoebe-green hover:text-phoebe-green-deep"
+          >
+            Voir mes favoris →
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }

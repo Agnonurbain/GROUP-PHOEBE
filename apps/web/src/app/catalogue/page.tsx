@@ -1,11 +1,21 @@
+import Link from "next/link";
+import { Suspense } from "react";
 import { Header } from "@/components/header";
+import { FavoriButton } from "@/components/favori-button";
 import { createClient } from "@/lib/supabase/server";
+import Filtres from "./filtres";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
-  disponible: { label: "Disponible", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
+  disponible: {
+    label: "Disponible",
+    color: "bg-phoebe-green/10 text-phoebe-green-deep",
+  },
   reserve: { label: "Réservé", color: "bg-phoebe-gold/10 text-phoebe-gold" },
   loue: { label: "Loué", color: "bg-blue-50 text-blue-700" },
-  vendu: { label: "Vendu", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite" },
+  vendu: {
+    label: "Vendu",
+    color: "bg-phoebe-anthracite/10 text-phoebe-anthracite",
+  },
 };
 
 const CAT_LABELS: Record<string, string> = {
@@ -19,14 +29,51 @@ function formatPrice(val: number | null): string | null {
   return `${Number(val).toLocaleString("fr-FR")} FCFA`;
 }
 
-export default async function CataloguePage() {
+export default async function CataloguePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const sp = await searchParams;
   const supabase = await createClient();
 
-  const { data: vehicules } = await supabase
+  let query = supabase
     .from("vehicules")
     .select("*")
     .neq("statut", "indisponible")
     .order("created_at", { ascending: false });
+
+  if (sp.categorie)
+    query = query.eq(
+      "categorie",
+      sp.categorie as "leger" | "car" | "minibus"
+    );
+  if (sp.marque) query = query.ilike("marque", `%${sp.marque}%`);
+  if (sp.modele) query = query.ilike("modele", `%${sp.modele}%`);
+  if (sp.localisation)
+    query = query.ilike("localisation", `%${sp.localisation}%`);
+  if (sp.carburant) query = query.ilike("carburant", `%${sp.carburant}%`);
+  if (sp.usage === "location")
+    query = query.or("prix_journalier.gt.0,prix_mensuel.gt.0");
+  if (sp.usage === "vente") query = query.gt("prix_vente", 0);
+  if (sp.prix_max && sp.usage) {
+    const max = Number(sp.prix_max);
+    if (sp.usage === "vente") {
+      query = query.lte("prix_vente", max);
+    } else {
+      query = query.lte("prix_journalier", max);
+    }
+  }
+  if (sp.annee_min) query = query.gte("annee", Number(sp.annee_min));
+  if (sp.statut)
+    query = query.eq(
+      "statut",
+      sp.statut as "disponible" | "reserve" | "loue" | "vendu"
+    );
+  if (sp.chauffeur === "oui") query = query.eq("chauffeur_disponible", true);
+  if (sp.chauffeur === "non") query = query.eq("chauffeur_disponible", false);
+
+  const { data: vehicules } = await query;
 
   const ids = vehicules?.map((v) => v.id) ?? [];
 
@@ -43,6 +90,19 @@ export default async function CataloguePage() {
     if (!firstPhoto.has(p.vehicule_id)) firstPhoto.set(p.vehicule_id, p.url);
   }
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const favoriIds = new Set<string>();
+  if (user) {
+    const { data: favs } = await supabase
+      .from("favoris")
+      .select("vehicule_id")
+      .eq("user_id", user.id);
+    for (const f of favs ?? []) favoriIds.add(f.vehicule_id);
+  }
+
   return (
     <>
       <Header />
@@ -50,6 +110,10 @@ export default async function CataloguePage() {
         <h1 className="mb-6 text-2xl font-bold text-phoebe-anthracite">
           Catalogue véhicules
         </h1>
+
+        <Suspense>
+          <Filtres />
+        </Suspense>
 
         {vehicules && vehicules.length > 0 ? (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -62,22 +126,24 @@ export default async function CataloguePage() {
                   key={v.id}
                   className="overflow-hidden rounded-xl border border-phoebe-pearl bg-white"
                 >
-                  {photo ? (
-                    <img
-                      src={photo}
-                      alt={`${v.marque} ${v.modele}`}
-                      className="aspect-[4/3] w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex aspect-[4/3] w-full items-center justify-center bg-phoebe-pearl text-phoebe-anthracite/30">
-                      Pas de photo
-                    </div>
-                  )}
+                  <Link href={`/catalogue/${v.id}`} className="block">
+                    {photo ? (
+                      <img
+                        src={photo}
+                        alt={`${v.marque} ${v.modele}`}
+                        className="aspect-[4/3] w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex aspect-[4/3] w-full items-center justify-center bg-phoebe-pearl text-phoebe-anthracite/30">
+                        Pas de photo
+                      </div>
+                    )}
+                  </Link>
 
                   <div className="space-y-2 p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h2 className="font-semibold text-phoebe-anthracite">
+                    <div className="flex items-start justify-between gap-2">
+                      <Link href={`/catalogue/${v.id}`} className="min-w-0">
+                        <h2 className="font-semibold text-phoebe-anthracite hover:text-phoebe-green">
                           {v.marque} {v.modele}
                         </h2>
                         <p className="text-xs text-phoebe-anthracite/50">
@@ -85,14 +151,22 @@ export default async function CataloguePage() {
                           {v.annee ? ` · ${v.annee}` : ""}
                           {v.nb_places ? ` · ${v.nb_places} places` : ""}
                         </p>
+                      </Link>
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        {s && (
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${s.color}`}
+                          >
+                            {s.label}
+                          </span>
+                        )}
+                        {user && (
+                          <FavoriButton
+                            vehiculeId={v.id}
+                            isFavori={favoriIds.has(v.id)}
+                          />
+                        )}
                       </div>
-                      {s && (
-                        <span
-                          className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${s.color}`}
-                        >
-                          {s.label}
-                        </span>
-                      )}
                     </div>
 
                     <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
@@ -145,7 +219,7 @@ export default async function CataloguePage() {
           </div>
         ) : (
           <p className="text-center text-phoebe-anthracite/50">
-            Aucun véhicule disponible pour le moment.
+            Aucun véhicule ne correspond à vos critères.
           </p>
         )}
       </main>
