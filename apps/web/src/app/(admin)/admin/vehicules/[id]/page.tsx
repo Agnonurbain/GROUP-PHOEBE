@@ -100,26 +100,15 @@ export default async function EditVehiculePage({
 
       <PhotosManager vehiculeId={id} photos={photos ?? []} />
 
-      {isProprietaire ? (
-        <>
-          <VehiculeForm
-            vehicule={vehicule}
-            action={modifierVehicule}
-            documentUrls={{ carteGrise: carteGriseUrl, certificat: certificatUrl }}
-            chauffeurs={chauffeurs ?? []}
-            chauffeurIds={chauffeurIds}
-          />
+      <VehiculeForm
+        vehicule={vehicule}
+        action={modifierVehicule}
+        documentUrls={{ carteGrise: carteGriseUrl, certificat: certificatUrl }}
+        chauffeurs={chauffeurs ?? []}
+        chauffeurIds={chauffeurIds}
+      />
 
-          <section className="rounded-xl border border-error/30 p-4">
-            <h2 className="mb-2 text-sm font-semibold text-error">Zone danger</h2>
-            <form action={handleDelete}>
-              <SubmitButton variant="danger">
-                Supprimer ce véhicule
-              </SubmitButton>
-            </form>
-          </section>
-        </>
-      ) : (
+      {!isProprietaire && (
         <ProposerPrixForm
           vehiculeId={id}
           prixActuels={{
@@ -128,6 +117,17 @@ export default async function EditVehiculePage({
             prix_vente: vehicule.prix_vente,
           }}
         />
+      )}
+
+      {isProprietaire && (
+        <section className="rounded-xl border border-error/30 p-4">
+          <h2 className="mb-2 text-sm font-semibold text-error">Zone danger</h2>
+          <form action={handleDelete}>
+            <SubmitButton variant="danger">
+              Supprimer ce véhicule
+            </SubmitButton>
+          </form>
+        </section>
       )}
     </div>
   );

@@ -53,14 +53,12 @@ export default async function VehiculesListPage() {
         <h1 className="text-2xl font-bold text-phoebe-anthracite">
           Véhicules
         </h1>
-        {isProprietaire && (
-          <Link
-            href="/admin/vehicules/nouveau"
-            className="rounded-lg bg-phoebe-green px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-phoebe-green-deep"
-          >
-            + Nouveau véhicule
-          </Link>
-        )}
+        <Link
+          href="/admin/vehicules/nouveau"
+          className="rounded-lg bg-phoebe-green px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-phoebe-green-deep"
+        >
+          + Nouveau véhicule
+        </Link>
       </div>
 
       {vehicules && vehicules.length > 0 ? (
