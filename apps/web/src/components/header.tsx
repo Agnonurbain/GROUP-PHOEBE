@@ -29,11 +29,17 @@ export async function Header() {
         </Link>
 
         <nav className="flex items-center gap-4 text-sm">
+          <Link
+            href="/catalogue"
+            className="text-phoebe-anthracite/70 hover:text-phoebe-green"
+          >
+            Catalogue
+          </Link>
           {user && profile ? (
             <>
               {isStaff && (
                 <Link
-                  href="/admin/verifications"
+                  href="/admin/vehicules"
                   className="text-phoebe-anthracite/70 hover:text-phoebe-green"
                 >
                   Back-office

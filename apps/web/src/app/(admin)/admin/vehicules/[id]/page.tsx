@@ -1,0 +1,84 @@
+import { redirect } from "next/navigation";
+import Link from "next/link";
+import { createClient } from "@/lib/supabase/server";
+import VehiculeForm from "../vehicule-form";
+import PhotosManager from "./photos-manager";
+import { modifierVehicule, supprimerVehicule } from "@/app/actions/vehicules";
+import { SubmitButton } from "@/components/submit-button";
+
+export default async function EditVehiculePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const { data: vehicule } = await supabase
+    .from("vehicules")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (!vehicule) redirect("/admin/vehicules");
+
+  const { data: photos } = await supabase
+    .from("vehicule_photos")
+    .select("*")
+    .eq("vehicule_id", id)
+    .order("ordre", { ascending: true });
+
+  let carteGriseUrl: string | null = null;
+  let certificatUrl: string | null = null;
+
+  if (vehicule.carte_grise_url) {
+    const { data } = await supabase.storage
+      .from("vehicle-documents")
+      .createSignedUrl(vehicule.carte_grise_url, 3600);
+    carteGriseUrl = data?.signedUrl ?? null;
+  }
+  if (vehicule.certificat_non_gage_url) {
+    const { data } = await supabase.storage
+      .from("vehicle-documents")
+      .createSignedUrl(vehicule.certificat_non_gage_url, 3600);
+    certificatUrl = data?.signedUrl ?? null;
+  }
+
+  async function handleDelete() {
+    "use server";
+    await supprimerVehicule(id);
+  }
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-phoebe-anthracite">
+          {vehicule.marque} {vehicule.modele}
+        </h1>
+        <Link
+          href="/admin/vehicules"
+          className="text-sm text-phoebe-anthracite/60 hover:text-phoebe-green"
+        >
+          ← Retour à la liste
+        </Link>
+      </div>
+
+      <PhotosManager vehiculeId={id} photos={photos ?? []} />
+
+      <VehiculeForm
+        vehicule={vehicule}
+        action={modifierVehicule}
+        documentUrls={{ carteGrise: carteGriseUrl, certificat: certificatUrl }}
+      />
+
+      <section className="rounded-xl border border-error/30 p-4">
+        <h2 className="mb-2 text-sm font-semibold text-error">Zone danger</h2>
+        <form action={handleDelete}>
+          <SubmitButton variant="danger">
+            Supprimer ce véhicule
+          </SubmitButton>
+        </form>
+      </section>
+    </div>
+  );
+}

@@ -27,6 +27,12 @@ export default async function AdminShellLayout({
         </h2>
         <nav className="space-y-1">
           <Link
+            href="/admin/vehicules"
+            className="block rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
+          >
+            Véhicules
+          </Link>
+          <Link
             href="/admin/verifications"
             className="block rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
           >
