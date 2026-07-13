@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { FavoriButton } from "@/components/favori-button";
+import { DisponibiliteChecker } from "@/components/disponibilite-checker";
 import { createClient } from "@/lib/supabase/server";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
@@ -178,6 +179,23 @@ export default async function VehiculeDetailPage({
                 </p>
               )}
             </div>
+
+            {(v.prix_journalier || v.prix_mensuel) &&
+              v.statut !== "vendu" && (
+                <DisponibiliteChecker
+                  vehiculeId={v.id}
+                  chauffeurDisponible={v.chauffeur_disponible}
+                />
+              )}
+
+            {v.prix_journalier && v.statut === "disponible" && (
+              <Link
+                href={`/catalogue/${v.id}/reserver`}
+                className="block w-full rounded-xl bg-phoebe-green py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-phoebe-green/90"
+              >
+                Réserver ce véhicule
+              </Link>
+            )}
 
             {/* Caractéristiques */}
             <div>

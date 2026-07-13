@@ -5,10 +5,14 @@ import type { Tables } from "@group-phoebe/database/types";
 import type { VehiculeState } from "@/app/actions/vehicules";
 import { SubmitButton } from "@/components/submit-button";
 
+type Chauffeur = { id: string; nom: string };
+
 type Props = {
   vehicule?: Tables<"vehicules">;
   action: (prev: VehiculeState, formData: FormData) => Promise<VehiculeState>;
   documentUrls?: { carteGrise: string | null; certificat: string | null };
+  chauffeurs?: Chauffeur[];
+  chauffeurIds?: string[];
 };
 
 const inputClass =
@@ -19,6 +23,8 @@ export default function VehiculeForm({
   vehicule,
   action,
   documentUrls,
+  chauffeurs = [],
+  chauffeurIds = [],
 }: Props) {
   const [state, formAction] = useActionState<VehiculeState, FormData>(
     action,
@@ -166,6 +172,29 @@ export default function VehiculeForm({
               Chauffeur disponible
             </label>
           </div>
+
+          {chauffeurs.length > 0 && (
+            <div>
+              <span className={labelClass}>Chauffeurs affectés</span>
+              <div className="mt-1 space-y-1.5">
+                {chauffeurs.map((c) => (
+                  <label
+                    key={c.id}
+                    className="flex items-center gap-2 text-sm text-phoebe-anthracite"
+                  >
+                    <input
+                      type="checkbox"
+                      name="chauffeur_ids"
+                      value={c.id}
+                      defaultChecked={chauffeurIds.includes(c.id)}
+                      className="rounded border-gray-300 text-phoebe-green focus:ring-phoebe-green"
+                    />
+                    {c.nom}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </fieldset>
 
         {/* Détails */}
@@ -262,6 +291,25 @@ export default function VehiculeForm({
                 className={inputClass}
               />
             </div>
+          </div>
+          <div className="max-w-xs">
+            <label htmlFor="taux_caution" className={labelClass}>
+              Taux de caution (%)
+            </label>
+            <input
+              id="taux_caution"
+              name="taux_caution"
+              type="number"
+              min={1}
+              max={99}
+              step="1"
+              defaultValue={vehicule?.taux_caution ? Math.round(Number(vehicule.taux_caution) * 100) : ""}
+              placeholder="30"
+              className={inputClass}
+            />
+            <p className="mt-1 text-xs text-phoebe-anthracite/50">
+              Laisser vide pour utiliser le défaut (30%)
+            </p>
           </div>
         </fieldset>
 

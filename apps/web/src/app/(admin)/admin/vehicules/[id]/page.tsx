@@ -28,6 +28,18 @@ export default async function EditVehiculePage({
     .eq("vehicule_id", id)
     .order("ordre", { ascending: true });
 
+  const { data: chauffeurs } = await supabase
+    .from("chauffeurs")
+    .select("id, nom")
+    .eq("actif", true)
+    .order("nom");
+
+  const { data: vcLinks } = await supabase
+    .from("vehicule_chauffeurs")
+    .select("chauffeur_id")
+    .eq("vehicule_id", id);
+  const chauffeurIds = vcLinks?.map((l) => l.chauffeur_id) ?? [];
+
   let carteGriseUrl: string | null = null;
   let certificatUrl: string | null = null;
 
@@ -63,12 +75,23 @@ export default async function EditVehiculePage({
         </Link>
       </div>
 
+      <div className="flex gap-3">
+        <Link
+          href={`/admin/vehicules/${id}/disponibilites`}
+          className="rounded-lg border border-phoebe-green px-4 py-2 text-sm font-semibold text-phoebe-green transition-colors hover:bg-phoebe-green hover:text-white"
+        >
+          Gérer les disponibilités
+        </Link>
+      </div>
+
       <PhotosManager vehiculeId={id} photos={photos ?? []} />
 
       <VehiculeForm
         vehicule={vehicule}
         action={modifierVehicule}
         documentUrls={{ carteGrise: carteGriseUrl, certificat: certificatUrl }}
+        chauffeurs={chauffeurs ?? []}
+        chauffeurIds={chauffeurIds}
       />
 
       <section className="rounded-xl border border-error/30 p-4">

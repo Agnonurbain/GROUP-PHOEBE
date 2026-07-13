@@ -32,6 +32,13 @@ function str(val: FormDataEntryValue | null): string | null {
   return val && val !== "" ? (val as string) : null;
 }
 
+function numCaution(val: FormDataEntryValue | null): number | null {
+  const n = num(val);
+  if (n === null) return null;
+  if (n < 1 || n > 99) return null;
+  return n / 100;
+}
+
 export type VehiculeState = {
   error?: string;
   success?: boolean;
@@ -94,6 +101,7 @@ export async function creerVehicule(
       prix_mensuel: num(formData.get("prix_mensuel")),
       prix_vente: prixVente,
       chauffeur_disponible: formData.get("chauffeur_disponible") === "on",
+      taux_caution: numCaution(formData.get("taux_caution")),
       description: str(formData.get("description")),
       statut: statut as "indisponible",
     })
@@ -101,6 +109,13 @@ export async function creerVehicule(
     .single();
 
   if (error) return { error: error.message };
+
+  const chauffeurIds = formData.getAll("chauffeur_ids") as string[];
+  if (chauffeurIds.length > 0) {
+    await supabase.from("vehicule_chauffeurs").insert(
+      chauffeurIds.map((cid) => ({ vehicule_id: data.id, chauffeur_id: cid }))
+    );
+  }
 
   redirect(`/admin/vehicules/${data.id}`);
 }
@@ -182,6 +197,7 @@ export async function modifierVehicule(
       prix_mensuel: num(formData.get("prix_mensuel")),
       prix_vente: prixVente,
       chauffeur_disponible: formData.get("chauffeur_disponible") === "on",
+      taux_caution: numCaution(formData.get("taux_caution")),
       description: str(formData.get("description")),
       statut: statut as
         | "disponible"
@@ -196,6 +212,12 @@ export async function modifierVehicule(
     .eq("id", id);
 
   if (error) return { error: error.message };
+
+  const chauffeurIds = formData.getAll("chauffeur_ids") as string[];
+  await supabase.rpc("sync_vehicule_chauffeurs", {
+    p_vehicule_id: id,
+    p_chauffeur_ids: chauffeurIds,
+  });
 
   revalidatePath(`/admin/vehicules/${id}`);
   revalidatePath("/admin/vehicules");

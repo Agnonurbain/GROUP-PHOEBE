@@ -133,6 +133,7 @@ export type Database = {
           prix_mensuel: number | null;
           prix_vente: number | null;
           chauffeur_disponible: boolean;
+          taux_caution: number | null;
           description: string | null;
           carte_grise_url: string | null;
           certificat_non_gage_url: string | null;
@@ -159,6 +160,7 @@ export type Database = {
           prix_mensuel?: number | null;
           prix_vente?: number | null;
           chauffeur_disponible?: boolean;
+          taux_caution?: number | null;
           description?: string | null;
           carte_grise_url?: string | null;
           certificat_non_gage_url?: string | null;
@@ -185,6 +187,7 @@ export type Database = {
           prix_mensuel?: number | null;
           prix_vente?: number | null;
           chauffeur_disponible?: boolean;
+          taux_caution?: number | null;
           description?: string | null;
           carte_grise_url?: string | null;
           certificat_non_gage_url?: string | null;
@@ -752,7 +755,7 @@ export type Database = {
           type: "montant" | "caution" | "acompte" | "commission";
           montant: number;
           methode: "cinetpay" | "stripe" | "agence" | "virement";
-          statut: "en_attente" | "capture" | "echoue" | "rembourse";
+          statut: "en_attente" | "capture" | "echoue" | "rembourse" | "remboursement_requis";
           webhook_reference: string | null;
           created_at: string;
         };
@@ -764,7 +767,7 @@ export type Database = {
           type: "montant" | "caution" | "acompte" | "commission";
           montant: number;
           methode: "cinetpay" | "stripe" | "agence" | "virement";
-          statut?: "en_attente" | "capture" | "echoue" | "rembourse";
+          statut?: "en_attente" | "capture" | "echoue" | "rembourse" | "remboursement_requis";
           webhook_reference?: string | null;
           created_at?: string;
         };
@@ -776,7 +779,7 @@ export type Database = {
           type?: "montant" | "caution" | "acompte" | "commission";
           montant?: number;
           methode?: "cinetpay" | "stripe" | "agence" | "virement";
-          statut?: "en_attente" | "capture" | "echoue" | "rembourse";
+          statut?: "en_attente" | "capture" | "echoue" | "rembourse" | "remboursement_requis";
           webhook_reference?: string | null;
           created_at?: string;
         };
@@ -842,6 +845,24 @@ export type Database = {
         };
         Relationships: [];
       };
+      vehicule_chauffeurs: {
+        Row: {
+          id: string;
+          vehicule_id: string;
+          chauffeur_id: string;
+        };
+        Insert: {
+          id?: string;
+          vehicule_id: string;
+          chauffeur_id: string;
+        };
+        Update: {
+          id?: string;
+          vehicule_id?: string;
+          chauffeur_id?: string;
+        };
+        Relationships: [];
+      };
       favoris: {
         Row: {
           id: string;
@@ -865,7 +886,19 @@ export type Database = {
       };
     };
     Views: {};
-    Functions: {};
+    Functions: {
+      sync_vehicule_chauffeurs: {
+        Args: {
+          p_vehicule_id: string;
+          p_chauffeur_ids: string[];
+        };
+        Returns: undefined;
+      };
+      expirer_reservations_abandonnees: {
+        Args: Record<string, never>;
+        Returns: number;
+      };
+    };
     Enums: {};
   };
 }

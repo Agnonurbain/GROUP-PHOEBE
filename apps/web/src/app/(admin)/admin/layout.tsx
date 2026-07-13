@@ -19,6 +19,11 @@ export default async function AdminShellLayout({
 
   const isProprietaire = profile?.role === "proprietaire";
 
+  const { count: nbRemboursements } = await supabase
+    .from("paiements")
+    .select("id", { count: "exact", head: true })
+    .eq("statut", "remboursement_requis");
+
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
       <aside className="w-56 border-r border-phoebe-pearl bg-white p-4">
@@ -37,6 +42,17 @@ export default async function AdminShellLayout({
             className="block rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
           >
             Vérifications
+          </Link>
+          <Link
+            href="/admin/remboursements"
+            className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
+          >
+            Remboursements
+            {!!nbRemboursements && nbRemboursements > 0 && (
+              <span className="rounded-full bg-error px-2 py-0.5 text-xs font-bold text-white">
+                {nbRemboursements}
+              </span>
+            )}
           </Link>
           {isProprietaire && (
             <Link
