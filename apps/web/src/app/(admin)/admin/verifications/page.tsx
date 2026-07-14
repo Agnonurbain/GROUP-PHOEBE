@@ -85,17 +85,17 @@ export default async function VerificationsPage() {
           <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
             Historique
           </h2>
-          <div className="overflow-hidden rounded-xl border border-phoebe-pearl">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-xl border border-phoebe-pearl">
+            <table className="w-full min-w-[400px] text-sm">
               <thead className="bg-phoebe-pearl/50">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                     Nom
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                     Téléphone
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                     Statut
                   </th>
                 </tr>

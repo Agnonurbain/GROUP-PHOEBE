@@ -147,8 +147,8 @@ export default async function DashboardPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-phoebe-pearl text-left text-xs uppercase tracking-wider text-phoebe-anthracite/40">
-                  <th className="pb-2 pr-4">Véhicule</th>
-                  <th className="pb-2 pr-4">Demandes</th>
+                  <th scope="col" className="pb-2 pr-4">Véhicule</th>
+                  <th scope="col" className="pb-2 pr-4">Demandes</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-phoebe-pearl">

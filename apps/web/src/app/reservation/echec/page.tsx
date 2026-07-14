@@ -6,7 +6,12 @@ export default async function EchecPage() {
     <>
       <Header />
       <main className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-4 text-center">
-        <div className="mb-4 text-5xl text-error">&#10007;</div>
+        <div className="mb-4 flex items-center justify-center">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M15 9l-6 6M9 9l6 6" />
+          </svg>
+        </div>
         <h1 className="mb-2 text-2xl font-bold text-phoebe-anthracite">
           Paiement non abouti
         </h1>

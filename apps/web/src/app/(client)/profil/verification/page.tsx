@@ -49,17 +49,18 @@ export default function VerificationPage() {
       </div>
 
       {state.error && (
-        <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div className="animate-fade-in rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
 
       <form action={action} className="space-y-6">
         <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
-          <label className="mb-2 block text-sm font-medium text-phoebe-anthracite">
+          <label htmlFor="v-piece" className="mb-2 block text-sm font-medium text-phoebe-anthracite">
             Pièce d&apos;identité (CNI, passeport)
           </label>
           <input
+            id="v-piece"
             name="piece_identite"
             type="file"
             required
@@ -69,10 +70,11 @@ export default function VerificationPage() {
         </div>
 
         <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
-          <label className="mb-2 block text-sm font-medium text-phoebe-anthracite">
+          <label htmlFor="v-permis" className="mb-2 block text-sm font-medium text-phoebe-anthracite">
             Permis de conduire
           </label>
           <input
+            id="v-permis"
             name="permis_conduire"
             type="file"
             required

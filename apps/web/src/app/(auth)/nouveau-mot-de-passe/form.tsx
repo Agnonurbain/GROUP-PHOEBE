@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { changerMotDePasse, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
+import { PasswordInput } from "@/components/password-input";
 
 export default function NouveauMotDePasseForm() {
   const [state, action] = useActionState<AuthState, FormData>(
@@ -33,14 +34,12 @@ export default function NouveauMotDePasseForm() {
           >
             Nouveau mot de passe
           </label>
-          <input
+          <PasswordInput
             id="password"
             name="password"
-            type="password"
             required
             minLength={8}
             autoFocus
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-phoebe-green"
             placeholder="8 caractères minimum"
           />
         </div>
@@ -52,13 +51,11 @@ export default function NouveauMotDePasseForm() {
           >
             Confirmer le mot de passe
           </label>
-          <input
+          <PasswordInput
             id="confirmation"
             name="confirmation"
-            type="password"
             required
             minLength={8}
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-phoebe-green"
             placeholder="Confirmez le mot de passe"
           />
         </div>

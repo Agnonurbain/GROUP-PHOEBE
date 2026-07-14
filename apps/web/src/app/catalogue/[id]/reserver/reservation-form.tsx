@@ -5,7 +5,7 @@ import { creerReservation, type ReservationState } from "@/app/actions/reservati
 import { SubmitButton } from "@/components/submit-button";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-colors focus:border-phoebe-green";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
 
 export default function ReservationForm({
   vehiculeId,
@@ -48,7 +48,7 @@ export default function ReservationForm({
   return (
     <>
       {state.error && (
-        <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div className="animate-fade-in rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
@@ -62,10 +62,11 @@ export default function ReservationForm({
           </legend>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+              <label htmlFor="res-debut" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
                 Date de début *
               </label>
               <input
+                id="res-debut"
                 type="date"
                 name="debut"
                 required
@@ -76,10 +77,11 @@ export default function ReservationForm({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+              <label htmlFor="res-fin" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
                 Date de fin *
               </label>
               <input
+                id="res-fin"
                 type="date"
                 name="fin"
                 required
@@ -98,20 +100,22 @@ export default function ReservationForm({
           </legend>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+              <label htmlFor="res-ville" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
                 Ville de départ
               </label>
               <input
+                id="res-ville"
                 name="ville_depart"
                 placeholder="Abidjan"
                 className={inputClass}
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+              <label htmlFor="res-destination" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
                 Destination
               </label>
               <input
+                id="res-destination"
                 name="destination"
                 placeholder="Yamoussoukro"
                 className={inputClass}
@@ -154,19 +158,21 @@ export default function ReservationForm({
             {showConducteur && (
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+                  <label htmlFor="res-cond-nom" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
                     Nom complet
                   </label>
                   <input
+                    id="res-cond-nom"
                     name="conducteur_secondaire_nom"
                     className={inputClass}
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+                  <label htmlFor="res-cond-permis" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
                     Permis de conduire
                   </label>
                   <input
+                    id="res-cond-permis"
                     type="file"
                     name="conducteur_secondaire_permis"
                     accept="image/*,.pdf"

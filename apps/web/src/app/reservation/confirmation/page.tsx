@@ -29,7 +29,12 @@ export default async function ConfirmationPage({
     <>
       <Header />
       <main className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-4 text-center">
-        <div className="mb-4 text-5xl">&#10003;</div>
+        <div className="mb-4 flex items-center justify-center">
+          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#39A044" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+        </div>
         <h1 className="mb-2 text-2xl font-bold text-phoebe-anthracite">
           Paiement enregistré
         </h1>

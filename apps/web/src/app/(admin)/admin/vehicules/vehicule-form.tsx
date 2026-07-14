@@ -16,7 +16,7 @@ type Props = {
 };
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-colors focus:border-phoebe-green";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
 const labelClass = "mb-1 block text-sm font-medium text-phoebe-anthracite";
 
 export default function VehiculeForm({

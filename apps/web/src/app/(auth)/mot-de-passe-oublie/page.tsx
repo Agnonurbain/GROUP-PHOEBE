@@ -1,15 +1,24 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
 import Link from "next/link";
-import { envoyerCodeReset, type AuthState } from "@/app/actions/auth";
+import { envoyerCodeReset, envoyerResetEmail, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 
 export default function MotDePasseOubliePage() {
-  const [state, action] = useActionState<AuthState, FormData>(
+  const [mode, setMode] = useState<"phone" | "email">("phone");
+  const [phoneState, phoneAction] = useActionState<AuthState, FormData>(
     envoyerCodeReset,
     {}
   );
+  const [emailState, emailAction] = useActionState<AuthState, FormData>(
+    envoyerResetEmail,
+    {}
+  );
+
+  const state = mode === "phone" ? phoneState : emailState;
+  const action = mode === "phone" ? phoneAction : emailAction;
 
   return (
     <>
@@ -17,36 +26,90 @@ export default function MotDePasseOubliePage() {
         Mot de passe oublié
       </h1>
       <p className="mb-6 text-center text-sm text-phoebe-anthracite/60">
-        Saisissez votre numéro de téléphone pour recevoir un code de
-        réinitialisation par SMS.
+        {mode === "phone"
+          ? "Saisissez votre numéro de téléphone pour recevoir un code de réinitialisation par SMS."
+          : "Saisissez votre adresse email pour recevoir un lien de réinitialisation."}
       </p>
 
       {state.error && (
-        <div className="mb-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div className="animate-fade-in mb-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
 
-      <form action={action} className="space-y-4">
-        <div>
-          <label
-            htmlFor="telephone"
-            className="mb-1 block text-sm font-medium text-phoebe-anthracite"
-          >
-            Téléphone
-          </label>
-          <input
-            id="telephone"
-            name="telephone"
-            type="tel"
-            required
-            autoFocus
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-phoebe-green"
-            placeholder="+225 XX XX XX XX XX"
-          />
+      {emailState.phone === "sent" && mode === "email" && (
+        <div className="animate-fade-in mb-4 rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
+          Un email de réinitialisation a été envoyé. Vérifiez votre boîte de réception.
         </div>
+      )}
 
-        <SubmitButton>Envoyer le code</SubmitButton>
+      <div className="mb-4 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setMode("phone")}
+          className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            mode === "phone"
+              ? "bg-phoebe-green text-white"
+              : "bg-gray-100 text-phoebe-anthracite/60 hover:bg-gray-200"
+          }`}
+        >
+          Par SMS
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("email")}
+          className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            mode === "email"
+              ? "bg-phoebe-green text-white"
+              : "bg-gray-100 text-phoebe-anthracite/60 hover:bg-gray-200"
+          }`}
+        >
+          Par email
+        </button>
+      </div>
+
+      <form action={action} className="space-y-4">
+        {mode === "phone" ? (
+          <div>
+            <label
+              htmlFor="telephone"
+              className="mb-1 block text-sm font-medium text-phoebe-anthracite"
+            >
+              Téléphone
+            </label>
+            <input
+              id="telephone"
+              name="telephone"
+              type="tel"
+              required
+              autoFocus
+              className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
+              placeholder="+225 XX XX XX XX XX"
+            />
+          </div>
+        ) : (
+          <div>
+            <label
+              htmlFor="email"
+              className="mb-1 block text-sm font-medium text-phoebe-anthracite"
+            >
+              Adresse email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoFocus
+              className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
+              placeholder="votre@email.com"
+            />
+          </div>
+        )}
+
+        <SubmitButton>
+          {mode === "phone" ? "Envoyer le code" : "Envoyer le lien"}
+        </SubmitButton>
       </form>
 
       <p className="mt-6 text-center text-sm text-phoebe-anthracite/60">

@@ -21,12 +21,12 @@ export default function ComptesPage() {
       </p>
 
       {state.error && (
-        <div className="rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div className="animate-fade-in rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
       {state.success && (
-        <div className="rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
+        <div className="animate-fade-in rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
           Compte créé avec succès.
         </div>
       )}
@@ -41,7 +41,7 @@ export default function ComptesPage() {
             name="nom"
             type="text"
             required
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-phoebe-green"
+            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
           />
         </div>
 
@@ -54,7 +54,7 @@ export default function ComptesPage() {
             name="telephone"
             type="tel"
             required
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-phoebe-green"
+            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
             placeholder="+225 XX XX XX XX XX"
           />
         </div>
@@ -67,7 +67,7 @@ export default function ComptesPage() {
             id="role"
             name="role"
             required
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-phoebe-green"
+            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
           >
             <option value="">Choisir un rôle</option>
             <option value="operateur">Opérateur</option>
@@ -85,7 +85,7 @@ export default function ComptesPage() {
             type="text"
             required
             minLength={8}
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-phoebe-green"
+            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
             placeholder="8 caractères minimum"
           />
         </div>

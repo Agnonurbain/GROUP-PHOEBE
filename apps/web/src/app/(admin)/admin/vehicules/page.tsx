@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
@@ -62,23 +63,23 @@ export default async function VehiculesListPage() {
       </div>
 
       {vehicules && vehicules.length > 0 ? (
-        <div className="overflow-hidden rounded-xl border border-phoebe-pearl">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto rounded-xl border border-phoebe-pearl">
+          <table className="w-full min-w-[600px] text-sm">
             <thead className="bg-phoebe-pearl/50">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                   Photo
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                   Véhicule
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                   Catégorie
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                   Prix/jour
                 </th>
-                <th className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                   Statut
                 </th>
                 <th className="px-4 py-3" />
@@ -91,11 +92,15 @@ export default async function VehiculesListPage() {
                   <tr key={v.id} className="hover:bg-phoebe-pearl/30">
                     <td className="px-4 py-3">
                       {firstPhoto.has(v.id) ? (
-                        <img
-                          src={firstPhoto.get(v.id)!}
-                          alt=""
-                          className="h-10 w-14 rounded object-cover"
-                        />
+                        <div className="relative h-10 w-14 overflow-hidden rounded">
+                          <Image
+                            src={firstPhoto.get(v.id)!}
+                            alt=""
+                            fill
+                            sizes="56px"
+                            className="object-cover"
+                          />
+                        </div>
                       ) : (
                         <div className="flex h-10 w-14 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
                           —

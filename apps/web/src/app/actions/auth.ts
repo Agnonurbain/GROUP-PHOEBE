@@ -125,6 +125,29 @@ export async function envoyerCodeReset(
   );
 }
 
+export async function envoyerResetEmail(
+  _prev: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+  const email = formData.get("email") as string;
+
+  if (!email) {
+    return { error: "L'adresse email est obligatoire." };
+  }
+
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/nouveau-mot-de-passe`,
+  });
+
+  if (error) {
+    return { error: "Impossible d'envoyer l'email. Vérifiez l'adresse." };
+  }
+
+  return { phone: "sent" };
+}
+
 export async function changerMotDePasse(
   _prev: AuthState,
   formData: FormData

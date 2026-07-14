@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { NavLink } from "./nav-link";
 
 export default async function AdminShellLayout({
   children,
@@ -40,7 +40,7 @@ export default async function AdminShellLayout({
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
-      <aside className="w-56 shrink-0 border-r border-phoebe-pearl bg-white p-4 space-y-6">
+      <aside className="w-56 shrink-0 overflow-y-auto border-r border-phoebe-pearl bg-white p-4 space-y-6">
         {isProprietaire && (
           <div>
             <NavLink href="/admin">Tableau de bord</NavLink>
@@ -68,8 +68,6 @@ export default async function AdminShellLayout({
           </nav>
         </div>
 
-        {/* Placeholder: Livraison sera ajoutée ici au Prompt 11 */}
-
         {isProprietaire && (
           <div>
             <SectionTitle>Administration</SectionTitle>
@@ -89,31 +87,5 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
       {children}
     </h2>
-  );
-}
-
-function NavLink({
-  href,
-  children,
-  badge,
-  badgeColor = "bg-phoebe-gold",
-}: {
-  href: string;
-  children: React.ReactNode;
-  badge?: number | null;
-  badgeColor?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
-    >
-      {children}
-      {!!badge && badge > 0 && (
-        <span className={`rounded-full ${badgeColor} px-2 py-0.5 text-xs font-bold text-white`}>
-          {badge}
-        </span>
-      )}
-    </Link>
   );
 }

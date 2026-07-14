@@ -9,7 +9,7 @@ import {
 import { SubmitButton } from "@/components/submit-button";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none transition-colors focus:border-phoebe-green";
+  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
 
 const CARBURANT_OPTIONS = [
   { value: "plein", label: "Plein" },

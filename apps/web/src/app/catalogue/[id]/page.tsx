@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/header";
 import { FavoriButton } from "@/components/favori-button";
 import { DisponibiliteChecker } from "@/components/disponibilite-checker";
@@ -95,20 +96,28 @@ export default async function VehiculeDetailPage({
           <div className="space-y-3">
             {photos && photos.length > 0 ? (
               <>
-                <img
-                  src={photos[0].url}
-                  alt={`${v.marque} ${v.modele}`}
-                  className="w-full rounded-xl object-cover"
-                />
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
+                  <Image
+                    src={photos[0].url}
+                    alt={`${v.marque} ${v.modele}`}
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 50vw"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
                 {photos.length > 1 && (
                   <div className="grid grid-cols-4 gap-2">
                     {photos.slice(1).map((p) => (
-                      <img
-                        key={p.id}
-                        src={p.url}
-                        alt=""
-                        className="aspect-square w-full rounded-lg object-cover"
-                      />
+                      <div key={p.id} className="relative aspect-square overflow-hidden rounded-lg">
+                        <Image
+                          src={p.url}
+                          alt=""
+                          fill
+                          sizes="(max-width: 1024px) 25vw, 12vw"
+                          className="object-cover"
+                        />
+                      </div>
                     ))}
                   </div>
                 )}
@@ -144,10 +153,15 @@ export default async function VehiculeDetailPage({
                 {CAT_LABELS[v.categorie] ?? v.categorie}
                 {v.annee ? ` · ${v.annee}` : ""}
                 {moyenneAvis !== null && (
-                  <span className="ml-2">
-                    {"★".repeat(Math.round(moyenneAvis))}
-                    {"☆".repeat(5 - Math.round(moyenneAvis))}{" "}
-                    {moyenneAvis.toFixed(1)}/5 ({avisNotes.length} avis)
+                  <span className="ml-2 inline-flex items-center gap-1" aria-label={`Note : ${moyenneAvis.toFixed(1)} sur 5`}>
+                    <span className="inline-flex gap-0.5" aria-hidden="true">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <svg key={i} width="14" height="14" viewBox="0 0 24 24" fill={i < Math.round(moyenneAvis) ? "#D38C37" : "none"} stroke="#D38C37" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                      ))}
+                    </span>
+                    <span>{moyenneAvis.toFixed(1)}/5 ({avisNotes.length} avis)</span>
                   </span>
                 )}
               </p>

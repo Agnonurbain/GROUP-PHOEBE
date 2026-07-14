@@ -4,6 +4,8 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { connexion, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
+import { PasswordInput } from "@/components/password-input";
+import { GoogleButton } from "@/components/google-button";
 
 export default function ConnexionPage() {
   const [state, action] = useActionState<AuthState, FormData>(connexion, {});
@@ -15,10 +17,18 @@ export default function ConnexionPage() {
       </h1>
 
       {state.error && (
-        <div className="mb-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div className="animate-fade-in mb-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
+
+      <GoogleButton label="Se connecter avec Google" />
+
+      <div className="my-5 flex items-center gap-3">
+        <div className="h-px flex-1 bg-gray-200" />
+        <span className="text-xs text-phoebe-anthracite/40">ou</span>
+        <div className="h-px flex-1 bg-gray-200" />
+      </div>
 
       <form action={action} className="space-y-4">
         <div>
@@ -30,7 +40,7 @@ export default function ConnexionPage() {
             name="telephone"
             type="tel"
             required
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-phoebe-green"
+            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
             placeholder="+225 XX XX XX XX XX"
           />
         </div>
@@ -39,14 +49,7 @@ export default function ConnexionPage() {
           <label htmlFor="password" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
             Mot de passe
           </label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            required
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm outline-none transition-colors focus:border-phoebe-green"
-            placeholder="Mot de passe"
-          />
+          <PasswordInput id="password" name="password" required placeholder="Mot de passe" />
         </div>
 
         <SubmitButton>Se connecter</SubmitButton>

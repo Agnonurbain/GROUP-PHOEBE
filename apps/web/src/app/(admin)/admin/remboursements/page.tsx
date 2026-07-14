@@ -35,15 +35,15 @@ export default async function RemboursementsPage() {
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[700px] text-sm">
               <thead>
                 <tr className="border-b border-phoebe-pearl text-left text-xs uppercase tracking-wider text-phoebe-anthracite/40">
-                  <th className="pb-2 pr-4">Date</th>
-                  <th className="pb-2 pr-4">Module</th>
-                  <th className="pb-2 pr-4">Méthode</th>
-                  <th className="pb-2 pr-4">Montant</th>
-                  <th className="pb-2 pr-4">Réf. paiement</th>
-                  <th className="pb-2 pr-4">Réf. demande</th>
+                  <th scope="col" className="pb-2 pr-4">Date</th>
+                  <th scope="col" className="pb-2 pr-4">Module</th>
+                  <th scope="col" className="pb-2 pr-4">Méthode</th>
+                  <th scope="col" className="pb-2 pr-4">Montant</th>
+                  <th scope="col" className="pb-2 pr-4">Réf. paiement</th>
+                  <th scope="col" className="pb-2 pr-4">Réf. demande</th>
                   <th className="pb-2" />
                 </tr>
               </thead>
@@ -95,10 +95,10 @@ export default async function RemboursementsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-phoebe-pearl text-left text-xs uppercase tracking-wider text-phoebe-anthracite/40">
-                    <th className="pb-2 pr-4">Date</th>
-                    <th className="pb-2 pr-4">Méthode</th>
-                    <th className="pb-2 pr-4">Montant</th>
-                    <th className="pb-2 pr-4">Réf.</th>
+                    <th scope="col" className="pb-2 pr-4">Date</th>
+                    <th scope="col" className="pb-2 pr-4">Méthode</th>
+                    <th scope="col" className="pb-2 pr-4">Montant</th>
+                    <th scope="col" className="pb-2 pr-4">Réf.</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-phoebe-pearl">

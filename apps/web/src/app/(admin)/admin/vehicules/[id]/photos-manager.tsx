@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState, useTransition } from "react";
 import {
   ajouterPhotos,
@@ -73,11 +74,15 @@ export default function PhotosManager({
               key={photo.id}
               className="group relative overflow-hidden rounded-xl border border-phoebe-pearl"
             >
-              <img
-                src={photo.url}
-                alt=""
-                className="aspect-[4/3] w-full object-cover"
-              />
+              <div className="relative aspect-[4/3] w-full">
+                <Image
+                  src={photo.url}
+                  alt=""
+                  fill
+                  sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                  className="object-cover"
+                />
+              </div>
               <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/60 px-2 py-1.5 opacity-0 transition-opacity group-hover:opacity-100">
                 <div className="flex gap-1">
                   <button

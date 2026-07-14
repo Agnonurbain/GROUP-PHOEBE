@@ -43,27 +43,29 @@ export function DisponibiliteChecker({
       <form action={handleSubmit} className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm text-phoebe-anthracite/60">
+            <label htmlFor="dispo-debut" className="mb-1 block text-sm text-phoebe-anthracite/60">
               Du
             </label>
             <input
+              id="dispo-debut"
               type="date"
               name="debut"
               required
               min={new Date().toISOString().slice(0, 10)}
-              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-phoebe-green"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-phoebe-green"
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm text-phoebe-anthracite/60">
+            <label htmlFor="dispo-fin" className="mb-1 block text-sm text-phoebe-anthracite/60">
               Au
             </label>
             <input
+              id="dispo-fin"
               type="date"
               name="fin"
               required
               min={new Date().toISOString().slice(0, 10)}
-              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-phoebe-green"
+              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-phoebe-green"
             />
           </div>
         </div>

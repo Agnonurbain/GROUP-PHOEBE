@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { FavoriButton } from "@/components/favori-button";
 
@@ -55,11 +56,15 @@ export default async function FavorisPage() {
               >
                 <Link href={`/catalogue/${v.id}`} className="shrink-0">
                   {photo ? (
-                    <img
-                      src={photo}
-                      alt={`${v.marque} ${v.modele}`}
-                      className="h-24 w-32 rounded-lg object-cover"
-                    />
+                    <div className="relative h-24 w-32 overflow-hidden rounded-lg">
+                      <Image
+                        src={photo}
+                        alt={`${v.marque} ${v.modele}`}
+                        fill
+                        sizes="128px"
+                        className="object-cover"
+                      />
+                    </div>
                   ) : (
                     <div className="flex h-24 w-32 items-center justify-center rounded-lg bg-phoebe-pearl text-xs text-phoebe-anthracite/30">
                       Pas de photo
