@@ -1,0 +1,11 @@
+process.env.NEXT_PUBLIC_SUPABASE_URL = "http://localhost:54321";
+process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
+process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service-role-key";
+process.env.STRIPE_SECRET_KEY = "sk_test_placeholder";
+process.env.STRIPE_WEBHOOK_SECRET = "whsec_test_placeholder";
+process.env.CINETPAY_API_KEY = "test-cinetpay-api-key";
+process.env.CINETPAY_SITE_ID = "test-cinetpay-site-id";
+process.env.CINETPAY_SECRET_KEY = "test-cinetpay-secret-key";
+process.env.CINETPAY_WEBHOOK_SECRET = "test-cinetpay-webhook-secret";
+process.env.NEXT_PUBLIC_SITE_URL = "http://localhost:3000";
+process.env.NODE_ENV = "test";

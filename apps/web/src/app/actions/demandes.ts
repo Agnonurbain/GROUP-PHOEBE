@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { notifierClient } from "@/lib/notifications";
-import { getStripe } from "@/lib/payments/stripe";
+import { rembourserPaiement } from "@/lib/payments/expiration-demandes";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -120,36 +120,7 @@ export async function refuserDemande(
       .eq("periode", demande.periode);
   }
 
-  const { data: paiement } = await admin
-    .from("paiements")
-    .select("*")
-    .eq("reference_table", "demandes_transport")
-    .eq("reference_id", demandeId)
-    .eq("statut", "capture")
-    .single();
-
-  if (paiement) {
-    if (paiement.methode === "stripe" && paiement.webhook_reference) {
-      try {
-        const stripe = getStripe();
-        await stripe.refunds.create({ payment_intent: paiement.webhook_reference });
-        await admin
-          .from("paiements")
-          .update({ statut: "rembourse" })
-          .eq("id", paiement.id);
-      } catch {
-        await admin
-          .from("paiements")
-          .update({ statut: "remboursement_requis" })
-          .eq("id", paiement.id);
-      }
-    } else {
-      await admin
-        .from("paiements")
-        .update({ statut: "remboursement_requis" })
-        .eq("id", paiement.id);
-    }
-  }
+  await rembourserPaiement(admin, demandeId, 0);
 
   await notifierClient(
     demande.client_id,
@@ -226,40 +197,7 @@ export async function annulerParClient(
       .eq("statut", "reserve");
   }
 
-  const { data: paiement } = await admin
-    .from("paiements")
-    .select("*")
-    .eq("reference_table", "demandes_transport")
-    .eq("reference_id", demandeId)
-    .eq("statut", "capture")
-    .single();
-
-  if (paiement) {
-    if (paiement.methode === "stripe" && paiement.webhook_reference) {
-      try {
-        const stripe = getStripe();
-        const montantRemboursable = Number(paiement.montant) - montantCautionRetenu;
-        await stripe.refunds.create({
-          payment_intent: paiement.webhook_reference,
-          amount: Math.round(montantRemboursable),
-        });
-        await admin
-          .from("paiements")
-          .update({ statut: montantCautionRetenu > 0 ? "remboursement_partiel" : "rembourse" })
-          .eq("id", paiement.id);
-      } catch {
-        await admin
-          .from("paiements")
-          .update({ statut: "remboursement_requis" })
-          .eq("id", paiement.id);
-      }
-    } else {
-      await admin
-        .from("paiements")
-        .update({ statut: "remboursement_requis" })
-        .eq("id", paiement.id);
-    }
-  }
+  await rembourserPaiement(admin, demandeId, montantCautionRetenu);
 
   const msgCaution = montantCautionRetenu > 0
     ? `La caution de ${montantCautionRetenu.toLocaleString("fr-FR")} FCFA est retenue (annulation à moins de 48h du départ).`
