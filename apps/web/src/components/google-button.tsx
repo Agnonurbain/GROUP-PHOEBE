@@ -9,12 +9,16 @@ export function GoogleButton({ label }: { label: string }) {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        skipBrowserRedirect: true,
       },
     });
+
     if (error) {
-      console.error("Google OAuth error:", error);
       alert(`Erreur Google: ${error.message}`);
-    } else if (data?.url) {
+      return;
+    }
+
+    if (data?.url) {
       window.location.href = data.url;
     }
   }
