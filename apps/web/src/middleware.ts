@@ -13,13 +13,13 @@ export async function middleware(request: NextRequest) {
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          for (const { name, value } of cookiesToSet) {
-            request.cookies.set(name, value);
-          }
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
           supabaseResponse = NextResponse.next({ request });
-          for (const { name, value, options } of cookiesToSet) {
-            supabaseResponse.cookies.set(name, value, options);
-          }
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
         },
       },
     }
@@ -31,15 +31,19 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
-  // Utilisateur non connecté → redirigé vers /connexion sur les routes protégées
-  if (!user && (pathname.startsWith("/profil") || pathname.startsWith("/admin"))) {
+  if (
+    !user &&
+    (pathname.startsWith("/profil") || pathname.startsWith("/admin"))
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/connexion";
     return NextResponse.redirect(url);
   }
 
-  // Utilisateur connecté → redirigé depuis les pages d'auth vers /profil
-  if (user && (pathname === "/connexion" || pathname === "/inscription")) {
+  if (
+    user &&
+    (pathname === "/connexion" || pathname === "/inscription")
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/profil";
     return NextResponse.redirect(url);
@@ -49,7 +53,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|api/).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api/).*)"],
 };

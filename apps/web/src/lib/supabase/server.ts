@@ -15,12 +15,12 @@ export async function createClient() {
         },
         setAll(cookiesToSet) {
           try {
-            for (const { name, value, options } of cookiesToSet) {
-              cookieStore.set(name, value, options);
-            }
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
           } catch {
-            // setAll peut échouer dans un Server Component (read-only).
-            // C'est attendu — le middleware se charge du refresh.
+            // Called from a Server Component — safe to ignore
+            // because the middleware refreshes sessions.
           }
         },
       },
