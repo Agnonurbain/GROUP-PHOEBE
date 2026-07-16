@@ -64,7 +64,7 @@ export async function connexion(
   const supabase = await createClient();
   const isEmail = identifiant.includes("@");
 
-  const { error } = await supabase.auth.signInWithPassword(
+  const { error, data } = await supabase.auth.signInWithPassword(
     isEmail
       ? { email: identifiant, password }
       : { phone: identifiant, password }
@@ -74,7 +74,16 @@ export async function connexion(
     return { error: "Identifiant ou mot de passe incorrect." };
   }
 
-  redirect("/profil");
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", data.user.id)
+    .single();
+
+  const isStaff =
+    profile?.role === "operateur" || profile?.role === "proprietaire";
+
+  redirect(isStaff ? "/admin" : "/profil");
 }
 
 export async function verifierOtp(

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { deconnexion } from "@/app/actions/auth";
 import { MobileNav } from "./mobile-nav";
+import { LogoutButton } from "./logout-button";
 
 export async function Header() {
   const supabase = await createClient();
@@ -68,14 +68,7 @@ export async function Header() {
               >
                 {profile.nom}
               </Link>
-              <form action={deconnexion}>
-                <button
-                  type="submit"
-                  className="rounded-lg border border-phoebe-anthracite/20 px-3 py-1.5 text-phoebe-anthracite/70 transition-colors hover:border-error hover:text-error"
-                >
-                  Déconnexion
-                </button>
-              </form>
+              <LogoutButton className="rounded-lg border border-phoebe-anthracite/20 px-3 py-1.5 text-phoebe-anthracite/70 transition-colors hover:border-error hover:text-error" />
             </>
           ) : (
             <>
@@ -99,14 +92,7 @@ export async function Header() {
           links={navLinks}
           authAction={
             user && profile ? (
-              <form action={deconnexion}>
-                <button
-                  type="submit"
-                  className="w-full rounded-lg border border-error/30 px-3 py-2.5 text-sm text-error transition-colors hover:bg-error/5"
-                >
-                  Déconnexion
-                </button>
-              </form>
+              <LogoutButton className="w-full rounded-lg border border-error/30 px-3 py-2.5 text-sm text-error transition-colors hover:bg-error/5" />
             ) : (
               <div className="flex flex-col gap-2">
                 <Link
