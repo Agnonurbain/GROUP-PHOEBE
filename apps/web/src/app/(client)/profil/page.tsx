@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { VerificationBadge } from "@/components/verification-badge";
 import { ProfileEditForm } from "@/components/profile-edit-form";
+import { BackLink } from "@/components/back-link";
 import type { StatutVerification } from "@/lib/auth";
 
 export default async function ProfilPage() {
@@ -23,7 +24,10 @@ export default async function ProfilPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-phoebe-anthracite">Mon profil</h1>
+      <div>
+        <BackLink href="/" label="Accueil" />
+        <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">Mon profil</h1>
+      </div>
 
       <ProfileEditForm
         nom={profile.nom}
