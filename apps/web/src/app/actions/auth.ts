@@ -185,6 +185,45 @@ export async function changerMotDePasse(
   redirect("/profil");
 }
 
+export async function updateProfile(
+  _prev: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+  const nom = formData.get("nom") as string;
+  const telephone = formData.get("telephone") as string;
+  const dateNaissance = formData.get("date_naissance") as string;
+
+  if (!nom) {
+    return { error: "Le nom est obligatoire." };
+  }
+
+  if (dateNaissance && !hasMinimumAge(dateNaissance, 21)) {
+    return { error: "Vous devez avoir au moins 21 ans." };
+  }
+
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) {
+    return { error: "Session expirée. Veuillez vous reconnecter." };
+  }
+
+  const { error } = await supabase
+    .from("users")
+    .update({
+      nom,
+      telephone: telephone || undefined,
+      date_naissance: dateNaissance || undefined,
+    })
+    .eq("id", user.sub);
+
+  if (error) {
+    return { error: "Impossible de mettre à jour le profil." };
+  }
+
+  redirect("/profil");
+}
+
 export async function deconnexion() {
   const supabase = await createClient();
   await supabase.auth.signOut();

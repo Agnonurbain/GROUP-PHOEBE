@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { VerificationBadge } from "@/components/verification-badge";
+import { ProfileEditForm } from "@/components/profile-edit-form";
 import type { StatutVerification } from "@/lib/auth";
 
 export default async function ProfilPage() {
@@ -24,34 +25,12 @@ export default async function ProfilPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-phoebe-anthracite">Mon profil</h1>
 
-      <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
-        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <dt className="text-sm text-phoebe-anthracite/50">Nom</dt>
-            <dd className="font-medium text-phoebe-anthracite">{profile.nom}</dd>
-          </div>
-          <div>
-            <dt className="text-sm text-phoebe-anthracite/50">Téléphone</dt>
-            <dd className="font-medium text-phoebe-anthracite">
-              {profile.telephone}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-phoebe-anthracite/50">Date de naissance</dt>
-            <dd className="font-medium text-phoebe-anthracite">
-              {profile.date_naissance
-                ? new Date(profile.date_naissance).toLocaleDateString("fr-FR")
-                : "—"}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm text-phoebe-anthracite/50">Rôle</dt>
-            <dd className="font-medium capitalize text-phoebe-anthracite">
-              {profile.role}
-            </dd>
-          </div>
-        </dl>
-      </div>
+      <ProfileEditForm
+        nom={profile.nom}
+        telephone={profile.telephone}
+        dateNaissance={profile.date_naissance}
+        email={profile.email ?? null}
+      />
 
       <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
         <div className="flex items-center justify-between">
