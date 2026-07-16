@@ -10,14 +10,13 @@ function formatPrice(val: number | null): string | null {
 
 export default async function FavorisPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
 
   const { data: favs } = await supabase
     .from("favoris")
     .select("vehicule_id")
-    .eq("user_id", user!.id);
+    .eq("user_id", user!.sub);
 
   const vehiculeIds = favs?.map((f) => f.vehicule_id) ?? [];
 

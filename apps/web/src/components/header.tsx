@@ -5,16 +5,15 @@ import { MobileNav } from "./mobile-nav";
 
 export async function Header() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
 
   let profile: { nom: string; role: string } | null = null;
   if (user) {
     const { data } = await supabase
       .from("users")
       .select("*")
-      .eq("id", user.id)
+      .eq("id", user.sub)
       .single();
     profile = data;
   }

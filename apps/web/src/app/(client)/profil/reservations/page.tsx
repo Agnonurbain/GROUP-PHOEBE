@@ -4,15 +4,14 @@ import { ReservationCard } from "./reservation-card";
 
 export default async function ReservationsPage() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) redirect("/connexion");
 
   const { data: demandes } = await supabase
     .from("demandes_transport")
     .select("*, vehicules(marque, modele)")
-    .eq("client_id", user.id)
+    .eq("client_id", user.sub)
     .order("created_at", { ascending: false });
 
   const { data: avisExistants } = await supabase
