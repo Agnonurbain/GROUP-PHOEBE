@@ -14,9 +14,8 @@ export async function soumettreDocuments(
 ): Promise<VerificationState> {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) return { error: "Non authentifié." };
 
   const pieceIdentite = formData.get("piece_identite") as File;
@@ -36,17 +35,17 @@ export async function soumettreDocuments(
 
   const { error: err1 } = await supabase.storage
     .from("identity-documents")
-    .upload(`${user.id}/piece_identite.${ext1}`, pieceIdentite, { upsert: true });
+    .upload(`${user.sub}/piece_identite.${ext1}`, pieceIdentite, { upsert: true });
   if (err1) return { error: `Erreur upload pièce d'identité : ${err1.message}` };
 
   const { error: err2 } = await supabase.storage
     .from("identity-documents")
-    .upload(`${user.id}/permis_conduire.${ext2}`, permisConduire, { upsert: true });
+    .upload(`${user.sub}/permis_conduire.${ext2}`, permisConduire, { upsert: true });
   if (err2) return { error: `Erreur upload permis de conduire : ${err2.message}` };
 
   const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const pieceUrl = `${baseUrl}/storage/v1/object/identity-documents/${user.id}/piece_identite.${ext1}`;
-  const permisUrl = `${baseUrl}/storage/v1/object/identity-documents/${user.id}/permis_conduire.${ext2}`;
+  const pieceUrl = `${baseUrl}/storage/v1/object/identity-documents/${user.sub}/piece_identite.${ext1}`;
+  const permisUrl = `${baseUrl}/storage/v1/object/identity-documents/${user.sub}/permis_conduire.${ext2}`;
 
   const { error: updateError } = await supabase
     .from("users")
@@ -56,7 +55,7 @@ export async function soumettreDocuments(
       statut_verification: "documents_soumis",
       updated_at: new Date().toISOString(),
     })
-    .eq("id", user.id);
+    .eq("id", user.sub);
 
   if (updateError) return { error: `Erreur mise à jour : ${updateError.message}` };
 
