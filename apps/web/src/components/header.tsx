@@ -22,12 +22,16 @@ export async function Header() {
     profile?.role === "operateur" || profile?.role === "proprietaire";
 
   const navLinks = user && profile
-    ? [
-        { href: "/catalogue", label: "Catalogue" },
-        ...(isStaff ? [{ href: "/admin/vehicules", label: "Back-office" }] : []),
-        { href: "/profil/reservations", label: "Mes réservations" },
-        { href: "/profil", label: profile.nom },
-      ]
+    ? isStaff
+      ? [
+          { href: "/admin", label: "Back-office" },
+          { href: "/profil", label: profile.nom },
+        ]
+      : [
+          { href: "/catalogue", label: "Catalogue" },
+          { href: "/profil/reservations", label: "Mes réservations" },
+          { href: "/profil", label: profile.nom },
+        ]
     : [
         { href: "/catalogue", label: "Catalogue" },
       ];
@@ -40,38 +44,27 @@ export async function Header() {
         </Link>
 
         <nav className="hidden items-center gap-4 text-sm md:flex">
-          <Link
-            href="/catalogue"
-            className="text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
-          >
-            Catalogue
-          </Link>
           {user && profile ? (
             <>
-              {isStaff && (
+              {navLinks.map((link) => (
                 <Link
-                  href="/admin/vehicules"
+                  key={link.href}
+                  href={link.href}
                   className="text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
                 >
-                  Back-office
+                  {link.label}
                 </Link>
-              )}
-              <Link
-                href="/profil/reservations"
-                className="text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
-              >
-                Mes réservations
-              </Link>
-              <Link
-                href="/profil"
-                className="text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
-              >
-                {profile.nom}
-              </Link>
+              ))}
               <LogoutButton className="rounded-lg border border-phoebe-anthracite/20 px-3 py-1.5 text-phoebe-anthracite/70 transition-colors hover:border-error hover:text-error" />
             </>
           ) : (
             <>
+              <Link
+                href="/catalogue"
+                className="text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
+              >
+                Catalogue
+              </Link>
               <Link
                 href="/connexion"
                 className="text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
