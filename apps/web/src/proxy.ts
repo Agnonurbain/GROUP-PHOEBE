@@ -33,6 +33,14 @@ export async function proxy(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname;
 
+  // OAuth code landed on wrong page — forward to callback handler
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && pathname !== "/auth/callback") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    return NextResponse.redirect(url);
+  }
+
   if (
     !user &&
     (pathname.startsWith("/profil") || pathname.startsWith("/admin"))
