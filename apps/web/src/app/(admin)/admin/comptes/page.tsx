@@ -1,97 +1,100 @@
-"use client";
+import { createClient } from "@/lib/supabase/server";
+import { ComptesForm } from "./comptes-form";
 
-import { useActionState } from "react";
-import { creerCompteInterne, type AdminState } from "@/app/actions/admin";
-import { SubmitButton } from "@/components/submit-button";
+export default async function ComptesPage() {
+  const supabase = await createClient();
 
-export default function ComptesPage() {
-  const [state, action] = useActionState<AdminState, FormData>(
-    creerCompteInterne,
-    {}
-  );
+  const { data: staff } = await supabase
+    .from("users")
+    .select("id, nom, role, telephone, email, created_at")
+    .in("role", ["operateur", "proprietaire", "livreur"])
+    .order("role")
+    .order("nom");
+
+  const roleLabels: Record<string, string> = {
+    proprietaire: "Propriétaire",
+    operateur: "Opérateur",
+    livreur: "Livreur",
+  };
 
   return (
-    <div className="max-w-lg space-y-6">
-      <h1 className="text-2xl font-bold text-phoebe-anthracite">
-        Créer un compte interne
-      </h1>
-      <p className="text-sm text-phoebe-anthracite/60">
-        Ces comptes ne passent pas par l&apos;inscription publique. Le numéro de
-        téléphone et le mot de passe temporaire sont définis par le propriétaire.
-      </p>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-phoebe-anthracite">
+          Comptes internes
+        </h1>
+        <p className="mt-1 text-sm text-phoebe-anthracite/60">
+          Gérez les opérateurs et livreurs de la plateforme.
+        </p>
+      </div>
 
-      {state.error && (
-        <div className="animate-fade-in rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
-          {state.error}
-        </div>
+      {staff && staff.length > 0 && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
+            Équipe ({staff.length})
+          </h2>
+          <div className="overflow-x-auto rounded-xl border border-phoebe-pearl">
+            <table className="w-full min-w-[500px] text-sm">
+              <thead className="bg-phoebe-pearl/50">
+                <tr>
+                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                    Nom
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                    Contact
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                    Rôle
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                    Ajouté le
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-phoebe-pearl">
+                {staff.map((member) => (
+                  <tr key={member.id}>
+                    <td className="px-4 py-3 font-medium text-phoebe-anthracite">
+                      {member.nom}
+                    </td>
+                    <td className="px-4 py-3 text-phoebe-anthracite/70">
+                      {member.telephone || member.email || "—"}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                          member.role === "proprietaire"
+                            ? "bg-phoebe-gold/20 text-phoebe-gold"
+                            : member.role === "operateur"
+                              ? "bg-phoebe-green/10 text-phoebe-green-deep"
+                              : "bg-phoebe-pearl text-phoebe-anthracite/60"
+                        }`}
+                      >
+                        {roleLabels[member.role] ?? member.role}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-phoebe-anthracite/50">
+                      {new Date(member.created_at).toLocaleDateString("fr-FR")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
-      {state.success && (
-        <div className="animate-fade-in rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
-          Compte créé avec succès.
-        </div>
-      )}
 
-      <form action={action} className="space-y-4 rounded-xl border border-phoebe-pearl bg-white p-6">
-        <div>
-          <label htmlFor="nom" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Nom complet
-          </label>
-          <input
-            id="nom"
-            name="nom"
-            type="text"
-            required
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="telephone" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Téléphone
-          </label>
-          <input
-            id="telephone"
-            name="telephone"
-            type="tel"
-            required
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
-            placeholder="+225 XX XX XX XX XX"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="role" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Rôle
-          </label>
-          <select
-            id="role"
-            name="role"
-            required
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
-          >
-            <option value="">Choisir un rôle</option>
-            <option value="operateur">Opérateur</option>
-            <option value="livreur">Livreur</option>
-          </select>
-        </div>
-
-        <div>
-          <label htmlFor="password" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Mot de passe temporaire
-          </label>
-          <input
-            id="password"
-            name="password"
-            type="text"
-            required
-            minLength={8}
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
-            placeholder="8 caractères minimum"
-          />
-        </div>
-
-        <SubmitButton>Créer le compte</SubmitButton>
-      </form>
+      <section>
+        <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
+          Créer un compte
+        </h2>
+        <p className="mb-4 text-sm text-phoebe-anthracite/60">
+          Ces comptes ne passent pas par l&apos;inscription publique. Le
+          téléphone/email et le mot de passe temporaire sont définis par le
+          propriétaire.
+        </p>
+        <ComptesForm />
+      </section>
     </div>
   );
 }
