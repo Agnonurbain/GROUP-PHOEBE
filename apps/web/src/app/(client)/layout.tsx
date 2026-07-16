@@ -8,10 +8,15 @@ export default async function ClientLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims;
+  const claimsResult = await supabase.auth.getClaims();
+  console.log("LAYOUT getClaims:", JSON.stringify({ data: claimsResult.data, error: claimsResult.error?.message }));
+  const user = claimsResult.data?.claims;
 
-  if (!user) redirect("/connexion");
+  if (!user) {
+    const sessionResult = await supabase.auth.getSession();
+    console.log("LAYOUT getSession:", JSON.stringify({ session: !!sessionResult.data.session, error: sessionResult.error?.message }));
+    redirect("/connexion");
+  }
 
   return (
     <>

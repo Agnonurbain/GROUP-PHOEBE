@@ -28,10 +28,13 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const { data } = await supabase.auth.getClaims();
-  const user = data?.claims;
+  const claimsResult = await supabase.auth.getClaims();
+  const user = claimsResult.data?.claims;
 
   const pathname = request.nextUrl.pathname;
+  if (pathname.startsWith("/profil")) {
+    console.log("PROXY /profil:", JSON.stringify({ user: !!user, error: claimsResult.error?.message, cookies: request.cookies.getAll().filter(c => c.name.includes("auth-token")).map(c => c.name) }));
+  }
 
   // OAuth code landed on wrong page — forward to callback handler
   const code = request.nextUrl.searchParams.get("code");
