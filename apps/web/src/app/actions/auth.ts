@@ -238,5 +238,5 @@ export async function updateProfile(
 export async function deconnexion() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/connexion");
+  redirect("/");
 }

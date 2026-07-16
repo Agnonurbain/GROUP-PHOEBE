@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import VehiculeForm from "../vehicule-form";
 import { creerVehicule } from "@/app/actions/vehicules";
+import { BackLink } from "@/components/back-link";
 
 export default async function NouveauVehiculePage() {
   const supabase = await createClient();
@@ -13,6 +14,7 @@ export default async function NouveauVehiculePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <BackLink href="/admin/vehicules" label="Véhicules" />
       <h1 className="text-2xl font-bold text-phoebe-anthracite">
         Nouveau véhicule
       </h1>
