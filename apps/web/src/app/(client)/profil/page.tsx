@@ -30,6 +30,7 @@ export default async function ProfilPage() {
         telephone={profile.telephone}
         dateNaissance={profile.date_naissance}
         email={profile.email ?? null}
+        role={profile.role}
       />
 
       <div className="rounded-xl border border-phoebe-pearl bg-white p-6">

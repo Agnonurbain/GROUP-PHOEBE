@@ -9,11 +9,13 @@ export function ProfileEditForm({
   telephone,
   dateNaissance,
   email,
+  role,
 }: {
   nom: string;
   telephone: string | null;
   dateNaissance: string | null;
   email: string | null;
+  role: string;
 }) {
   const [editing, setEditing] = useState(false);
   const [state, action] = useActionState(updateProfile, {} as AuthState);
@@ -57,6 +59,12 @@ export function ProfileEditForm({
               {dateNaissance
                 ? new Date(dateNaissance).toLocaleDateString("fr-FR")
                 : "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-sm text-phoebe-anthracite/50">Role</dt>
+            <dd className="font-medium capitalize text-phoebe-anthracite">
+              {role}
             </dd>
           </div>
         </dl>
@@ -105,6 +113,16 @@ export function ProfileEditForm({
             className="w-full rounded-lg border border-phoebe-pearl px-3 py-2 text-sm text-phoebe-anthracite outline-none focus:border-phoebe-green"
           />
         </div>
+        {email && (
+          <div>
+            <span className="mb-1 block text-sm text-phoebe-anthracite/50">
+              Email
+            </span>
+            <p className="rounded-lg border border-phoebe-pearl bg-phoebe-pearl/30 px-3 py-2 text-sm text-phoebe-anthracite/70">
+              {email}
+            </p>
+          </div>
+        )}
         <div>
           <label
             htmlFor="telephone"
