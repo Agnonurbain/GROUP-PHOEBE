@@ -77,10 +77,16 @@ export default async function ProfilPage() {
           </p>
         )}
         {statut === "rejete" && (
-          <p className="mt-3 text-sm text-error/80">
-            Vos documents ont été rejetés. Veuillez les soumettre à nouveau avec
-            des documents lisibles et valides.
-          </p>
+          <div className="mt-3 space-y-1">
+            <p className="text-sm text-error/80">
+              Vos documents ont été rejetés. Veuillez les soumettre à nouveau.
+            </p>
+            {profile.motif_rejet && (
+              <p className="text-sm text-phoebe-anthracite/70">
+                <strong>Motif :</strong> {profile.motif_rejet}
+              </p>
+            )}
+          </div>
         )}
         {statut === "verifie" && (
           <p className="mt-3 text-sm text-phoebe-green-deep">

@@ -68,15 +68,22 @@ export async function validerVerification(
 }
 
 export async function rejeterVerification(
-  userId: string
+  userId: string,
+  motif: string
 ): Promise<AdminState> {
   await requireStaff();
+
+  if (!motif.trim()) {
+    return { error: "Le motif de rejet est obligatoire." };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase
     .from("users")
     .update({
       statut_verification: "rejete",
+      motif_rejet: motif.trim(),
       updated_at: new Date().toISOString(),
     })
     .eq("id", userId)

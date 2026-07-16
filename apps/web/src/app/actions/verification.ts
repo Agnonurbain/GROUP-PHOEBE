@@ -53,6 +53,7 @@ export async function soumettreDocuments(
       piece_identite_url: pieceUrl,
       permis_conduire_url: permisUrl,
       statut_verification: "documents_soumis",
+      motif_rejet: null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", user.sub);

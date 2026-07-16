@@ -98,6 +98,9 @@ export default async function VerificationsPage() {
                   <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                     Statut
                   </th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                    Motif
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-phoebe-pearl">
@@ -115,6 +118,9 @@ export default async function VerificationsPage() {
                           user.statut_verification as StatutVerification
                         }
                       />
+                    </td>
+                    <td className="px-4 py-3 text-sm text-phoebe-anthracite/70">
+                      {user.motif_rejet ?? "—"}
                     </td>
                   </tr>
                 ))}
