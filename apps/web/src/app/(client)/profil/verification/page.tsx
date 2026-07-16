@@ -28,8 +28,9 @@ export default async function VerificationPage() {
         </div>
         <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/10 p-6">
           <p className="text-sm text-phoebe-anthracite">
-            Vous devez renseigner votre <strong>date de naissance</strong>{" "}avant
-            de soumettre vos documents. L&apos;âge minimum requis est de 21 ans.
+            Vous devez renseigner votre <strong>date de naissance</strong>
+            {" "}avant de soumettre vos documents. L&apos;âge minimum requis
+            est de 21 ans.
           </p>
           <Link
             href="/profil"
