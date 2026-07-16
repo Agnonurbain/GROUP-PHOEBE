@@ -10,11 +10,12 @@ export async function Header() {
 
   let profile: { nom: string; role: string } | null = null;
   if (user) {
-    const { data } = await supabase
+    const { data, error: headerError } = await supabase
       .from("users")
       .select("*")
       .eq("id", user.sub)
       .single();
+    console.log("HEADER query:", JSON.stringify({ profile: !!data, error: headerError?.message, sub: user.sub }));
     profile = data;
   }
 

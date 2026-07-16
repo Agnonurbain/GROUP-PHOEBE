@@ -10,11 +10,13 @@ export default async function ProfilPage() {
   const user = claimsData?.claims;
   if (!user) redirect("/connexion");
 
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from("users")
     .select("*")
     .eq("id", user.sub)
     .single();
+
+  console.log("PROFIL query:", JSON.stringify({ profile: !!profile, error: profileError?.message, sub: user.sub }));
 
   if (!profile) redirect("/connexion");
 
