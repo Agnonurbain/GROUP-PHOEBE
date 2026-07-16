@@ -42,7 +42,7 @@ export default async function VerificationsPage() {
                     {user.nom}
                   </p>
                   <p className="text-sm text-phoebe-anthracite/60">
-                    {user.telephone}
+                    {user.telephone || user.email}
                     {user.date_naissance &&
                       ` · Né(e) le ${new Date(user.date_naissance).toLocaleDateString("fr-FR")}`}
                   </p>
@@ -93,7 +93,7 @@ export default async function VerificationsPage() {
                     Nom
                   </th>
                   <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
-                    Téléphone
+                    Contact
                   </th>
                   <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                     Statut
@@ -110,7 +110,7 @@ export default async function VerificationsPage() {
                       {user.nom}
                     </td>
                     <td className="px-4 py-3 text-phoebe-anthracite/70">
-                      {user.telephone}
+                      {user.telephone || user.email || "—"}
                     </td>
                     <td className="px-4 py-3">
                       <VerificationBadge
