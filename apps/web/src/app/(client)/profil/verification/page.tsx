@@ -7,6 +7,7 @@ import {
   type VerificationState,
 } from "@/app/actions/verification";
 import { SubmitButton } from "@/components/submit-button";
+import { BackLink } from "@/components/back-link";
 
 export default function VerificationPage() {
   const [state, action] = useActionState<VerificationState, FormData>(
@@ -39,7 +40,8 @@ export default function VerificationPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-phoebe-anthracite">
+        <BackLink href="/profil" label="Mon profil" />
+        <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">
           Vérification d&apos;identité
         </h1>
         <p className="mt-1 text-sm text-phoebe-anthracite/60">

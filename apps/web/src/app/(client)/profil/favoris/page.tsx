@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { FavoriButton } from "@/components/favori-button";
+import { BackLink } from "@/components/back-link";
 
 function formatPrice(val: number | null): string | null {
   if (!val) return null;
@@ -39,9 +40,12 @@ export default async function FavorisPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-phoebe-anthracite">
-        Mes favoris
-      </h1>
+      <div>
+        <BackLink href="/profil" label="Mon profil" />
+        <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">
+          Mes favoris
+        </h1>
+      </div>
 
       {vehicules && vehicules.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-2">

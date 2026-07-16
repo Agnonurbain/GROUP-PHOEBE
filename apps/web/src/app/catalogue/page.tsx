@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Suspense } from "react";
 import { Header } from "@/components/header";
 import { FavoriButton } from "@/components/favori-button";
+import { BackLink } from "@/components/back-link";
 import { createClient } from "@/lib/supabase/server";
 import Filtres from "./filtres";
 
@@ -244,7 +245,8 @@ export default async function CataloguePage({
     <>
       <Header />
       <main className="mx-auto max-w-6xl px-4 py-8">
-        <h1 className="mb-6 text-2xl font-bold text-phoebe-anthracite">
+        <BackLink href="/" label="Accueil" />
+        <h1 className="mb-6 mt-2 text-2xl font-bold text-phoebe-anthracite">
           Catalogue véhicules
         </h1>
 

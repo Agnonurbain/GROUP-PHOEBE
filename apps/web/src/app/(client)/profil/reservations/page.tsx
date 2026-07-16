@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { BackLink } from "@/components/back-link";
 import { ReservationCard } from "./reservation-card";
 
 export default async function ReservationsPage() {
@@ -26,7 +27,8 @@ export default async function ReservationsPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="mb-6 text-2xl font-bold text-phoebe-anthracite">
+      <BackLink href="/profil" label="Mon profil" />
+      <h1 className="mb-6 mt-2 text-2xl font-bold text-phoebe-anthracite">
         Mes réservations
       </h1>
 
