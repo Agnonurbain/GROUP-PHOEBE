@@ -16,14 +16,13 @@ function getAdmin() {
 
 async function requireStaff() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) throw new Error("Non authentifié");
   const { data: profile } = await supabase
     .from("users")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", user.sub)
     .single();
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
     throw new Error("Accès refusé");
@@ -136,9 +135,8 @@ export async function annulerParClient(
   demandeId: string
 ): Promise<DemandeActionState> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) return { error: "Non connecté." };
 
   const admin = getAdmin();
@@ -146,7 +144,7 @@ export async function annulerParClient(
     .from("demandes_transport")
     .select("*")
     .eq("id", demandeId)
-    .eq("client_id", user.id)
+    .eq("client_id", user.sub)
     .single();
 
   if (!demande) return { error: "Demande introuvable." };

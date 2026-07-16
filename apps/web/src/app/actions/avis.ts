@@ -10,9 +10,8 @@ export async function noterVehicule(
   formData: FormData
 ): Promise<AvisState> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) return { error: "Non connecté." };
 
   const demandeId = formData.get("demande_id") as string;
@@ -27,7 +26,7 @@ export async function noterVehicule(
     .from("demandes_transport")
     .select("id, client_id, vehicule_id, statut")
     .eq("id", demandeId)
-    .eq("client_id", user.id)
+    .eq("client_id", user.sub)
     .single();
 
   if (!demande) return { error: "Demande introuvable." };

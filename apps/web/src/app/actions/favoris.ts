@@ -5,15 +5,14 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function toggleFavori(vehiculeId: string) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) return { error: "Non authentifié" };
 
   const { data: existing } = await supabase
     .from("favoris")
     .select("id")
-    .eq("user_id", user.id)
+    .eq("user_id", user.sub)
     .eq("vehicule_id", vehiculeId)
     .maybeSingle();
 
@@ -22,7 +21,7 @@ export async function toggleFavori(vehiculeId: string) {
   } else {
     await supabase
       .from("favoris")
-      .insert({ user_id: user.id, vehicule_id: vehiculeId });
+      .insert({ user_id: user.sub, vehicule_id: vehiculeId });
   }
 
   revalidatePath("/catalogue");

@@ -19,15 +19,14 @@ export async function proposerPrix(
   formData: FormData
 ): Promise<PropositionState> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) return { error: "Non connecté." };
 
   const { data: profile } = await supabase
     .from("users")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", user.sub)
     .single();
   if (!profile || profile.role !== "operateur") {
     return { error: "Seuls les opérateurs peuvent proposer un prix." };
@@ -59,7 +58,7 @@ export async function proposerPrix(
 
   const { error } = await admin.from("propositions_prix").insert({
     vehicule_id: vehiculeId,
-    operateur_id: user.id,
+    operateur_id: user.sub,
     champ: champ as "prix_journalier" | "prix_mensuel" | "prix_vente",
     valeur_actuelle: valeurActuelle,
     valeur_proposee: valeurProposee,
@@ -78,15 +77,14 @@ export async function traiterProposition(
   formData: FormData
 ): Promise<PropositionState> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) return { error: "Non connecté." };
 
   const { data: profile } = await supabase
     .from("users")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", user.sub)
     .single();
   if (!profile || profile.role !== "proprietaire") {
     return { error: "Seul le propriétaire peut valider ou refuser." };

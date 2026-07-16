@@ -106,16 +106,15 @@ async function VehiculeGrid({
     if (!firstPhoto.has(p.vehicule_id)) firstPhoto.set(p.vehicule_id, p.url);
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
 
   const favoriIds = new Set<string>();
   if (user) {
     const { data: favs } = await supabase
       .from("favoris")
       .select("vehicule_id")
-      .eq("user_id", user.id);
+      .eq("user_id", user.sub);
     for (const f of favs ?? []) favoriIds.add(f.vehicule_id);
   }
 

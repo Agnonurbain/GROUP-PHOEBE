@@ -19,14 +19,13 @@ function getAdmin() {
 
 async function requireStaff() {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) throw new Error("Non authentifié");
   const { data: profile } = await supabase
     .from("users")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", user.sub)
     .single();
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
     throw new Error("Accès refusé");

@@ -28,15 +28,14 @@ export async function creerReservation(
   formData: FormData
 ): Promise<ReservationState> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) return { error: "Vous devez être connecté." };
 
   const { data: profile } = await supabase
     .from("users")
     .select("*")
-    .eq("id", user.id)
+    .eq("id", user.sub)
     .single();
 
   if (!profile) return { error: "Profil introuvable." };
@@ -179,7 +178,7 @@ export async function creerReservation(
   const { data: demande, error: demandeErr } = await admin
     .from("demandes_transport")
     .insert({
-      client_id: user.id,
+      client_id: user.sub,
       vehicule_id: vehiculeId,
       type: "reservation_directe",
       categorie: "classique",

@@ -52,16 +52,15 @@ export default async function VehiculeDetailPage({
     .eq("vehicule_id", id)
     .order("ordre", { ascending: true });
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
 
   let isFavori = false;
   if (user) {
     const { data } = await supabase
       .from("favoris")
       .select("id")
-      .eq("user_id", user.id)
+      .eq("user_id", user.sub)
       .eq("vehicule_id", id)
       .maybeSingle();
     isFavori = !!data;

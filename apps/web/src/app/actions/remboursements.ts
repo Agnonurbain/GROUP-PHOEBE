@@ -13,15 +13,14 @@ export async function marquerRembourse(
   formData: FormData
 ): Promise<RemboursementState> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
   if (!user) return { error: "Non authentifié." };
 
   const { data: profile } = await supabase
     .from("users")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", user.sub)
     .single();
 
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
