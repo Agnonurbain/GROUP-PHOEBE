@@ -54,22 +54,24 @@ export async function connexion(
   _prev: AuthState,
   formData: FormData
 ): Promise<AuthState> {
-  const telephone = formData.get("telephone") as string;
+  const identifiant = formData.get("identifiant") as string;
   const password = formData.get("password") as string;
 
-  if (!telephone || !password) {
+  if (!identifiant || !password) {
     return { error: "Tous les champs sont obligatoires." };
   }
 
   const supabase = await createClient();
+  const isEmail = identifiant.includes("@");
 
-  const { error } = await supabase.auth.signInWithPassword({
-    phone: telephone,
-    password,
-  });
+  const { error } = await supabase.auth.signInWithPassword(
+    isEmail
+      ? { email: identifiant, password }
+      : { phone: identifiant, password }
+  );
 
   if (error) {
-    return { error: "Numéro de téléphone ou mot de passe incorrect." };
+    return { error: "Identifiant ou mot de passe incorrect." };
   }
 
   redirect("/profil");

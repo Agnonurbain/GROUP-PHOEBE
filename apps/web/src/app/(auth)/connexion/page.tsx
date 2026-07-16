@@ -32,16 +32,16 @@ export default function ConnexionPage() {
 
       <form action={action} className="space-y-4">
         <div>
-          <label htmlFor="telephone" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Téléphone
+          <label htmlFor="identifiant" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+            Telephone ou email
           </label>
           <input
-            id="telephone"
-            name="telephone"
-            type="tel"
+            id="identifiant"
+            name="identifiant"
+            type="text"
             required
             className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
-            placeholder="+225 XX XX XX XX XX"
+            placeholder="+225 XX XX XX XX XX ou email"
           />
         </div>
 

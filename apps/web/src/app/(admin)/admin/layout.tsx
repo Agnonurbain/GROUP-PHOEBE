@@ -7,15 +7,16 @@ export default async function AdminShellLayout({
   children: React.ReactNode;
 }) {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", user!.id)
-    .single();
+  const { data: profile } = user
+    ? await supabase
+        .from("users")
+        .select("*")
+        .eq("id", user.sub)
+        .single()
+    : { data: null };
 
   const isProprietaire = profile?.role === "proprietaire";
 
