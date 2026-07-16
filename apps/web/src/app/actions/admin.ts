@@ -49,13 +49,14 @@ export type AdminState = {
 export async function validerVerification(
   userId: string
 ): Promise<AdminState> {
-  await requireStaff();
+  const staff = await requireStaff();
   const supabase = await createClient();
 
   const { error } = await supabase
     .from("users")
     .update({
       statut_verification: "verifie",
+      verifie_par: staff.userId,
       updated_at: new Date().toISOString(),
     })
     .eq("id", userId)
@@ -71,7 +72,7 @@ export async function rejeterVerification(
   userId: string,
   motif: string
 ): Promise<AdminState> {
-  await requireStaff();
+  const staff = await requireStaff();
 
   if (!motif.trim()) {
     return { error: "Le motif de rejet est obligatoire." };
@@ -84,6 +85,7 @@ export async function rejeterVerification(
     .update({
       statut_verification: "rejete",
       motif_rejet: motif.trim(),
+      verifie_par: staff.userId,
       updated_at: new Date().toISOString(),
     })
     .eq("id", userId)

@@ -20,6 +20,23 @@ export default async function VerificationsPage() {
     (u) => u.statut_verification !== "documents_soumis"
   );
 
+  const staffIds = [
+    ...new Set(
+      (others ?? []).map((u) => u.verifie_par).filter(Boolean) as string[]
+    ),
+  ];
+  const staffNames: Record<string, string> = {};
+  if (staffIds.length > 0) {
+    const { data: staffList } = await supabase
+      .from("users")
+      .select("id, nom, role")
+      .in("id", staffIds);
+    for (const s of staffList ?? []) {
+      const roleLabel = s.role === "proprietaire" ? "Propriétaire" : "Opérateur";
+      staffNames[s.id] = `${s.nom} (${roleLabel})`;
+    }
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-phoebe-anthracite">
@@ -86,7 +103,7 @@ export default async function VerificationsPage() {
             Historique
           </h2>
           <div className="overflow-x-auto rounded-xl border border-phoebe-pearl">
-            <table className="w-full min-w-[400px] text-sm">
+            <table className="w-full min-w-[500px] text-sm">
               <thead className="bg-phoebe-pearl/50">
                 <tr>
                   <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
@@ -97,6 +114,9 @@ export default async function VerificationsPage() {
                   </th>
                   <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                     Statut
+                  </th>
+                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                    Traité par
                   </th>
                   <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                     Motif
@@ -119,7 +139,10 @@ export default async function VerificationsPage() {
                         }
                       />
                     </td>
-                    <td className="px-4 py-3 text-sm text-phoebe-anthracite/70">
+                    <td className="px-4 py-3 text-phoebe-anthracite/70">
+                      {user.verifie_par ? staffNames[user.verifie_par] ?? "—" : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-phoebe-anthracite/70">
                       {user.motif_rejet ?? "—"}
                     </td>
                   </tr>
