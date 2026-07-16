@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Header } from "@/components/header";
+import { createClient } from "@/lib/supabase/server";
 
 const services = [
   {
@@ -48,7 +49,11 @@ const services = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+
   return (
     <>
       <Header />
@@ -69,12 +74,21 @@ export default function Home() {
             >
               Voir le catalogue
             </Link>
-            <Link
-              href="/inscription"
-              className="rounded-lg border border-phoebe-anthracite/20 px-6 py-3 font-medium text-phoebe-anthracite transition-colors hover:border-phoebe-green hover:text-phoebe-green"
-            >
-              Créer un compte
-            </Link>
+            {user ? (
+              <Link
+                href="/profil"
+                className="rounded-lg border border-phoebe-anthracite/20 px-6 py-3 font-medium text-phoebe-anthracite transition-colors hover:border-phoebe-green hover:text-phoebe-green"
+              >
+                Mon profil
+              </Link>
+            ) : (
+              <Link
+                href="/inscription"
+                className="rounded-lg border border-phoebe-anthracite/20 px-6 py-3 font-medium text-phoebe-anthracite transition-colors hover:border-phoebe-green hover:text-phoebe-green"
+              >
+                Créer un compte
+              </Link>
+            )}
           </div>
         </section>
 
@@ -104,21 +118,23 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-6xl px-4 py-16 text-center md:py-20">
-          <h2 className="mb-4 text-2xl font-bold text-phoebe-anthracite md:text-3xl">
-            Prêt à commencer ?
-          </h2>
-          <p className="mb-6 text-phoebe-anthracite/60">
-            Inscrivez-vous gratuitement et réservez votre premier trajet en
-            quelques minutes.
-          </p>
-          <Link
-            href="/inscription"
-            className="inline-block rounded-lg bg-phoebe-green px-8 py-3 font-medium text-white transition-colors hover:bg-phoebe-green-deep"
-          >
-            S&apos;inscrire maintenant
-          </Link>
-        </section>
+        {!user && (
+          <section className="mx-auto max-w-6xl px-4 py-16 text-center md:py-20">
+            <h2 className="mb-4 text-2xl font-bold text-phoebe-anthracite md:text-3xl">
+              Prêt à commencer ?
+            </h2>
+            <p className="mb-6 text-phoebe-anthracite/60">
+              Inscrivez-vous gratuitement et réservez votre premier trajet en
+              quelques minutes.
+            </p>
+            <Link
+              href="/inscription"
+              className="inline-block rounded-lg bg-phoebe-green px-8 py-3 font-medium text-white transition-colors hover:bg-phoebe-green-deep"
+            >
+              S&apos;inscrire maintenant
+            </Link>
+          </section>
+        )}
       </main>
 
       <footer className="border-t border-phoebe-pearl py-8 text-center text-sm text-phoebe-anthracite/40">
