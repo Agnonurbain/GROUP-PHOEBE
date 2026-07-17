@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { VerificationBadge } from "@/components/verification-badge";
 import { VerificationActions } from "./actions-client";
+import { getSignedDocUrl } from "@/lib/storage";
 import type { StatutVerification } from "@/lib/auth";
 
 export default async function VerificationsPage() {
@@ -40,6 +41,15 @@ export default async function VerificationsPage() {
     }
   }
 
+  const signedUrls: Record<string, { piece: string | null; permis: string | null }> = {};
+  for (const u of pending ?? []) {
+    const [piece, permis] = await Promise.all([
+      getSignedDocUrl(supabase, u.piece_identite_url),
+      getSignedDocUrl(supabase, u.permis_conduire_url),
+    ]);
+    signedUrls[u.id] = { piece, permis };
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-phoebe-anthracite">
@@ -67,9 +77,9 @@ export default async function VerificationsPage() {
                       ` · Né(e) le ${new Date(user.date_naissance).toLocaleDateString("fr-FR")}`}
                   </p>
                   <div className="flex gap-3 pt-1 text-xs">
-                    {user.piece_identite_url && (
+                    {signedUrls[user.id]?.piece && (
                       <a
-                        href={user.piece_identite_url}
+                        href={signedUrls[user.id].piece!}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-phoebe-green underline hover:text-phoebe-green-deep"
@@ -77,9 +87,9 @@ export default async function VerificationsPage() {
                         Pièce d&apos;identité
                       </a>
                     )}
-                    {user.permis_conduire_url && (
+                    {signedUrls[user.id]?.permis && (
                       <a
-                        href={user.permis_conduire_url}
+                        href={signedUrls[user.id].permis!}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-phoebe-green underline hover:text-phoebe-green-deep"

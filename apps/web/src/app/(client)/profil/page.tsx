@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { VerificationBadge } from "@/components/verification-badge";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 import { BackLink } from "@/components/back-link";
+import { getSignedDocUrl } from "@/lib/storage";
 import type { StatutVerification } from "@/lib/auth";
 
 export default async function ProfilPage() {
@@ -21,6 +22,11 @@ export default async function ProfilPage() {
   if (!profile) redirect("/connexion");
 
   const statut = profile.statut_verification as StatutVerification;
+
+  const [pieceUrl, permisUrl] = await Promise.all([
+    getSignedDocUrl(supabase, profile.piece_identite_url),
+    getSignedDocUrl(supabase, profile.permis_conduire_url),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -76,11 +82,11 @@ export default async function ProfilPage() {
             <p className="text-sm text-phoebe-anthracite/60">
               Vos documents sont en cours de vérification par notre équipe.
             </p>
-            {(profile.piece_identite_url || profile.permis_conduire_url) && (
+            {(pieceUrl || permisUrl) && (
               <div className="flex gap-3 text-xs">
-                {profile.piece_identite_url && (
+                {pieceUrl && (
                   <a
-                    href={profile.piece_identite_url}
+                    href={pieceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-phoebe-green underline hover:text-phoebe-green-deep"
@@ -88,9 +94,9 @@ export default async function ProfilPage() {
                     Pièce d&apos;identité
                   </a>
                 )}
-                {profile.permis_conduire_url && (
+                {permisUrl && (
                   <a
-                    href={profile.permis_conduire_url}
+                    href={permisUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-phoebe-green underline hover:text-phoebe-green-deep"
@@ -112,11 +118,11 @@ export default async function ProfilPage() {
                 <strong>Motif :</strong> {profile.motif_rejet}
               </p>
             )}
-            {(profile.piece_identite_url || profile.permis_conduire_url) && (
+            {(pieceUrl || permisUrl) && (
               <div className="flex gap-3 text-xs">
-                {profile.piece_identite_url && (
+                {pieceUrl && (
                   <a
-                    href={profile.piece_identite_url}
+                    href={pieceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-phoebe-anthracite/60 underline hover:text-phoebe-green"
@@ -124,9 +130,9 @@ export default async function ProfilPage() {
                     Pièce d&apos;identité soumise
                   </a>
                 )}
-                {profile.permis_conduire_url && (
+                {permisUrl && (
                   <a
-                    href={profile.permis_conduire_url}
+                    href={permisUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-phoebe-anthracite/60 underline hover:text-phoebe-green"
@@ -143,11 +149,11 @@ export default async function ProfilPage() {
             <p className="text-sm text-phoebe-green-deep">
               Votre identité est vérifiée. Vous pouvez effectuer des réservations.
             </p>
-            {(profile.piece_identite_url || profile.permis_conduire_url) && (
+            {(pieceUrl || permisUrl) && (
               <div className="flex gap-3 text-xs">
-                {profile.piece_identite_url && (
+                {pieceUrl && (
                   <a
-                    href={profile.piece_identite_url}
+                    href={pieceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-phoebe-green underline hover:text-phoebe-green-deep"
@@ -155,9 +161,9 @@ export default async function ProfilPage() {
                     Pièce d&apos;identité
                   </a>
                 )}
-                {profile.permis_conduire_url && (
+                {permisUrl && (
                   <a
-                    href={profile.permis_conduire_url}
+                    href={permisUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-phoebe-green underline hover:text-phoebe-green-deep"

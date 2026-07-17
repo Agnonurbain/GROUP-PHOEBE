@@ -43,9 +43,8 @@ export async function soumettreDocuments(
     .upload(`${user.sub}/permis_conduire.${ext2}`, permisConduire, { upsert: true });
   if (err2) return { error: `Erreur upload permis de conduire : ${err2.message}` };
 
-  const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const pieceUrl = `${baseUrl}/storage/v1/object/identity-documents/${user.sub}/piece_identite.${ext1}`;
-  const permisUrl = `${baseUrl}/storage/v1/object/identity-documents/${user.sub}/permis_conduire.${ext2}`;
+  const pieceUrl = `${user.sub}/piece_identite.${ext1}`;
+  const permisUrl = `${user.sub}/permis_conduire.${ext2}`;
 
   const { error: updateError } = await supabase
     .from("users")
