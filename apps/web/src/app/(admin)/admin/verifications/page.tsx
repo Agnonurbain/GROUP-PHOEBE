@@ -6,6 +6,9 @@ import type { StatutVerification } from "@/lib/auth";
 export default async function VerificationsPage() {
   const supabase = await createClient();
 
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const currentUserId = claimsData?.claims?.sub as string;
+
   const { data: users } = await supabase
     .from("users")
     .select("*")
@@ -33,7 +36,7 @@ export default async function VerificationsPage() {
       .in("id", staffIds);
     for (const s of staffList ?? []) {
       const roleLabel = s.role === "proprietaire" ? "Propriétaire" : "Opérateur";
-      staffNames[s.id] = `${s.nom} (${roleLabel})`;
+      staffNames[s.id] = s.id === currentUserId ? "Moi" : `${s.nom} (${roleLabel})`;
     }
   }
 

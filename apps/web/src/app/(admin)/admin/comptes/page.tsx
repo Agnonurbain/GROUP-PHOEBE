@@ -1,8 +1,22 @@
 import { createClient } from "@/lib/supabase/server";
 import { ComptesForm } from "./comptes-form";
+import { DeleteAccountButton } from "./delete-button";
 
 export default async function ComptesPage() {
   const supabase = await createClient();
+
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const currentUser = claimsData?.claims;
+
+  const { data: currentProfile } = currentUser
+    ? await supabase
+        .from("users")
+        .select("role")
+        .eq("id", currentUser.sub)
+        .single()
+    : { data: null };
+
+  const isProprietaire = currentProfile?.role === "proprietaire";
 
   const { data: staff } = await supabase
     .from("users")
@@ -49,6 +63,11 @@ export default async function ComptesPage() {
                   <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                     Ajouté le
                   </th>
+                  {isProprietaire && (
+                    <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                      Actions
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-phoebe-pearl">
@@ -76,6 +95,16 @@ export default async function ComptesPage() {
                     <td className="px-4 py-3 text-phoebe-anthracite/50">
                       {new Date(member.created_at).toLocaleDateString("fr-FR")}
                     </td>
+                    {isProprietaire && (
+                      <td className="px-4 py-3">
+                        {member.role !== "proprietaire" && (
+                          <DeleteAccountButton
+                            userId={member.id}
+                            nom={member.nom}
+                          />
+                        )}
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
@@ -84,17 +113,19 @@ export default async function ComptesPage() {
         </section>
       )}
 
-      <section>
-        <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
-          Créer un compte
-        </h2>
-        <p className="mb-4 text-sm text-phoebe-anthracite/60">
-          Ces comptes ne passent pas par l&apos;inscription publique. Le
-          téléphone/email et le mot de passe temporaire sont définis par le
-          propriétaire.
-        </p>
-        <ComptesForm />
-      </section>
+      {isProprietaire && (
+        <section>
+          <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
+            Créer un compte
+          </h2>
+          <p className="mb-4 text-sm text-phoebe-anthracite/60">
+            Ces comptes ne passent pas par l&apos;inscription publique. Le
+            téléphone/email et le mot de passe temporaire sont définis par le
+            propriétaire.
+          </p>
+          <ComptesForm />
+        </section>
+      )}
     </div>
   );
 }

@@ -163,3 +163,44 @@ export async function creerCompteInterne(
   revalidatePath("/admin/comptes");
   return { success: true };
 }
+
+export async function supprimerCompteInterne(
+  userId: string,
+  motif: string
+): Promise<AdminState> {
+  const staff = await requireStaff();
+  if (staff.role !== "proprietaire") {
+    return { error: "Seul le propriétaire peut supprimer des comptes." };
+  }
+
+  if (!motif.trim()) {
+    return { error: "Le motif de suppression est obligatoire." };
+  }
+
+  const supabase = await createClient();
+  const { data: target } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", userId)
+    .single();
+
+  if (!target || !["operateur", "livreur"].includes(target.role)) {
+    return { error: "Ce compte ne peut pas être supprimé." };
+  }
+
+  const admin = createAdminClient();
+
+  const { error: delPublic } = await admin
+    .from("users")
+    .delete()
+    .eq("id", userId);
+
+  if (delPublic) return { error: delPublic.message };
+
+  const { error: delAuth } = await admin.auth.admin.deleteUser(userId);
+
+  if (delAuth) return { error: delAuth.message };
+
+  revalidatePath("/admin/comptes");
+  return { success: true };
+}
