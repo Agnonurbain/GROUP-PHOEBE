@@ -72,12 +72,38 @@ export default async function ProfilPage() {
           </p>
         )}
         {statut === "documents_soumis" && (
-          <p className="mt-3 text-sm text-phoebe-anthracite/60">
-            Vos documents sont en cours de vérification par notre équipe.
-          </p>
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-phoebe-anthracite/60">
+              Vos documents sont en cours de vérification par notre équipe.
+            </p>
+            {(profile.piece_identite_url || profile.permis_conduire_url) && (
+              <div className="flex gap-3 text-xs">
+                {profile.piece_identite_url && (
+                  <a
+                    href={profile.piece_identite_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                  >
+                    Pièce d&apos;identité
+                  </a>
+                )}
+                {profile.permis_conduire_url && (
+                  <a
+                    href={profile.permis_conduire_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                  >
+                    Permis de conduire
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
         )}
         {statut === "rejete" && (
-          <div className="mt-3 space-y-1">
+          <div className="mt-3 space-y-2">
             <p className="text-sm text-error/80">
               Vos documents ont été rejetés. Veuillez les soumettre à nouveau.
             </p>
@@ -86,12 +112,62 @@ export default async function ProfilPage() {
                 <strong>Motif :</strong> {profile.motif_rejet}
               </p>
             )}
+            {(profile.piece_identite_url || profile.permis_conduire_url) && (
+              <div className="flex gap-3 text-xs">
+                {profile.piece_identite_url && (
+                  <a
+                    href={profile.piece_identite_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-phoebe-anthracite/60 underline hover:text-phoebe-green"
+                  >
+                    Pièce d&apos;identité soumise
+                  </a>
+                )}
+                {profile.permis_conduire_url && (
+                  <a
+                    href={profile.permis_conduire_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-phoebe-anthracite/60 underline hover:text-phoebe-green"
+                  >
+                    Permis soumis
+                  </a>
+                )}
+              </div>
+            )}
           </div>
         )}
         {statut === "verifie" && (
-          <p className="mt-3 text-sm text-phoebe-green-deep">
-            Votre identité est vérifiée. Vous pouvez effectuer des réservations.
-          </p>
+          <div className="mt-3 space-y-2">
+            <p className="text-sm text-phoebe-green-deep">
+              Votre identité est vérifiée. Vous pouvez effectuer des réservations.
+            </p>
+            {(profile.piece_identite_url || profile.permis_conduire_url) && (
+              <div className="flex gap-3 text-xs">
+                {profile.piece_identite_url && (
+                  <a
+                    href={profile.piece_identite_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                  >
+                    Pièce d&apos;identité
+                  </a>
+                )}
+                {profile.permis_conduire_url && (
+                  <a
+                    href={profile.permis_conduire_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                  >
+                    Permis de conduire
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
