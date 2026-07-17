@@ -15,7 +15,7 @@ export function NavLink({
   badgeColor?: string;
 }) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/admin" && pathname.startsWith(href));
+  const isActive = pathname === href || (href !== "/admin" && pathname.startsWith(href + "/"));
 
   return (
     <Link

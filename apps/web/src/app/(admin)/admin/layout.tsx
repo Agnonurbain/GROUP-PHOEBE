@@ -56,6 +56,7 @@ export default async function AdminShellLayout({
             </NavLink>
             <NavLink href="/admin/vehicules">Véhicules</NavLink>
             <NavLink href="/admin/verifications">Vérifications</NavLink>
+            <NavLink href="/admin/verifications/historique">Historique vérif.</NavLink>
             {isProprietaire && (
               <NavLink href="/admin/remboursements" badge={nbRemboursements} badgeColor="bg-error">
                 Remboursements
