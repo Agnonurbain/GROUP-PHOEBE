@@ -5,6 +5,7 @@ import { Header } from "@/components/header";
 import { FavoriButton } from "@/components/favori-button";
 import { DisponibiliteChecker } from "@/components/disponibilite-checker";
 import { createClient } from "@/lib/supabase/server";
+import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   disponible: {
@@ -36,6 +37,7 @@ export default async function VehiculeDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  await expirerReservationsAbandonnees();
   const supabase = await createClient();
 
   const { data: v } = await supabase
