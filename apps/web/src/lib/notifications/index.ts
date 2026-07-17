@@ -150,7 +150,7 @@ export async function notifierClient(
     userId: clientId,
     evenement,
     contenu,
-    telephone: user.telephone,
+    telephone: user.telephone ?? undefined,
     email: user.email ?? undefined,
   });
 }

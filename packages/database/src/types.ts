@@ -453,7 +453,7 @@ export type Database = {
           kilometrage_retour?: number | null
           methode_paiement?: string | null
           montant?: number | null
-          periode?: string | null
+          periode?: unknown
           statut?: string
           type: string
           updated_at?: string
@@ -479,7 +479,7 @@ export type Database = {
           kilometrage_retour?: number | null
           methode_paiement?: string | null
           montant?: number | null
-          periode?: string | null
+          periode?: unknown
           statut?: string
           type?: string
           updated_at?: string
@@ -524,7 +524,7 @@ export type Database = {
         Update: {
           chauffeur_id?: string
           id?: string
-          periode?: string | null
+          periode?: unknown
         }
         Relationships: [
           {
@@ -551,7 +551,7 @@ export type Database = {
         }
         Update: {
           id?: string
-          periode?: string | null
+          periode?: unknown
           type?: string
           vehicule_id?: string
         }
@@ -967,13 +967,15 @@ export type Database = {
           date_naissance: string | null
           email: string | null
           id: string
+          motif_rejet: string | null
           nom: string
           permis_conduire_url: string | null
           piece_identite_url: string | null
           role: string
           statut_verification: string
-          telephone: string
+          telephone: string | null
           updated_at: string
+          verifie_par: string | null
         }
         Insert: {
           agence_id?: string | null
@@ -981,13 +983,15 @@ export type Database = {
           date_naissance?: string | null
           email?: string | null
           id?: string
+          motif_rejet?: string | null
           nom: string
           permis_conduire_url?: string | null
           piece_identite_url?: string | null
           role: string
           statut_verification?: string
-          telephone: string
+          telephone?: string | null
           updated_at?: string
+          verifie_par?: string | null
         }
         Update: {
           agence_id?: string | null
@@ -995,13 +999,15 @@ export type Database = {
           date_naissance?: string | null
           email?: string | null
           id?: string
+          motif_rejet?: string | null
           nom?: string
           permis_conduire_url?: string | null
           piece_identite_url?: string | null
           role?: string
           statut_verification?: string
-          telephone?: string
+          telephone?: string | null
           updated_at?: string
+          verifie_par?: string | null
         }
         Relationships: [
           {
@@ -1009,6 +1015,13 @@ export type Database = {
             columns: ["agence_id"]
             isOneToOne: false
             referencedRelation: "agences"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_verifie_par_fkey"
+            columns: ["verifie_par"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -1227,6 +1240,9 @@ export type Database = {
       expirer_demandes_sans_reponse: { Args: never; Returns: number }
       expirer_non_presentations: { Args: never; Returns: number }
       expirer_reservations_abandonnees: { Args: never; Returns: number }
+      is_staff: { Args: never; Returns: boolean }
+      own_role: { Args: never; Returns: string }
+      own_statut_verification: { Args: never; Returns: string }
       sync_vehicule_chauffeurs: {
         Args: { p_chauffeur_ids: string[]; p_vehicule_id: string }
         Returns: undefined
