@@ -22,6 +22,9 @@ type Permission =
   | "refuser_demande"
   | "etat_lieux"
   | "creer_compte_interne"
+  | "supprimer_compte_interne"
+  | "valider_verification"
+  | "rejeter_verification"
   | "voir_dashboard"
   | "voir_remboursements"
   | "voir_propositions";
@@ -36,6 +39,9 @@ const PERMISSIONS: Record<Permission, Role[]> = {
   refuser_demande: ["operateur", "proprietaire"],
   etat_lieux: ["operateur", "proprietaire"],
   creer_compte_interne: ["proprietaire"],
+  supprimer_compte_interne: ["proprietaire"],
+  valider_verification: ["operateur", "proprietaire"],
+  rejeter_verification: ["operateur", "proprietaire"],
   voir_dashboard: ["proprietaire"],
   voir_remboursements: ["proprietaire"],
   voir_propositions: ["proprietaire"],
@@ -86,6 +92,18 @@ describe("Matrice de permissions — Opérateur", () => {
     expect(hasPermission(role, "creer_compte_interne")).toBe(false);
   });
 
+  it("ne peut PAS supprimer un compte interne", () => {
+    expect(hasPermission(role, "supprimer_compte_interne")).toBe(false);
+  });
+
+  it("peut valider une vérification d'identité", () => {
+    expect(hasPermission(role, "valider_verification")).toBe(true);
+  });
+
+  it("peut rejeter une vérification d'identité", () => {
+    expect(hasPermission(role, "rejeter_verification")).toBe(true);
+  });
+
   it("ne peut PAS voir le tableau de bord financier", () => {
     expect(hasPermission(role, "voir_dashboard")).toBe(false);
   });
@@ -116,6 +134,18 @@ describe("Matrice de permissions — Propriétaire", () => {
 
   it("peut créer un compte interne", () => {
     expect(hasPermission(role, "creer_compte_interne")).toBe(true);
+  });
+
+  it("peut supprimer un compte interne", () => {
+    expect(hasPermission(role, "supprimer_compte_interne")).toBe(true);
+  });
+
+  it("peut valider une vérification d'identité", () => {
+    expect(hasPermission(role, "valider_verification")).toBe(true);
+  });
+
+  it("peut rejeter une vérification d'identité", () => {
+    expect(hasPermission(role, "rejeter_verification")).toBe(true);
   });
 
   it("peut voir le tableau de bord", () => {
@@ -157,6 +187,15 @@ describe("Matrice de permissions — Client", () => {
 
   it("ne peut PAS créer un compte interne", () => {
     expect(hasPermission(role, "creer_compte_interne")).toBe(false);
+  });
+
+  it("ne peut PAS valider ou rejeter une vérification", () => {
+    expect(hasPermission(role, "valider_verification")).toBe(false);
+    expect(hasPermission(role, "rejeter_verification")).toBe(false);
+  });
+
+  it("ne peut PAS supprimer un compte interne", () => {
+    expect(hasPermission(role, "supprimer_compte_interne")).toBe(false);
   });
 
   it("ne peut PAS voir le dashboard ni les remboursements", () => {

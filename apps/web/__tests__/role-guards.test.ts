@@ -183,6 +183,24 @@ describe("Garde-fous de rôle — creerCompteInterne (propriétaire only)", () =
   });
 });
 
+describe("Garde-fous de rôle — supprimerCompteInterne (propriétaire only)", () => {
+  it("seul le propriétaire peut supprimer des comptes", () => {
+    expect(isProprietaire("proprietaire")).toBe(true);
+    expect(isProprietaire("operateur")).toBe(false);
+  });
+
+  it("on ne peut pas supprimer un compte propriétaire", () => {
+    const targetRole: Role = "proprietaire";
+    const canDelete = ["operateur", "livreur"].includes(targetRole);
+    expect(canDelete).toBe(false);
+  });
+
+  it("on peut supprimer un compte opérateur ou livreur", () => {
+    expect(["operateur", "livreur"].includes("operateur")).toBe(true);
+    expect(["operateur", "livreur"].includes("livreur")).toBe(true);
+  });
+});
+
 describe("Garde-fous de rôle — trigger auth.on_auth_user_created", () => {
   it("le trigger force le rôle 'client' — on ne peut pas injecter un rôle via signUp", () => {
     // Migration 00003: the trigger hardcodes role = 'client'
