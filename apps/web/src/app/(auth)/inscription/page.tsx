@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useMemo } from "react";
+import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { inscription, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
@@ -9,6 +9,7 @@ import { GoogleButton } from "@/components/google-button";
 
 export default function InscriptionPage() {
   const [state, action] = useActionState<AuthState, FormData>(inscription, {});
+  const [mode, setMode] = useState<"phone" | "email">("phone");
 
   const maxDate = useMemo(() => {
     const d = new Date();
@@ -28,6 +29,13 @@ export default function InscriptionPage() {
         </div>
       )}
 
+      {state.phone === "email_sent" && (
+        <div className="animate-fade-in mb-4 rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
+          <p className="font-medium">Compte créé avec succès !</p>
+          <p className="mt-1">Un email de confirmation a été envoyé. Vérifiez votre boîte de réception pour activer votre compte.</p>
+        </div>
+      )}
+
       <GoogleButton label="S'inscrire avec Google" />
 
       <div className="my-5 flex items-center gap-3">
@@ -36,7 +44,34 @@ export default function InscriptionPage() {
         <div className="h-px flex-1 bg-phoebe-anthracite/15" />
       </div>
 
+      <div className="mb-4 flex gap-2">
+        <button
+          type="button"
+          onClick={() => setMode("phone")}
+          className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            mode === "phone"
+              ? "bg-phoebe-green text-white shadow-sm"
+              : "bg-phoebe-pearl text-phoebe-anthracite/60 hover:bg-phoebe-pearl/80"
+          }`}
+        >
+          Par téléphone
+        </button>
+        <button
+          type="button"
+          onClick={() => setMode("email")}
+          className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+            mode === "email"
+              ? "bg-phoebe-green text-white shadow-sm"
+              : "bg-phoebe-pearl text-phoebe-anthracite/60 hover:bg-phoebe-pearl/80"
+          }`}
+        >
+          Par email
+        </button>
+      </div>
+
       <form action={action} className="space-y-4">
+        <input type="hidden" name="mode" value={mode} />
+
         <div>
           <label htmlFor="nom" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
             Nom complet
@@ -51,19 +86,35 @@ export default function InscriptionPage() {
           />
         </div>
 
-        <div>
-          <label htmlFor="telephone" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Téléphone
-          </label>
-          <input
-            id="telephone"
-            name="telephone"
-            type="tel"
-            required
-            className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
-            placeholder="+225 XX XX XX XX XX"
-          />
-        </div>
+        {mode === "phone" ? (
+          <div>
+            <label htmlFor="telephone" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+              Téléphone
+            </label>
+            <input
+              id="telephone"
+              name="telephone"
+              type="tel"
+              required
+              className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
+              placeholder="+225 XX XX XX XX XX"
+            />
+          </div>
+        ) : (
+          <div>
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+              Adresse email
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
+              placeholder="exemple@email.com"
+            />
+          </div>
+        )}
 
         <div>
           <label htmlFor="date_naissance" className="mb-1 block text-sm font-medium text-phoebe-anthracite">

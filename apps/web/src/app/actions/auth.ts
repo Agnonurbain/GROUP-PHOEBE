@@ -14,11 +14,15 @@ export async function inscription(
   formData: FormData
 ): Promise<AuthState> {
   const nom = formData.get("nom") as string;
+  const mode = formData.get("mode") as string;
   const telephone = formData.get("telephone") as string;
+  const email = formData.get("email") as string;
   const dateNaissance = formData.get("date_naissance") as string;
   const password = formData.get("password") as string;
 
-  if (!nom || !telephone || !dateNaissance || !password) {
+  const identifiant = mode === "email" ? email : telephone;
+
+  if (!nom || !identifiant || !dateNaissance || !password) {
     return { error: "Tous les champs sont obligatoires." };
   }
 
@@ -32,19 +36,40 @@ export async function inscription(
 
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signUp({
-    phone: telephone,
-    password,
-    options: {
-      data: { nom, date_naissance: dateNaissance, role: "client" },
-    },
-  });
+  const credentials =
+    mode === "email"
+      ? {
+          email,
+          password,
+          options: {
+            data: { nom, date_naissance: dateNaissance, role: "client" },
+            emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/connexion`,
+          },
+        }
+      : {
+          phone: telephone,
+          password,
+          options: {
+            data: { nom, date_naissance: dateNaissance, role: "client" },
+          },
+        };
+
+  const { error } = await supabase.auth.signUp(credentials);
 
   if (error) {
     if (error.message.includes("already registered")) {
-      return { error: "Ce numéro de téléphone est déjà utilisé." };
+      return {
+        error:
+          mode === "email"
+            ? "Cette adresse email est déjà utilisée."
+            : "Ce numéro de téléphone est déjà utilisé.",
+      };
     }
     return { error: error.message };
+  }
+
+  if (mode === "email") {
+    return { phone: "email_sent" };
   }
 
   redirect(`/verifier-otp?phone=${encodeURIComponent(telephone)}`);
