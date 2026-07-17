@@ -43,13 +43,13 @@ export function DemandeActions({
         <div className="flex gap-2">
           <form action={acceptAction}>
             <input type="hidden" name="demande_id" value={demandeId} />
-            <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white hover:bg-phoebe-green/90">
+            <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md">
               Accepter
             </SubmitButton>
           </form>
           <form action={refusAction}>
             <input type="hidden" name="demande_id" value={demandeId} />
-            <SubmitButton className="rounded-lg bg-error/10 px-3 py-1.5 text-xs font-medium text-error hover:bg-error/20">
+            <SubmitButton className="rounded-lg border border-error/20 bg-error/5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error hover:text-white hover:shadow-md">
               Refuser
             </SubmitButton>
           </form>
@@ -59,7 +59,7 @@ export function DemandeActions({
       {(statut === "acceptee" || statut === "en_cours") && (
         <Link
           href={`/admin/demandes/${demandeId}/etat-lieux`}
-          className="rounded-lg bg-phoebe-pearl px-3 py-1.5 text-xs font-medium text-phoebe-anthracite hover:bg-phoebe-pearl/80"
+          className="rounded-lg bg-phoebe-pearl px-3 py-1.5 text-xs font-medium text-phoebe-anthracite shadow-sm hover:bg-phoebe-green/10 hover:text-phoebe-green hover:shadow-md"
         >
           État des lieux
         </Link>

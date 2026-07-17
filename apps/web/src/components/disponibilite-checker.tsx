@@ -84,7 +84,7 @@ export function DisponibiliteChecker({
         <button
           type="submit"
           disabled={isPending}
-          className="w-full rounded-lg bg-phoebe-green px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-phoebe-green-deep disabled:opacity-50"
+          className="w-full rounded-xl bg-phoebe-green px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md disabled:opacity-50"
         >
           {isPending ? "Vérification…" : "Vérifier"}
         </button>

@@ -84,7 +84,7 @@ export function ProposerPrixForm({
           </label>
           <input name="commentaire" className={inputClass} placeholder="Raison de la modification" />
         </div>
-        <SubmitButton className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white hover:bg-phoebe-gold/90">
+        <SubmitButton className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/80 hover:shadow-md">
           Envoyer la proposition
         </SubmitButton>
       </form>

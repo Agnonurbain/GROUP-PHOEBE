@@ -16,8 +16,8 @@ export function MarquerRembourse({ paiementId }: { paiementId: string }) {
       {state.success ? (
         <span className="text-xs font-medium text-phoebe-green">Fait</span>
       ) : (
-        <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white hover:bg-phoebe-green/90">
-          Marquer remboursé
+        <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md">
+          Marquer rembourse
         </SubmitButton>
       )}
     </form>

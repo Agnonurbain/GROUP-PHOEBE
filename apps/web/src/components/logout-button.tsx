@@ -31,14 +31,14 @@ export function LogoutButton({ className }: { className?: string }) {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-lg border border-phoebe-pearl px-4 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl"
+                className="rounded-lg border border-phoebe-pearl px-4 py-2 text-sm text-phoebe-anthracite/70 hover:bg-phoebe-pearl hover:shadow-sm"
               >
                 Annuler
               </button>
               <form action={deconnexion}>
                 <button
                   type="submit"
-                  className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-error/90"
+                  className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-error/90 hover:shadow-md"
                 >
                   Se déconnecter
                 </button>

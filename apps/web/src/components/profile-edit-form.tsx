@@ -29,7 +29,7 @@ export function ProfileEditForm({
           </h2>
           <button
             onClick={() => setEditing(true)}
-            className="rounded-lg border border-phoebe-anthracite/20 px-3 py-1.5 text-sm text-phoebe-anthracite/70 transition-colors hover:border-phoebe-green hover:text-phoebe-green"
+            className="rounded-lg border border-phoebe-anthracite/20 px-3 py-1.5 text-sm text-phoebe-anthracite/70 hover:border-phoebe-green hover:text-phoebe-green hover:shadow-sm"
           >
             Modifier
           </button>
@@ -84,7 +84,7 @@ export function ProfileEditForm({
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="rounded-lg border border-phoebe-anthracite/20 px-3 py-1.5 text-sm text-phoebe-anthracite/70 transition-colors hover:border-error hover:text-error"
+          className="rounded-lg border border-phoebe-anthracite/20 px-3 py-1.5 text-sm text-phoebe-anthracite/70 hover:border-error hover:text-error hover:shadow-sm"
         >
           Annuler
         </button>
@@ -157,7 +157,7 @@ export function ProfileEditForm({
       </div>
 
       <div className="mt-4">
-        <SubmitButton className="rounded-lg bg-phoebe-green px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-phoebe-green-deep disabled:opacity-50">
+        <SubmitButton className="rounded-xl bg-phoebe-green px-6 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md disabled:opacity-50">
           Enregistrer
         </SubmitButton>
       </div>

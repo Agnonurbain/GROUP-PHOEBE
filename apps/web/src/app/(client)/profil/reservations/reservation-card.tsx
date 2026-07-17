@@ -124,7 +124,7 @@ export function ReservationCard({
               <button
                 onClick={handleCancel}
                 disabled={isPending}
-                className="rounded-lg bg-error px-3 py-1.5 text-xs font-medium text-white hover:bg-error/90 disabled:opacity-50"
+                className="rounded-lg bg-error px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-error/90 hover:shadow-md disabled:opacity-50"
               >
                 {isPending ? "..." : "Confirmer"}
               </button>
@@ -172,7 +172,7 @@ export function ReservationCard({
                   className="flex-1 rounded-lg border border-phoebe-anthracite/20 px-2 py-1 text-sm"
                 />
               </div>
-              <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1 text-xs font-medium text-white">
+              <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1 text-xs font-medium text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md">
                 Envoyer
               </SubmitButton>
             </form>

@@ -21,14 +21,14 @@ export function VerificationActions({ userId }: { userId: string }) {
               validerVerification(userId);
             })
           }
-          className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-phoebe-green-deep disabled:opacity-50"
+          className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md disabled:opacity-50"
         >
           Valider
         </button>
         <button
           disabled={pending}
           onClick={() => setShowRejet(true)}
-          className="rounded-lg border border-error/30 px-3 py-1.5 text-xs font-semibold text-error transition-colors hover:bg-error/10 disabled:opacity-50"
+          className="rounded-lg border border-error/30 px-3 py-1.5 text-xs font-semibold text-error hover:bg-error hover:text-white hover:shadow-md disabled:opacity-50"
         >
           Rejeter
         </button>
@@ -63,7 +63,7 @@ export function VerificationActions({ userId }: { userId: string }) {
                   setShowRejet(false);
                   setMotif("");
                 }}
-                className="rounded-lg border border-phoebe-pearl px-4 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl"
+                className="rounded-lg border border-phoebe-pearl px-4 py-2 text-sm text-phoebe-anthracite/70 hover:bg-phoebe-pearl hover:shadow-sm"
               >
                 Annuler
               </button>
@@ -76,7 +76,7 @@ export function VerificationActions({ userId }: { userId: string }) {
                     setMotif("");
                   })
                 }
-                className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-error/90 disabled:opacity-50"
+                className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-error/90 hover:shadow-md disabled:opacity-50"
               >
                 Confirmer le rejet
               </button>

@@ -43,6 +43,12 @@ table {
 button,
 [role="button"] {
   cursor: pointer;
+  transition: all 150ms ease;
+}
+
+button:not(:disabled):active,
+[role="button"]:not(:disabled):active {
+  transform: scale(0.97);
 }
 
 a {

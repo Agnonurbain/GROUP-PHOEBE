@@ -17,14 +17,14 @@ export function PropositionActions({ propositionId }: { propositionId: string })
       <form action={action}>
         <input type="hidden" name="proposition_id" value={propositionId} />
         <input type="hidden" name="decision" value="acceptee" />
-        <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white hover:bg-phoebe-green/90">
+        <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md">
           Accepter
         </SubmitButton>
       </form>
       <form action={action}>
         <input type="hidden" name="proposition_id" value={propositionId} />
         <input type="hidden" name="decision" value="refusee" />
-        <SubmitButton className="rounded-lg border border-error/30 px-3 py-1.5 text-xs font-medium text-error hover:bg-error/5">
+        <SubmitButton className="rounded-lg border border-error/30 px-3 py-1.5 text-xs font-medium text-error hover:bg-error hover:text-white hover:shadow-md">
           Refuser
         </SubmitButton>
       </form>
