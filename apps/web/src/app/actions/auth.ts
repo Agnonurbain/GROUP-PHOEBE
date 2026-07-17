@@ -42,7 +42,7 @@ export async function inscription(
           email,
           password,
           options: {
-            data: { nom, date_naissance: dateNaissance, role: "client" },
+            data: { nom, display_name: nom, date_naissance: dateNaissance, role: "client" },
             emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/connexion`,
           },
         }
@@ -50,7 +50,7 @@ export async function inscription(
           phone: telephone,
           password,
           options: {
-            data: { nom, date_naissance: dateNaissance, role: "client" },
+            data: { nom, display_name: nom, date_naissance: dateNaissance, role: "client" },
           },
         };
 
