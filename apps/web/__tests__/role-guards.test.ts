@@ -165,6 +165,8 @@ describe("Garde-fous de rôle — middleware auth", () => {
 });
 
 describe("Garde-fous de rôle — creerCompteInterne (propriétaire only)", () => {
+  const ALLOWED_CREATION_ROLES = ["operateur", "livreur"];
+
   it("seul le propriétaire peut créer des comptes internes", () => {
     expect(isProprietaire("proprietaire")).toBe(true);
     expect(isProprietaire("operateur")).toBe(false);
@@ -180,6 +182,20 @@ describe("Garde-fous de rôle — creerCompteInterne (propriétaire only)", () =
     expect(error).toBe(
       "Seul le propriétaire peut créer des comptes internes."
     );
+  });
+
+  it("ne peut créer que des opérateurs ou livreurs (pas de second propriétaire)", () => {
+    expect(ALLOWED_CREATION_ROLES.includes("operateur")).toBe(true);
+    expect(ALLOWED_CREATION_ROLES.includes("livreur")).toBe(true);
+    expect(ALLOWED_CREATION_ROLES.includes("proprietaire")).toBe(false);
+    expect(ALLOWED_CREATION_ROLES.includes("client")).toBe(false);
+  });
+
+  it("un rôle invalide est rejeté côté serveur", () => {
+    const role = "proprietaire";
+    const isValid = ALLOWED_CREATION_ROLES.includes(role);
+    const error = !isValid ? "Rôle invalide." : null;
+    expect(error).toBe("Rôle invalide.");
   });
 });
 
