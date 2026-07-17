@@ -52,7 +52,7 @@ export function DisponibiliteChecker({
               name="debut"
               required
               min={new Date().toISOString().slice(0, 10)}
-              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-phoebe-green"
+              className="w-full rounded-lg border border-phoebe-anthracite/20 bg-white px-3 py-2 text-sm focus:border-phoebe-green"
             />
           </div>
           <div>
@@ -65,7 +65,7 @@ export function DisponibiliteChecker({
               name="fin"
               required
               min={new Date().toISOString().slice(0, 10)}
-              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm focus:border-phoebe-green"
+              className="w-full rounded-lg border border-phoebe-anthracite/20 bg-white px-3 py-2 text-sm focus:border-phoebe-green"
             />
           </div>
         </div>
@@ -75,7 +75,7 @@ export function DisponibiliteChecker({
             <input
               type="checkbox"
               name="avec_chauffeur"
-              className="rounded border-gray-300 text-phoebe-green focus:ring-phoebe-green"
+              className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
             />
             Avec chauffeur
           </label>

@@ -56,7 +56,7 @@ export default async function DemandesPage() {
               return (
                 <div
                   key={d.id}
-                  className="rounded-xl border border-phoebe-pearl bg-white p-4"
+                  className="rounded-xl border border-phoebe-pearl bg-white p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">

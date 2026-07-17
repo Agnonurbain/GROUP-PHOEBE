@@ -89,7 +89,7 @@ export function VerificationForm() {
           <SubmitButton>Envoyer mes documents</SubmitButton>
           <Link
             href="/profil"
-            className="flex items-center rounded-lg border border-gray-200 px-4 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl"
+            className="flex items-center rounded-lg border border-phoebe-anthracite/20 px-4 py-2 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl"
           >
             Annuler
           </Link>

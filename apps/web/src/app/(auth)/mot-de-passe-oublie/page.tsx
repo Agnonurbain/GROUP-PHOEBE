@@ -50,7 +50,7 @@ export default function MotDePasseOubliePage() {
           className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
             mode === "phone"
               ? "bg-phoebe-green text-white"
-              : "bg-gray-100 text-phoebe-anthracite/60 hover:bg-gray-200"
+              : "bg-phoebe-pearl text-phoebe-anthracite/60 hover:bg-phoebe-pearl/80"
           }`}
         >
           Par SMS
@@ -61,7 +61,7 @@ export default function MotDePasseOubliePage() {
           className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
             mode === "email"
               ? "bg-phoebe-green text-white"
-              : "bg-gray-100 text-phoebe-anthracite/60 hover:bg-gray-200"
+              : "bg-phoebe-pearl text-phoebe-anthracite/60 hover:bg-phoebe-pearl/80"
           }`}
         >
           Par email
@@ -83,7 +83,7 @@ export default function MotDePasseOubliePage() {
               type="tel"
               required
               autoFocus
-              className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
+              className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
               placeholder="+225 XX XX XX XX XX"
             />
           </div>
@@ -101,7 +101,7 @@ export default function MotDePasseOubliePage() {
               type="email"
               required
               autoFocus
-              className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
+              className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
               placeholder="votre@email.com"
             />
           </div>

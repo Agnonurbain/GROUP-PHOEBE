@@ -21,7 +21,7 @@ export function FavoriButton({
           await toggleFavori(vehiculeId);
         })
       }
-      className={`shrink-0 cursor-pointer rounded-full p-1.5 transition-colors disabled:opacity-50 ${
+      className={`shrink-0 cursor-pointer rounded-full p-1.5 transition-all duration-150 hover:scale-110 active:scale-95 disabled:opacity-50 ${
         isFavori
           ? "text-error hover:text-error/70"
           : "text-phoebe-anthracite/30 hover:text-error"

@@ -24,9 +24,9 @@ export function NavLink({
   return (
     <Link
       href={href}
-      className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors ${
+      className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-150 ${
         isActive
-          ? "bg-phoebe-green/10 font-semibold text-phoebe-green"
+          ? "bg-phoebe-green/10 font-semibold text-phoebe-green shadow-sm"
           : "text-phoebe-anthracite/70 hover:bg-phoebe-pearl hover:text-phoebe-green"
       }`}
     >

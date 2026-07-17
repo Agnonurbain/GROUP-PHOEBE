@@ -44,7 +44,7 @@ function OtpForm() {
             maxLength={6}
             required
             autoFocus
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-center text-lg tracking-[0.5em] transition-colors focus:border-phoebe-green"
+            className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 text-center text-lg tracking-[0.5em] transition-colors focus:border-phoebe-green"
             placeholder="000000"
           />
         </div>

@@ -224,7 +224,7 @@ export default async function VehiculeDetailPage({
             {v.prix_journalier && v.statut === "disponible" && (
               <Link
                 href={`/catalogue/${v.id}/reserver`}
-                className="block w-full rounded-xl bg-phoebe-green py-3 text-center text-sm font-semibold text-white transition-colors hover:bg-phoebe-green/90"
+                className="block w-full rounded-xl bg-phoebe-green py-3 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md active:scale-[0.98]"
               >
                 Réserver ce véhicule
               </Link>

@@ -7,7 +7,7 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   reserve: { label: "Réservé", color: "bg-phoebe-gold/10 text-phoebe-gold" },
   loue: { label: "Loué", color: "bg-blue-50 text-blue-700" },
   vendu: { label: "Vendu", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite" },
-  indisponible: { label: "Indisponible", color: "bg-gray-100 text-gray-500" },
+  indisponible: { label: "Indisponible", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite/50" },
 };
 
 const CAT_LABELS: Record<string, string> = {
@@ -101,7 +101,7 @@ export default async function VehiculesListPage() {
                           />
                         </div>
                       ) : (
-                        <div className="flex h-10 w-14 items-center justify-center rounded bg-gray-100 text-xs text-gray-400">
+                        <div className="flex h-10 w-14 items-center justify-center rounded bg-phoebe-pearl text-xs text-phoebe-anthracite/30">
                           —
                         </div>
                       )}

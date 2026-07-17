@@ -135,7 +135,7 @@ async function VehiculeGrid({
         return (
           <div
             key={v.id}
-            className="cursor-pointer overflow-hidden rounded-xl border border-phoebe-pearl bg-white transition-shadow hover:shadow-md"
+            className="cursor-pointer overflow-hidden rounded-xl border border-phoebe-pearl bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
           >
             <Link href={`/catalogue/${v.id}`} className="relative block aspect-[4/3]">
               {photo ? (

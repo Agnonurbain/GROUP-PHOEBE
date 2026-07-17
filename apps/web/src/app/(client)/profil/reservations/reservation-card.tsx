@@ -158,7 +158,7 @@ export function ReservationCard({
                 <select
                   name="note"
                   required
-                  className="rounded-lg border border-gray-200 px-2 py-1 text-sm"
+                  className="rounded-lg border border-phoebe-anthracite/20 px-2 py-1 text-sm"
                 >
                   <option value="5">★★★★★ (5)</option>
                   <option value="4">★★★★☆ (4)</option>
@@ -169,7 +169,7 @@ export function ReservationCard({
                 <input
                   name="commentaire"
                   placeholder="Commentaire (optionnel)"
-                  className="flex-1 rounded-lg border border-gray-200 px-2 py-1 text-sm"
+                  className="flex-1 rounded-lg border border-phoebe-anthracite/20 px-2 py-1 text-sm"
                 />
               </div>
               <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1 text-xs font-medium text-white">

@@ -6,7 +6,7 @@ const config: Record<
 > = {
   non_verifie: {
     label: "Non vérifié",
-    className: "bg-gray-100 text-gray-700",
+    className: "bg-phoebe-anthracite/10 text-phoebe-anthracite/70",
   },
   documents_soumis: {
     label: "En attente de vérification",

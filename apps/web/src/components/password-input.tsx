@@ -28,7 +28,7 @@ export function PasswordInput({
         required={required}
         minLength={minLength}
         autoFocus={autoFocus}
-        className="w-full rounded-lg border border-gray-200 px-4 py-2.5 pr-10 text-sm transition-colors focus:border-phoebe-green"
+        className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 pr-10 text-sm transition-colors focus:border-phoebe-green"
         placeholder={placeholder}
       />
       <button

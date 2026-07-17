@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useRef } from "react";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
+  "w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
 
 export default function Filtres() {
   const router = useRouter();

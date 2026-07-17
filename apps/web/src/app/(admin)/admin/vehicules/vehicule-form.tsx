@@ -16,7 +16,7 @@ type Props = {
 };
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
+  "w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
 const labelClass = "mb-1 block text-sm font-medium text-phoebe-anthracite";
 
 export default function VehiculeForm({
@@ -158,7 +158,7 @@ export default function VehiculeForm({
                 type="checkbox"
                 name="climatisation"
                 defaultChecked={vehicule?.climatisation ?? false}
-                className="rounded border-gray-300 text-phoebe-green focus:ring-phoebe-green"
+                className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
               />
               Climatisation
             </label>
@@ -167,7 +167,7 @@ export default function VehiculeForm({
                 type="checkbox"
                 name="chauffeur_disponible"
                 defaultChecked={vehicule?.chauffeur_disponible ?? false}
-                className="rounded border-gray-300 text-phoebe-green focus:ring-phoebe-green"
+                className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
               />
               Chauffeur disponible
             </label>
@@ -187,7 +187,7 @@ export default function VehiculeForm({
                       name="chauffeur_ids"
                       value={c.id}
                       defaultChecked={chauffeurIds.includes(c.id)}
-                      className="rounded border-gray-300 text-phoebe-green focus:ring-phoebe-green"
+                      className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
                     />
                     {c.nom}
                   </label>

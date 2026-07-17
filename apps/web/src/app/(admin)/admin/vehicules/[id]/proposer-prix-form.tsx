@@ -5,7 +5,7 @@ import { proposerPrix, type PropositionState } from "@/app/actions/propositions"
 import { SubmitButton } from "@/components/submit-button";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
+  "w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
 
 const CHAMP_OPTIONS = [
   { value: "prix_journalier", label: "Prix journalier" },

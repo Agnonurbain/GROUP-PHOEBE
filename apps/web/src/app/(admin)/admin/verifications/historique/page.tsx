@@ -137,17 +137,17 @@ export default async function HistoriqueVerificationsPage() {
           <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
             Répartition
           </h2>
-          <div className="flex items-center justify-center gap-10">
+          <div className="flex flex-col items-center justify-center gap-6 md:flex-row md:gap-10">
             <div
-              className="relative flex h-40 w-40 items-center justify-center rounded-full"
+              className="relative flex h-32 w-32 items-center justify-center rounded-full md:h-40 md:w-40"
               style={{
                 background: `conic-gradient(
-                  #39A044 0% ${verifiedPct}%,
-                  #DC2626 ${verifiedPct}% 100%
+                  var(--color-phoebe-green) 0% ${verifiedPct}%,
+                  var(--color-error) ${verifiedPct}% 100%
                 )`,
               }}
             >
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-white md:h-24 md:w-24">
                 <span className="text-2xl font-bold text-phoebe-anthracite">{total}</span>
               </div>
             </div>
@@ -174,7 +174,7 @@ export default async function HistoriqueVerificationsPage() {
         <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
           Activité mensuelle
         </h2>
-        <div className="flex items-end gap-3" style={{ height: 180 }}>
+        <div className="flex items-end gap-2 sm:gap-3" style={{ height: "clamp(140px, 25vw, 180px)" }}>
           {monthlyData.map((m, i) => {
             const barH = ((m.verified + m.rejected) / maxMonthly) * 140;
             const verH = barH > 0 ? (m.verified / (m.verified + m.rejected)) * barH : 0;
@@ -187,18 +187,18 @@ export default async function HistoriqueVerificationsPage() {
                 <div className="flex w-full flex-col items-center">
                   {rejH > 0 && (
                     <div
-                      className="w-8 rounded-t bg-error/80"
+                      className="w-full max-w-8 rounded-t bg-error/80"
                       style={{ height: rejH }}
                     />
                   )}
                   {verH > 0 && (
                     <div
-                      className={`w-8 bg-phoebe-green ${rejH > 0 ? "" : "rounded-t"} rounded-b`}
+                      className={`w-full max-w-8 bg-phoebe-green ${rejH > 0 ? "" : "rounded-t"} rounded-b`}
                       style={{ height: verH }}
                     />
                   )}
                   {barH === 0 && (
-                    <div className="w-8 rounded bg-phoebe-pearl" style={{ height: 4 }} />
+                    <div className="w-full max-w-8 rounded bg-phoebe-pearl" style={{ height: 4 }} />
                   )}
                 </div>
                 <span className="text-xs text-phoebe-anthracite/50">{m.label}</span>

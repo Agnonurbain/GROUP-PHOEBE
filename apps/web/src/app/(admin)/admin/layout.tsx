@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
+import { AdminMobileNav } from "./admin-mobile-nav";
 
 export default async function AdminShellLayout({
   children,
@@ -41,7 +42,13 @@ export default async function AdminShellLayout({
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
-      <aside className="w-56 shrink-0 overflow-y-auto border-r border-phoebe-pearl bg-white p-4 space-y-6">
+      <AdminMobileNav
+          isProprietaire={isProprietaire}
+          nbDemandesEnAttente={nbDemandesEnAttente ?? null}
+          nbRemboursements={nbRemboursements ?? null}
+          nbPropositions={nbPropositions ?? null}
+        />
+      <aside className="hidden md:block w-56 shrink-0 overflow-y-auto border-r border-phoebe-pearl bg-phoebe-pearl/30 p-4 space-y-6">
         {isProprietaire && (
           <div>
             <NavLink href="/admin">Tableau de bord</NavLink>
@@ -79,7 +86,7 @@ export default async function AdminShellLayout({
           </div>
         )}
       </aside>
-      <div className="flex-1 p-6">{children}</div>
+      <div className="flex-1 overflow-y-auto p-4 md:p-6">{children}</div>
     </div>
   );
 }

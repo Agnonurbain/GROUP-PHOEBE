@@ -56,7 +56,7 @@ export default async function ProfilPage() {
           {statut === "non_verifie" && (
             <Link
               href="/profil/verification"
-              className="rounded-lg bg-phoebe-green px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-phoebe-green-deep"
+              className="rounded-xl bg-phoebe-green px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md"
             >
               Soumettre mes documents
             </Link>
@@ -64,7 +64,7 @@ export default async function ProfilPage() {
           {statut === "rejete" && (
             <Link
               href="/profil/verification"
-              className="rounded-lg bg-phoebe-gold px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-phoebe-gold/80"
+              className="rounded-xl bg-phoebe-gold px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/80 hover:shadow-md"
             >
               Soumettre à nouveau
             </Link>

@@ -25,9 +25,9 @@ export default function ConnexionPage() {
       <GoogleButton label="Se connecter avec Google" />
 
       <div className="my-5 flex items-center gap-3">
-        <div className="h-px flex-1 bg-gray-200" />
+        <div className="h-px flex-1 bg-phoebe-anthracite/15" />
         <span className="text-xs text-phoebe-anthracite/40">ou</span>
-        <div className="h-px flex-1 bg-gray-200" />
+        <div className="h-px flex-1 bg-phoebe-anthracite/15" />
       </div>
 
       <form action={action} className="space-y-4">
@@ -40,7 +40,7 @@ export default function ConnexionPage() {
             name="identifiant"
             type="text"
             required
-            className="w-full rounded-lg border border-gray-200 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
+            className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
             placeholder="+225 XX XX XX XX XX ou email"
           />
         </div>

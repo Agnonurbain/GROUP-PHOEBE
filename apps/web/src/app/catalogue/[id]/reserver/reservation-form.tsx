@@ -5,7 +5,7 @@ import { creerReservation, type ReservationState } from "@/app/actions/reservati
 import { SubmitButton } from "@/components/submit-button";
 
 const inputClass =
-  "w-full rounded-lg border border-gray-200 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
+  "w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
 
 export default function ReservationForm({
   vehiculeId,
@@ -134,7 +134,7 @@ export default function ReservationForm({
                 setAvecChauffeur(e.target.checked);
                 if (e.target.checked) setShowConducteur(false);
               }}
-              className="rounded border-gray-300 text-phoebe-green focus:ring-phoebe-green"
+              className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
             />
             Avec chauffeur
           </label>

@@ -46,13 +46,13 @@ export default async function ConfirmationPage({
         <div className="flex gap-4">
           <Link
             href="/catalogue"
-            className="rounded-lg bg-phoebe-pearl px-4 py-2 text-sm font-medium text-phoebe-anthracite hover:bg-phoebe-pearl/80"
+            className="rounded-xl bg-phoebe-pearl px-5 py-2.5 text-sm font-medium text-phoebe-anthracite transition-all hover:bg-phoebe-pearl/80 hover:shadow-sm"
           >
             Retour au catalogue
           </Link>
           <Link
             href="/profil"
-            className="rounded-lg bg-phoebe-green px-4 py-2 text-sm font-medium text-white hover:bg-phoebe-green/90"
+            className="rounded-xl bg-phoebe-green px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md"
           >
             Voir mon profil
           </Link>

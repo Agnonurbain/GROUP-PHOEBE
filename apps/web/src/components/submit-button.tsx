@@ -4,9 +4,9 @@ import { useFormStatus } from "react-dom";
 
 const VARIANTS = {
   default:
-    "w-full rounded-lg bg-phoebe-green px-4 py-3 text-sm font-semibold text-white transition-colors hover:bg-phoebe-green-deep disabled:opacity-50",
+    "w-full rounded-xl bg-phoebe-green px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md active:scale-[0.98] disabled:opacity-50 disabled:hover:shadow-sm",
   danger:
-    "rounded-lg border border-error px-4 py-2 text-sm text-error transition-colors hover:bg-error hover:text-white disabled:opacity-50",
+    "rounded-xl border border-error/30 px-4 py-2 text-sm text-error transition-all hover:bg-error hover:text-white hover:shadow-sm active:scale-[0.98] disabled:opacity-50",
 };
 
 function Spinner() {

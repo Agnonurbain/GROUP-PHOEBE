@@ -36,7 +36,7 @@ export function MobileNav({
       </button>
 
       {open && (
-        <div className="absolute left-0 right-0 top-16 z-50 border-b border-phoebe-pearl bg-white px-4 py-3 shadow-lg">
+        <div className="animate-fade-in absolute left-0 right-0 top-16 z-50 border-b border-phoebe-pearl bg-white/98 px-4 py-3 shadow-lg backdrop-blur-sm">
           <nav className="flex flex-col gap-1">
             {links.map((link) => (
               <Link

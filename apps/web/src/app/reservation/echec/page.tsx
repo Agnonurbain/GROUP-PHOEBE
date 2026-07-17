@@ -21,7 +21,7 @@ export default async function EchecPage() {
         </p>
         <Link
           href="/catalogue"
-          className="rounded-lg bg-phoebe-green px-4 py-2 text-sm font-medium text-white hover:bg-phoebe-green/90"
+          className="rounded-xl bg-phoebe-green px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md"
         >
           Retour au catalogue
         </Link>

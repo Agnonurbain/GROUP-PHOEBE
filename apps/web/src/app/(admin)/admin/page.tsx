@@ -180,7 +180,7 @@ function StatCard({
   sub?: string;
 }) {
   return (
-    <div className="rounded-xl border border-phoebe-pearl bg-white p-4">
+    <div className="rounded-xl border border-phoebe-pearl bg-white p-4 shadow-sm">
       <p className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/40">
         {label}
       </p>
