@@ -12,7 +12,7 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
     label: "Disponible",
     color: "bg-phoebe-green/10 text-phoebe-green-deep",
   },
-  reserve: { label: "Réservé", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+
   loue: { label: "Loué", color: "bg-blue-50 text-blue-700" },
   vendu: {
     label: "Vendu",
@@ -46,7 +46,7 @@ export default async function VehiculeDetailPage({
     .eq("id", id)
     .single();
 
-  if (!v || v.statut === "indisponible") notFound();
+  if (!v || v.statut === "indisponible" || v.statut === "reserve") notFound();
 
   const { data: photos } = await supabase
     .from("vehicule_photos")

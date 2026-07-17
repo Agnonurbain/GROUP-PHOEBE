@@ -156,7 +156,6 @@ export default function Filtres() {
           >
             <option value="">Tous statuts</option>
             <option value="disponible">Disponible</option>
-            <option value="reserve">Réservé</option>
             <option value="loue">Loué</option>
             <option value="vendu">Vendu</option>
           </select>

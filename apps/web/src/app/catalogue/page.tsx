@@ -12,7 +12,7 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
     label: "Disponible",
     color: "bg-phoebe-green/10 text-phoebe-green-deep",
   },
-  reserve: { label: "Réservé", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+
   loue: { label: "Loué", color: "bg-blue-50 text-blue-700" },
   vendu: {
     label: "Vendu",
@@ -60,6 +60,7 @@ async function VehiculeGrid({
     .from("vehicules")
     .select("*")
     .neq("statut", "indisponible")
+    .neq("statut", "reserve")
     .order("created_at", { ascending: false });
 
   if (sp.categorie)
