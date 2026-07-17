@@ -8,14 +8,18 @@ export function NavLink({
   children,
   badge,
   badgeColor = "bg-phoebe-gold",
+  exact = false,
 }: {
   href: string;
   children: React.ReactNode;
   badge?: number | null;
   badgeColor?: string;
+  exact?: boolean;
 }) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/admin" && pathname.startsWith(href + "/"));
+  const isActive = exact
+    ? pathname === href
+    : pathname === href || (href !== "/admin" && pathname.startsWith(href + "/"));
 
   return (
     <Link
