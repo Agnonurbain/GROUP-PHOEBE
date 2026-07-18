@@ -7,6 +7,7 @@ import { DisponibiliteChecker } from "@/components/disponibilite-checker";
 import { AjouterPanierButton } from "@/components/ajouter-panier-button";
 import { createClient } from "@/lib/supabase/server";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
+import { makeGroupKey } from "@/lib/vehicle-group";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   disponible: {
@@ -64,6 +65,15 @@ export default async function VehiculeDetailPage({
     .single();
 
   if (!v || v.statut === "indisponible" || v.statut === "reserve") notFound();
+
+  const { count: siblingsCount } = await supabase
+    .from("vehicules")
+    .select("id", { count: "exact", head: true })
+    .eq("marque", v.marque)
+    .eq("modele", v.modele)
+    .eq("statut", "disponible");
+
+  const maxDisponible = siblingsCount ?? 1;
 
   const { data: photos } = await supabase
     .from("vehicule_photos")
@@ -278,13 +288,15 @@ export default async function VehiculeDetailPage({
             {mode === "location" && v.prix_journalier && v.statut === "disponible" && (
               <AjouterPanierButton
                 vehicule={{
-                  vehiculeId: v.id,
+                  groupKey: makeGroupKey(v.marque, v.modele),
                   marque: v.marque,
                   modele: v.modele,
                   categorie: v.categorie,
                   prixJournalier: Number(v.prix_journalier),
                   tauxCaution: v.taux_caution ? Number(v.taux_caution) : 0.3,
                   chauffeurDisponible: v.chauffeur_disponible,
+                  quantite: 1,
+                  maxDisponible,
                   photoUrl: photos?.[0]?.url ?? null,
                 }}
               />

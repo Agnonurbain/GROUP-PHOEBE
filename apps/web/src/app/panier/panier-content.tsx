@@ -11,7 +11,7 @@ const CAT_LABELS: Record<string, string> = {
 };
 
 export function PanierContent() {
-  const { items, removeItem, toggleChauffeur, clearCart } = useCart();
+  const { items, removeItem, toggleChauffeur, updateQuantity, clearCart, count } = useCart();
 
   if (items.length === 0) {
     return (
@@ -37,7 +37,7 @@ export function PanierContent() {
       <div className="space-y-3">
         {items.map((item) => (
           <div
-            key={item.vehiculeId}
+            key={item.groupKey}
             className="flex gap-4 rounded-xl border border-phoebe-pearl bg-white p-4 shadow-sm"
           >
             {/* Photo */}
@@ -62,6 +62,11 @@ export function PanierContent() {
               <div>
                 <h3 className="font-semibold text-phoebe-anthracite">
                   {item.marque} {item.modele}
+                  {item.quantite > 1 && (
+                    <span className="ml-1.5 text-sm font-normal text-phoebe-anthracite/50">
+                      &times;{item.quantite}
+                    </span>
+                  )}
                 </h3>
                 <p className="text-xs text-phoebe-anthracite/50">
                   {CAT_LABELS[item.categorie] ?? item.categorie}
@@ -70,25 +75,53 @@ export function PanierContent() {
               <div className="flex items-center gap-4 text-sm">
                 <span className="font-medium text-phoebe-green">
                   {item.prixJournalier.toLocaleString("fr-FR")} FCFA/jour
+                  {item.quantite > 1 && " chacun"}
                 </span>
                 {item.chauffeurDisponible && (
                   <label className="flex items-center gap-1.5 text-phoebe-anthracite/70">
                     <input
                       type="checkbox"
                       checked={item.avecChauffeur}
-                      onChange={() => toggleChauffeur(item.vehiculeId)}
+                      onChange={() => toggleChauffeur(item.groupKey)}
                       className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
                     />
                     Chauffeur
                   </label>
                 )}
               </div>
+              {/* Quantity stepper */}
+              {item.maxDisponible > 1 && (
+                <div className="mt-2 flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(item.groupKey, item.quantite - 1)}
+                    disabled={item.quantite <= 1}
+                    className="flex h-6 w-6 items-center justify-center rounded border border-phoebe-anthracite/20 text-xs text-phoebe-anthracite disabled:opacity-30"
+                  >
+                    &minus;
+                  </button>
+                  <span className="w-6 text-center text-xs font-bold text-phoebe-anthracite">
+                    {item.quantite}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => updateQuantity(item.groupKey, item.quantite + 1)}
+                    disabled={item.quantite >= item.maxDisponible}
+                    className="flex h-6 w-6 items-center justify-center rounded border border-phoebe-anthracite/20 text-xs text-phoebe-anthracite disabled:opacity-30"
+                  >
+                    +
+                  </button>
+                  <span className="text-[10px] text-phoebe-anthracite/40">
+                    / {item.maxDisponible} dispo
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Remove */}
             <button
               type="button"
-              onClick={() => removeItem(item.vehiculeId)}
+              onClick={() => removeItem(item.groupKey)}
               className="self-start rounded-lg p-1.5 text-phoebe-anthracite/30 transition-colors hover:bg-error/5 hover:text-error"
               aria-label={`Retirer ${item.marque} ${item.modele}`}
             >
@@ -105,7 +138,7 @@ export function PanierContent() {
       <div className="rounded-xl bg-phoebe-pearl p-4">
         <div className="flex items-baseline justify-between">
           <span className="text-sm text-phoebe-anthracite/60">
-            {items.length} véhicule{items.length > 1 ? "s" : ""} sélectionné{items.length > 1 ? "s" : ""}
+            {count} véhicule{count > 1 ? "s" : ""} sélectionné{count > 1 ? "s" : ""}
           </span>
           <button
             type="button"

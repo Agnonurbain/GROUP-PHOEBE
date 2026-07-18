@@ -2,23 +2,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
 import { Header } from "@/components/header";
-import { FavoriButton } from "@/components/favori-button";
 import { BackLink } from "@/components/back-link";
 import { createClient } from "@/lib/supabase/server";
+import { groupVehicles, type VehicleGroup } from "@/lib/vehicle-group";
 import Filtres from "./filtres";
-
-const STATUT_LABELS: Record<string, { label: string; color: string }> = {
-  disponible: {
-    label: "Disponible",
-    color: "bg-phoebe-green/10 text-phoebe-green-deep",
-  },
-
-  loue: { label: "Loué", color: "bg-blue-50 text-blue-700" },
-  vendu: {
-    label: "Vendu",
-    color: "bg-phoebe-anthracite/10 text-phoebe-anthracite",
-  },
-};
 
 const CAT_LABELS: Record<string, string> = {
   leger: "Véhicule léger",
@@ -85,21 +72,9 @@ async function VehiculeGrid({
         .order("ordre", { ascending: true })
     : { data: [] };
 
-  const firstPhoto = new Map<string, string>();
+  const photoMap = new Map<string, string>();
   for (const p of allPhotos ?? []) {
-    if (!firstPhoto.has(p.vehicule_id)) firstPhoto.set(p.vehicule_id, p.url);
-  }
-
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const user = claimsData?.claims;
-
-  const favoriIds = new Set<string>();
-  if (user) {
-    const { data: favs } = await supabase
-      .from("favoris")
-      .select("vehicule_id")
-      .eq("user_id", user.sub);
-    for (const f of favs ?? []) favoriIds.add(f.vehicule_id);
+    if (!photoMap.has(p.vehicule_id)) photoMap.set(p.vehicule_id, p.url);
   }
 
   if (!vehicules || vehicules.length === 0) {
@@ -110,98 +85,92 @@ async function VehiculeGrid({
     );
   }
 
+  const groups = groupVehicles(
+    vehicules as Parameters<typeof groupVehicles>[0],
+    photoMap
+  );
+
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {vehicules.map((v) => {
-        const s = STATUT_LABELS[v.statut];
-        const photo = firstPhoto.get(v.id);
-
-        return (
-          <div
-            key={v.id}
-            className="cursor-pointer overflow-hidden rounded-xl border border-phoebe-pearl bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-          >
-            <Link href={`/catalogue/${v.id}/choix`} className="relative block aspect-[4/3]">
-              {photo ? (
-                <Image
-                  src={photo}
-                  alt={`${v.marque} ${v.modele}`}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-phoebe-pearl text-phoebe-anthracite/30">
-                  Pas de photo
-                </div>
-              )}
-            </Link>
-
-            <div className="space-y-2 p-4">
-              <div className="flex items-start justify-between gap-2">
-                <Link href={`/catalogue/${v.id}/choix`} className="min-w-0">
-                  <h2 className="font-semibold text-phoebe-anthracite hover:text-phoebe-green">
-                    {v.marque} {v.modele}
-                  </h2>
-                  <p className="text-xs text-phoebe-anthracite/50">
-                    {CAT_LABELS[v.categorie] ?? v.categorie}
-                    {v.annee ? ` · ${v.annee}` : ""}
-                    {v.nb_places ? ` · ${v.nb_places} places` : ""}
-                  </p>
-                </Link>
-                <div className="flex shrink-0 items-center gap-1.5">
-                  {s && (
-                    <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${s.color}`}
-                    >
-                      {s.label}
-                    </span>
-                  )}
-                  {user && (
-                    <FavoriButton
-                      vehiculeId={v.id}
-                      isFavori={favoriIds.has(v.id)}
-                    />
-                  )}
-                </div>
+      {groups.map((g) => (
+        <div
+          key={g.groupKey}
+          className="cursor-pointer overflow-hidden rounded-xl border border-phoebe-pearl bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+        >
+          <Link href={`/catalogue/groupe/${encodeURIComponent(g.groupKey)}/choix`} className="relative block aspect-[4/3]">
+            {g.photoUrl ? (
+              <Image
+                src={g.photoUrl}
+                alt={`${g.marque} ${g.modele}`}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-phoebe-pearl text-phoebe-anthracite/30">
+                Pas de photo
               </div>
+            )}
+            {g.totalCount > 1 && (
+              <span className="absolute right-2 top-2 rounded-full bg-phoebe-green px-2.5 py-0.5 text-xs font-semibold text-white shadow">
+                {g.totalCount} dispo
+              </span>
+            )}
+          </Link>
 
-              <div className="flex flex-wrap gap-2 text-xs text-phoebe-anthracite/50">
-                {v.climatisation && (
-                  <span className="rounded bg-phoebe-pearl px-2 py-0.5">
-                    Climatisé
+          <div className="space-y-2 p-4">
+            <div className="flex items-start justify-between gap-2">
+              <Link href={`/catalogue/groupe/${encodeURIComponent(g.groupKey)}/choix`} className="min-w-0">
+                <h2 className="font-semibold text-phoebe-anthracite hover:text-phoebe-green">
+                  {g.marque} {g.modele}
+                </h2>
+                <p className="text-xs text-phoebe-anthracite/50">
+                  {CAT_LABELS[g.categorie] ?? g.categorie}
+                  {g.annee && g.annee < 9999 ? ` · ${g.annee}` : ""}
+                  {g.nbPlaces ? ` · ${g.nbPlaces} places` : ""}
+                </p>
+              </Link>
+              <div className="flex shrink-0 items-center gap-1.5">
+                {g.totalCount > 0 ? (
+                  <span className="rounded-full bg-phoebe-green/10 px-2.5 py-0.5 text-xs font-medium text-phoebe-green-deep">
+                    Disponible
                   </span>
-                )}
-                {v.boite && (
-                  <span className="rounded bg-phoebe-pearl px-2 py-0.5">
-                    {v.boite === "automatique" ? "Auto" : "Manuelle"}
-                  </span>
-                )}
-                {v.assurance_url && (
-                  <span className="rounded bg-phoebe-green/10 px-2 py-0.5 text-phoebe-green-deep">
-                    Assuré
-                  </span>
-                )}
-                {v.gps && (
-                  <span className="rounded bg-phoebe-pearl px-2 py-0.5">
-                    GPS
-                  </span>
-                )}
-                {v.chauffeur_disponible && (
-                  <span className="rounded bg-phoebe-pearl px-2 py-0.5">
-                    Chauffeur dispo
-                  </span>
-                )}
-                {v.localisation && (
-                  <span className="rounded bg-phoebe-pearl px-2 py-0.5">
-                    {v.localisation}
+                ) : (
+                  <span className="rounded-full bg-phoebe-anthracite/10 px-2.5 py-0.5 text-xs font-medium text-phoebe-anthracite">
+                    Indisponible
                   </span>
                 )}
               </div>
             </div>
+
+            {g.prixJournalier > 0 && (
+              <p className="text-sm font-medium text-phoebe-green">
+                à partir de {g.prixJournalier.toLocaleString("fr-FR")} FCFA/jour
+              </p>
+            )}
+
+            <div className="flex flex-wrap gap-2 text-xs text-phoebe-anthracite/50">
+              {g.climatisation && (
+                <span className="rounded bg-phoebe-pearl px-2 py-0.5">Climatisé</span>
+              )}
+              {g.boite && (
+                <span className="rounded bg-phoebe-pearl px-2 py-0.5">
+                  {g.boite === "automatique" ? "Auto" : "Manuelle"}
+                </span>
+              )}
+              {g.assurance && (
+                <span className="rounded bg-phoebe-green/10 px-2 py-0.5 text-phoebe-green-deep">Assuré</span>
+              )}
+              {g.gps && (
+                <span className="rounded bg-phoebe-pearl px-2 py-0.5">GPS</span>
+              )}
+              {g.chauffeurDisponible && (
+                <span className="rounded bg-phoebe-pearl px-2 py-0.5">Chauffeur dispo</span>
+              )}
+            </div>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 }

@@ -10,8 +10,7 @@ import { creerSessionStripe } from "@/lib/payments/stripe";
 import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
-
-const TAUX_CAUTION_DEFAUT = 0.3;
+import { assignerVehiculesGroupe, type AssignedVehicle } from "@/app/actions/vehicle-assignment";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -27,7 +26,10 @@ export type NegociationState = {
 };
 
 type LigneInput = {
-  vehiculeId: string;
+  groupKey: string;
+  marque: string;
+  modele: string;
+  quantite: number;
   avecChauffeur: boolean;
 };
 
@@ -79,35 +81,13 @@ export async function creerDemandeNegociation(
     return { error: "Le panier est vide." };
   }
 
-  const admin = getAdmin();
-  const vehiculeIds = lignes.map((l) => l.vehiculeId);
-
-  const { data: vehicules } = await admin
-    .from("vehicules")
-    .select("*")
-    .in("id", vehiculeIds);
-
-  if (!vehicules || vehicules.length !== lignes.length) {
-    return { error: "Un ou plusieurs véhicules sont introuvables." };
-  }
-
-  const vehiculesMap = new Map(vehicules.map((v) => [v.id, v]));
-
-  for (const v of vehicules) {
-    if (v.statut !== "disponible") {
-      return { error: `${v.marque} ${v.modele} n'est plus disponible.` };
-    }
-    if (!v.prix_journalier) {
-      return { error: `${v.marque} ${v.modele} n'a pas de tarif journalier défini.` };
-    }
-  }
-
   const nbJours = Math.ceil(
     (new Date(fin).getTime() - new Date(debut).getTime()) / (1000 * 60 * 60 * 24)
   );
   if (nbJours < 1) return { error: "La durée minimale est d'un jour." };
 
   const periode = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
+  const admin = getAdmin();
 
   await Promise.all([
     expirerReservationsAbandonnees(),
@@ -115,104 +95,45 @@ export async function creerDemandeNegociation(
     expirerNonPresentations(),
   ]);
 
-  const reservedVehicules: { vehiculeId: string; periode: string }[] = [];
-  const reservedChauffeurs: { chauffeurId: string; periode: string }[] = [];
-
-  async function rollback() {
-    for (const rv of reservedVehicules) {
-      await admin
-        .from("disponibilites_vehicule")
-        .delete()
-        .eq("vehicule_id", rv.vehiculeId)
-        .eq("type", "reservation")
-        .eq("periode", rv.periode);
-    }
-    for (const rc of reservedChauffeurs) {
-      await admin
-        .from("disponibilites_chauffeur")
-        .delete()
-        .eq("chauffeur_id", rc.chauffeurId)
-        .eq("periode", rc.periode);
-    }
-  }
-
-  type LigneResult = {
-    vehiculeId: string;
-    avecChauffeur: boolean;
-    chauffeurId: string | null;
-    montant: number;
-    caution: number;
-  };
-
-  const ligneResults: LigneResult[] = [];
+  const allAssigned: (AssignedVehicle & { avecChauffeur: boolean })[] = [];
 
   for (const ligne of lignes) {
-    const v = vehiculesMap.get(ligne.vehiculeId)!;
+    const result = await assignerVehiculesGroupe(
+      admin,
+      ligne.marque,
+      ligne.modele,
+      ligne.quantite,
+      periode,
+      ligne.avecChauffeur,
+      nbJours
+    );
 
-    const { error: dispoErr } = await admin
-      .from("disponibilites_vehicule")
-      .insert({ vehicule_id: ligne.vehiculeId, periode, type: "reservation" });
-
-    if (dispoErr) {
-      await rollback();
-      if (dispoErr.code === "23P01") {
-        return { error: `${v.marque} ${v.modele} n'est plus disponible sur cette période.` };
-      }
-      return { error: dispoErr.message };
-    }
-
-    reservedVehicules.push({ vehiculeId: ligne.vehiculeId, periode });
-
-    let chauffeurId: string | null = null;
-
-    if (ligne.avecChauffeur) {
-      if (!v.chauffeur_disponible) {
-        await rollback();
-        return { error: `${v.marque} ${v.modele} ne propose pas l'option chauffeur.` };
-      }
-
-      const { data: vcLinks } = await admin
-        .from("vehicule_chauffeurs")
-        .select("chauffeur_id")
-        .eq("vehicule_id", ligne.vehiculeId);
-
-      const candidats = vcLinks?.map((l) => l.chauffeur_id) ?? [];
-      if (candidats.length === 0) {
-        await rollback();
-        return { error: `Aucun chauffeur n'est affecté à ${v.marque} ${v.modele}.` };
-      }
-
-      for (const cid of candidats) {
-        const { error: chauffeurErr } = await admin
-          .from("disponibilites_chauffeur")
-          .insert({ chauffeur_id: cid, periode });
-
-        if (!chauffeurErr) {
-          chauffeurId = cid;
-          break;
-        }
-        if (chauffeurErr.code !== "23P01") {
-          console.error("Erreur insertion dispo chauffeur:", chauffeurErr.message);
+    if (!result.ok) {
+      for (const prev of allAssigned) {
+        await admin
+          .from("disponibilites_vehicule")
+          .delete()
+          .eq("vehicule_id", prev.vehiculeId)
+          .eq("type", "reservation")
+          .eq("periode", periode);
+        if (prev.chauffeurId) {
+          await admin
+            .from("disponibilites_chauffeur")
+            .delete()
+            .eq("chauffeur_id", prev.chauffeurId)
+            .eq("periode", periode);
         }
       }
-
-      if (!chauffeurId) {
-        await rollback();
-        return { error: `Aucun chauffeur disponible pour ${v.marque} ${v.modele} sur cette période.` };
-      }
-
-      reservedChauffeurs.push({ chauffeurId, periode });
+      return { error: result.error };
     }
 
-    const montant = Number(v.prix_journalier) * nbJours;
-    const tauxCaution = v.taux_caution ? Number(v.taux_caution) : TAUX_CAUTION_DEFAUT;
-    const caution = Math.round(montant * tauxCaution);
-
-    ligneResults.push({ vehiculeId: ligne.vehiculeId, avecChauffeur: ligne.avecChauffeur, chauffeurId, montant, caution });
+    for (const v of result.vehicles) {
+      allAssigned.push({ ...v, avecChauffeur: ligne.avecChauffeur });
+    }
   }
 
-  const totalMontant = ligneResults.reduce((s, l) => s + l.montant, 0);
-  const totalCaution = ligneResults.reduce((s, l) => s + l.caution, 0);
+  const totalMontant = allAssigned.reduce((s, v) => s + v.montant, 0);
+  const totalCaution = allAssigned.reduce((s, v) => s + v.caution, 0);
 
   const villeDepartFinal = villeDepart === "autre"
     ? (formData.get("ville_depart_autre") as string) || null
@@ -225,14 +146,14 @@ export async function creerDemandeNegociation(
     .from("demandes_transport")
     .insert({
       client_id: user.sub,
-      vehicule_id: ligneResults[0].vehiculeId,
+      vehicule_id: allAssigned[0].vehiculeId,
       type: "reservation_directe",
       categorie: "classique",
       periode,
       ville_depart: villeDepartFinal,
       destination: destinationFinal,
-      avec_chauffeur: ligneResults.some((l) => l.avecChauffeur),
-      chauffeur_id: ligneResults[0].chauffeurId,
+      avec_chauffeur: allAssigned.some((v) => v.avecChauffeur),
+      chauffeur_id: allAssigned[0].chauffeurId,
       montant: totalMontant,
       caution: totalCaution,
       statut: "en_negociation",
@@ -242,17 +163,31 @@ export async function creerDemandeNegociation(
     .single();
 
   if (demandeErr) {
-    await rollback();
+    for (const v of allAssigned) {
+      await admin
+        .from("disponibilites_vehicule")
+        .delete()
+        .eq("vehicule_id", v.vehiculeId)
+        .eq("type", "reservation")
+        .eq("periode", periode);
+      if (v.chauffeurId) {
+        await admin
+          .from("disponibilites_chauffeur")
+          .delete()
+          .eq("chauffeur_id", v.chauffeurId)
+          .eq("periode", periode);
+      }
+    }
     return { error: demandeErr.message };
   }
 
-  const lignesInsert = ligneResults.map((l) => ({
+  const lignesInsert = allAssigned.map((v) => ({
     demande_id: demande.id,
-    vehicule_id: l.vehiculeId,
-    avec_chauffeur: l.avecChauffeur,
-    chauffeur_id: l.chauffeurId,
-    montant_ligne: l.montant,
-    caution_ligne: l.caution,
+    vehicule_id: v.vehiculeId,
+    avec_chauffeur: v.avecChauffeur,
+    chauffeur_id: v.chauffeurId,
+    montant_ligne: v.montant,
+    caution_ligne: v.caution,
   }));
 
   await admin.from("lignes_demande").insert(lignesInsert);

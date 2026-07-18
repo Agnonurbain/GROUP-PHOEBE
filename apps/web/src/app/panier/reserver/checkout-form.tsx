@@ -39,7 +39,7 @@ export function CheckoutForm({
   intervalles: IntervallePrix[];
 }) {
   const router = useRouter();
-  const { items, clearCart } = useCart();
+  const { items, clearCart, count } = useCart();
   const [state, formAction] = useActionState<ReservationMultiState, FormData>(
     async (prev, fd) => {
       const result = await creerReservationMultiple(prev, fd);
@@ -126,7 +126,8 @@ export function CheckoutForm({
       : 0;
 
   const lignesCalc = items.map((item) => {
-    const montant = item.prixJournalier * nbJours;
+    const montantUnitaire = item.prixJournalier * nbJours;
+    const montant = montantUnitaire * item.quantite;
     const caution = Math.round(montant * item.tauxCaution);
     return { ...item, montant, caution, total: montant + caution };
   });
@@ -147,7 +148,10 @@ export function CheckoutForm({
 
   const lignesJson = JSON.stringify(
     items.map((i) => ({
-      vehiculeId: i.vehiculeId,
+      groupKey: i.groupKey,
+      marque: i.marque,
+      modele: i.modele,
+      quantite: i.quantite,
       avecChauffeur: i.avecChauffeur,
     }))
   );
@@ -166,12 +170,12 @@ export function CheckoutForm({
         {/* Recap véhicules */}
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-phoebe-anthracite">
-            Véhicules sélectionnés ({items.length})
+            Véhicules sélectionnés ({count})
           </h2>
           <div className="space-y-2">
             {lignesCalc.map((item) => (
               <div
-                key={item.vehiculeId}
+                key={item.groupKey}
                 className="flex items-center gap-3 rounded-xl border border-phoebe-pearl bg-white p-3"
               >
                 <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-phoebe-pearl">
@@ -185,13 +189,16 @@ export function CheckoutForm({
                     />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center text-[9px] text-phoebe-anthracite/30">
-                      —
+                      &mdash;
                     </div>
                   )}
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-phoebe-anthracite">
                     {item.marque} {item.modele}
+                    {item.quantite > 1 && (
+                      <span className="ml-1 text-phoebe-anthracite/50">&times;{item.quantite}</span>
+                    )}
                   </p>
                   <p className="text-xs text-phoebe-anthracite/50">
                     {CAT_LABELS[item.categorie] ?? item.categorie}
@@ -337,9 +344,10 @@ export function CheckoutForm({
             </h3>
             <dl className="space-y-1 text-sm">
               {lignesCalc.map((l) => (
-                <div key={l.vehiculeId} className="flex justify-between">
+                <div key={l.groupKey} className="flex justify-between">
                   <dt className="text-phoebe-anthracite/60">
-                    {l.marque} {l.modele} ({nbJours}j)
+                    {l.marque} {l.modele}
+                    {l.quantite > 1 ? ` ×${l.quantite}` : ""} ({nbJours}j)
                   </dt>
                   <dd className="font-medium text-phoebe-anthracite">
                     {l.montant.toLocaleString("fr-FR")} FCFA
