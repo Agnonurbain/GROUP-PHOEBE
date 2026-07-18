@@ -11,7 +11,7 @@ export default async function ReservationsPage() {
 
   const { data: demandes } = await supabase
     .from("demandes_transport")
-    .select("*, vehicules(marque, modele)")
+    .select("*, vehicules(marque, modele), lignes_demande(id, vehicule_id, avec_chauffeur, montant_ligne, vehicules(marque, modele))")
     .eq("client_id", user.sub)
     .order("created_at", { ascending: false });
 

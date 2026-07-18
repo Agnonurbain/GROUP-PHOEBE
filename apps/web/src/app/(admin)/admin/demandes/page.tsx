@@ -18,13 +18,13 @@ export default async function DemandesPage() {
 
   const { data: demandes } = await supabase
     .from("demandes_transport")
-    .select("*, vehicules(marque, modele), users!demandes_transport_client_id_fkey(nom, telephone)")
+    .select("*, vehicules(marque, modele), users!demandes_transport_client_id_fkey(nom, telephone), lignes_demande(id, vehicules(marque, modele), avec_chauffeur)")
     .in("statut", ["en_attente_validation", "acceptee", "en_cours"])
     .order("created_at", { ascending: false });
 
   const { data: historique } = await supabase
     .from("demandes_transport")
-    .select("*, vehicules(marque, modele), users!demandes_transport_client_id_fkey(nom, telephone)")
+    .select("*, vehicules(marque, modele), users!demandes_transport_client_id_fkey(nom, telephone), lignes_demande(id, vehicules(marque, modele), avec_chauffeur)")
     .in("statut", ["terminee", "refusee", "annulee"])
     .order("updated_at", { ascending: false })
     .limit(20);
@@ -45,6 +45,7 @@ export default async function DemandesPage() {
               const v = d.vehicules;
               const u = d.users;
               const s = STATUT_LABELS[d.statut];
+              const lignes = (d as Record<string, unknown>).lignes_demande as { id: string; vehicules: { marque: string; modele: string } | null; avec_chauffeur: boolean }[] | undefined;
               const p = d.periode as string | null;
               const debut = p
                 ? new Date(p.replace("[", "").split(",")[0])
@@ -52,6 +53,12 @@ export default async function DemandesPage() {
               const fin = p
                 ? new Date(p.split(",")[1].replace(")", ""))
                 : null;
+
+              const vehiculeLabel = lignes && lignes.length > 1
+                ? `${lignes.length} véhicules`
+                : lignes && lignes.length === 1
+                  ? `${lignes[0].vehicules?.marque ?? ""} ${lignes[0].vehicules?.modele ?? ""}`
+                  : v ? `${v.marque} ${v.modele}` : "—";
 
               return (
                 <div
@@ -62,7 +69,7 @@ export default async function DemandesPage() {
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold text-phoebe-anthracite">
-                          {v ? `${v.marque} ${v.modele}` : "—"}
+                          {vehiculeLabel}
                         </h3>
                         {s && (
                           <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.color}`}>
@@ -85,6 +92,16 @@ export default async function DemandesPage() {
                         {d.ville_depart && ` · ${d.ville_depart}`}
                         {d.destination && ` → ${d.destination}`}
                       </p>
+                      {lignes && lignes.length > 1 && (
+                        <ul className="space-y-0.5">
+                          {lignes.map((l) => (
+                            <li key={l.id} className="text-xs text-phoebe-anthracite/50">
+                              {l.vehicules?.marque} {l.vehicules?.modele}
+                              {l.avec_chauffeur && " · chauffeur"}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                       <p className="text-sm font-medium text-phoebe-anthracite">
                         {d.montant ? `${Number(d.montant).toLocaleString("fr-FR")} FCFA` : "—"}
                         {d.caution ? ` + ${Number(d.caution).toLocaleString("fr-FR")} caution` : ""}
@@ -108,13 +125,19 @@ export default async function DemandesPage() {
               {historique.map((d) => {
                 const v = d.vehicules;
                 const s = STATUT_LABELS[d.statut];
+                const hLignes = (d as Record<string, unknown>).lignes_demande as { id: string; vehicules: { marque: string; modele: string } | null }[] | undefined;
+                const hLabel = hLignes && hLignes.length > 1
+                  ? `${hLignes.length} véhicules`
+                  : hLignes && hLignes.length === 1
+                    ? `${hLignes[0].vehicules?.marque ?? ""} ${hLignes[0].vehicules?.modele ?? ""}`
+                    : v ? `${v.marque} ${v.modele}` : "—";
                 return (
                   <div
                     key={d.id}
                     className="flex items-center justify-between rounded-lg bg-phoebe-pearl/50 px-4 py-2 text-sm"
                   >
                     <span className="text-phoebe-anthracite/70">
-                      {v ? `${v.marque} ${v.modele}` : "—"} ·{" "}
+                      {hLabel} ·{" "}
                       {new Date(d.updated_at).toLocaleDateString("fr-FR")}
                     </span>
                     {s && (

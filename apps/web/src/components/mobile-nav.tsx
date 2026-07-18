@@ -2,18 +2,22 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { CartBadge } from "./cart-badge";
 
 export function MobileNav({
   links,
   authAction,
+  showCart,
 }: {
   links: { href: string; label: string }[];
   authAction?: React.ReactNode;
+  showCart?: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="md:hidden">
+    <div className="flex items-center gap-1 md:hidden">
+      {showCart && <CartBadge />}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Header } from "@/components/header";
 import { FavoriButton } from "@/components/favori-button";
 import { DisponibiliteChecker } from "@/components/disponibilite-checker";
+import { AjouterPanierButton } from "@/components/ajouter-panier-button";
 import { createClient } from "@/lib/supabase/server";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 
@@ -275,12 +276,18 @@ export default async function VehiculeDetailPage({
 
             {/* CTA */}
             {mode === "location" && v.prix_journalier && v.statut === "disponible" && (
-              <Link
-                href={`/catalogue/${v.id}/reserver`}
-                className="block w-full rounded-xl bg-phoebe-green py-3 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md active:scale-[0.98]"
-              >
-                Réserver ce véhicule
-              </Link>
+              <AjouterPanierButton
+                vehicule={{
+                  vehiculeId: v.id,
+                  marque: v.marque,
+                  modele: v.modele,
+                  categorie: v.categorie,
+                  prixJournalier: Number(v.prix_journalier),
+                  tauxCaution: v.taux_caution ? Number(v.taux_caution) : 0.3,
+                  chauffeurDisponible: v.chauffeur_disponible,
+                  photoUrl: photos?.[0]?.url ?? null,
+                }}
+              />
             )}
 
             {mode === "achat" && v.prix_vente && v.statut === "disponible" && (

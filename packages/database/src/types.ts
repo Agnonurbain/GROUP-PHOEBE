@@ -870,6 +870,61 @@ export type Database = {
           },
         ]
       }
+      lignes_demande: {
+        Row: {
+          avec_chauffeur: boolean
+          caution_ligne: number | null
+          chauffeur_id: string | null
+          created_at: string
+          demande_id: string
+          id: string
+          montant_ligne: number | null
+          vehicule_id: string
+        }
+        Insert: {
+          avec_chauffeur?: boolean
+          caution_ligne?: number | null
+          chauffeur_id?: string | null
+          created_at?: string
+          demande_id: string
+          id?: string
+          montant_ligne?: number | null
+          vehicule_id: string
+        }
+        Update: {
+          avec_chauffeur?: boolean
+          caution_ligne?: number | null
+          chauffeur_id?: string | null
+          created_at?: string
+          demande_id?: string
+          id?: string
+          montant_ligne?: number | null
+          vehicule_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lignes_demande_chauffeur_id_fkey"
+            columns: ["chauffeur_id"]
+            isOneToOne: false
+            referencedRelation: "chauffeurs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lignes_demande_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: false
+            referencedRelation: "demandes_transport"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lignes_demande_vehicule_id_fkey"
+            columns: ["vehicule_id"]
+            isOneToOne: false
+            referencedRelation: "vehicules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       livreurs: {
         Row: {
           actif: boolean

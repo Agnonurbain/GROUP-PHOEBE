@@ -15,6 +15,14 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   terminee: { label: "Terminée", color: "bg-phoebe-pearl text-phoebe-anthracite" },
 };
 
+type LigneDemande = {
+  id: string;
+  vehicule_id: string;
+  avec_chauffeur: boolean;
+  montant_ligne: number | null;
+  vehicules: { marque: string; modele: string } | null;
+};
+
 type Demande = {
   id: string;
   statut: string;
@@ -26,6 +34,7 @@ type Demande = {
   destination: string | null;
   caution_retenue: number;
   created_at: string;
+  lignes_demande?: LigneDemande[];
 };
 
 export function ReservationCard({
@@ -45,6 +54,7 @@ export function ReservationCard({
   const [avisState, avisAction] = useActionState<AvisState, FormData>(noterVehicule, {});
   const [showAvis, setShowAvis] = useState(false);
 
+  const lignes = demande.lignes_demande ?? [];
   const canCancel = ["en_attente_validation", "acceptee"].includes(demande.statut);
   const canRate = demande.statut === "terminee" && !dejaNote && !avisState.success;
 
@@ -68,7 +78,13 @@ export function ReservationCard({
         <div>
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-phoebe-anthracite">
-              {vehicule ? `${vehicule.marque} ${vehicule.modele}` : "—"}
+              {lignes.length > 0
+                ? lignes.length === 1
+                  ? `${lignes[0].vehicules?.marque ?? ""} ${lignes[0].vehicules?.modele ?? ""}`
+                  : `${lignes.length} véhicules`
+                : vehicule
+                  ? `${vehicule.marque} ${vehicule.modele}`
+                  : "—"}
             </h3>
             {s && (
               <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.color}`}>
@@ -76,6 +92,16 @@ export function ReservationCard({
               </span>
             )}
           </div>
+          {lignes.length > 1 && (
+            <ul className="mt-1 space-y-0.5">
+              {lignes.map((l) => (
+                <li key={l.id} className="text-xs text-phoebe-anthracite/50">
+                  {l.vehicules?.marque} {l.vehicules?.modele}
+                  {l.avec_chauffeur && " · chauffeur"}
+                </li>
+              ))}
+            </ul>
+          )}
           <p className="text-sm text-phoebe-anthracite/60">
             {debut && fin
               ? `Du ${debut.toLocaleDateString("fr-FR")} au ${fin.toLocaleDateString("fr-FR")}`

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { MobileNav } from "./mobile-nav";
 import { LogoutButton } from "./logout-button";
+import { CartBadge } from "./cart-badge";
 
 function LogoMark() {
   return (
@@ -73,6 +74,7 @@ export async function Header() {
                   {link.label}
                 </Link>
               ))}
+              {!isStaff && <CartBadge />}
               <div className="ml-2 h-5 w-px bg-phoebe-anthracite/10" />
               <LogoutButton className="ml-2 rounded-lg px-3 py-1.5 text-phoebe-anthracite/50 transition-colors hover:bg-error/5 hover:text-error" />
             </>
@@ -102,6 +104,7 @@ export async function Header() {
 
         <MobileNav
           links={navLinks}
+          showCart={!isStaff}
           authAction={
             user && profile ? (
               <LogoutButton className="w-full rounded-lg border border-error/20 px-3 py-2.5 text-sm text-error transition-colors hover:bg-error/5" />
