@@ -137,6 +137,13 @@ export default function Filtres() {
         </button>
         <button
           type="button"
+          onClick={() => toggle("vente", "oui")}
+          className={`${chipBase} ${get("vente") === "oui" ? "border-phoebe-gold bg-phoebe-gold/10 text-phoebe-gold" : chipInactive}`}
+        >
+          À vendre
+        </button>
+        <button
+          type="button"
           onClick={() => setShowMore((s) => !s)}
           className={`${chipBase} border-dashed ${showMore ? "border-phoebe-green text-phoebe-green-deep" : "border-phoebe-anthracite/20 text-phoebe-anthracite/40"}`}
         >

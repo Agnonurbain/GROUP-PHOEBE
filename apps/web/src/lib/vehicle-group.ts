@@ -15,6 +15,7 @@ export type VehicleGroup = {
   nbPlaces: number | null;
   annee: number | null;
   assurance: boolean;
+  prixVente: number | null;
 };
 
 export function makeGroupKey(marque: string, modele: string): string {
@@ -51,6 +52,7 @@ type VehiculeRow = {
   nb_places: number | null;
   annee: number | null;
   assurance_url: string | null;
+  prix_vente: number | null;
 };
 
 export function groupVehicles(
@@ -107,6 +109,10 @@ export function groupVehicles(
       nbPlaces: places.size === 1 ? [...places][0]! : null,
       annee: Math.min(...items.map((v) => v.annee ?? 9999)),
       assurance: items.every((v) => !!v.assurance_url),
+      prixVente: (() => {
+        const vp = items.map((v) => Number(v.prix_vente)).filter((p) => p > 0);
+        return vp.length > 0 ? Math.min(...vp) : null;
+      })(),
     });
   }
 

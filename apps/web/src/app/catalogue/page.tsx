@@ -59,6 +59,7 @@ async function VehiculeGrid({
   if (sp.chauffeur === "non") query = query.eq("chauffeur_disponible", false);
   if (sp.clim === "oui") query = query.eq("climatisation", true);
   if (sp.gps === "oui") query = query.eq("gps", true);
+  if (sp.vente === "oui") query = query.gt("prix_vente", 0);
 
   const { data: vehicules } = await query;
 
@@ -146,6 +147,11 @@ async function VehiculeGrid({
             {g.prixJournalier > 0 && (
               <p className="text-sm font-medium text-phoebe-green">
                 à partir de {g.prixJournalier.toLocaleString("fr-FR")} FCFA/jour
+              </p>
+            )}
+            {g.prixVente && (
+              <p className="text-sm font-medium text-phoebe-gold">
+                Achat : {g.prixVente.toLocaleString("fr-FR")} FCFA
               </p>
             )}
 
