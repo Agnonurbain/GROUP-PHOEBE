@@ -87,6 +87,7 @@ export function AdminMobileNav({
                   Demandes
                 </NavLink>
                 <NavLink href="/admin/vehicules">Vehicules</NavLink>
+                <NavLink href="/admin/reserver-pour-client">Réserver pour client</NavLink>
                 <NavLink href="/admin/verifications" exact>
                   Verifications
                 </NavLink>
