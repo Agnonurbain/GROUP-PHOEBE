@@ -21,7 +21,7 @@ export default async function DemandesPage() {
   const { data: demandes } = await supabase
     .from("demandes_transport")
     .select("*, vehicules(marque, modele), users!demandes_transport_client_id_fkey(nom, telephone), lignes_demande(id, vehicules(marque, modele), avec_chauffeur)")
-    .in("statut", ["en_attente_validation", "en_negociation", "acceptee", "en_cours"])
+    .in("statut", ["en_attente_paiement", "en_attente_validation", "en_negociation", "acceptee", "en_cours"])
     .order("created_at", { ascending: false });
 
   const { data: historique } = await supabase

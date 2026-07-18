@@ -7,7 +7,7 @@ import { payerPrixNegocie, type NegociationState } from "@/app/actions/negociati
 import { SubmitButton } from "@/components/submit-button";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
-  en_attente_paiement: { label: "En attente de paiement", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+  en_attente_paiement: { label: "En attente de paiement", color: "bg-blue-50 text-blue-700" },
   en_negociation: { label: "En négociation", color: "bg-phoebe-gold/10 text-phoebe-gold" },
   en_attente_validation: { label: "En attente de validation", color: "bg-phoebe-gold/10 text-phoebe-gold" },
   acceptee: { label: "Acceptée", color: "bg-phoebe-green/10 text-phoebe-green-deep" },

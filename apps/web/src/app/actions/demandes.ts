@@ -148,7 +148,7 @@ export async function annulerParClient(
     .single();
 
   if (!demande) return { error: "Demande introuvable." };
-  if (!["en_attente_validation", "acceptee"].includes(demande.statut)) {
+  if (!["en_attente_validation", "acceptee", "en_negociation"].includes(demande.statut)) {
     return { error: "Cette demande ne peut plus être annulée." };
   }
 

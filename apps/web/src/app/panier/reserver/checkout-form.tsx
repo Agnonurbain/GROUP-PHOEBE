@@ -140,7 +140,7 @@ export function CheckoutForm({
     communes: communes.filter((c) => c.zone_id === z.id),
   }));
 
-  const selectedDestCommune = communes.find((c) => c.id === communeDest);
+  const selectedDestCommune = communes.find((c) => c.nom === communeDest);
   const destZone = selectedDestCommune
     ? zones.find((z) => z.id === selectedDestCommune.zone_id)
     : null;
@@ -405,60 +405,62 @@ export function CheckoutForm({
             documents depuis votre profil avant de pouvoir réserver.
           </div>
         ) : (
-          <div className="space-y-3">
-            <SubmitButton>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
-
-            <div className="relative flex items-center gap-3 py-1">
-              <div className="flex-1 border-t border-phoebe-anthracite/10" />
-              <span className="text-xs text-phoebe-anthracite/40">ou</span>
-              <div className="flex-1 border-t border-phoebe-anthracite/10" />
-            </div>
-
-            {!showNego ? (
-              <button
-                type="button"
-                onClick={() => setShowNego(true)}
-                className="block w-full rounded-xl border-2 border-phoebe-gold/30 py-3 text-center text-sm font-semibold text-phoebe-gold transition-all hover:border-phoebe-gold hover:bg-phoebe-gold/5"
-              >
-                Négocier le prix
-              </button>
-            ) : (
-              <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4 space-y-3">
-                <p className="text-sm font-medium text-phoebe-anthracite">
-                  Négocier le prix via WhatsApp
-                </p>
-                <p className="text-xs text-phoebe-anthracite/60">
-                  Votre réservation sera créée et les véhicules bloqués.
-                  Un opérateur vous enverra le prix final après discussion.
-                </p>
-                <textarea
-                  value={negoNote}
-                  onChange={(e) => setNegoNote(e.target.value)}
-                  placeholder="Votre proposition ou commentaire (optionnel)"
-                  rows={2}
-                  className={inputClass}
-                />
-                {negoState.error && (
-                  <p className="text-xs text-error">{negoState.error}</p>
-                )}
-                <form action={negoAction}>
-                  <input type="hidden" name="debut" value={debut} />
-                  <input type="hidden" name="fin" value={fin} />
-                  <input type="hidden" name="ville_depart" value={communeDepart} />
-                  <input type="hidden" name="ville_depart_autre" value={autreDepartNom} />
-                  <input type="hidden" name="destination" value={communeDest} />
-                  <input type="hidden" name="destination_autre" value={autreDestNom} />
-                  <input type="hidden" name="negociation_note" value={negoNote} />
-                  <input type="hidden" name="lignes" value={lignesJson} />
-                  <SubmitButton className="w-full rounded-xl bg-phoebe-gold py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/90 hover:shadow-md">
-                    Envoyer la demande de négociation
-                  </SubmitButton>
-                </form>
-              </div>
-            )}
-          </div>
+          <SubmitButton>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
         )}
       </form>
+
+      {verifie && (
+        <div className="mt-3 space-y-3">
+          <div className="relative flex items-center gap-3 py-1">
+            <div className="flex-1 border-t border-phoebe-anthracite/10" />
+            <span className="text-xs text-phoebe-anthracite/40">ou</span>
+            <div className="flex-1 border-t border-phoebe-anthracite/10" />
+          </div>
+
+          {!showNego ? (
+            <button
+              type="button"
+              onClick={() => setShowNego(true)}
+              className="block w-full rounded-xl border-2 border-phoebe-gold/30 py-3 text-center text-sm font-semibold text-phoebe-gold transition-all hover:border-phoebe-gold hover:bg-phoebe-gold/5"
+            >
+              Négocier le prix
+            </button>
+          ) : (
+            <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4 space-y-3">
+              <p className="text-sm font-medium text-phoebe-anthracite">
+                Négocier le prix via WhatsApp
+              </p>
+              <p className="text-xs text-phoebe-anthracite/60">
+                Votre réservation sera créée et les véhicules bloqués.
+                Un opérateur vous enverra le prix final après discussion.
+              </p>
+              <textarea
+                value={negoNote}
+                onChange={(e) => setNegoNote(e.target.value)}
+                placeholder="Votre proposition ou commentaire (optionnel)"
+                rows={2}
+                className={inputClass}
+              />
+              {negoState.error && (
+                <p className="text-xs text-error">{negoState.error}</p>
+              )}
+              <form action={negoAction}>
+                <input type="hidden" name="debut" value={debut} />
+                <input type="hidden" name="fin" value={fin} />
+                <input type="hidden" name="ville_depart" value={communeDepart} />
+                <input type="hidden" name="ville_depart_autre" value={autreDepartNom} />
+                <input type="hidden" name="destination" value={communeDest} />
+                <input type="hidden" name="destination_autre" value={autreDestNom} />
+                <input type="hidden" name="negociation_note" value={negoNote} />
+                <input type="hidden" name="lignes" value={lignesJson} />
+                <SubmitButton className="w-full rounded-xl bg-phoebe-gold py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/90 hover:shadow-md">
+                  Envoyer la demande de négociation
+                </SubmitButton>
+              </form>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 }
