@@ -59,10 +59,32 @@ export function DemandeAchatForm({
         <input type="hidden" name="modele" value={modele} />
         <input type="hidden" name="categorie" value={categorie} />
 
+        <div>
+          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/60">
+            Votre proposition de prix (optionnel)
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              name="prix_propose"
+              type="number"
+              min={1}
+              step={1000}
+              placeholder={prixVente ? String(prixVente) : ""}
+              className="w-full rounded-xl border border-phoebe-anthracite/20 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-phoebe-gold focus:ring-1 focus:ring-phoebe-gold focus:outline-none"
+            />
+            <span className="shrink-0 text-sm text-phoebe-anthracite/50">FCFA</span>
+          </div>
+          {prixVente && prixVente > 0 && (
+            <p className="mt-1 text-xs text-phoebe-anthracite/40">
+              Laissez vide pour accepter le prix affiché
+            </p>
+          )}
+        </div>
+
         <textarea
           name="message"
           placeholder="Message pour l'opérateur (optionnel)"
-          rows={3}
+          rows={2}
           className="w-full rounded-xl border border-phoebe-anthracite/20 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-phoebe-gold focus:ring-1 focus:ring-phoebe-gold focus:outline-none"
         />
 

@@ -4,6 +4,7 @@ import { useActionState, useState, useTransition } from "react";
 import { annulerParClient } from "@/app/actions/demandes";
 import { noterVehicule, type AvisState } from "@/app/actions/avis";
 import { payerPrixNegocie, type NegociationState } from "@/app/actions/negociation";
+import { accepterContreProposition, reProposerPrix, type AchatState } from "@/app/actions/achat";
 import { SubmitButton } from "@/components/submit-button";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
@@ -58,7 +59,10 @@ export function ReservationCard({
 
   const [avisState, avisAction] = useActionState<AvisState, FormData>(noterVehicule, {});
   const [payNegoState, payNegoAction] = useActionState<NegociationState, FormData>(payerPrixNegocie, {});
+  const [acceptContreState, acceptContreAction] = useActionState<AchatState, FormData>(accepterContreProposition, {});
+  const [reProposerState, reProposerAction] = useActionState<AchatState, FormData>(reProposerPrix, {});
   const [showAvis, setShowAvis] = useState(false);
+  const [showReProposer, setShowReProposer] = useState(false);
 
   const lignes = demande.lignes_demande ?? [];
   const isAchat = demande.type === "achat";
@@ -180,10 +184,71 @@ export function ReservationCard({
         </>
       )}
 
-      {demande.statut === "en_negociation" && !demande.prix_negocie && (
+      {demande.statut === "en_negociation" && !isAchat && !demande.prix_negocie && (
         <div className="rounded-lg bg-phoebe-gold/5 px-4 py-3 text-sm text-phoebe-gold">
           En attente du prix négocié — un opérateur vous contactera.
         </div>
+      )}
+
+      {demande.statut === "en_negociation" && isAchat && !acceptContreState.success && !reProposerState.success && (
+        <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4 space-y-3">
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm font-medium text-phoebe-anthracite">
+              Contre-proposition de l&apos;opérateur
+            </span>
+            <span className="text-lg font-bold text-phoebe-gold">
+              {demande.montant ? Number(demande.montant).toLocaleString("fr-FR") : "—"} FCFA
+            </span>
+          </div>
+          {(acceptContreState.error || reProposerState.error) && (
+            <p className="text-xs text-error">
+              {acceptContreState.error || reProposerState.error}
+            </p>
+          )}
+          {!showReProposer ? (
+            <div className="flex gap-2">
+              <form action={acceptContreAction} className="flex-1">
+                <input type="hidden" name="demande_id" value={demande.id} />
+                <SubmitButton className="w-full rounded-lg bg-phoebe-gold px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/90 hover:shadow-md">
+                  Accepter ce prix
+                </SubmitButton>
+              </form>
+              <button
+                type="button"
+                onClick={() => setShowReProposer(true)}
+                className="rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-xs text-phoebe-anthracite/60 hover:bg-phoebe-pearl"
+              >
+                Proposer un autre prix
+              </button>
+            </div>
+          ) : (
+            <form action={reProposerAction} className="flex items-end gap-2">
+              <input type="hidden" name="demande_id" value={demande.id} />
+              <div className="flex-1">
+                <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/50">
+                  Votre prix (FCFA)
+                </label>
+                <input
+                  name="prix_propose"
+                  type="number"
+                  min={1}
+                  step={1000}
+                  required
+                  className="w-full rounded-lg border border-phoebe-anthracite/20 px-2 py-1.5 text-sm"
+                />
+              </div>
+              <SubmitButton className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/90 hover:shadow-md">
+                Envoyer
+              </SubmitButton>
+            </form>
+          )}
+        </div>
+      )}
+      {acceptContreState.success && (
+        <p className="text-xs text-phoebe-green">Prix accepté — paiement de l&apos;acompte en cours...</p>
+      )}
+      {reProposerState.success && (
+        <p className="text-xs text-phoebe-green">Nouvelle proposition envoyée à l&apos;opérateur.</p>
       )}
 
       {canPayNego && (

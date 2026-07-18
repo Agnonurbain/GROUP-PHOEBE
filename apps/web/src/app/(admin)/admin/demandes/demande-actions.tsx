@@ -8,7 +8,7 @@ import {
   type DemandeActionState,
 } from "@/app/actions/demandes";
 import { envoyerPrixNegocie, type NegociationState } from "@/app/actions/negociation";
-import { accepterAchatAvecAcompte, type AchatState } from "@/app/actions/achat";
+import { accepterAchatAvecAcompte, contreProposerAchat, type AchatState } from "@/app/actions/achat";
 import { SubmitButton } from "@/components/submit-button";
 
 export function DemandeActions({
@@ -40,15 +40,20 @@ export function DemandeActions({
     accepterAchatAvecAcompte,
     {}
   );
+  const [contreState, contreAction] = useActionState<AchatState, FormData>(
+    contreProposerAchat,
+    {}
+  );
   const [showPrixForm, setShowPrixForm] = useState(false);
   const [showAcompteForm, setShowAcompteForm] = useState(false);
+  const [showContreForm, setShowContreForm] = useState(false);
   const isAchat = type === "achat";
 
   return (
     <div className="flex flex-col items-end gap-2">
-      {(acceptState.error || refusState.error || negoState.error || achatState.error) && (
+      {(acceptState.error || refusState.error || negoState.error || achatState.error || contreState.error) && (
         <p className="text-xs text-error">
-          {acceptState.error || refusState.error || negoState.error || achatState.error}
+          {acceptState.error || refusState.error || negoState.error || achatState.error || contreState.error}
         </p>
       )}
       {acceptState.success && (
@@ -56,6 +61,9 @@ export function DemandeActions({
       )}
       {achatState.success && (
         <p className="text-xs text-phoebe-green">Acompte demandé au client</p>
+      )}
+      {contreState.success && (
+        <p className="text-xs text-phoebe-green">Contre-proposition envoyée</p>
       )}
       {refusState.success && (
         <p className="text-xs text-phoebe-green">Refusée + remboursement</p>
@@ -81,16 +89,28 @@ export function DemandeActions({
         </div>
       )}
 
-      {statut === "en_attente_validation" && isAchat && !achatState.success && (
+      {statut === "en_attente_validation" && isAchat && !achatState.success && !contreState.success && (
         <div className="space-y-2">
-          {!showAcompteForm ? (
-            <div className="flex gap-2">
+          {negociationNote && (
+            <p className="max-w-xs text-right text-xs text-phoebe-anthracite/50 italic">
+              {negociationNote}
+            </p>
+          )}
+          {!showAcompteForm && !showContreForm ? (
+            <div className="flex flex-wrap gap-2">
               <button
                 type="button"
                 onClick={() => setShowAcompteForm(true)}
                 className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/90 hover:shadow-md"
               >
                 Accepter (acompte)
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowContreForm(true)}
+                className="rounded-lg border border-phoebe-gold/30 bg-phoebe-gold/5 px-3 py-1.5 text-xs font-medium text-phoebe-gold hover:bg-phoebe-gold/10 hover:shadow-md"
+              >
+                Contre-proposer
               </button>
               <form action={refusAction}>
                 <input type="hidden" name="demande_id" value={demandeId} />
@@ -99,7 +119,7 @@ export function DemandeActions({
                 </SubmitButton>
               </form>
             </div>
-          ) : (
+          ) : showAcompteForm ? (
             <form action={achatAction} className="flex items-end gap-2">
               <input type="hidden" name="demande_id" value={demandeId} />
               <div>
@@ -118,6 +138,27 @@ export function DemandeActions({
                 />
               </div>
               <SubmitButton className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/90 hover:shadow-md">
+                Valider
+              </SubmitButton>
+            </form>
+          ) : (
+            <form action={contreAction} className="flex items-end gap-2">
+              <input type="hidden" name="demande_id" value={demandeId} />
+              <div>
+                <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/50">
+                  Votre prix (FCFA)
+                </label>
+                <input
+                  name="prix_contre"
+                  type="number"
+                  min={1}
+                  step={1000}
+                  required
+                  defaultValue={montantEstime ?? ""}
+                  className="w-36 rounded-lg border border-phoebe-anthracite/20 px-2 py-1.5 text-sm"
+                />
+              </div>
+              <SubmitButton className="rounded-lg border border-phoebe-gold/30 bg-phoebe-gold/5 px-3 py-1.5 text-xs font-medium text-phoebe-gold hover:bg-phoebe-gold/10 hover:shadow-md">
                 Envoyer
               </SubmitButton>
             </form>
@@ -125,11 +166,11 @@ export function DemandeActions({
         </div>
       )}
 
-      {statut === "en_negociation" && !negoState.success && (
+      {statut === "en_negociation" && !isAchat && !negoState.success && (
         <div className="space-y-2">
           {negociationNote && (
             <p className="max-w-xs text-right text-xs text-phoebe-anthracite/50 italic">
-              « {negociationNote} »
+              &laquo; {negociationNote} &raquo;
             </p>
           )}
           {montantEstime && (
@@ -164,6 +205,19 @@ export function DemandeActions({
                 Envoyer
               </SubmitButton>
             </form>
+          )}
+        </div>
+      )}
+
+      {statut === "en_negociation" && isAchat && !achatState.success && !contreState.success && (
+        <div className="space-y-2">
+          <p className="max-w-xs text-right text-xs text-phoebe-anthracite/50">
+            En attente de la réponse du client
+          </p>
+          {montantEstime && (
+            <p className="text-right text-xs font-medium text-phoebe-gold">
+              Prix proposé : {Number(montantEstime).toLocaleString("fr-FR")} FCFA
+            </p>
           )}
         </div>
       )}
