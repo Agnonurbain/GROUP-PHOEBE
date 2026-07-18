@@ -188,6 +188,24 @@ export function ReservationCard({
         </div>
       )}
 
+      {isAchat && demande.statut === "acceptee" && (
+        <div className="rounded-xl border border-phoebe-green/30 bg-phoebe-green/5 p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-phoebe-green">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+            <p className="text-sm font-semibold text-phoebe-green-deep">Acompte payé — vente en cours</p>
+          </div>
+          <p className="text-xs text-phoebe-anthracite/60">
+            La carte grise et le certificat de non-gage vous seront présentés lors du rendez-vous de remise du véhicule. Un opérateur vous contactera pour convenir de la date.
+          </p>
+          <p className="text-xs font-medium text-phoebe-green-deep">
+            Garantie GROUP PHOEBE : si les documents ne sont pas conformes, votre acompte est intégralement remboursé.
+          </p>
+        </div>
+      )}
+
       {canPayNego && (
         <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4 space-y-3">
           <div className="flex items-baseline justify-between">

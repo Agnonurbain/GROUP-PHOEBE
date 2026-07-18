@@ -53,22 +53,6 @@ export default async function EditVehiculePage({
     .eq("vehicule_id", id);
   const chauffeurIds = vcLinks?.map((l) => l.chauffeur_id) ?? [];
 
-  let carteGriseUrl: string | null = null;
-  let certificatUrl: string | null = null;
-
-  if (vehicule.carte_grise_url) {
-    const { data } = await supabase.storage
-      .from("vehicle-documents")
-      .createSignedUrl(vehicule.carte_grise_url, 3600);
-    carteGriseUrl = data?.signedUrl ?? null;
-  }
-  if (vehicule.certificat_non_gage_url) {
-    const { data } = await supabase.storage
-      .from("vehicle-documents")
-      .createSignedUrl(vehicule.certificat_non_gage_url, 3600);
-    certificatUrl = data?.signedUrl ?? null;
-  }
-
   async function handleDelete() {
     "use server";
     await supprimerVehicule(id);
@@ -102,7 +86,6 @@ export default async function EditVehiculePage({
       <VehiculeForm
         vehicule={vehicule}
         action={modifierVehicule}
-        documentUrls={{ carteGrise: carteGriseUrl, certificat: certificatUrl }}
         chauffeurs={chauffeurs ?? []}
         chauffeurIds={chauffeurIds}
       />

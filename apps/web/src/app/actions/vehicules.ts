@@ -43,25 +43,6 @@ export type VehiculeState = {
   success?: boolean;
 };
 
-function checkSaleDocuments(
-  statut: string,
-  prixVente: number | null,
-  carteGrise: string | null | undefined,
-  certificat: string | null | undefined
-): VehiculeState | null {
-  if (
-    statut === "disponible" &&
-    prixVente &&
-    prixVente > 0 &&
-    (!carteGrise || !certificat)
-  ) {
-    return {
-      error:
-        "Une annonce de vente nécessite la carte grise et le certificat de non-gage avant publication.",
-    };
-  }
-  return null;
-}
 
 export async function creerVehicule(
   _prev: VehiculeState,
@@ -78,10 +59,6 @@ export async function creerVehicule(
   }
 
   const prixVente = num(formData.get("prix_vente"));
-  const statut = "indisponible";
-
-  const saleCheck = checkSaleDocuments(statut, prixVente, null, null);
-  if (saleCheck) return saleCheck;
 
   const { data, error } = await supabase
     .from("vehicules")
@@ -138,36 +115,6 @@ export async function modifierVehicule(
     return { error: "Catégorie, marque et modèle sont obligatoires." };
   }
 
-  let carteGrisePath: string | undefined;
-  const carteGrise = formData.get("carte_grise") as File;
-  if (carteGrise && carteGrise.size > 0) {
-    const ext = carteGrise.name.split(".").pop() ?? "pdf";
-    const path = `${id}/carte_grise.${ext}`;
-    const { error: upErr } = await supabase.storage
-      .from("vehicle-documents")
-      .upload(path, await carteGrise.arrayBuffer(), {
-        contentType: carteGrise.type,
-        upsert: true,
-      });
-    if (upErr) return { error: `Upload carte grise : ${upErr.message}` };
-    carteGrisePath = path;
-  }
-
-  let certificatPath: string | undefined;
-  const certificat = formData.get("certificat_non_gage") as File;
-  if (certificat && certificat.size > 0) {
-    const ext = certificat.name.split(".").pop() ?? "pdf";
-    const path = `${id}/certificat_non_gage.${ext}`;
-    const { error: upErr } = await supabase.storage
-      .from("vehicle-documents")
-      .upload(path, await certificat.arrayBuffer(), {
-        contentType: certificat.type,
-        upsert: true,
-      });
-    if (upErr) return { error: `Upload certificat : ${upErr.message}` };
-    certificatPath = path;
-  }
-
   let assurancePath: string | undefined;
   const assuranceFile = formData.get("assurance") as File;
   if (assuranceFile && assuranceFile.size > 0) {
@@ -183,18 +130,7 @@ export async function modifierVehicule(
     assurancePath = path;
   }
 
-  const { data: current } = await supabase
-    .from("vehicules")
-    .select("carte_grise_url, certificat_non_gage_url")
-    .eq("id", id)
-    .single();
-
-  const finalCarteGrise = carteGrisePath ?? current?.carte_grise_url;
-  const finalCertificat = certificatPath ?? current?.certificat_non_gage_url;
   const prixVente = num(formData.get("prix_vente"));
-
-  const saleCheck = checkSaleDocuments(statut, prixVente, finalCarteGrise, finalCertificat);
-  if (saleCheck) return saleCheck;
 
   const { error } = await supabase
     .from("vehicules")
@@ -225,8 +161,6 @@ export async function modifierVehicule(
         | "loue"
         | "vendu"
         | "indisponible",
-      ...(carteGrisePath ? { carte_grise_url: carteGrisePath } : {}),
-      ...(certificatPath ? { certificat_non_gage_url: certificatPath } : {}),
       ...(assurancePath ? { assurance_url: assurancePath } : {}),
       updated_at: new Date().toISOString(),
     })
@@ -270,20 +204,6 @@ export async function supprimerVehicule(id: string): Promise<VehiculeState> {
     if (paths.length > 0) {
       await supabase.storage.from("vehicle-photos").remove(paths);
     }
-  }
-
-  const { data: vehicle } = await supabase
-    .from("vehicules")
-    .select("carte_grise_url, certificat_non_gage_url")
-    .eq("id", id)
-    .single();
-
-  const docPaths = [
-    vehicle?.carte_grise_url,
-    vehicle?.certificat_non_gage_url,
-  ].filter(Boolean) as string[];
-  if (docPaths.length > 0) {
-    await supabase.storage.from("vehicle-documents").remove(docPaths);
   }
 
   const { error } = await supabase.from("vehicules").delete().eq("id", id);

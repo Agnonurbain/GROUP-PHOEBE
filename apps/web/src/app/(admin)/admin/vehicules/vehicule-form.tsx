@@ -10,7 +10,6 @@ type Chauffeur = { id: string; nom: string };
 type Props = {
   vehicule?: Tables<"vehicules">;
   action: (prev: VehiculeState, formData: FormData) => Promise<VehiculeState>;
-  documentUrls?: { carteGrise: string | null; certificat: string | null };
   chauffeurs?: Chauffeur[];
   chauffeurIds?: string[];
 };
@@ -22,7 +21,6 @@ const labelClass = "mb-1 block text-sm font-medium text-phoebe-anthracite";
 export default function VehiculeForm({
   vehicule,
   action,
-  documentUrls,
   chauffeurs = [],
   chauffeurIds = [],
 }: Props) {
@@ -361,62 +359,6 @@ export default function VehiculeForm({
             <p className="mt-1 text-xs text-phoebe-anthracite/50">
               Laisser vide pour utiliser le défaut (30%)
             </p>
-          </div>
-        </fieldset>
-
-        {/* Documents de vente */}
-        <fieldset className="space-y-4">
-          <legend className="text-lg font-semibold text-phoebe-anthracite">
-            Documents de vente
-          </legend>
-          <p className="text-sm text-phoebe-anthracite/60">
-            Obligatoires pour publier une annonce avec prix de vente.
-          </p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="carte_grise" className={labelClass}>
-                Carte grise
-              </label>
-              {documentUrls?.carteGrise && (
-                <a
-                  href={documentUrls.carteGrise}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mb-1 block text-xs text-phoebe-green underline"
-                >
-                  Voir le fichier actuel
-                </a>
-              )}
-              <input
-                id="carte_grise"
-                name="carte_grise"
-                type="file"
-                accept="image/*,.pdf"
-                className="w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-phoebe-pearl file:px-3 file:py-2 file:text-sm file:text-phoebe-anthracite"
-              />
-            </div>
-            <div>
-              <label htmlFor="certificat_non_gage" className={labelClass}>
-                Certificat de non-gage
-              </label>
-              {documentUrls?.certificat && (
-                <a
-                  href={documentUrls.certificat}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mb-1 block text-xs text-phoebe-green underline"
-                >
-                  Voir le fichier actuel
-                </a>
-              )}
-              <input
-                id="certificat_non_gage"
-                name="certificat_non_gage"
-                type="file"
-                accept="image/*,.pdf"
-                className="w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-phoebe-pearl file:px-3 file:py-2 file:text-sm file:text-phoebe-anthracite"
-              />
-            </div>
           </div>
         </fieldset>
 
