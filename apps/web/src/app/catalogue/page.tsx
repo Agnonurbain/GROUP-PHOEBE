@@ -60,19 +60,18 @@ async function VehiculeGrid({
 
   if (sp.categorie)
     query = query.eq("categorie", sp.categorie as "leger" | "car" | "minibus");
-  if (sp.marque) query = query.ilike("marque", `%${sp.marque}%`);
-  if (sp.modele) query = query.ilike("modele", `%${sp.modele}%`);
-  if (sp.localisation)
-    query = query.ilike("localisation", `%${sp.localisation}%`);
+  if (sp.q) {
+    const q = `%${sp.q}%`;
+    query = query.or(`marque.ilike.${q},modele.ilike.${q}`);
+  }
   if (sp.carburant) query = query.ilike("carburant", `%${sp.carburant}%`);
+  if (sp.boite) query = query.eq("boite", sp.boite);
   if (sp.annee_min) query = query.gte("annee", Number(sp.annee_min));
-  if (sp.statut)
-    query = query.eq(
-      "statut",
-      sp.statut as "disponible" | "reserve" | "loue" | "vendu"
-    );
+  if (sp.places_min) query = query.gte("nb_places", Number(sp.places_min));
   if (sp.chauffeur === "oui") query = query.eq("chauffeur_disponible", true);
   if (sp.chauffeur === "non") query = query.eq("chauffeur_disponible", false);
+  if (sp.clim === "oui") query = query.eq("climatisation", true);
+  if (sp.gps === "oui") query = query.eq("gps", true);
 
   const { data: vehicules } = await query;
 
