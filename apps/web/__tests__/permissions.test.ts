@@ -27,7 +27,9 @@ type Permission =
   | "rejeter_verification"
   | "voir_dashboard"
   | "voir_remboursements"
-  | "voir_propositions";
+  | "voir_propositions"
+  | "gerer_tarifs"
+  | "ajouter_commune_client";
 
 const PERMISSIONS: Record<Permission, Role[]> = {
   ajouter_vehicule: ["operateur", "proprietaire"],
@@ -45,6 +47,8 @@ const PERMISSIONS: Record<Permission, Role[]> = {
   voir_dashboard: ["proprietaire"],
   voir_remboursements: ["proprietaire"],
   voir_propositions: ["proprietaire"],
+  gerer_tarifs: ["proprietaire"],
+  ajouter_commune_client: ["client"],
 };
 
 function hasPermission(role: Role, perm: Permission): boolean {
@@ -115,6 +119,10 @@ describe("Matrice de permissions — Opérateur", () => {
   it("ne peut PAS voir les propositions de prix (page admin)", () => {
     expect(hasPermission(role, "voir_propositions")).toBe(false);
   });
+
+  it("ne peut PAS gérer les tarifs", () => {
+    expect(hasPermission(role, "gerer_tarifs")).toBe(false);
+  });
 });
 
 describe("Matrice de permissions — Propriétaire", () => {
@@ -159,6 +167,10 @@ describe("Matrice de permissions — Propriétaire", () => {
   it("peut voir les propositions", () => {
     expect(hasPermission(role, "voir_propositions")).toBe(true);
   });
+
+  it("peut gérer les tarifs (zones, communes, intervalles)", () => {
+    expect(hasPermission(role, "gerer_tarifs")).toBe(true);
+  });
 });
 
 describe("Matrice de permissions — Client", () => {
@@ -202,6 +214,14 @@ describe("Matrice de permissions — Client", () => {
     expect(hasPermission(role, "voir_dashboard")).toBe(false);
     expect(hasPermission(role, "voir_remboursements")).toBe(false);
   });
+
+  it("peut ajouter une commune dynamique (option 'Autre')", () => {
+    expect(hasPermission(role, "ajouter_commune_client")).toBe(true);
+  });
+
+  it("ne peut PAS gérer les tarifs", () => {
+    expect(hasPermission(role, "gerer_tarifs")).toBe(false);
+  });
 });
 
 describe("Matrice de permissions — Livreur", () => {
@@ -225,7 +245,7 @@ describe("Matrice de permissions — proposerPrix vs traiterProposition", () => 
 });
 
 describe("Matrice de permissions — sidebar admin conditionnelle", () => {
-  it("un opérateur ne voit pas les liens Remboursements, Propositions, Comptes, Dashboard", () => {
+  it("un opérateur ne voit pas les liens Remboursements, Propositions, Comptes, Tarifs, Dashboard", () => {
     const role: Role = "operateur";
     const isProprietaire = role === "proprietaire";
 
@@ -235,6 +255,7 @@ describe("Matrice de permissions — sidebar admin conditionnelle", () => {
       verifications: true,
       remboursements: isProprietaire,
       propositions: isProprietaire,
+      tarifs: isProprietaire,
       comptes: isProprietaire,
       dashboard: isProprietaire,
     };
@@ -244,6 +265,7 @@ describe("Matrice de permissions — sidebar admin conditionnelle", () => {
     expect(sidebarLinks.verifications).toBe(true);
     expect(sidebarLinks.remboursements).toBe(false);
     expect(sidebarLinks.propositions).toBe(false);
+    expect(sidebarLinks.tarifs).toBe(false);
     expect(sidebarLinks.comptes).toBe(false);
     expect(sidebarLinks.dashboard).toBe(false);
   });
@@ -258,6 +280,7 @@ describe("Matrice de permissions — sidebar admin conditionnelle", () => {
       verifications: true,
       remboursements: isProprietaire,
       propositions: isProprietaire,
+      tarifs: isProprietaire,
       comptes: isProprietaire,
       dashboard: isProprietaire,
     };

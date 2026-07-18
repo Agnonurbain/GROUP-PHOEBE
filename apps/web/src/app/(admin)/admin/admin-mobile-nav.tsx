@@ -107,6 +107,9 @@ export function AdminMobileNav({
                     Propositions de prix
                   </NavLink>
                 )}
+                {isProprietaire && (
+                  <NavLink href="/admin/tarifs">Zones &amp; Tarifs</NavLink>
+                )}
               </div>
             </div>
 

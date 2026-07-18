@@ -152,7 +152,7 @@ export default function VehiculeForm({
             </div>
           </div>
 
-          <div className="flex gap-6">
+          <div className="flex flex-wrap gap-6">
             <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
               <input
                 type="checkbox"
@@ -170,6 +170,24 @@ export default function VehiculeForm({
                 className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
               />
               Chauffeur disponible
+            </label>
+            <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
+              <input
+                type="checkbox"
+                name="camera_interieure"
+                defaultChecked={vehicule?.camera_interieure ?? true}
+                className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
+              />
+              Caméra intérieure
+            </label>
+            <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
+              <input
+                type="checkbox"
+                name="gps"
+                defaultChecked={vehicule?.gps ?? false}
+                className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
+              />
+              GPS
             </label>
           </div>
 
@@ -202,7 +220,7 @@ export default function VehiculeForm({
           <legend className="text-lg font-semibold text-phoebe-anthracite">
             Détails
           </legend>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <label htmlFor="kilometrage" className={labelClass}>
                 Kilométrage
@@ -226,6 +244,39 @@ export default function VehiculeForm({
                 defaultValue={vehicule?.localisation ?? ""}
                 className={inputClass}
                 placeholder="Abidjan, Cocody"
+              />
+            </div>
+            <div>
+              <label htmlFor="niveau_carburant" className={labelClass}>
+                Niveau carburant
+              </label>
+              <select
+                id="niveau_carburant"
+                name="niveau_carburant"
+                defaultValue={vehicule?.niveau_carburant ?? ""}
+                className={inputClass}
+              >
+                <option value="">—</option>
+                <option value="vide">Vide</option>
+                <option value="quart">¼</option>
+                <option value="demi">½</option>
+                <option value="trois_quarts">¾</option>
+                <option value="plein">Plein</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="assurance" className={labelClass}>
+                Assurance (fichier)
+              </label>
+              {vehicule?.assurance_url && (
+                <p className="mb-1 text-xs text-phoebe-green">Fichier actuel enregistré</p>
+              )}
+              <input
+                id="assurance"
+                name="assurance"
+                type="file"
+                accept="image/*,.pdf"
+                className="w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-phoebe-pearl file:px-3 file:py-2 file:text-sm file:text-phoebe-anthracite"
               />
             </div>
           </div>

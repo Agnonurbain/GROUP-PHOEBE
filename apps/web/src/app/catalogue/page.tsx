@@ -26,11 +26,6 @@ const CAT_LABELS: Record<string, string> = {
   minibus: "Minibus",
 };
 
-function formatPrice(val: number | null): string | null {
-  if (!val) return null;
-  return `${Number(val).toLocaleString("fr-FR")} FCFA`;
-}
-
 function GridSkeleton() {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -70,17 +65,6 @@ async function VehiculeGrid({
   if (sp.localisation)
     query = query.ilike("localisation", `%${sp.localisation}%`);
   if (sp.carburant) query = query.ilike("carburant", `%${sp.carburant}%`);
-  if (sp.usage === "location")
-    query = query.or("prix_journalier.gt.0,prix_mensuel.gt.0");
-  if (sp.usage === "vente") query = query.gt("prix_vente", 0);
-  if (sp.prix_max && sp.usage) {
-    const max = Number(sp.prix_max);
-    if (sp.usage === "vente") {
-      query = query.lte("prix_vente", max);
-    } else {
-      query = query.lte("prix_journalier", max);
-    }
-  }
   if (sp.annee_min) query = query.gte("annee", Number(sp.annee_min));
   if (sp.statut)
     query = query.eq(
@@ -138,7 +122,7 @@ async function VehiculeGrid({
             key={v.id}
             className="cursor-pointer overflow-hidden rounded-xl border border-phoebe-pearl bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
           >
-            <Link href={`/catalogue/${v.id}`} className="relative block aspect-[4/3]">
+            <Link href={`/catalogue/${v.id}/choix`} className="relative block aspect-[4/3]">
               {photo ? (
                 <Image
                   src={photo}
@@ -156,7 +140,7 @@ async function VehiculeGrid({
 
             <div className="space-y-2 p-4">
               <div className="flex items-start justify-between gap-2">
-                <Link href={`/catalogue/${v.id}`} className="min-w-0">
+                <Link href={`/catalogue/${v.id}/choix`} className="min-w-0">
                   <h2 className="font-semibold text-phoebe-anthracite hover:text-phoebe-green">
                     {v.marque} {v.modele}
                   </h2>
@@ -183,27 +167,6 @@ async function VehiculeGrid({
                 </div>
               </div>
 
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                {v.prix_journalier && (
-                  <span className="text-phoebe-anthracite">
-                    <span className="font-semibold text-phoebe-green">
-                      {formatPrice(v.prix_journalier)}
-                    </span>
-                    /jour
-                  </span>
-                )}
-                {v.prix_mensuel && (
-                  <span className="text-phoebe-anthracite/60">
-                    {formatPrice(v.prix_mensuel)}/mois
-                  </span>
-                )}
-                {v.prix_vente && (
-                  <span className="text-phoebe-gold">
-                    Vente : {formatPrice(v.prix_vente)}
-                  </span>
-                )}
-              </div>
-
               <div className="flex flex-wrap gap-2 text-xs text-phoebe-anthracite/50">
                 {v.climatisation && (
                   <span className="rounded bg-phoebe-pearl px-2 py-0.5">
@@ -213,6 +176,16 @@ async function VehiculeGrid({
                 {v.boite && (
                   <span className="rounded bg-phoebe-pearl px-2 py-0.5">
                     {v.boite === "automatique" ? "Auto" : "Manuelle"}
+                  </span>
+                )}
+                {v.assurance_url && (
+                  <span className="rounded bg-phoebe-green/10 px-2 py-0.5 text-phoebe-green-deep">
+                    Assuré
+                  </span>
+                )}
+                {v.gps && (
+                  <span className="rounded bg-phoebe-pearl px-2 py-0.5">
+                    GPS
                   </span>
                 )}
                 {v.chauffeur_disponible && (

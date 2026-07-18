@@ -32,6 +32,23 @@ export default async function ReserverPage({
 
   if (!v || v.statut !== "disponible" || !v.prix_journalier) notFound();
 
+  const [{ data: zones }, { data: communes }, { data: intervalles }] =
+    await Promise.all([
+      supabase
+        .from("zones_tarifaires")
+        .select("id, nom")
+        .order("ordre", { ascending: true }),
+      supabase
+        .from("communes")
+        .select("id, nom, zone_id")
+        .order("nom", { ascending: true }),
+      supabase
+        .from("intervalles_prix")
+        .select("id, zone_id, prix_min, prix_max")
+        .eq("categorie_vehicule", v.categorie)
+        .eq("type", "location"),
+    ]);
+
   const profilIncomplet = !profile?.date_naissance;
   const tropJeune =
     profile?.date_naissance && !hasMinimumAge(profile.date_naissance, 21);
@@ -43,7 +60,7 @@ export default async function ReserverPage({
       <Header />
       <main className="mx-auto max-w-2xl px-4 py-8">
         <Link
-          href={`/catalogue/${id}`}
+          href={`/catalogue/${id}?mode=location`}
           className="mb-4 inline-block text-sm text-phoebe-anthracite/60 hover:text-phoebe-green"
         >
           ← Retour à la fiche
@@ -52,13 +69,6 @@ export default async function ReserverPage({
         <h1 className="mb-6 text-2xl font-bold text-phoebe-anthracite">
           Réserver — {v.marque} {v.modele}
         </h1>
-
-        <div className="mb-6 rounded-xl bg-phoebe-pearl p-4 text-sm text-phoebe-anthracite/70">
-          <span className="font-semibold text-phoebe-green">
-            {Number(v.prix_journalier).toLocaleString("fr-FR")} FCFA
-          </span>{" "}
-          / jour · {v.localisation ?? "—"}
-        </div>
 
         {profilIncomplet ? (
           <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/10 p-6">
@@ -87,6 +97,9 @@ export default async function ReserverPage({
             tauxCaution={tauxCaution}
             chauffeurDisponible={v.chauffeur_disponible}
             verifie={verifie}
+            communes={(communes ?? []).map((c) => ({ id: c.id, nom: c.nom, zone_id: c.zone_id }))}
+            zones={(zones ?? []).map((z) => ({ id: z.id, nom: z.nom }))}
+            intervalles={(intervalles ?? []).map((ip) => ({ id: ip.id, zone_id: ip.zone_id, prix_min: Number(ip.prix_min), prix_max: Number(ip.prix_max) }))}
           />
         )}
       </main>

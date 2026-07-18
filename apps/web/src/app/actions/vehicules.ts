@@ -100,6 +100,9 @@ export async function creerVehicule(
       prix_mensuel: num(formData.get("prix_mensuel")),
       prix_vente: prixVente,
       chauffeur_disponible: formData.get("chauffeur_disponible") === "on",
+      camera_interieure: formData.get("camera_interieure") === "on",
+      gps: formData.get("gps") === "on",
+      niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
       taux_caution: numCaution(formData.get("taux_caution")),
       description: str(formData.get("description")),
       statut: statut as "indisponible",
@@ -165,6 +168,21 @@ export async function modifierVehicule(
     certificatPath = path;
   }
 
+  let assurancePath: string | undefined;
+  const assuranceFile = formData.get("assurance") as File;
+  if (assuranceFile && assuranceFile.size > 0) {
+    const ext = assuranceFile.name.split(".").pop() ?? "pdf";
+    const path = `${id}/assurance.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("vehicle-documents")
+      .upload(path, await assuranceFile.arrayBuffer(), {
+        contentType: assuranceFile.type,
+        upsert: true,
+      });
+    if (upErr) return { error: `Upload assurance : ${upErr.message}` };
+    assurancePath = path;
+  }
+
   const { data: current } = await supabase
     .from("vehicules")
     .select("carte_grise_url, certificat_non_gage_url")
@@ -196,6 +214,9 @@ export async function modifierVehicule(
       prix_mensuel: num(formData.get("prix_mensuel")),
       prix_vente: prixVente,
       chauffeur_disponible: formData.get("chauffeur_disponible") === "on",
+      camera_interieure: formData.get("camera_interieure") === "on",
+      gps: formData.get("gps") === "on",
+      niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
       taux_caution: numCaution(formData.get("taux_caution")),
       description: str(formData.get("description")),
       statut: statut as
@@ -206,6 +227,7 @@ export async function modifierVehicule(
         | "indisponible",
       ...(carteGrisePath ? { carte_grise_url: carteGrisePath } : {}),
       ...(certificatPath ? { certificat_non_gage_url: certificatPath } : {}),
+      ...(assurancePath ? { assurance_url: assurancePath } : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);

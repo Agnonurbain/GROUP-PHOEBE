@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/components/header";
@@ -12,7 +12,6 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
     label: "Disponible",
     color: "bg-phoebe-green/10 text-phoebe-green-deep",
   },
-
   loue: { label: "Loué", color: "bg-blue-50 text-blue-700" },
   vendu: {
     label: "Vendu",
@@ -26,6 +25,14 @@ const CAT_LABELS: Record<string, string> = {
   minibus: "Minibus",
 };
 
+const CARBURANT_LABELS: Record<string, string> = {
+  vide: "Vide",
+  quart: "¼",
+  demi: "½",
+  trois_quarts: "¾",
+  plein: "Plein",
+};
+
 function formatPrice(val: number | null): string | null {
   if (!val) return null;
   return `${Number(val).toLocaleString("fr-FR")} FCFA`;
@@ -33,10 +40,19 @@ function formatPrice(val: number | null): string | null {
 
 export default async function VehiculeDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const { id } = await params;
+  const sp = await searchParams;
+  const mode = sp.mode as "location" | "achat" | undefined;
+
+  if (!mode) {
+    redirect(`/catalogue/${id}/choix`);
+  }
+
   await expirerReservationsAbandonnees();
   const supabase = await createClient();
 
@@ -56,6 +72,10 @@ export default async function VehiculeDetailPage({
 
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
+
+  if (!user) {
+    redirect(`/inscription?redirect=/catalogue/${id}/choix`);
+  }
 
   let isFavori = false;
   if (user) {
@@ -78,6 +98,13 @@ export default async function VehiculeDetailPage({
     avisNotes.length > 0
       ? avisNotes.reduce((s, n) => s + n, 0) / avisNotes.length
       : null;
+
+  const { data: intervalles } = await supabase
+    .from("intervalles_prix")
+    .select("*, zones_tarifaires!inner(nom, ordre)")
+    .eq("categorie_vehicule", v.categorie)
+    .eq("type", mode === "achat" ? "vente" : "location")
+    .order("ordre", { referencedTable: "zones_tarifaires", ascending: true });
 
   const s = STATUT_LABELS[v.statut];
 
@@ -133,7 +160,18 @@ export default async function VehiculeDetailPage({
           {/* Infos */}
           <div className="space-y-6">
             <div>
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs">
+                <Link
+                  href={`/catalogue/${v.id}/choix`}
+                  className="rounded-full border border-phoebe-anthracite/20 px-3 py-1 text-phoebe-anthracite/60 transition-colors hover:border-phoebe-green hover:text-phoebe-green"
+                >
+                  ← Changer (Achat / Location)
+                </Link>
+                <span className={`rounded-full px-3 py-1 font-medium ${mode === "location" ? "bg-phoebe-green/10 text-phoebe-green-deep" : "bg-phoebe-gold/10 text-phoebe-gold"}`}>
+                  {mode === "location" ? "Location" : "Achat"}
+                </span>
+              </div>
+              <div className="mt-3 flex items-start justify-between gap-3">
                 <h1 className="text-2xl font-bold text-phoebe-anthracite">
                   {v.marque} {v.modele}
                 </h1>
@@ -168,52 +206,66 @@ export default async function VehiculeDetailPage({
               </p>
             </div>
 
-            {/* Tarifs */}
-            <div className="rounded-xl bg-phoebe-pearl p-4">
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
-                Tarifs
-              </h2>
-              <div className="space-y-2">
-                {v.prix_journalier && (
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-phoebe-anthracite/70">
-                      Location journalière
-                    </span>
-                    <span className="text-lg font-bold text-phoebe-green">
-                      {formatPrice(v.prix_journalier)}
-                    </span>
-                  </div>
-                )}
-                {v.prix_mensuel && (
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-sm text-phoebe-anthracite/70">
-                      Location mensuelle
-                    </span>
-                    <span className="font-semibold text-phoebe-anthracite">
-                      {formatPrice(v.prix_mensuel)}
-                    </span>
-                  </div>
-                )}
-                {v.prix_vente && (
-                  <div className="flex items-baseline justify-between border-t border-phoebe-anthracite/10 pt-2">
-                    <span className="text-sm text-phoebe-anthracite/70">
-                      Prix de vente
-                    </span>
-                    <span className="font-semibold text-phoebe-gold">
-                      {formatPrice(v.prix_vente)}
-                    </span>
-                  </div>
+            {/* Tarifs par zone */}
+            {intervalles && intervalles.length > 0 && (
+              <div className="rounded-xl bg-phoebe-pearl p-4">
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+                  {mode === "location" ? "Tarifs indicatifs par zone" : "Prix indicatifs"}
+                </h2>
+                <div className="space-y-2">
+                  {intervalles.map((ip) => (
+                    <div key={ip.id} className="flex items-baseline justify-between">
+                      <span className="text-sm text-phoebe-anthracite/70">
+                        {(ip.zones_tarifaires as { nom: string }).nom}
+                      </span>
+                      <span className={`font-semibold ${mode === "location" ? "text-phoebe-green" : "text-phoebe-gold"}`}>
+                        {formatPrice(ip.prix_min)} — {formatPrice(ip.prix_max)}
+                        {mode === "location" && <span className="text-xs font-normal text-phoebe-anthracite/50"> /jour</span>}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 text-xs text-phoebe-anthracite/40">
+                  Prix approximatifs selon la zone de destination. Le tarif final dépend de la distance et de la durée.
+                </p>
+                {v.chauffeur_disponible && (
+                  <p className="mt-2 rounded-lg bg-phoebe-green/10 px-3 py-2 text-sm text-phoebe-green-deep">
+                    Option chauffeur disponible — supplément tarifaire applicable.
+                  </p>
                 )}
               </div>
-              {v.chauffeur_disponible && (
-                <p className="mt-3 rounded-lg bg-phoebe-green/10 px-3 py-2 text-sm text-phoebe-green-deep">
-                  Option chauffeur disponible — supplément tarifaire applicable
-                  au moment de la réservation.
-                </p>
-              )}
-            </div>
+            )}
 
-            {(v.prix_journalier || v.prix_mensuel) &&
+            {/* Assurance */}
+            {v.assurance_url && (
+              <div className="flex items-center gap-3 rounded-xl bg-phoebe-green/5 px-4 py-3">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-phoebe-green">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-phoebe-green-deep">Véhicule assuré</p>
+                  <p className="text-xs text-phoebe-anthracite/50">Ce véhicule est couvert par une assurance tous risques.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Caméra de sécurité */}
+            {v.camera_interieure && (
+              <div className="flex items-center gap-3 rounded-xl bg-blue-50 px-4 py-3">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-blue-600">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-blue-700">Caméra intérieure de sécurité</p>
+                  <p className="text-xs text-phoebe-anthracite/50">Ce véhicule est équipé d&apos;une caméra de surveillance intérieure pour la sécurité de tous.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Disponibilité checker (location uniquement) */}
+            {mode === "location" &&
+              (v.prix_journalier || v.prix_mensuel) &&
               v.statut !== "vendu" && (
                 <DisponibiliteChecker
                   vehiculeId={v.id}
@@ -221,13 +273,31 @@ export default async function VehiculeDetailPage({
                 />
               )}
 
-            {v.prix_journalier && v.statut === "disponible" && (
+            {/* CTA */}
+            {mode === "location" && v.prix_journalier && v.statut === "disponible" && (
               <Link
                 href={`/catalogue/${v.id}/reserver`}
                 className="block w-full rounded-xl bg-phoebe-green py-3 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md active:scale-[0.98]"
               >
                 Réserver ce véhicule
               </Link>
+            )}
+
+            {mode === "achat" && v.prix_vente && v.statut === "disponible" && (
+              <div className="space-y-3">
+                <div className="rounded-xl bg-phoebe-gold/10 p-4 text-center">
+                  <p className="text-sm text-phoebe-anthracite/60">Prix de vente indicatif</p>
+                  <p className="text-2xl font-bold text-phoebe-gold">{formatPrice(v.prix_vente)}</p>
+                </div>
+                <a
+                  href={`https://wa.me/2250778631983?text=${encodeURIComponent(`Bonjour, je suis intéressé par l'achat du véhicule ${v.marque} ${v.modele} (${v.annee ?? ""}).`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block w-full rounded-xl bg-phoebe-gold py-3 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/90 hover:shadow-md active:scale-[0.98]"
+                >
+                  Contacter pour l&apos;achat
+                </a>
+              </div>
             )}
 
             {/* Caractéristiques */}
@@ -272,6 +342,18 @@ export default async function VehiculeDetailPage({
                 <dd className="font-medium text-phoebe-anthracite">
                   {v.climatisation ? "Oui" : "Non"}
                 </dd>
+                <dt className="text-phoebe-anthracite/60">GPS</dt>
+                <dd className="font-medium text-phoebe-anthracite">
+                  {v.gps ? "Oui" : "Non"}
+                </dd>
+                {v.niveau_carburant && (
+                  <>
+                    <dt className="text-phoebe-anthracite/60">Niveau carburant</dt>
+                    <dd className="font-medium text-phoebe-anthracite">
+                      {CARBURANT_LABELS[v.niveau_carburant] ?? v.niveau_carburant}
+                    </dd>
+                  </>
+                )}
                 {v.localisation && (
                   <>
                     <dt className="text-phoebe-anthracite/60">Localisation</dt>

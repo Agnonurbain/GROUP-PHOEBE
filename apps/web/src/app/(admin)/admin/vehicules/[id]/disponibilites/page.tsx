@@ -56,7 +56,7 @@ export default async function DisponibilitesPage({
 
     chauffeursAvecBlocages.push({
       ...c,
-      blocages: blocages ?? [],
+      blocages: (blocages ?? []) as { id: string; periode: string | null }[],
     });
   }
 
@@ -80,7 +80,7 @@ export default async function DisponibilitesPage({
         </h2>
 
         <BlocagesVehiculeList
-          blocages={blocagesVehicule ?? []}
+          blocages={(blocagesVehicule ?? []) as { id: string; periode: string | null; type: string; vehicule_id: string }[]}
           vehiculeId={id}
         />
 

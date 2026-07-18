@@ -260,6 +260,38 @@ export type Database = {
           },
         ]
       }
+      communes: {
+        Row: {
+          ajoutee_par_client: boolean
+          created_at: string
+          id: string
+          nom: string
+          zone_id: string
+        }
+        Insert: {
+          ajoutee_par_client?: boolean
+          created_at?: string
+          id?: string
+          nom: string
+          zone_id: string
+        }
+        Update: {
+          ajoutee_par_client?: boolean
+          created_at?: string
+          id?: string
+          nom?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communes_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_tarifaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conducteurs_secondaires: {
         Row: {
           created_at: string
@@ -453,7 +485,7 @@ export type Database = {
           kilometrage_retour?: number | null
           methode_paiement?: string | null
           montant?: number | null
-          periode?: unknown
+          periode?: string | null
           statut?: string
           type: string
           updated_at?: string
@@ -479,7 +511,7 @@ export type Database = {
           kilometrage_retour?: number | null
           methode_paiement?: string | null
           montant?: number | null
-          periode?: unknown
+          periode?: string | null
           statut?: string
           type?: string
           updated_at?: string
@@ -524,7 +556,7 @@ export type Database = {
         Update: {
           chauffeur_id?: string
           id?: string
-          periode?: unknown
+          periode?: string | null
         }
         Relationships: [
           {
@@ -551,7 +583,7 @@ export type Database = {
         }
         Update: {
           id?: string
-          periode?: unknown
+          periode?: string | null
           type?: string
           vehicule_id?: string
         }
@@ -793,6 +825,47 @@ export type Database = {
             columns: ["vehicule_id"]
             isOneToOne: false
             referencedRelation: "vehicules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      intervalles_prix: {
+        Row: {
+          categorie_vehicule: string
+          created_at: string
+          id: string
+          prix_max: number
+          prix_min: number
+          type: string
+          updated_at: string
+          zone_id: string
+        }
+        Insert: {
+          categorie_vehicule: string
+          created_at?: string
+          id?: string
+          prix_max: number
+          prix_min: number
+          type: string
+          updated_at?: string
+          zone_id: string
+        }
+        Update: {
+          categorie_vehicule?: string
+          created_at?: string
+          id?: string
+          prix_max?: number
+          prix_min?: number
+          type?: string
+          updated_at?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "intervalles_prix_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_tarifaires"
             referencedColumns: ["id"]
           },
         ]
@@ -1092,7 +1165,9 @@ export type Database = {
         Row: {
           agence_id: string | null
           annee: number | null
+          assurance_url: string | null
           boite: string | null
+          camera_interieure: boolean
           carburant: string | null
           carte_grise_url: string | null
           categorie: string
@@ -1101,6 +1176,7 @@ export type Database = {
           climatisation: boolean
           created_at: string
           description: string | null
+          gps: boolean
           id: string
           kilometrage: number | null
           latitude: number | null
@@ -1109,6 +1185,7 @@ export type Database = {
           marque: string
           modele: string
           nb_places: number | null
+          niveau_carburant: string | null
           prix_journalier: number | null
           prix_mensuel: number | null
           prix_vente: number | null
@@ -1119,7 +1196,9 @@ export type Database = {
         Insert: {
           agence_id?: string | null
           annee?: number | null
+          assurance_url?: string | null
           boite?: string | null
+          camera_interieure?: boolean
           carburant?: string | null
           carte_grise_url?: string | null
           categorie: string
@@ -1128,6 +1207,7 @@ export type Database = {
           climatisation?: boolean
           created_at?: string
           description?: string | null
+          gps?: boolean
           id?: string
           kilometrage?: number | null
           latitude?: number | null
@@ -1136,6 +1216,7 @@ export type Database = {
           marque: string
           modele: string
           nb_places?: number | null
+          niveau_carburant?: string | null
           prix_journalier?: number | null
           prix_mensuel?: number | null
           prix_vente?: number | null
@@ -1146,7 +1227,9 @@ export type Database = {
         Update: {
           agence_id?: string | null
           annee?: number | null
+          assurance_url?: string | null
           boite?: string | null
+          camera_interieure?: boolean
           carburant?: string | null
           carte_grise_url?: string | null
           categorie?: string
@@ -1155,6 +1238,7 @@ export type Database = {
           climatisation?: boolean
           created_at?: string
           description?: string | null
+          gps?: boolean
           id?: string
           kilometrage?: number | null
           latitude?: number | null
@@ -1163,6 +1247,7 @@ export type Database = {
           marque?: string
           modele?: string
           nb_places?: number | null
+          niveau_carburant?: string | null
           prix_journalier?: number | null
           prix_mensuel?: number | null
           prix_vente?: number | null
@@ -1231,6 +1316,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      zones_tarifaires: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          nom: string
+          ordre: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          nom: string
+          ordre?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          nom?: string
+          ordre?: number
+        }
+        Relationships: []
       }
     }
     Views: {

@@ -94,47 +94,6 @@ export default function Filtres() {
         </div>
 
         <div>
-          <label htmlFor="f-usage" className="sr-only">Type d&apos;usage</label>
-          <select
-            id="f-usage"
-            defaultValue={searchParams.get("usage") ?? ""}
-            onChange={(e) => {
-              const params = new URLSearchParams(searchParams.toString());
-              if (e.target.value) {
-                params.set("usage", e.target.value);
-              } else {
-                params.delete("usage");
-              }
-              params.delete("prix_max");
-              router.push(`/catalogue?${params.toString()}`);
-            }}
-            className={inputClass}
-          >
-            <option value="">Location &amp; Vente</option>
-            <option value="location">Location uniquement</option>
-            <option value="vente">Vente uniquement</option>
-          </select>
-        </div>
-
-        {searchParams.get("usage") && (
-          <div>
-            <label htmlFor="f-prix-max" className="sr-only">Prix maximum</label>
-            <input
-              id="f-prix-max"
-              type="number"
-              placeholder={
-                searchParams.get("usage") === "vente"
-                  ? "Prix max (vente)"
-                  : "Prix max / jour"
-              }
-              defaultValue={searchParams.get("prix_max") ?? ""}
-              onChange={(e) => debouncedUpdate("prix_max", e.target.value)}
-              className={inputClass}
-            />
-          </div>
-        )}
-
-        <div>
           <label htmlFor="f-annee" className="sr-only">Année minimum</label>
           <input
             id="f-annee"

@@ -74,6 +74,9 @@ export default async function AdminShellLayout({
                 Propositions de prix
               </NavLink>
             )}
+            {isProprietaire && (
+              <NavLink href="/admin/tarifs">Zones &amp; Tarifs</NavLink>
+            )}
           </nav>
         </div>
 
