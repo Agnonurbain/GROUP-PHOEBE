@@ -4,6 +4,8 @@ import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payme
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   en_attente_validation: { label: "En attente", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+  en_negociation: { label: "En négociation", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+  en_attente_paiement: { label: "Att. paiement", color: "bg-blue-50 text-blue-700" },
   acceptee: { label: "Acceptée", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
   en_cours: { label: "En cours", color: "bg-blue-50 text-blue-700" },
   refusee: { label: "Refusée", color: "bg-error/10 text-error" },
@@ -19,7 +21,7 @@ export default async function DemandesPage() {
   const { data: demandes } = await supabase
     .from("demandes_transport")
     .select("*, vehicules(marque, modele), users!demandes_transport_client_id_fkey(nom, telephone), lignes_demande(id, vehicules(marque, modele), avec_chauffeur)")
-    .in("statut", ["en_attente_validation", "acceptee", "en_cours"])
+    .in("statut", ["en_attente_validation", "en_negociation", "acceptee", "en_cours"])
     .order("created_at", { ascending: false });
 
   const { data: historique } = await supabase
@@ -108,7 +110,12 @@ export default async function DemandesPage() {
                       </p>
                     </div>
 
-                    <DemandeActions demandeId={d.id} statut={d.statut} />
+                    <DemandeActions
+                      demandeId={d.id}
+                      statut={d.statut}
+                      negociationNote={(d as Record<string, unknown>).negociation_note as string | null}
+                      montantEstime={d.montant ? Number(d.montant) : null}
+                    />
                   </div>
                 </div>
               );

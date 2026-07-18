@@ -459,7 +459,9 @@ export type Database = {
           kilometrage_retour: number | null
           methode_paiement: string | null
           montant: number | null
+          negociation_note: string | null
           periode: string | null
+          prix_negocie: number | null
           statut: string
           type: string
           updated_at: string
@@ -485,7 +487,9 @@ export type Database = {
           kilometrage_retour?: number | null
           methode_paiement?: string | null
           montant?: number | null
+          negociation_note?: string | null
           periode?: string | null
+          prix_negocie?: number | null
           statut?: string
           type: string
           updated_at?: string
@@ -511,7 +515,9 @@ export type Database = {
           kilometrage_retour?: number | null
           methode_paiement?: string | null
           montant?: number | null
+          negociation_note?: string | null
           periode?: string | null
+          prix_negocie?: number | null
           statut?: string
           type?: string
           updated_at?: string

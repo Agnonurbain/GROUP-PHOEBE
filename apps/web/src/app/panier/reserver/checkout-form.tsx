@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
 import { creerReservationMultiple, type ReservationMultiState } from "@/app/actions/reservation-multi";
+import { creerDemandeNegociation, type NegociationState } from "@/app/actions/negociation";
 import { SubmitButton } from "@/components/submit-button";
 
 const inputClass =
@@ -48,20 +49,68 @@ export function CheckoutForm({
     {}
   );
 
+  const [negoState, negoAction] = useActionState<NegociationState, FormData>(
+    async (prev, fd) => {
+      const result = await creerDemandeNegociation(prev, fd);
+      if (result.success) clearCart();
+      return result;
+    },
+    {}
+  );
+
   const [debut, setDebut] = useState("");
   const [fin, setFin] = useState("");
   const [communeDepart, setCommuneDepart] = useState("");
   const [communeDest, setCommuneDest] = useState("");
   const [autreDepartNom, setAutreDepartNom] = useState("");
   const [autreDestNom, setAutreDestNom] = useState("");
+  const [showNego, setShowNego] = useState(false);
+  const [negoNote, setNegoNote] = useState("");
 
   const today = new Date().toISOString().slice(0, 10);
 
   useEffect(() => {
-    if (items.length === 0) {
+    if (items.length === 0 && !negoState.success) {
       router.replace("/panier");
     }
-  }, [items.length, router]);
+  }, [items.length, router, negoState.success]);
+
+  if (negoState.success) {
+    const whatsappUrl = `https://wa.me/2250778631983?text=${encodeURIComponent(
+      `Bonjour, je souhaite négocier le prix de ma réservation (réf: ${negoState.demandeId?.slice(0, 8) ?? ""}). ${negoNote || ""}`
+    )}`;
+    return (
+      <div className="space-y-6 text-center py-8">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-phoebe-green/10">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-green">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold text-phoebe-anthracite">Demande de négociation envoyée</h2>
+        <p className="text-sm text-phoebe-anthracite/60">
+          Votre réservation a été créée avec le statut « en négociation ».
+          Les véhicules sont bloqués pour vous. Un opérateur vous enverra le prix final.
+        </p>
+        <a
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[#1da851] hover:shadow-md"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          Négocier via WhatsApp
+        </a>
+        <a
+          href="/profil/reservations"
+          className="block text-sm text-phoebe-green hover:underline"
+        >
+          Voir mes réservations
+        </a>
+      </div>
+    );
+  }
 
   if (items.length === 0) return null;
 
@@ -356,7 +405,58 @@ export function CheckoutForm({
             documents depuis votre profil avant de pouvoir réserver.
           </div>
         ) : (
-          <SubmitButton>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
+          <div className="space-y-3">
+            <SubmitButton>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
+
+            <div className="relative flex items-center gap-3 py-1">
+              <div className="flex-1 border-t border-phoebe-anthracite/10" />
+              <span className="text-xs text-phoebe-anthracite/40">ou</span>
+              <div className="flex-1 border-t border-phoebe-anthracite/10" />
+            </div>
+
+            {!showNego ? (
+              <button
+                type="button"
+                onClick={() => setShowNego(true)}
+                className="block w-full rounded-xl border-2 border-phoebe-gold/30 py-3 text-center text-sm font-semibold text-phoebe-gold transition-all hover:border-phoebe-gold hover:bg-phoebe-gold/5"
+              >
+                Négocier le prix
+              </button>
+            ) : (
+              <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4 space-y-3">
+                <p className="text-sm font-medium text-phoebe-anthracite">
+                  Négocier le prix via WhatsApp
+                </p>
+                <p className="text-xs text-phoebe-anthracite/60">
+                  Votre réservation sera créée et les véhicules bloqués.
+                  Un opérateur vous enverra le prix final après discussion.
+                </p>
+                <textarea
+                  value={negoNote}
+                  onChange={(e) => setNegoNote(e.target.value)}
+                  placeholder="Votre proposition ou commentaire (optionnel)"
+                  rows={2}
+                  className={inputClass}
+                />
+                {negoState.error && (
+                  <p className="text-xs text-error">{negoState.error}</p>
+                )}
+                <form action={negoAction}>
+                  <input type="hidden" name="debut" value={debut} />
+                  <input type="hidden" name="fin" value={fin} />
+                  <input type="hidden" name="ville_depart" value={communeDepart} />
+                  <input type="hidden" name="ville_depart_autre" value={autreDepartNom} />
+                  <input type="hidden" name="destination" value={communeDest} />
+                  <input type="hidden" name="destination_autre" value={autreDestNom} />
+                  <input type="hidden" name="negociation_note" value={negoNote} />
+                  <input type="hidden" name="lignes" value={lignesJson} />
+                  <SubmitButton className="w-full rounded-xl bg-phoebe-gold py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/90 hover:shadow-md">
+                    Envoyer la demande de négociation
+                  </SubmitButton>
+                </form>
+              </div>
+            )}
+          </div>
         )}
       </form>
     </>
