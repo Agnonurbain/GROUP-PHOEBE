@@ -167,8 +167,8 @@ export default async function GroupeDetailPage({
               </p>
             </div>
 
-            {/* Tarifs par zone */}
-            {intervalles && intervalles.length > 0 && (
+            {/* Tarifs par zone (location uniquement) */}
+            {mode === "location" && intervalles && intervalles.length > 0 && (
               <div className="rounded-xl bg-phoebe-pearl p-4">
                 <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
                   {mode === "location" ? "Tarifs indicatifs par zone" : "Prix indicatifs"}
