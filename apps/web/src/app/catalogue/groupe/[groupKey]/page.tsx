@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/components/header";
 import { AjouterPanierButton } from "@/components/ajouter-panier-button";
+import { DemandeAchatForm } from "@/components/demande-achat-form";
 import { createClient } from "@/lib/supabase/server";
 import { makeGroupKey, groupVehicles } from "@/lib/vehicle-group";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
@@ -228,27 +229,22 @@ export default async function GroupeDetailPage({
             )}
 
             {/* CTA Achat */}
-            {mode === "achat" && (
-              <div className="space-y-3">
-                <div className="rounded-xl bg-phoebe-gold/10 p-4 text-center">
-                  <p className="text-sm text-phoebe-anthracite/60">Prix de vente indicatif</p>
-                  <p className="text-2xl font-bold text-phoebe-gold">
-                    {(() => {
-                      const prices = vehicules.map((v) => Number(v.prix_vente)).filter((p) => p > 0);
-                      return prices.length > 0 ? formatPrice(Math.min(...prices)) : "Sur demande";
-                    })()}
-                  </p>
-                </div>
-                <a
-                  href={`https://wa.me/2250778631983?text=${encodeURIComponent(`Bonjour, je suis intéressé par l'achat du véhicule ${group.marque} ${group.modele}.`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full rounded-xl bg-phoebe-gold py-3 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/90 hover:shadow-md active:scale-[0.98]"
-                >
-                  Contacter pour l&apos;achat
-                </a>
-              </div>
-            )}
+            {mode === "achat" && group.totalCount > 0 && (() => {
+              const dispos = vehicules.filter((v) => v.statut === "disponible" && v.prix_vente);
+              const target = dispos[0] ?? vehicules[0];
+              const prix = dispos.length > 0
+                ? Math.min(...dispos.map((v) => Number(v.prix_vente)))
+                : null;
+              return (
+                <DemandeAchatForm
+                  vehiculeId={target.id}
+                  marque={group.marque}
+                  modele={group.modele}
+                  categorie={group.categorie}
+                  prixVente={prix}
+                />
+              );
+            })()}
 
             {/* Caractéristiques */}
             <div>

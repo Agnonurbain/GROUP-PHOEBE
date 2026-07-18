@@ -27,6 +27,7 @@ type LigneDemande = {
 
 type Demande = {
   id: string;
+  type: string;
   statut: string;
   periode: string | null;
   montant: number | null;
@@ -36,6 +37,7 @@ type Demande = {
   destination: string | null;
   caution_retenue: number;
   prix_negocie: number | null;
+  negociation_note: string | null;
   created_at: string;
   lignes_demande?: LigneDemande[];
 };
@@ -59,6 +61,7 @@ export function ReservationCard({
   const [showAvis, setShowAvis] = useState(false);
 
   const lignes = demande.lignes_demande ?? [];
+  const isAchat = demande.type === "achat";
   const canCancel = ["en_attente_validation", "acceptee", "en_negociation"].includes(demande.statut);
   const canPayNego = demande.statut === "en_attente_paiement" && demande.prix_negocie != null;
   const canRate = demande.statut === "terminee" && !dejaNote && !avisState.success;
@@ -91,6 +94,11 @@ export function ReservationCard({
                   ? `${vehicule.marque} ${vehicule.modele}`
                   : "—"}
             </h3>
+            {isAchat && (
+              <span className="rounded-full bg-phoebe-gold/10 px-2 py-0.5 text-xs font-medium text-phoebe-gold">
+                Achat
+              </span>
+            )}
             {s && (
               <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.color}`}>
                 {s.label}
@@ -108,9 +116,11 @@ export function ReservationCard({
             </ul>
           )}
           <p className="text-sm text-phoebe-anthracite/60">
-            {debut && fin
-              ? `Du ${debut.toLocaleDateString("fr-FR")} au ${fin.toLocaleDateString("fr-FR")}`
-              : "—"}
+            {isAchat
+              ? "Demande d'achat"
+              : debut && fin
+                ? `Du ${debut.toLocaleDateString("fr-FR")} au ${fin.toLocaleDateString("fr-FR")}`
+                : "—"}
             {demande.ville_depart && ` · ${demande.ville_depart}`}
             {demande.destination && ` → ${demande.destination}`}
           </p>
@@ -143,7 +153,7 @@ export function ReservationCard({
               onClick={() => setShowCancel(true)}
               className="text-xs text-error hover:underline"
             >
-              Annuler cette réservation
+              {isAchat ? "Annuler cette demande" : "Annuler cette réservation"}
             </button>
           ) : (
             <div className="flex items-center gap-3 rounded-lg bg-error/5 p-3">

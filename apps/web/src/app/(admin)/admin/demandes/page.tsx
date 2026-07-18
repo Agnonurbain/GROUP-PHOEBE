@@ -78,6 +78,11 @@ export default async function DemandesPage() {
                             {s.label}
                           </span>
                         )}
+                        {d.type === "achat" && (
+                          <span className="rounded-full bg-phoebe-gold/10 px-2 py-0.5 text-xs font-medium text-phoebe-gold">
+                            Achat
+                          </span>
+                        )}
                         {d.avec_chauffeur && (
                           <span className="rounded-full bg-phoebe-green/10 px-2 py-0.5 text-xs font-medium text-phoebe-green-deep">
                             Avec chauffeur
@@ -88,12 +93,19 @@ export default async function DemandesPage() {
                         Client : {u?.nom ?? "—"} · {u?.telephone ?? "—"}
                       </p>
                       <p className="text-sm text-phoebe-anthracite/60">
-                        {debut && fin
-                          ? `Du ${debut.toLocaleDateString("fr-FR")} au ${fin.toLocaleDateString("fr-FR")}`
-                          : "Période non définie"}
+                        {d.type === "achat"
+                          ? "Demande d'achat"
+                          : debut && fin
+                            ? `Du ${debut.toLocaleDateString("fr-FR")} au ${fin.toLocaleDateString("fr-FR")}`
+                            : "Période non définie"}
                         {d.ville_depart && ` · ${d.ville_depart}`}
                         {d.destination && ` → ${d.destination}`}
                       </p>
+                      {d.type === "achat" && d.negociation_note && (
+                        <p className="text-xs italic text-phoebe-anthracite/50">
+                          &laquo; {d.negociation_note} &raquo;
+                        </p>
+                      )}
                       {lignes && lignes.length > 1 && (
                         <ul className="space-y-0.5">
                           {lignes.map((l) => (

@@ -5,6 +5,7 @@ import { Header } from "@/components/header";
 import { FavoriButton } from "@/components/favori-button";
 import { DisponibiliteChecker } from "@/components/disponibilite-checker";
 import { AjouterPanierButton } from "@/components/ajouter-panier-button";
+import { DemandeAchatForm } from "@/components/demande-achat-form";
 import { createClient } from "@/lib/supabase/server";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { makeGroupKey } from "@/lib/vehicle-group";
@@ -302,21 +303,14 @@ export default async function VehiculeDetailPage({
               />
             )}
 
-            {mode === "achat" && v.prix_vente && v.statut === "disponible" && (
-              <div className="space-y-3">
-                <div className="rounded-xl bg-phoebe-gold/10 p-4 text-center">
-                  <p className="text-sm text-phoebe-anthracite/60">Prix de vente indicatif</p>
-                  <p className="text-2xl font-bold text-phoebe-gold">{formatPrice(v.prix_vente)}</p>
-                </div>
-                <a
-                  href={`https://wa.me/2250778631983?text=${encodeURIComponent(`Bonjour, je suis intéressé par l'achat du véhicule ${v.marque} ${v.modele} (${v.annee ?? ""}).`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full rounded-xl bg-phoebe-gold py-3 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/90 hover:shadow-md active:scale-[0.98]"
-                >
-                  Contacter pour l&apos;achat
-                </a>
-              </div>
+            {mode === "achat" && v.statut === "disponible" && (
+              <DemandeAchatForm
+                vehiculeId={v.id}
+                marque={v.marque}
+                modele={v.modele}
+                categorie={v.categorie}
+                prixVente={v.prix_vente ? Number(v.prix_vente) : null}
+              />
             )}
 
             {/* Caractéristiques */}

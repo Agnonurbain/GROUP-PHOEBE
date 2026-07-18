@@ -29,12 +29,12 @@ export default async function ReservationsPage() {
     <div className="mx-auto max-w-2xl">
       <BackLink href="/profil" label="Mon profil" />
       <h1 className="mb-6 mt-2 text-2xl font-bold text-phoebe-anthracite">
-        Mes réservations
+        Mes réservations & achats
       </h1>
 
       {!demandes || demandes.length === 0 ? (
         <p className="text-sm text-phoebe-anthracite/50">
-          Aucune réservation pour le moment.
+          Aucune demande pour le moment.
         </p>
       ) : (
         <div className="space-y-4">
