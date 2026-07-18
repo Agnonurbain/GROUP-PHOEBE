@@ -125,6 +125,7 @@ export default async function DemandesPage() {
                     <DemandeActions
                       demandeId={d.id}
                       statut={d.statut}
+                      type={d.type}
                       negociationNote={(d as Record<string, unknown>).negociation_note as string | null}
                       montantEstime={d.montant ? Number(d.montant) : null}
                     />

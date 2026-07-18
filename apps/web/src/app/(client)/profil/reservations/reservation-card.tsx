@@ -189,11 +189,18 @@ export function ReservationCard({
       {canPayNego && (
         <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4 space-y-3">
           <div className="flex items-baseline justify-between">
-            <span className="text-sm font-medium text-phoebe-anthracite">Prix négocié</span>
+            <span className="text-sm font-medium text-phoebe-anthracite">
+              {isAchat ? "Acompte requis" : "Prix négocié"}
+            </span>
             <span className="text-lg font-bold text-phoebe-gold">
               {Number(demande.prix_negocie).toLocaleString("fr-FR")} FCFA
             </span>
           </div>
+          {isAchat && demande.montant && (
+            <p className="text-xs text-phoebe-anthracite/50">
+              Prix total du véhicule : {Number(demande.montant).toLocaleString("fr-FR")} FCFA
+            </p>
+          )}
           {payNegoState.error && (
             <p className="text-xs text-error">{payNegoState.error}</p>
           )}
@@ -210,7 +217,7 @@ export function ReservationCard({
               </label>
             </div>
             <SubmitButton className="w-full rounded-lg bg-phoebe-gold px-3 py-2 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/90 hover:shadow-md">
-              Payer {Number(demande.prix_negocie).toLocaleString("fr-FR")} FCFA
+              {isAchat ? "Payer l'acompte" : "Payer"} {Number(demande.prix_negocie).toLocaleString("fr-FR")} FCFA
             </SubmitButton>
           </form>
         </div>

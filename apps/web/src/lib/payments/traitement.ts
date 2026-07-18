@@ -50,18 +50,42 @@ export async function traiterPaiementConfirme(
   }
 
   if (paiement.reference_table === "demandes_transport") {
-    const { error } = await admin
+    const { data: demande } = await admin
       .from("demandes_transport")
-      .update({
-        statut: "en_attente_validation",
-        updated_at: new Date().toISOString(),
-      })
+      .select("id, type, vehicule_id")
       .eq("id", paiement.reference_id)
-      .eq("statut", "en_attente_paiement");
+      .single();
 
-    if (error) {
-      console.error("Erreur mise à jour demande_transport:", error.message);
-      return { ok: false, raison: error.message };
+    if (demande?.type === "achat") {
+      await admin
+        .from("demandes_transport")
+        .update({
+          statut: "acceptee",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", paiement.reference_id)
+        .eq("statut", "en_attente_paiement");
+
+      if (demande.vehicule_id) {
+        await admin
+          .from("vehicules")
+          .update({ statut: "reserve", updated_at: new Date().toISOString() })
+          .eq("id", demande.vehicule_id);
+      }
+    } else {
+      const { error } = await admin
+        .from("demandes_transport")
+        .update({
+          statut: "en_attente_validation",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", paiement.reference_id)
+        .eq("statut", "en_attente_paiement");
+
+      if (error) {
+        console.error("Erreur mise à jour demande_transport:", error.message);
+        return { ok: false, raison: error.message };
+      }
     }
   }
 

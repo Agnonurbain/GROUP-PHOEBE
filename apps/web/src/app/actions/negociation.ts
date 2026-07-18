@@ -310,9 +310,12 @@ export async function payerPrixNegocie(
   const lignes = (demande as Record<string, unknown>).lignes_demande as { vehicules: { marque: string; modele: string } | null }[] | undefined;
   const nbVehicules = lignes?.length ?? 1;
   const v = demande.vehicules;
-  const description = nbVehicules > 1
-    ? `Location ${nbVehicules} véhicules (prix négocié)`
-    : `Location ${v?.marque ?? ""} ${v?.modele ?? ""} (prix négocié)`;
+  const isAchat = demande.type === "achat";
+  const description = isAchat
+    ? `Acompte achat ${v?.marque ?? ""} ${v?.modele ?? ""}`
+    : nbVehicules > 1
+      ? `Location ${nbVehicules} véhicules (prix négocié)`
+      : `Location ${v?.marque ?? ""} ${v?.modele ?? ""} (prix négocié)`;
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
