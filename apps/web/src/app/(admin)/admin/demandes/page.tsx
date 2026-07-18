@@ -128,6 +128,7 @@ export default async function DemandesPage() {
                       type={d.type}
                       negociationNote={(d as Record<string, unknown>).negociation_note as string | null}
                       montantEstime={d.montant ? Number(d.montant) : null}
+                      clientTelephone={(u as { nom: string; telephone: string | null } | null)?.telephone ?? null}
                     />
                   </div>
                 </div>

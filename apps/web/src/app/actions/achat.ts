@@ -33,7 +33,6 @@ async function requireStaff() {
 export type AchatState = {
   error?: string;
   success?: boolean;
-  redirectUrl?: string;
 };
 
 export async function creerDemandeAchat(
@@ -102,7 +101,7 @@ export async function creerDemandeAchat(
 
 const TAUX_ACOMPTE_DEFAUT = 0.2;
 
-export async function accepterAchatAvecAcompte(
+export async function envoyerPrixAchat(
   _prev: AchatState,
   formData: FormData
 ): Promise<AchatState> {
@@ -110,10 +109,15 @@ export async function accepterAchatAvecAcompte(
   const admin = getAdmin();
 
   const demandeId = formData.get("demande_id") as string;
+  const prixFinalStr = formData.get("prix_final") as string;
+  const prixFinal = Number(prixFinalStr);
   const acompteStr = formData.get("acompte") as string;
-  const acompte = Number(acompteStr);
+  const acompteCustom = acompteStr ? Number(acompteStr) : 0;
 
   if (!demandeId) return { error: "Demande invalide." };
+  if (!prixFinal || prixFinal <= 0) {
+    return { error: "Le prix final doit être un montant positif." };
+  }
 
   const { data: demande } = await admin
     .from("demandes_transport")
@@ -127,10 +131,9 @@ export async function accepterAchatAvecAcompte(
     return { error: "Cette demande n'est plus en attente de validation." };
   }
 
-  const montantTotal = demande.montant ? Number(demande.montant) : 0;
-  const montantAcompte = acompte > 0
-    ? acompte
-    : Math.round(montantTotal * TAUX_ACOMPTE_DEFAUT);
+  const montantAcompte = acompteCustom > 0
+    ? acompteCustom
+    : Math.round(prixFinal * TAUX_ACOMPTE_DEFAUT);
 
   if (montantAcompte <= 0) {
     return { error: "Le montant de l'acompte doit être supérieur à 0." };
@@ -139,6 +142,7 @@ export async function accepterAchatAvecAcompte(
   const { error } = await admin
     .from("demandes_transport")
     .update({
+      montant: prixFinal,
       prix_negocie: montantAcompte,
       statut: "en_attente_paiement",
       updated_at: new Date().toISOString(),
@@ -150,148 +154,10 @@ export async function accepterAchatAvecAcompte(
 
   await notifierClient(
     demande.client_id,
-    "Demande d'achat acceptée — acompte requis",
-    `Votre demande d'achat a été acceptée. Un acompte de ${montantAcompte.toLocaleString("fr-FR")} FCFA est requis pour réserver le véhicule. Connectez-vous pour procéder au paiement.`
+    "Prix d'achat confirmé — acompte requis",
+    `Le prix de vente convenu est de ${prixFinal.toLocaleString("fr-FR")} FCFA. Un acompte de ${montantAcompte.toLocaleString("fr-FR")} FCFA est requis pour réserver le véhicule. Connectez-vous pour procéder au paiement.`
   );
 
   revalidatePath("/admin/demandes");
-  return { success: true };
-}
-
-export async function contreProposerAchat(
-  _prev: AchatState,
-  formData: FormData
-): Promise<AchatState> {
-  await requireStaff();
-  const admin = getAdmin();
-
-  const demandeId = formData.get("demande_id") as string;
-  const prixStr = formData.get("prix_contre") as string;
-  const prixContre = Number(prixStr);
-
-  if (!demandeId || !prixContre || prixContre <= 0) {
-    return { error: "Le prix doit être un montant positif." };
-  }
-
-  const { data: demande } = await admin
-    .from("demandes_transport")
-    .select("*")
-    .eq("id", demandeId)
-    .single();
-
-  if (!demande) return { error: "Demande introuvable." };
-  if (demande.type !== "achat") return { error: "Cette demande n'est pas un achat." };
-  if (!["en_attente_validation", "en_negociation"].includes(demande.statut)) {
-    return { error: "Cette demande ne peut plus être négociée." };
-  }
-
-  const { error } = await admin
-    .from("demandes_transport")
-    .update({
-      montant: prixContre,
-      statut: "en_negociation",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", demandeId);
-
-  if (error) return { error: error.message };
-
-  await notifierClient(
-    demande.client_id,
-    "Contre-proposition de prix",
-    `L'opérateur vous propose le véhicule à ${prixContre.toLocaleString("fr-FR")} FCFA. Connectez-vous pour accepter ou faire une nouvelle proposition.`
-  );
-
-  revalidatePath("/admin/demandes");
-  return { success: true };
-}
-
-export async function accepterContreProposition(
-  _prev: AchatState,
-  formData: FormData
-): Promise<AchatState> {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
-
-  const demandeId = formData.get("demande_id") as string;
-  const admin = getAdmin();
-
-  const { data: demande } = await admin
-    .from("demandes_transport")
-    .select("*")
-    .eq("id", demandeId)
-    .eq("client_id", user.sub)
-    .single();
-
-  if (!demande) return { error: "Demande introuvable." };
-  if (demande.type !== "achat" || demande.statut !== "en_negociation") {
-    return { error: "Cette demande n'est pas en négociation." };
-  }
-
-  const montant = Number(demande.montant);
-  const acompte = Math.round(montant * TAUX_ACOMPTE_DEFAUT);
-
-  const { error } = await admin
-    .from("demandes_transport")
-    .update({
-      prix_negocie: acompte,
-      statut: "en_attente_paiement",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", demandeId)
-    .eq("statut", "en_negociation");
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/profil");
-  return { success: true };
-}
-
-export async function reProposerPrix(
-  _prev: AchatState,
-  formData: FormData
-): Promise<AchatState> {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
-
-  const demandeId = formData.get("demande_id") as string;
-  const prixStr = formData.get("prix_propose") as string;
-  const prixPropose = Number(prixStr);
-
-  if (!demandeId || !prixPropose || prixPropose <= 0) {
-    return { error: "Le prix doit être un montant positif." };
-  }
-
-  const admin = getAdmin();
-
-  const { data: demande } = await admin
-    .from("demandes_transport")
-    .select("*")
-    .eq("id", demandeId)
-    .eq("client_id", user.sub)
-    .single();
-
-  if (!demande) return { error: "Demande introuvable." };
-  if (demande.type !== "achat" || demande.statut !== "en_negociation") {
-    return { error: "Cette demande n'est pas en négociation." };
-  }
-
-  const { error } = await admin
-    .from("demandes_transport")
-    .update({
-      negociation_note: `Prix proposé : ${prixPropose.toLocaleString("fr-FR")} FCFA`,
-      statut: "en_attente_validation",
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", demandeId)
-    .eq("statut", "en_negociation");
-
-  if (error) return { error: error.message };
-
-  revalidatePath("/profil");
   return { success: true };
 }
