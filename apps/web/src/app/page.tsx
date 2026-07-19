@@ -4,6 +4,7 @@ import { Header } from "@/components/header";
 import { createClient } from "@/lib/supabase/server";
 import {
   HeroEffects,
+  HeroSlideshow,
   ServiceCard,
   ScrollReveal,
   MagneticButton,
@@ -81,19 +82,18 @@ export default async function Home() {
       <main className="flex-1">
         {/* Hero — motif hexagonal + sparkles + gold trail */}
         <HeroEffects>
-          <section className="bg-hex-pattern relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/30" />
-            <div className="absolute -right-40 -top-40 h-[600px] w-[600px] rounded-full bg-phoebe-green/8 blur-[100px]" />
-            <div className="absolute -bottom-32 -left-32 h-[400px] w-[400px] rounded-full bg-phoebe-gold/6 blur-[80px]" />
+          <section className="relative overflow-hidden bg-black">
+            {/* Slideshow d'images en fond — slow motion Ken Burns */}
+            <HeroSlideshow />
 
-            {/* Floating gold orbs */}
-            <div className="gold-orb h-3 w-3 left-[10%] top-[25%] opacity-60" style={{ animationDelay: "0s" }} />
-            <div className="gold-orb h-2 w-2 right-[15%] top-[30%] opacity-40" style={{ animationDelay: "2s" }} />
-            <div className="gold-orb h-4 w-4 left-[70%] bottom-[20%] opacity-50" style={{ animationDelay: "4s" }} />
-            <div className="gold-orb h-2.5 w-2.5 left-[30%] bottom-[30%] opacity-45" style={{ animationDelay: "1.5s" }} />
-            <div className="gold-orb h-1.5 w-1.5 right-[25%] top-[60%] opacity-55" style={{ animationDelay: "3s" }} />
+            {/* Floating gold orbs par-dessus */}
+            <div className="gold-orb z-[3] h-3 w-3 left-[10%] top-[25%] opacity-60" style={{ animationDelay: "0s" }} />
+            <div className="gold-orb z-[3] h-2 w-2 right-[15%] top-[30%] opacity-40" style={{ animationDelay: "2s" }} />
+            <div className="gold-orb z-[3] h-4 w-4 left-[70%] bottom-[20%] opacity-50" style={{ animationDelay: "4s" }} />
+            <div className="gold-orb z-[3] h-2.5 w-2.5 left-[30%] bottom-[30%] opacity-45" style={{ animationDelay: "1.5s" }} />
+            <div className="gold-orb z-[3] h-1.5 w-1.5 right-[25%] top-[60%] opacity-55" style={{ animationDelay: "3s" }} />
 
-            <div className="relative mx-auto flex max-w-6xl flex-col items-center gap-8 px-4 py-24 text-center md:py-32 lg:py-40">
+            <div className="relative z-[3] mx-auto flex max-w-6xl flex-col items-center gap-8 px-4 py-24 text-center md:py-32 lg:py-40">
               <span className="animate-fade-in inline-flex items-center gap-2 rounded-full border border-phoebe-gold/40 bg-phoebe-gold/10 px-5 py-2 text-xs font-semibold uppercase tracking-wider text-phoebe-gold-light">
                 <span className="h-1.5 w-1.5 rounded-full bg-phoebe-gold animate-pulse-gold" />
                 Services premium en Cote d&apos;Ivoire

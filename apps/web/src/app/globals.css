@@ -215,6 +215,16 @@ textarea:focus-visible {
   100% { background-position: 0% 50%; }
 }
 
+@keyframes ken-burns-in {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.12) translate(-1.5%, -1%); }
+}
+
+@keyframes ken-burns-out {
+  0% { transform: scale(1.1) translate(-1%, 1%); }
+  100% { transform: scale(1) translate(0.5%, -0.5%); }
+}
+
 @keyframes reveal-clip {
   from { clip-path: inset(0 100% 0 0); }
   to { clip-path: inset(0 0 0 0); }
