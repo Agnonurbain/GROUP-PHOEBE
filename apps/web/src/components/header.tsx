@@ -45,9 +45,9 @@ export async function Header() {
           <Image
             src="/logo.png"
             alt="Group PHOEBE"
-            width={140}
-            height={56}
-            className="h-11 w-auto object-contain"
+            width={180}
+            height={72}
+            className="h-14 w-auto object-contain"
             priority
           />
         </Link>

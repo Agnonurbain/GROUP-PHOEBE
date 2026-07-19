@@ -174,9 +174,9 @@ export default async function Home() {
             <Image
               src="/logo.png"
               alt="Group PHOEBE"
-              width={120}
-              height={48}
-              className="h-10 w-auto object-contain"
+              width={180}
+              height={72}
+              className="h-14 w-auto object-contain"
             />
             <p className="text-xs text-phoebe-anthracite/40">
               &copy; {new Date().getFullYear()} GROUP PHOEBE. Tous droits réservés.
