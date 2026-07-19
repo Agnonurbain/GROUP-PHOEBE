@@ -12,17 +12,20 @@ export function DemandeAchatForm({
   modele,
   categorie,
   prixVente,
+  etat,
 }: {
   vehiculeId: string;
   marque: string;
   modele: string;
   categorie: string;
   prixVente: number | null;
+  etat: string;
 }) {
   const [state, action] = useActionState<AchatState, FormData>(creerDemandeAchat, {});
   const [showForm, setShowForm] = useState(false);
 
-  const whatsappMessage = `Bonjour, je suis intéressé(e) par l'achat du ${marque} ${modele}${prixVente ? ` affiché à ${prixVente.toLocaleString("fr-FR")} FCFA` : ""}. Je souhaite discuter du prix.`;
+  const etatLabel = etat === "neuf" ? "neuf" : "d'occasion";
+  const whatsappMessage = `Bonjour, je suis intéressé(e) par l'achat du ${marque} ${modele} (${etatLabel})${prixVente ? ` affiché à ${prixVente.toLocaleString("fr-FR")} FCFA` : ""}. Je souhaite discuter du prix.`;
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMessage)}`;
 
   if (!showForm) {

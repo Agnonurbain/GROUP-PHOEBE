@@ -238,6 +238,7 @@ export default async function GroupeDetailPage({
                   modele={group.modele}
                   categorie={group.categorie}
                   prixVente={prix}
+                  etat={target.etat ?? "occasion"}
                 />
               );
             })()}

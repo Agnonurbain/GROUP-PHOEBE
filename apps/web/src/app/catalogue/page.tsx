@@ -153,6 +153,11 @@ async function VehiculeGrid({
             )}
 
             <div className="flex flex-wrap gap-2 text-xs text-phoebe-anthracite/50">
+              {g.prixVente && g.etat && (
+                <span className={`rounded px-2 py-0.5 font-medium ${g.etat === "neuf" ? "bg-blue-50 text-blue-700" : "bg-phoebe-gold/10 text-phoebe-gold"}`}>
+                  {g.etat === "neuf" ? "Neuf" : "Occasion"}
+                </span>
+              )}
               {g.climatisation && (
                 <span className="rounded bg-phoebe-pearl px-2 py-0.5">Climatisé</span>
               )}

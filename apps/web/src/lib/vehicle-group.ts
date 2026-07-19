@@ -60,7 +60,7 @@ type VehiculeRow = {
   carburant: string | null;
   kilometrage: number | null;
   localisation: string | null;
-  etat: string | null;
+  etat: string;
 };
 
 export function groupVehicles(
