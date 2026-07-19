@@ -55,9 +55,10 @@ export default async function AdminShellLayout({
           <Image
             src="/logo.png"
             alt="Group PHOEBE"
-            width={160}
-            height={64}
-            className="h-12 w-auto object-contain"
+            width={200}
+            height={80}
+            className="h-14 w-auto object-contain"
+            quality={95}
           />
           <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold">
             Back-office · {isProprietaire ? "Propriétaire" : "Opérateur"}

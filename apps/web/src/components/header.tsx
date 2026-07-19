@@ -40,14 +40,15 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-phoebe-pearl/80 bg-white/98 backdrop-blur-md shadow-sm shadow-phoebe-green/3">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
+      <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-1">
           <Image
             src="/logo.png"
             alt="Group PHOEBE"
-            width={180}
-            height={72}
-            className="h-14 w-auto object-contain"
+            width={220}
+            height={88}
+            className="h-[4.5rem] w-auto object-contain"
+            quality={95}
             priority
           />
         </Link>

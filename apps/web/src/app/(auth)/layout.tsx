@@ -25,9 +25,10 @@ export default function AuthLayout({
           <Image
             src="/logo.png"
             alt="Group PHOEBE"
-            width={320}
-            height={128}
-            className="mb-6 h-36 w-auto object-contain drop-shadow-lg"
+            width={400}
+            height={160}
+            className="mb-6 h-44 w-auto object-contain drop-shadow-lg"
+            quality={95}
             priority
           />
           <div className="mt-4 h-px w-24 bg-gradient-to-r from-transparent via-phoebe-gold/40 to-transparent" />
@@ -44,9 +45,10 @@ export default function AuthLayout({
           <Image
             src="/logo.png"
             alt="Group PHOEBE"
-            width={200}
-            height={80}
-            className="h-16 w-auto object-contain"
+            width={240}
+            height={96}
+            className="h-20 w-auto object-contain"
+            quality={95}
             priority
           />
         </div>
