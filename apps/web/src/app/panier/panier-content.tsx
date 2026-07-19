@@ -37,7 +37,10 @@ export function PanierContent() {
             className="flex gap-4 rounded-xl border border-phoebe-pearl bg-white p-4 shadow-sm"
           >
             {/* Photo */}
-            <div className="relative h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-phoebe-pearl">
+            <Link
+              href={`/catalogue/groupe/${encodeURIComponent(item.groupKey)}/choix`}
+              className="relative h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-phoebe-pearl"
+            >
               {item.photoUrl ? (
                 <Image
                   src={item.photoUrl}
@@ -51,19 +54,22 @@ export function PanierContent() {
                   Pas de photo
                 </div>
               )}
-            </div>
+            </Link>
 
             {/* Details */}
             <div className="flex flex-1 flex-col justify-between">
               <div>
-                <h3 className="font-semibold text-phoebe-anthracite">
+                <Link
+                  href={`/catalogue/groupe/${encodeURIComponent(item.groupKey)}/choix`}
+                  className="font-semibold text-phoebe-anthracite hover:text-phoebe-green"
+                >
                   {item.marque} {item.modele}
                   {item.quantite > 1 && (
                     <span className="ml-1.5 text-sm font-normal text-phoebe-anthracite/50">
                       &times;{item.quantite}
                     </span>
                   )}
-                </h3>
+                </Link>
                 <p className="text-xs text-phoebe-anthracite/50">
                   {CAT_LABELS[item.categorie] ?? item.categorie}
                 </p>
