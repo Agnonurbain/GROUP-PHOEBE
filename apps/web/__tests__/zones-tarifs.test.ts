@@ -190,46 +190,38 @@ describe("Communes dynamiques — contrainte unicité", () => {
   });
 });
 
-describe("Véhicule — champs caractéristiques", () => {
+describe("Véhicule — nouveaux champs", () => {
   type Vehicule = {
     assurance_url: string | null;
     camera_interieure: boolean;
-    carburant: string | null;
-    kilometrage: number | null;
-    localisation: string | null;
+    gps: boolean;
+    niveau_carburant: string | null;
   };
 
   it("assurance_url null → pas de badge assuré", () => {
-    const v: Vehicule = { assurance_url: null, camera_interieure: true, carburant: "essence", kilometrage: null, localisation: null };
+    const v: Vehicule = { assurance_url: null, camera_interieure: true, gps: false, niveau_carburant: null };
     expect(!!v.assurance_url).toBe(false);
   });
 
   it("assurance_url renseigné → badge assuré visible", () => {
-    const v: Vehicule = { assurance_url: "path/to/assurance.pdf", camera_interieure: true, carburant: null, kilometrage: null, localisation: null };
+    const v: Vehicule = { assurance_url: "path/to/assurance.pdf", camera_interieure: true, gps: false, niveau_carburant: null };
     expect(!!v.assurance_url).toBe(true);
   });
 
   it("camera_interieure default true", () => {
-    const v: Vehicule = { assurance_url: null, camera_interieure: true, carburant: null, kilometrage: null, localisation: null };
+    const v: Vehicule = { assurance_url: null, camera_interieure: true, gps: false, niveau_carburant: null };
     expect(v.camera_interieure).toBe(true);
   });
 
-  it("carburant accepte essence, diesel, hybride, electrique", () => {
-    const valid = ["essence", "diesel", "hybride", "electrique"];
+  it("gps default false", () => {
+    const v: Vehicule = { assurance_url: null, camera_interieure: true, gps: false, niveau_carburant: null };
+    expect(v.gps).toBe(false);
+  });
+
+  it("niveau_carburant peut être vide, quart, demi, trois_quarts, plein", () => {
+    const valid = ["vide", "quart", "demi", "trois_quarts", "plein"];
     for (const val of valid) {
       expect(valid).toContain(val);
     }
-  });
-
-  it("kilometrage est un nombre ou null", () => {
-    const v: Vehicule = { assurance_url: null, camera_interieure: true, carburant: "diesel", kilometrage: 85000, localisation: "Cocody" };
-    expect(v.kilometrage).toBe(85000);
-    const v2: Vehicule = { assurance_url: null, camera_interieure: true, carburant: null, kilometrage: null, localisation: null };
-    expect(v2.kilometrage).toBeNull();
-  });
-
-  it("localisation est une chaîne ou null", () => {
-    const v: Vehicule = { assurance_url: null, camera_interieure: true, carburant: "essence", kilometrage: 50000, localisation: "Plateau, Abidjan" };
-    expect(v.localisation).toBe("Plateau, Abidjan");
   });
 });
