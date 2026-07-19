@@ -16,51 +16,35 @@ import {
 const services = [
   {
     title: "Transport",
+    subtitle: "Chauffeur privé",
     description:
-      "Véhicules avec chauffeur pour vos déplacements professionnels et personnels à Abidjan et en Côte d'Ivoire.",
+      "Déplacements professionnels et personnels à Abidjan et en Côte d'Ivoire avec chauffeur.",
     image: "/images/transport.jpg",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-        <path d="M5 17h14M5 17a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v1m-12 9h1m12 0h1m0 0a2 2 0 002-2v-4a2 2 0 00-2-2h-3l-2-3H9" />
-        <circle cx="7.5" cy="17" r="1.5" />
-        <circle cx="16.5" cy="17" r="1.5" />
-      </svg>
-    ),
+    href: "/catalogue",
   },
   {
     title: "Livraison",
+    subtitle: "Express & fiable",
     description:
-      "Service de livraison de colis rapide et fiable dans toute la ville.",
+      "Livraison de colis rapide et sécurisée dans toute la ville, suivi en temps réel.",
     image: "/images/livraison.jpg",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-        <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
-        <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" />
-      </svg>
-    ),
+    href: "/catalogue",
   },
   {
     title: "Immobilier",
+    subtitle: "Projets clé en main",
     description:
-      "Accompagnement dans vos projets immobiliers : location, achat et gestion de biens.",
+      "Location, achat et gestion de biens — accompagnement de A à Z.",
     image: "/images/immobilier.jpg",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-        <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" />
-      </svg>
-    ),
+    href: "/catalogue",
   },
   {
     title: "Assistance Voyages",
+    subtitle: "Accompagnement total",
     description:
       "Organisation de voyages et accompagnement des étudiants pour les études à l'étranger.",
     image: "/images/voyages.jpg",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
-      </svg>
-    ),
+    href: "/catalogue",
   },
 ];
 
@@ -161,47 +145,69 @@ export default async function Home() {
           </ScrollReveal>
         </section>
 
-        {/* Services — cards avec images interactives */}
-        <section className="bg-white py-20 md:py-28">
-          <div className="mx-auto max-w-6xl px-4">
+        {/* Services — cartes immersives full-image sur fond sombre */}
+        <section className="bg-hex-dark py-20 md:py-28">
+          <div className="relative z-10 mx-auto max-w-6xl px-4">
             <ScrollReveal>
-              <div className="mb-14 text-center">
-                <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-phoebe-gold">
+              <div className="mb-16 text-center">
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.25em] text-phoebe-gold">
                   Nos services
                 </p>
-                <h2 className="text-3xl font-bold tracking-tight text-phoebe-anthracite md:text-4xl">
+                <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl lg:text-5xl">
                   Une solution pour chaque besoin
                 </h2>
+                <p className="mx-auto mt-4 max-w-lg text-base text-white/40">
+                  Quatre pôles d&apos;expertise pour couvrir l&apos;ensemble de vos besoins en Côte d&apos;Ivoire.
+                </p>
               </div>
             </ScrollReveal>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+
+            {/* Layout: grille asymétrique 7/5 — 5/7 */}
+            <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-12">
               {services.map((s, i) => (
-                <ServiceCard key={s.title} index={i}>
-                  <div className="group relative h-full cursor-pointer overflow-hidden rounded-2xl border border-phoebe-pearl bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-phoebe-green/8">
-                    <div className="absolute inset-x-0 top-0 z-10 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark transition-transform duration-300 group-hover:scale-x-100" />
-                    {/* Image avec zoom au hover */}
-                    <div className="relative h-44 overflow-hidden">
+                <ServiceCard
+                  key={s.title}
+                  index={i}
+                  className={i === 0 || i === 3 ? "lg:col-span-7" : "lg:col-span-5"}
+                >
+                  <Link
+                    href={s.href}
+                    className="group relative block overflow-hidden rounded-2xl"
+                  >
+                    <div className="relative h-72 md:h-80 overflow-hidden">
                       <Image
                         src={s.image}
                         alt={s.title}
-                        width={400}
-                        height={250}
-                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                        fill
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                        className="object-cover transition-transform duration-[900ms] ease-out group-hover:scale-110"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                      <div className="absolute bottom-3 left-3 flex h-9 w-9 items-center justify-center rounded-lg bg-white/90 text-phoebe-green shadow-sm backdrop-blur-sm">
-                        {s.icon}
+                      {/* Overlay gradient sombre */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10 transition-colors duration-500 group-hover:from-black/70 group-hover:via-black/20" />
+                      {/* Gold border glow on hover */}
+                      <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/10 transition-all duration-500 group-hover:ring-phoebe-gold/50 group-hover:shadow-[inset_0_0_30px_rgba(211,140,55,0.15)]" />
+
+                      {/* Contenu */}
+                      <div className="absolute inset-x-0 bottom-0 p-6 md:p-8">
+                        <span className="mb-2 inline-block text-[11px] font-semibold uppercase tracking-[0.2em] text-phoebe-gold transition-colors duration-300">
+                          {s.subtitle}
+                        </span>
+                        <h3 className="text-xl font-bold text-white md:text-2xl">
+                          {s.title}
+                        </h3>
+                        <p className="mt-2 max-w-sm text-sm leading-relaxed text-white/50 transition-colors duration-300 group-hover:text-white/70">
+                          {s.description}
+                        </p>
+                        {/* Flèche animée */}
+                        <div className="mt-4 flex items-center gap-2 text-sm font-medium text-phoebe-gold opacity-0 translate-y-2 transition-all duration-400 group-hover:opacity-100 group-hover:translate-y-0">
+                          Découvrir
+                          <svg className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                          </svg>
+                        </div>
                       </div>
                     </div>
-                    <div className="p-5">
-                      <h3 className="mb-2 font-bold text-phoebe-anthracite">
-                        {s.title}
-                      </h3>
-                      <p className="text-sm leading-relaxed text-phoebe-anthracite/55">
-                        {s.description}
-                      </p>
-                    </div>
-                  </div>
+                  </Link>
                 </ServiceCard>
               ))}
             </div>
