@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { hasMinimumAge } from "@/lib/auth";
 import { BackLink } from "@/components/back-link";
+import { ScrollReveal } from "@/components/effects";
 import { VerificationForm } from "./verification-form";
 
 export default async function VerificationPage() {
@@ -20,12 +21,15 @@ export default async function VerificationPage() {
   if (!profile?.date_naissance) {
     return (
       <div className="space-y-8 animate-fade-in">
+        <ScrollReveal variant="fade-up">
         <div>
           <BackLink href="/profil" label="Mon profil" />
           <h1 className="mt-3 text-3xl font-bold text-phoebe-anthracite">
             Vérification d&apos;identité
           </h1>
         </div>
+        </ScrollReveal>
+        <ScrollReveal variant="fade-up" delay={0.15}>
         <div className="rounded-2xl border border-phoebe-gold/30 bg-gradient-to-br from-phoebe-gold/5 to-phoebe-gold/10 p-7 shadow-sm">
           <p className="text-sm text-phoebe-anthracite leading-relaxed">
             Vous devez renseigner votre <strong>date de naissance</strong>
@@ -40,6 +44,7 @@ export default async function VerificationPage() {
             <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 hover:translate-x-full" />
           </Link>
         </div>
+        </ScrollReveal>
       </div>
     );
   }
@@ -47,18 +52,22 @@ export default async function VerificationPage() {
   if (!hasMinimumAge(profile.date_naissance, 21)) {
     return (
       <div className="space-y-8 animate-fade-in">
+        <ScrollReveal variant="fade-up">
         <div>
           <BackLink href="/profil" label="Mon profil" />
           <h1 className="mt-3 text-3xl font-bold text-phoebe-anthracite">
             Vérification d&apos;identité
           </h1>
         </div>
+        </ScrollReveal>
+        <ScrollReveal variant="fade-up" delay={0.15}>
         <div className="rounded-2xl border border-error/20 bg-gradient-to-br from-error/5 to-error/10 p-7 shadow-sm">
           <p className="text-sm text-error leading-relaxed">
             Vous devez avoir au moins <strong>21 ans</strong> pour soumettre vos
             documents et effectuer une réservation.
           </p>
         </div>
+        </ScrollReveal>
       </div>
     );
   }

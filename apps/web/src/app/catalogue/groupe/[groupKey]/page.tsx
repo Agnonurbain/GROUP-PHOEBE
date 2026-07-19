@@ -7,6 +7,7 @@ import { DemandeAchatForm } from "@/components/demande-achat-form";
 import { createClient } from "@/lib/supabase/server";
 import { makeGroupKey, groupVehicles } from "@/lib/vehicle-group";
 import { CAT_LABELS } from "@/lib/constants";
+import { ScrollReveal, ParallaxImage } from "@/components/effects";
 
 
 function formatPrice(val: number | null): string | null {
@@ -97,29 +98,27 @@ export default async function GroupeDetailPage({
 
         <div className="grid gap-10 lg:grid-cols-2">
           {/* Photos */}
+          <ScrollReveal variant="fade-up">
           <div className="space-y-4">
             {mainPhoto ? (
               <>
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-lg ring-1 ring-black/5">
-                  <Image
-                    src={mainPhoto}
-                    alt={`${group.marque} ${group.modele}`}
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 50vw"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
+                <ParallaxImage
+                  src={mainPhoto}
+                  alt={`${group.marque} ${group.modele}`}
+                  width={800}
+                  height={600}
+                  className="aspect-[4/3] w-full rounded-2xl shadow-lg ring-1 ring-black/5"
+                />
                 {extraPhotos.length > 0 && (
                   <div className="grid grid-cols-4 gap-2.5">
                     {extraPhotos.map((p) => (
-                      <div key={p.id} className="relative aspect-square overflow-hidden rounded-xl shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md">
+                      <div key={p.id} className="group/thumb relative aspect-square overflow-hidden rounded-xl shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md cursor-pointer">
                         <Image
                           src={p.url}
                           alt=""
                           fill
                           sizes="(max-width: 1024px) 25vw, 12vw"
-                          className="object-cover"
+                          className="object-cover transition-transform duration-500 group-hover/thumb:scale-105"
                         />
                       </div>
                     ))}
@@ -132,9 +131,11 @@ export default async function GroupeDetailPage({
               </div>
             )}
           </div>
+          </ScrollReveal>
 
           {/* Infos */}
           <div className="space-y-7">
+            <ScrollReveal variant="fade-up" delay={0.1}>
             <div>
               <div className="flex items-center gap-2.5 text-xs">
                 <Link
@@ -163,9 +164,11 @@ export default async function GroupeDetailPage({
                 {group.nbPlaces ? ` · ${group.nbPlaces} places` : ""}
               </p>
             </div>
+            </ScrollReveal>
 
             {/* Tarifs par zone (location uniquement) */}
             {mode === "location" && intervalles && intervalles.length > 0 && (
+              <ScrollReveal variant="fade-up" delay={0.2}>
               <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
                 <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/40">
                   {mode === "location" ? "Tarifs indicatifs par zone" : "Prix indicatifs"}
@@ -192,10 +195,12 @@ export default async function GroupeDetailPage({
                   </p>
                 )}
               </div>
+              </ScrollReveal>
             )}
 
             {/* Assurance */}
             {group.assurance && (
+              <ScrollReveal variant="fade-up" delay={0.25}>
               <div className="flex items-center gap-4 rounded-2xl border border-phoebe-green/10 bg-phoebe-green/5 px-5 py-4">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-phoebe-green">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
@@ -205,10 +210,12 @@ export default async function GroupeDetailPage({
                   <p className="text-xs text-phoebe-anthracite/50">Ce vehicule est couvert par une assurance tous risques.</p>
                 </div>
               </div>
+              </ScrollReveal>
             )}
 
             {/* CTA Location */}
             {mode === "location" && group.prixJournalier > 0 && group.totalCount > 0 && (
+              <ScrollReveal variant="scale-in" delay={0.3}>
               <AjouterPanierButton
                 vehicule={{
                   groupKey: group.groupKey,
@@ -223,6 +230,7 @@ export default async function GroupeDetailPage({
                   photoUrl: group.photoUrl,
                 }}
               />
+              </ScrollReveal>
             )}
 
             {/* CTA Achat */}
@@ -233,6 +241,7 @@ export default async function GroupeDetailPage({
                 ? Math.min(...dispos.map((v) => Number(v.prix_vente)))
                 : null;
               return (
+                <ScrollReveal variant="scale-in" delay={0.3}>
                 <DemandeAchatForm
                   vehiculeId={target.id}
                   marque={group.marque}
@@ -241,10 +250,12 @@ export default async function GroupeDetailPage({
                   prixVente={prix}
                   etat={target.etat ?? "occasion"}
                 />
+                </ScrollReveal>
               );
             })()}
 
             {/* Caractéristiques */}
+            <ScrollReveal variant="fade-up" delay={0.35}>
             <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
               <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/40">
                 Caracteristiques
@@ -305,6 +316,7 @@ export default async function GroupeDetailPage({
                 )}
               </dl>
             </div>
+            </ScrollReveal>
           </div>
         </div>
       </main>

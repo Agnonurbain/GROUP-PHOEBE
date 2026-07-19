@@ -3,6 +3,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { FavoriButton } from "@/components/favori-button";
 import { BackLink } from "@/components/back-link";
+import { ScrollReveal } from "@/components/effects";
 
 function formatPrice(val: number | null): string | null {
   if (!val) return null;
@@ -49,12 +50,12 @@ export default async function FavorisPage() {
 
       {vehicules && vehicules.length > 0 ? (
         <div className="grid gap-6 sm:grid-cols-2">
-          {vehicules.map((v) => {
+          {vehicules.map((v, i) => {
             const photo = firstPhoto.get(v.id);
 
             return (
+              <ScrollReveal key={v.id} variant="fade-up" delay={i * 0.1}>
               <div
-                key={v.id}
                 className="group relative flex gap-4 rounded-2xl border border-phoebe-pearl bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-phoebe-gold/20 overflow-hidden"
               >
                 {/* Gold top-border reveal on hover */}
@@ -100,6 +101,7 @@ export default async function FavorisPage() {
                   </div>
                 </div>
               </div>
+              </ScrollReveal>
             );
           })}
         </div>

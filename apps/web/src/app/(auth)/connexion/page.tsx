@@ -7,6 +7,7 @@ import { connexion, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { PasswordInput } from "@/components/password-input";
 import { GoogleButton } from "@/components/google-button";
+import { ScrollReveal } from "@/components/effects";
 
 export default function ConnexionPage() {
   const [state, action] = useActionState<AuthState, FormData>(connexion, {});
@@ -14,7 +15,7 @@ export default function ConnexionPage() {
   const redirectTo = searchParams.get("redirect") ?? "";
 
   return (
-    <>
+    <ScrollReveal variant="scale-in">
       <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">
         Connexion
       </h1>
@@ -85,6 +86,6 @@ export default function ConnexionPage() {
           S&apos;inscrire
         </Link>
       </p>
-    </>
+    </ScrollReveal>
   );
 }

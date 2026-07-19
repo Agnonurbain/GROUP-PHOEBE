@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { BackLink } from "@/components/back-link";
+import { ScrollReveal } from "@/components/effects";
 import { ReservationCard } from "./reservation-card";
 
 export default async function ReservationsPage() {
@@ -40,13 +41,14 @@ export default async function ReservationsPage() {
         </div>
       ) : (
         <div className="space-y-5">
-          {demandes.map((d) => (
-            <ReservationCard
-              key={d.id}
-              demande={d}
-              vehicule={d.vehicules}
-              dejaNote={avisSet.has(d.id)}
-            />
+          {demandes.map((d, i) => (
+            <ScrollReveal key={d.id} variant="fade-up" delay={i * 0.08}>
+              <ReservationCard
+                demande={d}
+                vehicule={d.vehicules}
+                dejaNote={avisSet.has(d.id)}
+              />
+            </ScrollReveal>
           ))}
         </div>
       )}

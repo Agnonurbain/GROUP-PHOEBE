@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { verifierOtp, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
+import { ScrollReveal } from "@/components/effects";
 
 function OtpForm() {
   const searchParams = useSearchParams();
@@ -13,7 +14,7 @@ function OtpForm() {
   const [state, action] = useActionState<AuthState, FormData>(verifierOtp, {});
 
   return (
-    <>
+    <ScrollReveal variant="scale-in">
       <div className="mb-8 flex justify-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-phoebe-green/10">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-green">
@@ -61,7 +62,7 @@ function OtpForm() {
         </div>
         <SubmitButton>Verifier</SubmitButton>
       </form>
-    </>
+    </ScrollReveal>
   );
 }
 

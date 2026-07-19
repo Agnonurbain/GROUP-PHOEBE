@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { envoyerCodeReset, envoyerResetEmail, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
+import { ScrollReveal } from "@/components/effects";
 
 export default function MotDePasseOubliePage() {
   const [mode, setMode] = useState<"phone" | "email">("phone");
@@ -21,7 +22,7 @@ export default function MotDePasseOubliePage() {
   const action = mode === "phone" ? phoneAction : emailAction;
 
   return (
-    <>
+    <ScrollReveal variant="scale-in">
       <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">
         Mot de passe oublie
       </h1>
@@ -128,6 +129,6 @@ export default function MotDePasseOubliePage() {
           Retour a la connexion
         </Link>
       </p>
-    </>
+    </ScrollReveal>
   );
 }

@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { changerMotDePasse, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { PasswordInput } from "@/components/password-input";
+import { ScrollReveal } from "@/components/effects";
 
 export default function NouveauMotDePasseForm() {
   const [state, action] = useActionState<AuthState, FormData>(
@@ -12,7 +13,7 @@ export default function NouveauMotDePasseForm() {
   );
 
   return (
-    <>
+    <ScrollReveal variant="scale-in">
       <div className="mb-8 flex justify-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-phoebe-green/10">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-green">
@@ -74,6 +75,6 @@ export default function NouveauMotDePasseForm() {
 
         <SubmitButton>Enregistrer</SubmitButton>
       </form>
-    </>
+    </ScrollReveal>
   );
 }

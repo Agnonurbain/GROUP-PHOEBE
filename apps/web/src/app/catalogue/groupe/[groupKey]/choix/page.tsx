@@ -5,6 +5,7 @@ import { Header } from "@/components/header";
 import { createClient } from "@/lib/supabase/server";
 import { makeGroupKey } from "@/lib/vehicle-group";
 import { CAT_LABELS } from "@/lib/constants";
+import { ScrollReveal } from "@/components/effects";
 
 
 export default async function GroupeChoixPage({
@@ -64,15 +65,16 @@ export default async function GroupeChoixPage({
           Retour au catalogue
         </Link>
 
+        <ScrollReveal variant="fade-up">
         <div className="overflow-hidden rounded-2xl border border-phoebe-pearl bg-white shadow-lg ring-1 ring-black/5">
           {photo && (
-            <div className="relative aspect-[16/7] w-full">
+            <div className="group/photo relative aspect-[16/7] w-full overflow-hidden">
               <Image
                 src={photo}
                 alt={`${rep.marque} ${rep.modele}`}
                 fill
                 sizes="(max-width: 640px) 100vw, 640px"
-                className="object-cover"
+                className="object-cover transition-transform duration-700 group-hover/photo:scale-110"
                 priority
               />
             </div>
@@ -107,6 +109,7 @@ export default async function GroupeChoixPage({
               )}
             </div>
 
+            <ScrollReveal variant="fade-up" delay={0.15}>
             <h2 className="mb-5 mt-8 text-center text-lg font-semibold tracking-tight text-phoebe-anthracite">
               Que souhaitez-vous faire ?
             </h2>
@@ -115,7 +118,7 @@ export default async function GroupeChoixPage({
               {hasLocation && (
                 <Link
                   href={`/catalogue/groupe/${encodeURIComponent(groupKey)}?mode=location`}
-                  className="group relative flex flex-col items-center gap-4 overflow-hidden rounded-2xl border-2 border-phoebe-green/15 bg-phoebe-green/5 px-6 py-8 text-center transition-all hover:border-phoebe-green hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-phoebe-green/40"
+                  className="group relative cursor-pointer flex flex-col items-center gap-4 overflow-hidden rounded-2xl border-2 border-phoebe-green/15 bg-phoebe-green/5 px-6 py-8 text-center transition-all hover:border-phoebe-green hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-phoebe-green/40"
                 >
                   <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-phoebe-green transition-transform duration-300 group-hover:scale-x-100" />
                   <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-green transition-transform group-hover:scale-110">
@@ -134,7 +137,7 @@ export default async function GroupeChoixPage({
               {hasVente && (
                 <Link
                   href={`/catalogue/groupe/${encodeURIComponent(groupKey)}?mode=achat`}
-                  className="group relative flex flex-col items-center gap-4 overflow-hidden rounded-2xl border-2 border-phoebe-gold/15 bg-phoebe-gold/5 px-6 py-8 text-center transition-all hover:border-phoebe-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-phoebe-gold/40"
+                  className="group relative cursor-pointer flex flex-col items-center gap-4 overflow-hidden rounded-2xl border-2 border-phoebe-gold/15 bg-phoebe-gold/5 px-6 py-8 text-center transition-all hover:border-phoebe-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-phoebe-gold/40"
                 >
                   <span className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-phoebe-gold transition-transform duration-300 group-hover:scale-x-100" />
                   <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-gold transition-transform group-hover:scale-110">
@@ -155,8 +158,10 @@ export default async function GroupeChoixPage({
                 </p>
               )}
             </div>
+            </ScrollReveal>
           </div>
         </div>
+        </ScrollReveal>
       </main>
     </>
   );

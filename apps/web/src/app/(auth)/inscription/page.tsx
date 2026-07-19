@@ -7,6 +7,7 @@ import { inscription, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { PasswordInput } from "@/components/password-input";
 import { GoogleButton } from "@/components/google-button";
+import { ScrollReveal } from "@/components/effects";
 
 export default function InscriptionPage() {
   const [state, action] = useActionState<AuthState, FormData>(inscription, {});
@@ -21,7 +22,7 @@ export default function InscriptionPage() {
   }, []);
 
   return (
-    <>
+    <ScrollReveal variant="scale-in">
       <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">
         Creer un compte
       </h1>
@@ -164,6 +165,6 @@ export default function InscriptionPage() {
           Se connecter
         </Link>
       </p>
-    </>
+    </ScrollReveal>
   );
 }

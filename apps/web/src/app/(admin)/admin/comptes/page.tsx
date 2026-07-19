@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { ComptesForm } from "./comptes-form";
 import { DeleteAccountButton } from "./delete-button";
+import { ScrollReveal } from "@/components/effects";
 
 export default async function ComptesPage() {
   const supabase = await createClient();
@@ -43,6 +44,7 @@ export default async function ComptesPage() {
       </div>
 
       {staff && staff.length > 0 && (
+        <ScrollReveal>
         <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
             Equipe ({staff.length})
@@ -111,9 +113,11 @@ export default async function ComptesPage() {
             </table>
           </div>
         </section>
+        </ScrollReveal>
       )}
 
       {isProprietaire && (
+        <ScrollReveal delay={0.15}>
         <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
             Creer un compte
@@ -125,6 +129,7 @@ export default async function ComptesPage() {
           </p>
           <ComptesForm />
         </section>
+        </ScrollReveal>
       )}
     </div>
   );

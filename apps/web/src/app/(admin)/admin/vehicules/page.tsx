@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { CAT_LABELS } from "@/lib/constants";
+import { ScrollReveal } from "@/components/effects";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   disponible: { label: "Disponible", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
@@ -58,6 +59,7 @@ export default async function VehiculesListPage() {
       </div>
 
       {vehicules && vehicules.length > 0 ? (
+        <ScrollReveal>
         <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
           <table className="w-full min-w-[700px] text-sm">
             <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
@@ -90,13 +92,13 @@ export default async function VehiculesListPage() {
                   <tr key={v.id} className="transition-colors hover:bg-phoebe-pearl/40">
                     <td className="px-5 py-3.5">
                       {firstPhoto.has(v.id) ? (
-                        <div className="relative h-10 w-14 overflow-hidden rounded-lg ring-1 ring-black/5">
+                        <div className="group/img relative h-10 w-14 overflow-hidden rounded-lg ring-1 ring-black/5">
                           <Image
                             src={firstPhoto.get(v.id)!}
                             alt=""
                             fill
                             sizes="56px"
-                            className="object-cover"
+                            className="object-cover transition-transform duration-500 group-hover/img:scale-105"
                           />
                         </div>
                       ) : (
@@ -151,6 +153,7 @@ export default async function VehiculesListPage() {
             </tbody>
           </table>
         </div>
+        </ScrollReveal>
       ) : (
         <p className="text-sm text-phoebe-anthracite/50">
           Aucun vehicule enregistre.

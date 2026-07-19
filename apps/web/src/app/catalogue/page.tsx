@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { groupVehicles, type VehicleGroup } from "@/lib/vehicle-group";
 import Filtres from "./filtres";
 import { CAT_LABELS } from "@/lib/constants";
+import { ScrollReveal, SparkleHero } from "@/components/effects";
 
 
 function GridSkeleton() {
@@ -100,9 +101,9 @@ async function VehiculeGrid({
 
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {groups.map((g) => (
+      {groups.map((g, i) => (
+        <ScrollReveal key={g.groupKey} variant="fade-up" delay={i * 0.08}>
         <div
-          key={g.groupKey}
           className="group/card relative cursor-pointer overflow-hidden rounded-2xl border border-phoebe-pearl bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-phoebe-green/8 hover:border-phoebe-gold/20"
         >
           <div className="absolute inset-x-0 top-0 z-10 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark transition-transform duration-300 group-hover/card:scale-x-100" />
@@ -189,6 +190,7 @@ async function VehiculeGrid({
             </div>
           </div>
         </div>
+        </ScrollReveal>
       ))}
     </div>
   );
@@ -206,6 +208,7 @@ export default async function CataloguePage({
       <Header />
       <main className="flex-1">
         {/* Hero bandeau catalogue */}
+        <SparkleHero>
         <section className="relative overflow-hidden border-b border-phoebe-pearl bg-gradient-to-br from-phoebe-green-darkest via-phoebe-green-darker to-phoebe-green-deep">
           <div className="absolute inset-0 bg-[url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 5 L52 17.5 L52 42.5 L30 55 L8 42.5 L8 17.5 Z' fill='none' stroke='%23D38C37' stroke-width='0.4' opacity='0.1'/%3E%3C/svg%3E&quot;)] bg-[length:60px_60px] opacity-60" />
           <div className="absolute -right-32 -top-32 h-[400px] w-[400px] rounded-full bg-phoebe-green/10 blur-[100px]" />
@@ -213,14 +216,17 @@ export default async function CataloguePage({
 
           <div className="relative mx-auto max-w-6xl px-4 py-12 md:py-16">
             <BackLink href="/" label="Accueil" />
+            <ScrollReveal variant="fade-up">
             <h1 className="mt-3 text-3xl font-bold tracking-tight text-white md:text-4xl">
               Notre catalogue
             </h1>
             <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/50">
               Location et vente de véhicules premium — trouvez le véhicule idéal pour vos besoins.
             </p>
+            </ScrollReveal>
           </div>
         </section>
+        </SparkleHero>
 
         <div className="mx-auto max-w-6xl px-4 py-8">
           <Suspense>

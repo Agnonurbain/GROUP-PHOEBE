@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { DemandeActions } from "./demande-actions";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
+import { ScrollReveal } from "@/components/effects";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   en_attente_validation: { label: "En attente", color: "bg-phoebe-gold/10 text-phoebe-gold" },
@@ -43,7 +44,7 @@ export default async function DemandesPage() {
           </p>
         ) : (
           <div className="space-y-5">
-            {demandes.map((d) => {
+            {demandes.map((d, idx) => {
               const v = d.vehicules;
               const u = d.users;
               const s = STATUT_LABELS[d.statut];
@@ -63,8 +64,8 @@ export default async function DemandesPage() {
                   : v ? `${v.marque} ${v.modele}` : "—";
 
               return (
+                <ScrollReveal key={d.id} delay={Math.min(idx * 0.1, 0.5)}>
                 <div
-                  key={d.id}
                   className="group relative overflow-hidden rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
                 >
                   <span className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-phoebe-gold transition-transform duration-300 group-hover:scale-x-100" />
@@ -133,13 +134,14 @@ export default async function DemandesPage() {
                     />
                   </div>
                 </div>
+                </ScrollReveal>
               );
             })}
           </div>
         )}
 
         {historique && historique.length > 0 && (
-          <div>
+          <ScrollReveal delay={0.2}>
             <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
               Historique recent
             </h2>
@@ -171,7 +173,7 @@ export default async function DemandesPage() {
                 );
               })}
             </div>
-          </div>
+          </ScrollReveal>
         )}
     </div>
   );

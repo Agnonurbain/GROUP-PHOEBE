@@ -5,6 +5,7 @@ import { VerificationBadge } from "@/components/verification-badge";
 import { ProfileEditForm } from "@/components/profile-edit-form";
 import { BackLink } from "@/components/back-link";
 import { getSignedDocUrl } from "@/lib/storage";
+import { ScrollReveal } from "@/components/effects";
 import type { StatutVerification } from "@/lib/auth";
 
 export default async function ProfilPage() {
@@ -34,15 +35,18 @@ export default async function ProfilPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header banner */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-phoebe-green-deep via-phoebe-green to-phoebe-green-deep p-7 shadow-lg">
-        <div className="absolute inset-0 bg-hex-pattern opacity-10" />
-        <div className="relative">
-          <BackLink href="/" label="Accueil" />
-          <h1 className="mt-3 text-3xl font-bold text-white">Mon profil</h1>
-          <p className="mt-1 text-sm text-white/60">{profile.nom}</p>
+      <ScrollReveal variant="fade-up">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-phoebe-green-deep via-phoebe-green to-phoebe-green-deep p-7 shadow-lg">
+          <div className="absolute inset-0 bg-hex-pattern opacity-10" />
+          <div className="relative">
+            <BackLink href="/" label="Accueil" />
+            <h1 className="mt-3 text-3xl font-bold text-white">Mon profil</h1>
+            <p className="mt-1 text-sm text-white/60">{profile.nom}</p>
+          </div>
         </div>
-      </div>
+      </ScrollReveal>
 
+      <ScrollReveal variant="fade-up" delay={0.1}>
       <ProfileEditForm
         nom={profile.nom}
         telephone={profile.telephone}
@@ -50,8 +54,9 @@ export default async function ProfilPage() {
         email={profile.email ?? null}
         role={profile.role}
       />
+      </ScrollReveal>
 
-      {isClient && <div className="rounded-2xl border border-phoebe-pearl bg-white p-7 shadow-sm transition-all duration-300 hover:shadow-xl">
+      {isClient && <ScrollReveal variant="fade-up" delay={0.2}><div className="rounded-2xl border border-phoebe-pearl bg-white p-7 shadow-sm transition-all duration-300 hover:shadow-xl">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-bold text-phoebe-anthracite">
@@ -185,9 +190,9 @@ export default async function ProfilPage() {
             )}
           </div>
         )}
-      </div>}
+      </div></ScrollReveal>}
 
-      {isClient && <div className="group rounded-2xl border border-phoebe-pearl bg-white p-7 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-phoebe-gold/30">
+      {isClient && <ScrollReveal variant="fade-up" delay={0.3}><div className="group rounded-2xl border border-phoebe-pearl bg-white p-7 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-phoebe-gold/30">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-phoebe-anthracite">
             Favoris
@@ -199,7 +204,7 @@ export default async function ProfilPage() {
             Voir mes favoris →
           </Link>
         </div>
-      </div>}
+      </div></ScrollReveal>}
     </div>
   );
 }

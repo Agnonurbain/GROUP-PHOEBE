@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal, AnimatedCounter } from "@/components/effects";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -129,16 +130,28 @@ export default async function DashboardPage() {
       </h1>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard label="Demandes (30j)" value={total} accent="green" />
-        <StatCard label="Taux de conversion" value={`${tauxConversion}%`} sub="demandes acceptees ou terminees" accent="green" />
-        <StatCard label="Delai moyen traitement" value={`${delaiMoyenH}h`} sub="creation a premiere action" accent="gold" />
-        <StatCard label="Taux d'acceptation" value={`${tauxAcceptation}%`} accent="green" />
-        <StatCard label="Taux d'annulation" value={`${tauxAnnulation}%`} accent="gold" />
-        <StatCard label="Verification d'identite" value={`${tauxVerification}%`} sub={`${clientsVerifies ?? 0} / ${totalClients ?? 0} clients`} accent="gold" />
+        <ScrollReveal delay={0}>
+          <StatCard label="Demandes (30j)" value={<AnimatedCounter target={total} />} accent="green" />
+        </ScrollReveal>
+        <ScrollReveal delay={0.1}>
+          <StatCard label="Taux de conversion" value={<AnimatedCounter target={tauxConversion} suffix="%" />} sub="demandes acceptees ou terminees" accent="green" />
+        </ScrollReveal>
+        <ScrollReveal delay={0.2}>
+          <StatCard label="Delai moyen traitement" value={`${delaiMoyenH}h`} sub="creation a premiere action" accent="gold" />
+        </ScrollReveal>
+        <ScrollReveal delay={0.3}>
+          <StatCard label="Taux d'acceptation" value={<AnimatedCounter target={tauxAcceptation} suffix="%" />} accent="green" />
+        </ScrollReveal>
+        <ScrollReveal delay={0.4}>
+          <StatCard label="Taux d'annulation" value={<AnimatedCounter target={tauxAnnulation} suffix="%" />} accent="gold" />
+        </ScrollReveal>
+        <ScrollReveal delay={0.5}>
+          <StatCard label="Verification d'identite" value={<AnimatedCounter target={tauxVerification} suffix="%" />} sub={`${clientsVerifies ?? 0} / ${totalClients ?? 0} clients`} accent="gold" />
+        </ScrollReveal>
       </div>
 
       {topVehicules.length > 0 && (
-        <div>
+        <ScrollReveal delay={0.2}>
           <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
             Top vehicules (30 derniers jours)
           </h2>
@@ -164,7 +177,7 @@ export default async function DashboardPage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </ScrollReveal>
       )}
     </div>
   );
@@ -177,7 +190,7 @@ function StatCard({
   accent = "green",
 }: {
   label: string;
-  value: string | number;
+  value: React.ReactNode;
   sub?: string;
   accent?: "green" | "gold";
 }) {

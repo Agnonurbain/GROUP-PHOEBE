@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
 import { CAT_LABELS } from "@/lib/constants";
+import { ScrollReveal, MagneticButton } from "@/components/effects";
 
 
 export function PanierContent() {
@@ -32,9 +33,9 @@ export function PanierContent() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="space-y-4">
-        {items.map((item) => (
+        {items.map((item, i) => (
+          <ScrollReveal key={item.groupKey} variant="fade-up" delay={i * 0.08}>
           <div
-            key={item.groupKey}
             className="group relative flex gap-5 rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-phoebe-gold/20 overflow-hidden"
           >
             {/* Gold top-border reveal on hover */}
@@ -136,6 +137,7 @@ export function PanierContent() {
               </svg>
             </button>
           </div>
+          </ScrollReveal>
         ))}
       </div>
 
@@ -159,13 +161,17 @@ export function PanierContent() {
       </div>
 
       {/* CTA */}
-      <Link
-        href="/panier/reserver"
-        className="group relative block w-full overflow-hidden rounded-2xl bg-gradient-to-r from-phoebe-gold to-phoebe-gold-dark py-4 text-center text-sm font-bold text-white shadow-md shadow-phoebe-gold/20 transition-all hover:shadow-xl hover:shadow-phoebe-gold/30 active:scale-[0.98]"
-      >
-        <span className="relative z-10">Finaliser la réservation</span>
-        <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
-      </Link>
+      <ScrollReveal variant="fade-up" delay={0.2}>
+        <MagneticButton className="w-full">
+          <Link
+            href="/panier/reserver"
+            className="group relative block w-full overflow-hidden rounded-2xl bg-gradient-to-r from-phoebe-gold to-phoebe-gold-dark py-4 text-center text-sm font-bold text-white shadow-md shadow-phoebe-gold/20 transition-all hover:shadow-xl hover:shadow-phoebe-gold/30 active:scale-[0.98]"
+          >
+            <span className="relative z-10">Finaliser la réservation</span>
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+          </Link>
+        </MagneticButton>
+      </ScrollReveal>
     </div>
   );
 }
