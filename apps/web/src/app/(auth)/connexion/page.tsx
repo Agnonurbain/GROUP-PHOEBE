@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { connexion, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
@@ -9,6 +10,8 @@ import { GoogleButton } from "@/components/google-button";
 
 export default function ConnexionPage() {
   const [state, action] = useActionState<AuthState, FormData>(connexion, {});
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") ?? "";
 
   return (
     <>
@@ -31,6 +34,7 @@ export default function ConnexionPage() {
       </div>
 
       <form action={action} className="space-y-4">
+        {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
         <div>
           <label htmlFor="identifiant" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
             Telephone ou email

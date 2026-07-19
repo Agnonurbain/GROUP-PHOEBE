@@ -46,7 +46,13 @@ export default async function GroupeDetailPage({
 
   if (!allVehicules || allVehicules.length === 0) notFound();
 
-  const ids = allVehicules.map((v) => v.id);
+  const vehicules = allVehicules.filter(
+    (v) => makeGroupKey(v.marque, v.modele) === groupKey
+  );
+
+  if (vehicules.length === 0) notFound();
+
+  const ids = vehicules.map((v) => v.id);
 
   const { data: allPhotos } = await supabase
     .from("vehicule_photos")
@@ -59,13 +65,9 @@ export default async function GroupeDetailPage({
     if (!photoMap.has(p.vehicule_id)) photoMap.set(p.vehicule_id, p.url);
   }
 
-  const groups = groupVehicles(allVehicules as Parameters<typeof groupVehicles>[0], photoMap);
-  const group = groups.find((g) => g.groupKey === groupKey);
+  const groups = groupVehicles(vehicules as Parameters<typeof groupVehicles>[0], photoMap);
+  const group = groups[0];
   if (!group) notFound();
-
-  const vehicules = allVehicules.filter(
-    (v) => makeGroupKey(v.marque, v.modele) === groupKey
-  );
 
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;

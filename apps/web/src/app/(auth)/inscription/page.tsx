@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { inscription, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
@@ -10,6 +11,8 @@ import { GoogleButton } from "@/components/google-button";
 export default function InscriptionPage() {
   const [state, action] = useActionState<AuthState, FormData>(inscription, {});
   const [mode, setMode] = useState<"phone" | "email">("phone");
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirect") ?? "";
 
   const maxDate = useMemo(() => {
     const d = new Date();
@@ -71,6 +74,7 @@ export default function InscriptionPage() {
 
       <form action={action} className="space-y-4">
         <input type="hidden" name="mode" value={mode} />
+        {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
 
         <div>
           <label htmlFor="nom" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
@@ -145,7 +149,7 @@ export default function InscriptionPage() {
 
       <p className="mt-6 text-center text-sm text-phoebe-anthracite/60">
         Déjà un compte ?{" "}
-        <Link href="/connexion" className="font-medium text-phoebe-green hover:text-phoebe-green-deep">
+        <Link href={redirectTo ? `/connexion?redirect=${encodeURIComponent(redirectTo)}` : "/connexion"} className="font-medium text-phoebe-green hover:text-phoebe-green-deep">
           Se connecter
         </Link>
       </p>

@@ -6,7 +6,7 @@ const services = [
   {
     title: "Transport",
     description:
-      "Vehicules avec chauffeur pour vos deplacements professionnels et personnels a Abidjan et en Cote d'Ivoire.",
+      "Véhicules avec chauffeur pour vos déplacements professionnels et personnels à Abidjan et en Côte d'Ivoire.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
         <path d="M5 17h14M5 17a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v1m-12 9h1m12 0h1m0 0a2 2 0 002-2v-4a2 2 0 00-2-2h-3l-2-3H9" />
@@ -39,7 +39,7 @@ const services = [
   {
     title: "Assistance Voyages",
     description:
-      "Organisation de voyages et accompagnement des etudiants pour les etudes a l'etranger.",
+      "Organisation de voyages et accompagnement des étudiants pour les études à l'étranger.",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
         <circle cx="12" cy="12" r="10" />
@@ -145,10 +145,10 @@ export default async function Home() {
           <section className="mx-auto max-w-6xl px-4 py-16 text-center md:py-20">
             <div className="rounded-2xl bg-gradient-to-br from-phoebe-anthracite to-phoebe-anthracite/90 px-6 py-12 md:px-12">
               <h2 className="mb-4 text-2xl font-bold text-white md:text-3xl">
-                Pret a commencer ?
+                Prêt à commencer ?
               </h2>
               <p className="mb-6 text-white/60">
-                Inscrivez-vous gratuitement et reservez votre premier trajet en
+                Inscrivez-vous gratuitement et réservez votre premier trajet en
                 quelques minutes.
               </p>
               <Link
@@ -170,11 +170,11 @@ export default async function Home() {
                 GROUP <span className="text-phoebe-green">PHOEBE</span>
               </span>
               <span className="text-[9px] font-medium tracking-wider text-phoebe-gold">
-                LEADER &middot; EXCELLENCE &middot; EFFICACITE
+                LEADER &middot; EXCELLENCE &middot; EFFICACITÉ
               </span>
             </div>
             <p className="text-xs text-phoebe-anthracite/40">
-              &copy; {new Date().getFullYear()} GROUP PHOEBE. Tous droits reserves.
+              &copy; {new Date().getFullYear()} GROUP PHOEBE. Tous droits réservés.
             </p>
           </div>
         </div>

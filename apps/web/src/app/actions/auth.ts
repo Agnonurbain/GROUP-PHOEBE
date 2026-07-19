@@ -72,7 +72,10 @@ export async function inscription(
     return { phone: "email_sent" };
   }
 
-  redirect(`/verifier-otp?phone=${encodeURIComponent(telephone)}`);
+  const nextUrl = formData.get("redirect") as string | null;
+  const otpParams = new URLSearchParams({ phone: telephone });
+  if (nextUrl && nextUrl.startsWith("/")) otpParams.set("next", nextUrl);
+  redirect(`/verifier-otp?${otpParams.toString()}`);
 }
 
 export async function connexion(
@@ -108,7 +111,10 @@ export async function connexion(
   const isStaff =
     profile?.role === "operateur" || profile?.role === "proprietaire";
 
-  redirect(isStaff ? "/admin" : "/profil");
+  const next = formData.get("redirect") as string | null;
+  const safeNext = next && next.startsWith("/") ? next : null;
+
+  redirect(safeNext ?? (isStaff ? "/admin" : "/profil"));
 }
 
 export async function verifierOtp(
@@ -135,7 +141,8 @@ export async function verifierOtp(
     return { error: "Code invalide ou expiré. Veuillez réessayer." };
   }
 
-  redirect(next === "/nouveau-mot-de-passe" ? "/nouveau-mot-de-passe" : "/profil");
+  const safeNext = next && next.startsWith("/") ? next : "/profil";
+  redirect(safeNext);
 }
 
 export async function envoyerCodeReset(

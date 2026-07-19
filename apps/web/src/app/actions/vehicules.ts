@@ -82,7 +82,7 @@ export async function creerVehicule(
       niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
       taux_caution: numCaution(formData.get("taux_caution")),
       description: str(formData.get("description")),
-      statut: statut as "indisponible",
+      statut: "indisponible" as const,
     })
     .select("id")
     .single();
