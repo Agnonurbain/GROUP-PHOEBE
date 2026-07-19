@@ -116,24 +116,10 @@ export default function Filtres() {
         </button>
         <button
           type="button"
-          onClick={() => toggle("clim", "oui")}
-          className={`${chipBase} ${get("clim") === "oui" ? chipActive : chipInactive}`}
-        >
-          Climatisé
-        </button>
-        <button
-          type="button"
           onClick={() => toggle("boite", "automatique")}
           className={`${chipBase} ${get("boite") === "automatique" ? chipActive : chipInactive}`}
         >
           Automatique
-        </button>
-        <button
-          type="button"
-          onClick={() => toggle("gps", "oui")}
-          className={`${chipBase} ${get("gps") === "oui" ? chipActive : chipInactive}`}
-        >
-          GPS
         </button>
         <button
           type="button"

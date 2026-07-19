@@ -53,8 +53,6 @@ async function VehiculeGrid({
   if (sp.places_min) query = query.gte("nb_places", Number(sp.places_min));
   if (sp.chauffeur === "oui") query = query.eq("chauffeur_disponible", true);
   if (sp.chauffeur === "non") query = query.eq("chauffeur_disponible", false);
-  if (sp.clim === "oui") query = query.eq("climatisation", true);
-  if (sp.gps === "oui") query = query.eq("gps", true);
   if (sp.vente === "oui") query = query.gt("prix_vente", 0);
 
   const { data: vehicules } = await query;
@@ -152,19 +150,16 @@ async function VehiculeGrid({
             )}
 
             <div className="flex flex-wrap gap-2 text-xs text-phoebe-anthracite/50">
-              {g.climatisation && (
-                <span className="rounded bg-phoebe-pearl px-2 py-0.5">Climatisé</span>
-              )}
               {g.boite && (
                 <span className="rounded bg-phoebe-pearl px-2 py-0.5">
                   {g.boite === "automatique" ? "Auto" : "Manuelle"}
                 </span>
               )}
+              {g.carburant && (
+                <span className="rounded bg-phoebe-pearl px-2 py-0.5 capitalize">{g.carburant}</span>
+              )}
               {g.assurance && (
                 <span className="rounded bg-phoebe-green/10 px-2 py-0.5 text-phoebe-green-deep">Assuré</span>
-              )}
-              {g.gps && (
-                <span className="rounded bg-phoebe-pearl px-2 py-0.5">GPS</span>
               )}
               {g.chauffeurDisponible && (
                 <span className="rounded bg-phoebe-pearl px-2 py-0.5">Chauffeur dispo</span>
