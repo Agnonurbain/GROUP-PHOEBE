@@ -6,13 +6,8 @@ import { AjouterPanierButton } from "@/components/ajouter-panier-button";
 import { DemandeAchatForm } from "@/components/demande-achat-form";
 import { createClient } from "@/lib/supabase/server";
 import { makeGroupKey, groupVehicles } from "@/lib/vehicle-group";
-import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
+import { CAT_LABELS } from "@/lib/constants";
 
-const CAT_LABELS: Record<string, string> = {
-  leger: "Véhicule léger",
-  car: "Car",
-  minibus: "Minibus",
-};
 
 function formatPrice(val: number | null): string | null {
   if (!val) return null;
@@ -35,7 +30,6 @@ export default async function GroupeDetailPage({
     redirect(`/catalogue/groupe/${encodeURIComponent(groupKey)}/choix`);
   }
 
-  await expirerReservationsAbandonnees();
   const supabase = await createClient();
 
   const { data: allVehicules } = await supabase

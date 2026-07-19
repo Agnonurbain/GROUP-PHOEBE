@@ -4,12 +4,8 @@ import { CommunesList } from "./communes-list";
 import { IntervallesList } from "./intervalles-list";
 import { AjouterCommuneForm } from "./ajouter-commune-form";
 import { AjouterIntervalleForm } from "./ajouter-intervalle-form";
+import { CAT_LABELS } from "@/lib/constants";
 
-const CAT_LABELS: Record<string, string> = {
-  leger: "Véhicule léger",
-  car: "Car",
-  minibus: "Minibus",
-};
 
 const TYPE_LABELS: Record<string, string> = {
   location: "Location",

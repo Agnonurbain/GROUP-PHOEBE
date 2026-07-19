@@ -4,12 +4,8 @@ import Image from "next/image";
 import { Header } from "@/components/header";
 import { createClient } from "@/lib/supabase/server";
 import { makeGroupKey } from "@/lib/vehicle-group";
+import { CAT_LABELS } from "@/lib/constants";
 
-const CAT_LABELS: Record<string, string> = {
-  leger: "Véhicule léger",
-  car: "Car",
-  minibus: "Minibus",
-};
 
 export default async function GroupeChoixPage({
   params,

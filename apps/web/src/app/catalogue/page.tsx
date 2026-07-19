@@ -6,12 +6,8 @@ import { BackLink } from "@/components/back-link";
 import { createClient } from "@/lib/supabase/server";
 import { groupVehicles, type VehicleGroup } from "@/lib/vehicle-group";
 import Filtres from "./filtres";
+import { CAT_LABELS } from "@/lib/constants";
 
-const CAT_LABELS: Record<string, string> = {
-  leger: "Véhicule léger",
-  car: "Car",
-  minibus: "Minibus",
-};
 
 function GridSkeleton() {
   return (
@@ -138,7 +134,7 @@ async function VehiculeGrid({
                   </span>
                 ) : (
                   <span className="rounded-full bg-phoebe-anthracite/10 px-2.5 py-0.5 text-xs font-medium text-phoebe-anthracite">
-                    Indisponible
+                    Indisponible actuellement
                   </span>
                 )}
               </div>

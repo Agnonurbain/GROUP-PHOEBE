@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
+import { CAT_LABELS } from "@/lib/constants";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   disponible: { label: "Disponible", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
@@ -10,11 +11,6 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   indisponible: { label: "Indisponible", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite/50" },
 };
 
-const CAT_LABELS: Record<string, string> = {
-  leger: "Léger",
-  car: "Car",
-  minibus: "Minibus",
-};
 
 export default async function VehiculesListPage() {
   const supabase = await createClient();

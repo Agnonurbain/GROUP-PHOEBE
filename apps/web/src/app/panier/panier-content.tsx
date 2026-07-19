@@ -3,12 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/lib/cart-context";
+import { CAT_LABELS } from "@/lib/constants";
 
-const CAT_LABELS: Record<string, string> = {
-  leger: "Véhicule léger",
-  car: "Car",
-  minibus: "Minibus",
-};
 
 export function PanierContent() {
   const { items, removeItem, toggleChauffeur, updateQuantity, clearCart, count } = useCart();

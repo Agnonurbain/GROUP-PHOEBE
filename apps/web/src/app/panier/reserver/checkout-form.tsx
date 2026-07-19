@@ -7,15 +7,11 @@ import { useCart } from "@/lib/cart-context";
 import { creerReservationMultiple, type ReservationMultiState } from "@/app/actions/reservation-multi";
 import { creerDemandeNegociation, type NegociationState } from "@/app/actions/negociation";
 import { SubmitButton } from "@/components/submit-button";
+import { CAT_LABELS } from "@/lib/constants";
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
 
-const CAT_LABELS: Record<string, string> = {
-  leger: "Véhicule léger",
-  car: "Car",
-  minibus: "Minibus",
-};
 
 type Zone = { id: string; nom: string };
 type Commune = { id: string; nom: string; zone_id: string };
@@ -245,7 +241,7 @@ export function CheckoutForm({
                 type="date"
                 name="fin"
                 required
-                min={debut || today}
+                min={debut ? new Date(new Date(debut).getTime() + 86400000).toISOString().split("T")[0] : today}
                 value={fin}
                 onChange={(e) => setFin(e.target.value)}
                 className={inputClass}
