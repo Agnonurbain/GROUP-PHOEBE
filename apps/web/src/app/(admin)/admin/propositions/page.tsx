@@ -38,18 +38,18 @@ export default async function PropositionsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-phoebe-anthracite">
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
           Propositions de prix
         </h1>
-        <p className="mt-1 text-sm text-phoebe-anthracite/60">
+        <p className="mt-2 text-sm text-phoebe-anthracite/55">
           Modifications de prix proposées par les opérateurs, en attente de votre validation.
         </p>
       </div>
 
       {!enAttente || enAttente.length === 0 ? (
-        <p className="text-sm text-phoebe-anthracite/50">
-          Aucune proposition en attente.
-        </p>
+        <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
+          <p className="text-phoebe-anthracite/45">Aucune proposition en attente.</p>
+        </div>
       ) : (
         <div className="space-y-4">
           {enAttente.map((p) => {
@@ -58,8 +58,9 @@ export default async function PropositionsPage() {
             return (
               <div
                 key={p.id}
-                className="rounded-xl border border-phoebe-pearl bg-white p-4"
+                className="group relative overflow-hidden rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-phoebe-gold/20"
               >
+                <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark transition-transform duration-300 group-hover:scale-x-100" />
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <h3 className="font-semibold text-phoebe-anthracite">
@@ -96,7 +97,7 @@ export default async function PropositionsPage() {
 
       {historique && historique.length > 0 && (
         <div>
-          <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
+          <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
             Historique
           </h2>
           <div className="space-y-2">
@@ -105,7 +106,7 @@ export default async function PropositionsPage() {
               return (
                 <div
                   key={p.id}
-                  className="flex items-center justify-between rounded-lg bg-phoebe-pearl/50 px-4 py-2 text-sm"
+                  className="flex items-center justify-between rounded-xl bg-phoebe-pearl/40 px-5 py-3 text-sm transition-colors hover:bg-phoebe-pearl/70"
                 >
                   <span className="text-phoebe-anthracite/70">
                     {v ? `${v.marque} ${v.modele}` : "—"} · {CHAMP_LABELS[p.champ] ?? p.champ} ·{" "}

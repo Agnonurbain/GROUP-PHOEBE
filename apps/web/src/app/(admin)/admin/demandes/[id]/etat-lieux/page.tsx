@@ -25,17 +25,20 @@ export default async function EtatLieuxPage({
     <div className="mx-auto max-w-2xl space-y-6">
         <Link
           href="/admin/demandes"
-          className="inline-block text-sm text-phoebe-anthracite/60 hover:text-phoebe-green"
+          className="inline-flex items-center gap-1.5 text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
         >
-          ← Retour aux demandes
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+            <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Retour aux demandes
         </Link>
 
-        <h1 className="text-2xl font-bold text-phoebe-anthracite">
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
           État des lieux — {v ? `${v.marque} ${v.modele}` : "—"}
         </h1>
 
         {demande.etat_lieux_depart_photos && (
-          <div className="rounded-xl bg-phoebe-pearl p-4">
+          <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
             <h3 className="mb-2 text-sm font-semibold text-phoebe-anthracite/60">
               Départ enregistré
             </h3>
@@ -49,7 +52,7 @@ export default async function EtatLieuxPage({
                   key={i}
                   src={url}
                   alt={`Départ ${i + 1}`}
-                  className="h-20 w-20 rounded-lg object-cover"
+                  className="h-20 w-20 rounded-xl object-cover ring-1 ring-black/5"
                 />
               ))}
             </div>
@@ -57,7 +60,7 @@ export default async function EtatLieuxPage({
         )}
 
         {demande.etat_lieux_retour_photos && (
-          <div className="rounded-xl bg-phoebe-pearl p-4">
+          <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
             <h3 className="mb-2 text-sm font-semibold text-phoebe-anthracite/60">
               Retour enregistré
             </h3>
@@ -76,7 +79,7 @@ export default async function EtatLieuxPage({
                   key={i}
                   src={url}
                   alt={`Retour ${i + 1}`}
-                  className="h-20 w-20 rounded-lg object-cover"
+                  className="h-20 w-20 rounded-xl object-cover ring-1 ring-black/5"
                 />
               ))}
             </div>

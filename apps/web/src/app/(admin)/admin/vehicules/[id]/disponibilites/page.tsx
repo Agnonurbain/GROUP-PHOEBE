@@ -63,18 +63,18 @@ export default async function DisponibilitesPage({
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-phoebe-anthracite">
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
           Disponibilités — {vehicule.marque} {vehicule.modele}
         </h1>
         <Link
           href={`/admin/vehicules/${id}`}
-          className="text-sm text-phoebe-anthracite/60 hover:text-phoebe-green"
+          className="text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
         >
           ← Retour au véhicule
         </Link>
       </div>
 
-      <section className="space-y-4 rounded-xl border border-phoebe-pearl bg-white p-6">
+      <section className="space-y-4 rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-phoebe-anthracite">
           Périodes bloquées — Véhicule
         </h2>
@@ -93,7 +93,7 @@ export default async function DisponibilitesPage({
       </section>
 
       {vehicule.chauffeur_disponible && (
-        <section className="space-y-6 rounded-xl border border-phoebe-pearl bg-white p-6">
+        <section className="space-y-6 rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-phoebe-anthracite">
             Périodes bloquées — Chauffeurs
           </h2>

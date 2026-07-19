@@ -61,12 +61,12 @@ export default async function EditVehiculePage({
   return (
     <div className="mx-auto max-w-3xl space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-phoebe-anthracite">
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
           {vehicule.marque} {vehicule.modele}
         </h1>
         <Link
           href="/admin/vehicules"
-          className="text-sm text-phoebe-anthracite/60 hover:text-phoebe-green"
+          className="text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
         >
           ← Retour à la liste
         </Link>
@@ -75,7 +75,7 @@ export default async function EditVehiculePage({
       <div className="flex gap-3">
         <Link
           href={`/admin/vehicules/${id}/disponibilites`}
-          className="rounded-lg border border-phoebe-green px-4 py-2 text-sm font-semibold text-phoebe-green transition-colors hover:bg-phoebe-green hover:text-white"
+          className="rounded-xl border border-phoebe-green px-5 py-2.5 text-sm font-semibold text-phoebe-green shadow-sm transition-all hover:bg-phoebe-green hover:text-white hover:shadow-md"
         >
           Gérer les disponibilités
         </Link>
@@ -102,8 +102,8 @@ export default async function EditVehiculePage({
       )}
 
       {isProprietaire && (
-        <section className="rounded-xl border border-error/30 p-4">
-          <h2 className="mb-2 text-sm font-semibold text-error">Zone danger</h2>
+        <section className="rounded-2xl border border-error/20 bg-error/5 p-5">
+          <h2 className="mb-3 text-sm font-semibold text-error">Zone danger</h2>
           <form action={handleDelete}>
             <SubmitButton variant="danger">
               Supprimer ce véhicule

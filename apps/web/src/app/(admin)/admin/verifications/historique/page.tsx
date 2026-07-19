@@ -115,25 +115,25 @@ export default async function HistoriqueVerificationsPage() {
 
       {/* Stats cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-phoebe-pearl bg-white p-5">
-          <p className="text-sm font-medium text-phoebe-anthracite/60">Total traitées</p>
-          <p className="mt-1 text-3xl font-bold text-phoebe-anthracite">{total}</p>
+        <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm border-l-4 border-l-phoebe-anthracite/30">
+          <p className="text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/50">Total traitées</p>
+          <p className="mt-2 text-3xl font-bold text-phoebe-anthracite">{total}</p>
         </div>
-        <div className="rounded-xl border border-phoebe-green/20 bg-phoebe-green/5 p-5">
-          <p className="text-sm font-medium text-phoebe-green-deep">Validées</p>
-          <p className="mt-1 text-3xl font-bold text-phoebe-green">{totalVerified}</p>
-          <p className="mt-0.5 text-xs text-phoebe-anthracite/50">{verifiedPct}%</p>
+        <div className="rounded-2xl border border-phoebe-green/20 bg-phoebe-green/5 p-5 shadow-sm border-l-4 border-l-phoebe-green">
+          <p className="text-xs font-semibold uppercase tracking-wider text-phoebe-green-deep">Validées</p>
+          <p className="mt-2 text-3xl font-bold text-phoebe-green">{totalVerified}</p>
+          <p className="mt-1 text-xs text-phoebe-anthracite/50">{verifiedPct}%</p>
         </div>
-        <div className="rounded-xl border border-error/20 bg-error/5 p-5">
-          <p className="text-sm font-medium text-error">Rejetées</p>
-          <p className="mt-1 text-3xl font-bold text-error">{totalRejected}</p>
-          <p className="mt-0.5 text-xs text-phoebe-anthracite/50">{rejectedPct}%</p>
+        <div className="rounded-2xl border border-error/20 bg-error/5 p-5 shadow-sm border-l-4 border-l-error">
+          <p className="text-xs font-semibold uppercase tracking-wider text-error">Rejetées</p>
+          <p className="mt-2 text-3xl font-bold text-error">{totalRejected}</p>
+          <p className="mt-1 text-xs text-phoebe-anthracite/50">{rejectedPct}%</p>
         </div>
       </div>
 
       {/* Donut chart */}
       {total > 0 && (
-        <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
+        <div className="rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
             Répartition
           </h2>
@@ -170,7 +170,7 @@ export default async function HistoriqueVerificationsPage() {
       )}
 
       {/* Monthly bar chart */}
-      <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
+      <div className="rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
           Activité mensuelle
         </h2>
@@ -218,7 +218,7 @@ export default async function HistoriqueVerificationsPage() {
 
       {/* Per-staff breakdown (proprietaire only) */}
       {isProprietaire && staffStats.length > 0 && (
-        <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
+        <div className="rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
             Par membre du staff
           </h2>
@@ -266,7 +266,7 @@ export default async function HistoriqueVerificationsPage() {
 
       {/* Recent history table */}
       {items.length > 0 && (
-        <div className="rounded-xl border border-phoebe-pearl bg-white">
+        <div className="rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
           <div className="border-b border-phoebe-pearl px-6 py-4">
             <h2 className="text-lg font-semibold text-phoebe-anthracite">
               Détail des vérifications
@@ -274,17 +274,17 @@ export default async function HistoriqueVerificationsPage() {
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[600px] text-sm">
-              <thead className="bg-phoebe-pearl/50">
+              <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">Client</th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">Contact</th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">Statut</th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">Traité par</th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">Date</th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">Motif</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Client</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Contact</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Statut</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Traité par</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Date</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Motif</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-phoebe-pearl">
+              <tbody className="divide-y divide-phoebe-pearl/70">
                 {items.map((item) => {
                   const staffId = item.verifie_par;
                   const staffInfo = staffId ? staffMap[staffId] : null;

@@ -51,8 +51,8 @@ export default async function VerificationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-phoebe-anthracite">
+    <div className="space-y-8">
+      <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
         Vérifications d&apos;identité
       </h1>
 
@@ -65,8 +65,9 @@ export default async function VerificationsPage() {
             {pending.map((user) => (
               <div
                 key={user.id}
-                className="flex items-start justify-between rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4"
+                className="group/card relative flex items-start justify-between overflow-hidden rounded-2xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-5 transition-all hover:shadow-md"
               >
+                <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark transition-transform duration-300 group-hover/card:scale-x-100" />
                 <div className="space-y-1">
                   <p className="font-medium text-phoebe-anthracite">
                     {user.nom}
@@ -115,30 +116,30 @@ export default async function VerificationsPage() {
           <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
             Historique
           </h2>
-          <div className="overflow-x-auto rounded-xl border border-phoebe-pearl">
+          <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
             <table className="w-full min-w-[500px] text-sm">
-              <thead className="bg-phoebe-pearl/50">
+              <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                     Nom
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                     Contact
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                     Statut
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                     Traité par
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                     Motif
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-phoebe-pearl">
+              <tbody className="divide-y divide-phoebe-pearl/70">
                 {others.map((user) => (
-                  <tr key={user.id}>
+                  <tr key={user.id} className="transition-colors hover:bg-phoebe-pearl/40">
                     <td className="px-4 py-3 text-phoebe-anthracite">
                       {user.nom}
                     </td>
