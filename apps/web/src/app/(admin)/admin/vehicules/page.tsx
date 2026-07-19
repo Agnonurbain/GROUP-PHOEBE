@@ -44,53 +44,53 @@ export default async function VehiculesListPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-phoebe-anthracite">
-          Véhicules
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+          Vehicules
         </h1>
         <Link
           href="/admin/vehicules/nouveau"
-          className="rounded-lg bg-phoebe-green px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-phoebe-green-deep"
+          className="rounded-xl bg-phoebe-green px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md"
         >
-          + Nouveau véhicule
+          + Nouveau vehicule
         </Link>
       </div>
 
       {vehicules && vehicules.length > 0 ? (
-        <div className="overflow-x-auto rounded-xl border border-phoebe-pearl">
+        <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
           <table className="w-full min-w-[700px] text-sm">
-            <thead className="bg-phoebe-pearl/50">
+            <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
               <tr>
-                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                   Photo
                 </th>
-                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
-                  Véhicule
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  Vehicule
                 </th>
-                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
-                  Catégorie
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  Categorie
                 </th>
-                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                   Prix/jour
                 </th>
-                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                   Localisation
                 </th>
-                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                   Statut
                 </th>
-                <th className="px-4 py-3" />
+                <th className="px-5 py-4" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-phoebe-pearl">
+            <tbody className="divide-y divide-phoebe-pearl/70">
               {vehicules.map((v) => {
                 const s = STATUT_LABELS[v.statut] ?? STATUT_LABELS.indisponible;
                 return (
-                  <tr key={v.id} className="hover:bg-phoebe-pearl/30">
-                    <td className="px-4 py-3">
+                  <tr key={v.id} className="transition-colors hover:bg-phoebe-pearl/40">
+                    <td className="px-5 py-3.5">
                       {firstPhoto.has(v.id) ? (
-                        <div className="relative h-10 w-14 overflow-hidden rounded">
+                        <div className="relative h-10 w-14 overflow-hidden rounded-lg ring-1 ring-black/5">
                           <Image
                             src={firstPhoto.get(v.id)!}
                             alt=""
@@ -100,13 +100,13 @@ export default async function VehiculesListPage() {
                           />
                         </div>
                       ) : (
-                        <div className="flex h-10 w-14 items-center justify-center rounded bg-phoebe-pearl text-xs text-phoebe-anthracite/30">
+                        <div className="flex h-10 w-14 items-center justify-center rounded-lg bg-phoebe-pearl text-xs text-phoebe-anthracite/30">
                           —
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      <span className="font-medium text-phoebe-anthracite">
+                    <td className="px-5 py-3.5">
+                      <span className="font-semibold text-phoebe-anthracite">
                         {v.marque} {v.modele}
                         {v.annee ? ` (${v.annee})` : ""}
                       </span>
@@ -119,28 +119,28 @@ export default async function VehiculesListPage() {
                         ].filter(Boolean).join(" · ") || "—"}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-phoebe-anthracite/70">
+                    <td className="px-5 py-3.5 text-phoebe-anthracite/70">
                       {CAT_LABELS[v.categorie] ?? v.categorie}
                     </td>
-                    <td className="px-4 py-3 text-phoebe-anthracite/70">
+                    <td className="px-5 py-3.5 font-medium text-phoebe-anthracite/70">
                       {v.prix_journalier
                         ? `${Number(v.prix_journalier).toLocaleString("fr-FR")} FCFA`
                         : "—"}
                     </td>
-                    <td className="px-4 py-3 text-xs text-phoebe-anthracite/50">
+                    <td className="px-5 py-3.5 text-xs text-phoebe-anthracite/50">
                       {v.localisation ?? "—"}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3.5">
                       <span
-                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${s.color}`}
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${s.color}`}
                       >
                         {s.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className="px-5 py-3.5 text-right">
                       <Link
                         href={`/admin/vehicules/${v.id}`}
-                        className="text-sm text-phoebe-green hover:text-phoebe-green-deep"
+                        className="rounded-lg px-3 py-1.5 text-sm font-medium text-phoebe-green transition-all hover:bg-phoebe-green/10 hover:text-phoebe-green-deep"
                       >
                         Modifier
                       </Link>
@@ -153,7 +153,7 @@ export default async function VehiculesListPage() {
         </div>
       ) : (
         <p className="text-sm text-phoebe-anthracite/50">
-          Aucun véhicule enregistré.
+          Aucun vehicule enregistre.
         </p>
       )}
     </div>

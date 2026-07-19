@@ -32,56 +32,56 @@ export default async function ComptesPage() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <div>
-        <h1 className="text-2xl font-bold text-phoebe-anthracite">
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
           Comptes internes
         </h1>
-        <p className="mt-1 text-sm text-phoebe-anthracite/60">
-          Gérez les opérateurs et livreurs de la plateforme.
+        <p className="mt-1.5 text-sm text-phoebe-anthracite/60">
+          Gerez les operateurs et livreurs de la plateforme.
         </p>
       </div>
 
       {staff && staff.length > 0 && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
-            Équipe ({staff.length})
+          <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
+            Equipe ({staff.length})
           </h2>
-          <div className="overflow-x-auto rounded-xl border border-phoebe-pearl">
+          <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
             <table className="w-full min-w-[500px] text-sm">
-              <thead className="bg-phoebe-pearl/50">
+              <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                     Nom
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                     Contact
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
-                    Rôle
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                    Role
                   </th>
-                  <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
-                    Ajouté le
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                    Ajoute le
                   </th>
                   {isProprietaire && (
-                    <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                    <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
                       Actions
                     </th>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-phoebe-pearl">
+              <tbody className="divide-y divide-phoebe-pearl/70">
                 {staff.map((member) => (
-                  <tr key={member.id}>
-                    <td className="px-4 py-3 font-medium text-phoebe-anthracite">
+                  <tr key={member.id} className="transition-colors hover:bg-phoebe-pearl/40">
+                    <td className="px-5 py-3.5 font-semibold text-phoebe-anthracite">
                       {member.nom}
                     </td>
-                    <td className="px-4 py-3 text-phoebe-anthracite/70">
+                    <td className="px-5 py-3.5 text-phoebe-anthracite/70">
                       {member.telephone || member.email || "—"}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-5 py-3.5">
                       <span
-                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                           member.role === "proprietaire"
                             ? "bg-phoebe-gold/20 text-phoebe-gold"
                             : member.role === "operateur"
@@ -92,11 +92,11 @@ export default async function ComptesPage() {
                         {roleLabels[member.role] ?? member.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-phoebe-anthracite/50">
+                    <td className="px-5 py-3.5 text-phoebe-anthracite/50">
                       {new Date(member.created_at).toLocaleDateString("fr-FR")}
                     </td>
                     {isProprietaire && (
-                      <td className="px-4 py-3">
+                      <td className="px-5 py-3.5">
                         {member.role !== "proprietaire" && (
                           <DeleteAccountButton
                             userId={member.id}
@@ -115,13 +115,13 @@ export default async function ComptesPage() {
 
       {isProprietaire && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
-            Créer un compte
+          <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
+            Creer un compte
           </h2>
-          <p className="mb-4 text-sm text-phoebe-anthracite/60">
+          <p className="mb-5 text-sm text-phoebe-anthracite/60">
             Ces comptes ne passent pas par l&apos;inscription publique. Le
-            téléphone/email et le mot de passe temporaire sont définis par le
-            propriétaire.
+            telephone/email et le mot de passe temporaire sont definis par le
+            proprietaire.
           </p>
           <ComptesForm />
         </section>

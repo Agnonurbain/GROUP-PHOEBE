@@ -8,9 +8,9 @@ export default function PanierPage() {
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-3xl px-4 py-8">
+      <main className="mx-auto max-w-3xl px-4 py-10">
         <BackLink href="/catalogue" label="Catalogue" />
-        <h1 className="mb-6 mt-2 text-2xl font-bold text-phoebe-anthracite">
+        <h1 className="mb-8 mt-3 text-3xl font-bold text-phoebe-anthracite">
           Mon panier
         </h1>
         <PanierContent />

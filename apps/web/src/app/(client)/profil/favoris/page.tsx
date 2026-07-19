@@ -39,10 +39,10 @@ export default async function FavorisPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 animate-fade-in">
       <div>
         <BackLink href="/profil" label="Mon profil" />
-        <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">
+        <h1 className="mt-3 text-3xl font-bold text-phoebe-anthracite">
           Mes favoris
         </h1>
       </div>
@@ -55,42 +55,44 @@ export default async function FavorisPage() {
             return (
               <div
                 key={v.id}
-                className="flex gap-4 rounded-xl border border-phoebe-pearl bg-white p-3"
+                className="group relative flex gap-4 rounded-2xl border border-phoebe-pearl bg-white p-4 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-phoebe-gold/20 overflow-hidden"
               >
+                {/* Gold top-border reveal on hover */}
+                <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-phoebe-gold/0 via-phoebe-gold to-phoebe-gold/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                 <Link href={`/catalogue/${v.id}`} className="shrink-0">
                   {photo ? (
-                    <div className="relative h-24 w-32 overflow-hidden rounded-lg">
+                    <div className="relative h-28 w-36 overflow-hidden rounded-xl">
                       <Image
                         src={photo}
                         alt={`${v.marque} ${v.modele}`}
                         fill
-                        sizes="128px"
-                        className="object-cover"
+                        sizes="144px"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
                   ) : (
-                    <div className="flex h-24 w-32 items-center justify-center rounded-lg bg-phoebe-pearl text-xs text-phoebe-anthracite/30">
+                    <div className="flex h-28 w-36 items-center justify-center rounded-xl bg-phoebe-pearl text-xs text-phoebe-anthracite/30">
                       Pas de photo
                     </div>
                   )}
                 </Link>
 
-                <div className="flex min-w-0 flex-1 flex-col justify-between">
+                <div className="flex min-w-0 flex-1 flex-col justify-between py-1">
                   <div>
                     <Link href={`/catalogue/${v.id}`}>
-                      <h2 className="font-semibold text-phoebe-anthracite hover:text-phoebe-green">
+                      <h2 className="font-bold text-phoebe-anthracite transition-colors hover:text-phoebe-green">
                         {v.marque} {v.modele}
                         {v.annee ? ` (${v.annee})` : ""}
                       </h2>
                     </Link>
-                    <p className="text-sm text-phoebe-anthracite/60">
+                    <p className="mt-0.5 text-sm text-phoebe-anthracite/45">
                       {v.localisation ?? "—"}
                     </p>
                   </div>
                   <div className="flex items-end justify-between">
-                    <span className="text-sm font-semibold text-phoebe-green">
+                    <span className="text-sm font-bold text-phoebe-green">
                       {formatPrice(v.prix_journalier) ?? "—"}
-                      <span className="font-normal text-phoebe-anthracite/50">
+                      <span className="font-normal text-phoebe-anthracite/45">
                         /jour
                       </span>
                     </span>
@@ -102,15 +104,17 @@ export default async function FavorisPage() {
           })}
         </div>
       ) : (
-        <p className="text-sm text-phoebe-anthracite/50">
-          Vous n&apos;avez pas encore de favoris.{" "}
-          <Link
-            href="/catalogue"
-            className="text-phoebe-green hover:text-phoebe-green-deep"
-          >
-            Parcourir le catalogue
-          </Link>
-        </p>
+        <div className="rounded-2xl border border-phoebe-pearl bg-white p-10 text-center shadow-sm">
+          <p className="text-sm text-phoebe-anthracite/45">
+            Vous n&apos;avez pas encore de favoris.{" "}
+            <Link
+              href="/catalogue"
+              className="font-medium text-phoebe-green hover:text-phoebe-green-deep"
+            >
+              Parcourir le catalogue
+            </Link>
+          </p>
+        </div>
       )}
     </div>
   );

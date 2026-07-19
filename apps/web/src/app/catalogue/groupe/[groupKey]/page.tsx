@@ -86,20 +86,21 @@ export default async function GroupeDetailPage({
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-5xl px-4 py-8">
+      <main className="mx-auto max-w-5xl px-4 py-10 sm:py-12">
         <Link
           href="/catalogue"
-          className="mb-4 inline-block text-sm text-phoebe-anthracite/60 hover:text-phoebe-green"
+          className="group mb-6 inline-flex items-center gap-1.5 text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
         >
-          &larr; Retour au catalogue
+          <span className="inline-block transition-transform group-hover:-translate-x-1">&larr;</span>
+          Retour au catalogue
         </Link>
 
-        <div className="grid gap-8 lg:grid-cols-2">
+        <div className="grid gap-10 lg:grid-cols-2">
           {/* Photos */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             {mainPhoto ? (
               <>
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-lg ring-1 ring-black/5">
                   <Image
                     src={mainPhoto}
                     alt={`${group.marque} ${group.modele}`}
@@ -110,9 +111,9 @@ export default async function GroupeDetailPage({
                   />
                 </div>
                 {extraPhotos.length > 0 && (
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-4 gap-2.5">
                     {extraPhotos.map((p) => (
-                      <div key={p.id} className="relative aspect-square overflow-hidden rounded-lg">
+                      <div key={p.id} className="relative aspect-square overflow-hidden rounded-xl shadow-sm ring-1 ring-black/5 transition-shadow hover:shadow-md">
                         <Image
                           src={p.url}
                           alt=""
@@ -126,37 +127,37 @@ export default async function GroupeDetailPage({
                 )}
               </>
             ) : (
-              <div className="flex aspect-[4/3] w-full items-center justify-center rounded-xl bg-phoebe-pearl text-phoebe-anthracite/30">
+              <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl bg-phoebe-pearl text-phoebe-anthracite/30 ring-1 ring-black/5">
                 Pas de photo
               </div>
             )}
           </div>
 
           {/* Infos */}
-          <div className="space-y-6">
+          <div className="space-y-7">
             <div>
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-2.5 text-xs">
                 <Link
                   href={`/catalogue/groupe/${encodeURIComponent(groupKey)}/choix`}
-                  className="rounded-full border border-phoebe-anthracite/20 px-3 py-1 text-phoebe-anthracite/60 transition-colors hover:border-phoebe-green hover:text-phoebe-green"
+                  className="group/switch rounded-full border border-phoebe-anthracite/15 px-3.5 py-1.5 text-phoebe-anthracite/50 transition-all hover:border-phoebe-green hover:text-phoebe-green hover:shadow-sm"
                 >
-                  &larr; Changer (Achat / Location)
+                  <span className="inline-block transition-transform group-hover/switch:-translate-x-0.5">&larr;</span> Changer (Achat / Location)
                 </Link>
-                <span className={`rounded-full px-3 py-1 font-medium ${mode === "location" ? "bg-phoebe-green/10 text-phoebe-green-deep" : "bg-phoebe-gold/10 text-phoebe-gold"}`}>
+                <span className={`rounded-full px-3.5 py-1.5 font-semibold ${mode === "location" ? "bg-phoebe-green/10 text-phoebe-green-deep" : "bg-phoebe-gold/10 text-phoebe-gold"}`}>
                   {mode === "location" ? "Location" : "Achat"}
                 </span>
               </div>
-              <div className="mt-3 flex items-start justify-between gap-3">
-                <h1 className="text-2xl font-bold text-phoebe-anthracite">
+              <div className="mt-4 flex items-start justify-between gap-3">
+                <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
                   {group.marque} {group.modele}
                 </h1>
                 {group.totalCount > 0 && (
-                  <span className="rounded-full bg-phoebe-green/10 px-3 py-1 text-sm font-medium text-phoebe-green-deep">
+                  <span className="rounded-full bg-phoebe-green/10 px-3.5 py-1.5 text-sm font-semibold text-phoebe-green-deep">
                     {group.totalCount} disponible{group.totalCount > 1 ? "s" : ""}
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-sm text-phoebe-anthracite/50">
+              <p className="mt-1.5 text-sm text-phoebe-anthracite/50">
                 {CAT_LABELS[group.categorie] ?? group.categorie}
                 {group.annee && group.annee < 9999 ? ` · ${group.annee}` : ""}
                 {group.nbPlaces ? ` · ${group.nbPlaces} places` : ""}
@@ -165,28 +166,28 @@ export default async function GroupeDetailPage({
 
             {/* Tarifs par zone (location uniquement) */}
             {mode === "location" && intervalles && intervalles.length > 0 && (
-              <div className="rounded-xl bg-phoebe-pearl p-4">
-                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+              <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
+                <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/40">
                   {mode === "location" ? "Tarifs indicatifs par zone" : "Prix indicatifs"}
                 </h2>
-                <div className="space-y-2">
+                <div className="divide-y divide-phoebe-pearl/70">
                   {intervalles.map((ip) => (
-                    <div key={ip.id} className="flex items-baseline justify-between">
+                    <div key={ip.id} className="flex items-baseline justify-between py-2.5 first:pt-0 last:pb-0">
                       <span className="text-sm text-phoebe-anthracite/70">
                         {(ip.zones_tarifaires as { nom: string }).nom}
                       </span>
-                      <span className={`font-semibold ${mode === "location" ? "text-phoebe-green" : "text-phoebe-gold"}`}>
+                      <span className={`text-base font-bold ${mode === "location" ? "text-phoebe-green" : "text-gradient-gold"}`}>
                         {formatPrice(ip.prix_min)} — {formatPrice(ip.prix_max)}
                         {mode === "location" && <span className="text-xs font-normal text-phoebe-anthracite/50"> /jour</span>}
                       </span>
                     </div>
                   ))}
                 </div>
-                <p className="mt-3 text-xs text-phoebe-anthracite/40">
+                <p className="mt-4 text-xs text-phoebe-anthracite/40">
                   Prix approximatifs selon la zone de destination. Le tarif final dépend de la distance et de la durée.
                 </p>
                 {group.chauffeurDisponible && (
-                  <p className="mt-2 rounded-lg bg-phoebe-green/10 px-3 py-2 text-sm text-phoebe-green-deep">
+                  <p className="mt-3 rounded-xl bg-phoebe-green/5 px-4 py-2.5 text-sm font-medium text-phoebe-green-deep">
                     Option chauffeur disponible — supplément tarifaire applicable.
                   </p>
                 )}
@@ -195,13 +196,13 @@ export default async function GroupeDetailPage({
 
             {/* Assurance */}
             {group.assurance && (
-              <div className="flex items-center gap-3 rounded-xl bg-phoebe-green/5 px-4 py-3">
+              <div className="flex items-center gap-4 rounded-2xl border border-phoebe-green/10 bg-phoebe-green/5 px-5 py-4">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-phoebe-green">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                 </svg>
                 <div>
-                  <p className="text-sm font-semibold text-phoebe-green-deep">Véhicule assuré</p>
-                  <p className="text-xs text-phoebe-anthracite/50">Ce véhicule est couvert par une assurance tous risques.</p>
+                  <p className="text-sm font-semibold text-phoebe-green-deep">Vehicule assure</p>
+                  <p className="text-xs text-phoebe-anthracite/50">Ce vehicule est couvert par une assurance tous risques.</p>
                 </div>
               </div>
             )}
@@ -244,58 +245,62 @@ export default async function GroupeDetailPage({
             })()}
 
             {/* Caractéristiques */}
-            <div>
-              <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
-                Caractéristiques
+            <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
+              <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/40">
+                Caracteristiques
               </h2>
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <dl className="divide-y divide-phoebe-pearl/70 text-sm">
                 {group.nbPlaces && (
-                  <>
+                  <div className="flex items-baseline justify-between py-2.5 first:pt-0 last:pb-0">
                     <dt className="text-phoebe-anthracite/60">Places</dt>
-                    <dd className="font-medium text-phoebe-anthracite">{group.nbPlaces}</dd>
-                  </>
+                    <dd className="font-semibold text-phoebe-anthracite">{group.nbPlaces}</dd>
+                  </div>
                 )}
                 {group.boite && (
-                  <>
-                    <dt className="text-phoebe-anthracite/60">Boîte</dt>
-                    <dd className="font-medium text-phoebe-anthracite">
+                  <div className="flex items-baseline justify-between py-2.5 first:pt-0 last:pb-0">
+                    <dt className="text-phoebe-anthracite/60">Boite</dt>
+                    <dd className="font-semibold text-phoebe-anthracite">
                       {group.boite === "automatique" ? "Automatique" : "Manuelle"}
                     </dd>
-                  </>
+                  </div>
                 )}
                 {mode === "achat" ? (
                   <>
                     {rep.etat && (
-                      <>
-                        <dt className="text-phoebe-anthracite/60">État</dt>
-                        <dd className="font-medium text-phoebe-anthracite capitalize">{rep.etat === "neuf" ? "Neuf" : "Occasion"}</dd>
-                      </>
+                      <div className="flex items-baseline justify-between py-2.5 first:pt-0 last:pb-0">
+                        <dt className="text-phoebe-anthracite/60">Etat</dt>
+                        <dd className="font-semibold text-phoebe-anthracite capitalize">{rep.etat === "neuf" ? "Neuf" : "Occasion"}</dd>
+                      </div>
                     )}
                     {rep.carburant && (
-                      <>
+                      <div className="flex items-baseline justify-between py-2.5 first:pt-0 last:pb-0">
                         <dt className="text-phoebe-anthracite/60">Carburant</dt>
-                        <dd className="font-medium text-phoebe-anthracite capitalize">{rep.carburant}</dd>
-                      </>
+                        <dd className="font-semibold text-phoebe-anthracite capitalize">{rep.carburant}</dd>
+                      </div>
                     )}
                     {rep.kilometrage != null && rep.kilometrage > 0 && (
-                      <>
-                        <dt className="text-phoebe-anthracite/60">Kilométrage</dt>
-                        <dd className="font-medium text-phoebe-anthracite">{Number(rep.kilometrage).toLocaleString("fr-FR")} km</dd>
-                      </>
+                      <div className="flex items-baseline justify-between py-2.5 first:pt-0 last:pb-0">
+                        <dt className="text-phoebe-anthracite/60">Kilometrage</dt>
+                        <dd className="font-semibold text-phoebe-anthracite">{Number(rep.kilometrage).toLocaleString("fr-FR")} km</dd>
+                      </div>
                     )}
                     {rep.localisation && (
-                      <>
+                      <div className="flex items-baseline justify-between py-2.5 first:pt-0 last:pb-0">
                         <dt className="text-phoebe-anthracite/60">Localisation</dt>
-                        <dd className="font-medium text-phoebe-anthracite">{rep.localisation}</dd>
-                      </>
+                        <dd className="font-semibold text-phoebe-anthracite">{rep.localisation}</dd>
+                      </div>
                     )}
                   </>
                 ) : (
                   <>
-                    <dt className="text-phoebe-anthracite/60">Climatisation</dt>
-                    <dd className="font-medium text-phoebe-anthracite">{group.climatisation ? "Oui" : "Non"}</dd>
-                    <dt className="text-phoebe-anthracite/60">GPS</dt>
-                    <dd className="font-medium text-phoebe-anthracite">{group.gps ? "Oui" : "Non"}</dd>
+                    <div className="flex items-baseline justify-between py-2.5 first:pt-0 last:pb-0">
+                      <dt className="text-phoebe-anthracite/60">Climatisation</dt>
+                      <dd className="font-semibold text-phoebe-anthracite">{group.climatisation ? "Oui" : "Non"}</dd>
+                    </div>
+                    <div className="flex items-baseline justify-between py-2.5 first:pt-0 last:pb-0">
+                      <dt className="text-phoebe-anthracite/60">GPS</dt>
+                      <dd className="font-semibold text-phoebe-anthracite">{group.gps ? "Oui" : "Non"}</dd>
+                    </div>
                   </>
                 )}
               </dl>

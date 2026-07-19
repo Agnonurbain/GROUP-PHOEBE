@@ -123,40 +123,40 @@ export default async function DashboardPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold text-phoebe-anthracite">
+    <div className="space-y-10">
+      <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
         Tableau de bord — Transport
       </h1>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <StatCard label="Demandes (30j)" value={total} />
-        <StatCard label="Taux de conversion" value={`${tauxConversion}%`} sub="demandes → acceptées ou terminées" />
-        <StatCard label="Délai moyen traitement" value={`${delaiMoyenH}h`} sub="création → première action" />
-        <StatCard label="Taux d'acceptation" value={`${tauxAcceptation}%`} />
-        <StatCard label="Taux d'annulation" value={`${tauxAnnulation}%`} />
-        <StatCard label="Vérification d'identité" value={`${tauxVerification}%`} sub={`${clientsVerifies ?? 0} / ${totalClients ?? 0} clients`} />
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <StatCard label="Demandes (30j)" value={total} accent="green" />
+        <StatCard label="Taux de conversion" value={`${tauxConversion}%`} sub="demandes acceptees ou terminees" accent="green" />
+        <StatCard label="Delai moyen traitement" value={`${delaiMoyenH}h`} sub="creation a premiere action" accent="gold" />
+        <StatCard label="Taux d'acceptation" value={`${tauxAcceptation}%`} accent="green" />
+        <StatCard label="Taux d'annulation" value={`${tauxAnnulation}%`} accent="gold" />
+        <StatCard label="Verification d'identite" value={`${tauxVerification}%`} sub={`${clientsVerifies ?? 0} / ${totalClients ?? 0} clients`} accent="gold" />
       </div>
 
       {topVehicules.length > 0 && (
         <div>
-          <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
-            Top véhicules (30 derniers jours)
+          <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
+            Top vehicules (30 derniers jours)
           </h2>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-phoebe-pearl text-left text-xs uppercase tracking-wider text-phoebe-anthracite/40">
-                  <th scope="col" className="pb-2 pr-4">Véhicule</th>
-                  <th scope="col" className="pb-2 pr-4">Demandes</th>
+                <tr className="border-b border-phoebe-pearl text-left text-xs uppercase tracking-widest text-phoebe-anthracite/40">
+                  <th scope="col" className="px-5 py-3.5">Vehicule</th>
+                  <th scope="col" className="px-5 py-3.5">Demandes</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-phoebe-pearl">
+              <tbody className="divide-y divide-phoebe-pearl/70">
                 {topVehicules.map((v) => (
-                  <tr key={v.id}>
-                    <td className="py-2 pr-4 text-phoebe-anthracite">
+                  <tr key={v.id} className="transition-colors hover:bg-phoebe-pearl/40">
+                    <td className="px-5 py-3 text-phoebe-anthracite">
                       {v.marque} {v.modele}
                     </td>
-                    <td className="py-2 pr-4 font-semibold text-phoebe-anthracite">
+                    <td className="px-5 py-3 font-bold text-phoebe-anthracite">
                       {v.count}
                     </td>
                   </tr>
@@ -174,19 +174,21 @@ function StatCard({
   label,
   value,
   sub,
+  accent = "green",
 }: {
   label: string;
   value: string | number;
   sub?: string;
+  accent?: "green" | "gold";
 }) {
   return (
-    <div className="rounded-xl border border-phoebe-pearl bg-white p-4 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/40">
+    <div className={`relative overflow-hidden rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm before:absolute before:inset-y-0 before:left-0 before:w-1 ${accent === "green" ? "before:bg-phoebe-green" : "before:bg-phoebe-gold"}`}>
+      <p className="text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/40">
         {label}
       </p>
-      <p className="mt-1 text-2xl font-bold text-phoebe-anthracite">{value}</p>
+      <p className="mt-1.5 text-3xl font-bold text-phoebe-anthracite">{value}</p>
       {sub && (
-        <p className="mt-0.5 text-xs text-phoebe-anthracite/50">{sub}</p>
+        <p className="mt-1 text-xs text-phoebe-anthracite/50">{sub}</p>
       )}
     </div>
   );

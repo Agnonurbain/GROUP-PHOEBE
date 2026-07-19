@@ -28,33 +28,38 @@ export default async function ConfirmationPage({
   return (
     <>
       <Header />
-      <main className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-4 text-center">
-        <div className="mb-4 flex items-center justify-center">
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#39A044" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <path d="M9 12l2 2 4-4" />
-          </svg>
+      <main className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-4 text-center animate-fade-in">
+        <div className="mb-6 flex items-center justify-center">
+          <div className="relative">
+            {/* Glow effect behind icon */}
+            <div className="absolute inset-0 rounded-full bg-phoebe-green/20 blur-xl animate-scale-in" />
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#39A044" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="relative glow-green">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9 12l2 2 4-4" />
+            </svg>
+          </div>
         </div>
-        <h1 className="mb-2 text-2xl font-bold text-phoebe-anthracite">
+        <h1 className="mb-3 text-3xl font-bold text-phoebe-anthracite">
           Paiement enregistré
         </h1>
-        <p className="mb-6 text-phoebe-anthracite/70">
+        <p className="mb-8 max-w-sm text-phoebe-anthracite/55 leading-relaxed">
           Votre réservation{vehiculeLabel ? ` pour le ${vehiculeLabel}` : ""}{" "}
           est en attente de validation par notre équipe. Vous recevrez une
-          notification dès qu'elle sera confirmée.
+          notification dès qu&#39;elle sera confirmée.
         </p>
         <div className="flex gap-4">
           <Link
             href="/catalogue"
-            className="rounded-xl bg-phoebe-pearl px-5 py-2.5 text-sm font-medium text-phoebe-anthracite transition-all hover:bg-phoebe-pearl/80 hover:shadow-sm"
+            className="rounded-2xl border border-phoebe-pearl bg-white px-6 py-3.5 text-sm font-semibold text-phoebe-anthracite shadow-sm transition-all hover:shadow-lg hover:border-phoebe-anthracite/20"
           >
             Retour au catalogue
           </Link>
           <Link
             href="/profil"
-            className="rounded-xl bg-phoebe-green px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md"
+            className="relative overflow-hidden rounded-2xl bg-phoebe-green px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-lg"
           >
-            Voir mon profil
+            <span className="relative z-10">Voir mon profil</span>
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 hover:translate-x-full" />
           </Link>
         </div>
       </main>

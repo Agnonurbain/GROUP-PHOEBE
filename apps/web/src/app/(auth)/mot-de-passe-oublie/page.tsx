@@ -22,35 +22,38 @@ export default function MotDePasseOubliePage() {
 
   return (
     <>
-      <h1 className="mb-2 text-center text-xl font-bold text-phoebe-anthracite">
-        Mot de passe oublié
+      <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">
+        Mot de passe oublie
       </h1>
-      <p className="mb-6 text-center text-sm text-phoebe-anthracite/60">
+      <p className="mt-2 mb-8 text-sm leading-relaxed text-phoebe-anthracite/60">
         {mode === "phone"
-          ? "Saisissez votre numéro de téléphone pour recevoir un code de réinitialisation par SMS."
-          : "Saisissez votre adresse email pour recevoir un lien de réinitialisation."}
+          ? "Saisissez votre numero de telephone pour recevoir un code de reinitialisation par SMS."
+          : "Saisissez votre adresse email pour recevoir un lien de reinitialisation."}
       </p>
 
       {state.error && (
-        <div className="animate-fade-in mb-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div className="animate-fade-in mb-6 flex items-start gap-3 rounded-xl border border-error/20 bg-error/5 px-4 py-3.5 text-sm text-error">
+          <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor" className="mt-0.5 shrink-0 opacity-70">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd"/>
+          </svg>
           {state.error}
         </div>
       )}
 
       {emailState.phone === "sent" && mode === "email" && (
-        <div className="animate-fade-in mb-4 rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
-          Un email de réinitialisation a été envoyé. Vérifiez votre boîte de réception.
+        <div className="animate-fade-in mb-6 rounded-xl border border-phoebe-green/20 bg-phoebe-green/5 px-4 py-3.5 text-sm text-phoebe-green-deep">
+          Un email de reinitialisation a ete envoye. Verifiez votre boite de reception.
         </div>
       )}
 
-      <div className="mb-4 flex gap-2">
+      <div className="mb-6 flex gap-2 rounded-xl bg-phoebe-pearl/50 p-1">
         <button
           type="button"
           onClick={() => setMode("phone")}
-          className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
             mode === "phone"
-              ? "bg-phoebe-green text-white"
-              : "bg-phoebe-pearl text-phoebe-anthracite/60 hover:bg-phoebe-pearl/80"
+              ? "bg-phoebe-green text-white shadow-md shadow-phoebe-green/25"
+              : "text-phoebe-anthracite/60 hover:text-phoebe-anthracite"
           }`}
         >
           Par SMS
@@ -58,24 +61,24 @@ export default function MotDePasseOubliePage() {
         <button
           type="button"
           onClick={() => setMode("email")}
-          className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+          className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
             mode === "email"
-              ? "bg-phoebe-green text-white"
-              : "bg-phoebe-pearl text-phoebe-anthracite/60 hover:bg-phoebe-pearl/80"
+              ? "bg-phoebe-green text-white shadow-md shadow-phoebe-green/25"
+              : "text-phoebe-anthracite/60 hover:text-phoebe-anthracite"
           }`}
         >
           Par email
         </button>
       </div>
 
-      <form action={action} className="space-y-4">
+      <form action={action} className="space-y-5">
         {mode === "phone" ? (
           <div>
             <label
               htmlFor="telephone"
-              className="mb-1 block text-sm font-medium text-phoebe-anthracite"
+              className="mb-1.5 block text-sm font-medium text-phoebe-anthracite"
             >
-              Téléphone
+              Telephone
             </label>
             <input
               id="telephone"
@@ -83,7 +86,7 @@ export default function MotDePasseOubliePage() {
               type="tel"
               required
               autoFocus
-              className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
+              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/35 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
               placeholder="+225 XX XX XX XX XX"
             />
           </div>
@@ -91,7 +94,7 @@ export default function MotDePasseOubliePage() {
           <div>
             <label
               htmlFor="email"
-              className="mb-1 block text-sm font-medium text-phoebe-anthracite"
+              className="mb-1.5 block text-sm font-medium text-phoebe-anthracite"
             >
               Adresse email
             </label>
@@ -101,7 +104,7 @@ export default function MotDePasseOubliePage() {
               type="email"
               required
               autoFocus
-              className="w-full rounded-lg border border-phoebe-anthracite/20 px-4 py-2.5 text-sm transition-colors focus:border-phoebe-green"
+              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/35 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
               placeholder="votre@email.com"
             />
           </div>
@@ -112,12 +115,17 @@ export default function MotDePasseOubliePage() {
         </SubmitButton>
       </form>
 
+      <div className="mt-8 flex items-center gap-3">
+        <div className="h-px flex-1 bg-phoebe-anthracite/10" />
+        <div className="h-px flex-1 bg-phoebe-anthracite/10" />
+      </div>
+
       <p className="mt-6 text-center text-sm text-phoebe-anthracite/60">
         <Link
           href="/connexion"
-          className="font-medium text-phoebe-green hover:text-phoebe-green-deep"
+          className="font-semibold text-phoebe-green transition-colors duration-200 hover:text-phoebe-green-deep"
         >
-          Retour à la connexion
+          Retour a la connexion
         </Link>
       </p>
     </>

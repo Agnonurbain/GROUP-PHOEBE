@@ -32,10 +32,15 @@ export default async function ProfilPage() {
     : [null, null];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <BackLink href="/" label="Accueil" />
-        <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">Mon profil</h1>
+    <div className="space-y-8 animate-fade-in">
+      {/* Header banner */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-phoebe-green-deep via-phoebe-green to-phoebe-green-deep p-7 shadow-lg">
+        <div className="absolute inset-0 bg-hex-pattern opacity-10" />
+        <div className="relative">
+          <BackLink href="/" label="Accueil" />
+          <h1 className="mt-3 text-3xl font-bold text-white">Mon profil</h1>
+          <p className="mt-1 text-sm text-white/60">{profile.nom}</p>
+        </div>
       </div>
 
       <ProfileEditForm
@@ -46,53 +51,55 @@ export default async function ProfilPage() {
         role={profile.role}
       />
 
-      {isClient && <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
+      {isClient && <div className="rounded-2xl border border-phoebe-pearl bg-white p-7 shadow-sm transition-all duration-300 hover:shadow-xl">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-phoebe-anthracite">
+            <h2 className="text-lg font-bold text-phoebe-anthracite">
               Vérification d&apos;identité
             </h2>
-            <div className="mt-1">
+            <div className="mt-1.5">
               <VerificationBadge statut={statut} />
             </div>
           </div>
           {statut === "non_verifie" && (
             <Link
               href="/profil/verification"
-              className="rounded-xl bg-phoebe-green px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md"
+              className="relative overflow-hidden rounded-2xl bg-phoebe-green px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-lg"
             >
-              Soumettre mes documents
+              <span className="relative z-10">Soumettre mes documents</span>
+              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 hover:translate-x-full" />
             </Link>
           )}
           {statut === "rejete" && (
             <Link
               href="/profil/verification"
-              className="rounded-xl bg-phoebe-gold px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/80 hover:shadow-md"
+              className="relative overflow-hidden rounded-2xl bg-phoebe-gold px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold-dark hover:shadow-lg"
             >
-              Soumettre à nouveau
+              <span className="relative z-10">Soumettre à nouveau</span>
+              <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 hover:translate-x-full" />
             </Link>
           )}
         </div>
 
         {statut === "non_verifie" && (
-          <p className="mt-3 text-sm text-phoebe-anthracite/60">
+          <p className="mt-4 text-sm text-phoebe-anthracite/55">
             Vous devez soumettre une pièce d&apos;identité et un permis de conduire
             pour pouvoir effectuer une réservation.
           </p>
         )}
         {statut === "documents_soumis" && (
-          <div className="mt-3 space-y-2">
-            <p className="text-sm text-phoebe-anthracite/60">
+          <div className="mt-4 space-y-2">
+            <p className="text-sm text-phoebe-anthracite/55">
               Vos documents sont en cours de vérification par notre équipe.
             </p>
             {(pieceUrl || permisUrl) && (
-              <div className="flex gap-3 text-xs">
+              <div className="flex gap-4 text-xs">
                 {pieceUrl && (
                   <a
                     href={pieceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                    className="font-medium text-phoebe-green underline decoration-phoebe-green/30 underline-offset-2 hover:text-phoebe-green-deep hover:decoration-phoebe-green-deep/50"
                   >
                     Pièce d&apos;identité
                   </a>
@@ -102,7 +109,7 @@ export default async function ProfilPage() {
                     href={permisUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                    className="font-medium text-phoebe-green underline decoration-phoebe-green/30 underline-offset-2 hover:text-phoebe-green-deep hover:decoration-phoebe-green-deep/50"
                   >
                     Permis de conduire
                   </a>
@@ -112,7 +119,7 @@ export default async function ProfilPage() {
           </div>
         )}
         {statut === "rejete" && (
-          <div className="mt-3 space-y-2">
+          <div className="mt-4 space-y-2">
             <p className="text-sm text-error/80">
               Vos documents ont été rejetés. Veuillez les soumettre à nouveau.
             </p>
@@ -122,13 +129,13 @@ export default async function ProfilPage() {
               </p>
             )}
             {(pieceUrl || permisUrl) && (
-              <div className="flex gap-3 text-xs">
+              <div className="flex gap-4 text-xs">
                 {pieceUrl && (
                   <a
                     href={pieceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-phoebe-anthracite/60 underline hover:text-phoebe-green"
+                    className="font-medium text-phoebe-anthracite/60 underline decoration-phoebe-anthracite/20 underline-offset-2 hover:text-phoebe-green"
                   >
                     Pièce d&apos;identité soumise
                   </a>
@@ -138,7 +145,7 @@ export default async function ProfilPage() {
                     href={permisUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-phoebe-anthracite/60 underline hover:text-phoebe-green"
+                    className="font-medium text-phoebe-anthracite/60 underline decoration-phoebe-anthracite/20 underline-offset-2 hover:text-phoebe-green"
                   >
                     Permis soumis
                   </a>
@@ -148,18 +155,18 @@ export default async function ProfilPage() {
           </div>
         )}
         {statut === "verifie" && (
-          <div className="mt-3 space-y-2">
-            <p className="text-sm text-phoebe-green-deep">
+          <div className="mt-4 space-y-2">
+            <p className="text-sm font-medium text-phoebe-green-deep">
               Votre identité est vérifiée. Vous pouvez effectuer des réservations.
             </p>
             {(pieceUrl || permisUrl) && (
-              <div className="flex gap-3 text-xs">
+              <div className="flex gap-4 text-xs">
                 {pieceUrl && (
                   <a
                     href={pieceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                    className="font-medium text-phoebe-green underline decoration-phoebe-green/30 underline-offset-2 hover:text-phoebe-green-deep hover:decoration-phoebe-green-deep/50"
                   >
                     Pièce d&apos;identité
                   </a>
@@ -169,7 +176,7 @@ export default async function ProfilPage() {
                     href={permisUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                    className="font-medium text-phoebe-green underline decoration-phoebe-green/30 underline-offset-2 hover:text-phoebe-green-deep hover:decoration-phoebe-green-deep/50"
                   >
                     Permis de conduire
                   </a>
@@ -180,14 +187,14 @@ export default async function ProfilPage() {
         )}
       </div>}
 
-      {isClient && <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
+      {isClient && <div className="group rounded-2xl border border-phoebe-pearl bg-white p-7 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-phoebe-gold/30">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-phoebe-anthracite">
+          <h2 className="text-lg font-bold text-phoebe-anthracite">
             Favoris
           </h2>
           <Link
             href="/profil/favoris"
-            className="text-sm text-phoebe-green hover:text-phoebe-green-deep"
+            className="text-sm font-medium text-gradient-gold transition-opacity hover:opacity-80"
           >
             Voir mes favoris →
           </Link>

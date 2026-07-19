@@ -19,24 +19,25 @@ export default async function VerificationPage() {
 
   if (!profile?.date_naissance) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8 animate-fade-in">
         <div>
           <BackLink href="/profil" label="Mon profil" />
-          <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">
+          <h1 className="mt-3 text-3xl font-bold text-phoebe-anthracite">
             Vérification d&apos;identité
           </h1>
         </div>
-        <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/10 p-6">
-          <p className="text-sm text-phoebe-anthracite">
+        <div className="rounded-2xl border border-phoebe-gold/30 bg-gradient-to-br from-phoebe-gold/5 to-phoebe-gold/10 p-7 shadow-sm">
+          <p className="text-sm text-phoebe-anthracite leading-relaxed">
             Vous devez renseigner votre <strong>date de naissance</strong>
             {" "}avant de soumettre vos documents. L&apos;âge minimum requis
             est de 21 ans.
           </p>
           <Link
             href="/profil"
-            className="mt-4 inline-block rounded-lg bg-phoebe-green px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-phoebe-green-deep"
+            className="relative mt-5 inline-block overflow-hidden rounded-2xl bg-phoebe-green px-6 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-lg"
           >
-            Compléter mon profil
+            <span className="relative z-10">Compléter mon profil</span>
+            <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 hover:translate-x-full" />
           </Link>
         </div>
       </div>
@@ -45,15 +46,15 @@ export default async function VerificationPage() {
 
   if (!hasMinimumAge(profile.date_naissance, 21)) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8 animate-fade-in">
         <div>
           <BackLink href="/profil" label="Mon profil" />
-          <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">
+          <h1 className="mt-3 text-3xl font-bold text-phoebe-anthracite">
             Vérification d&apos;identité
           </h1>
         </div>
-        <div className="rounded-xl border border-error/30 bg-error/10 p-6">
-          <p className="text-sm text-error">
+        <div className="rounded-2xl border border-error/20 bg-gradient-to-br from-error/5 to-error/10 p-7 shadow-sm">
+          <p className="text-sm text-error leading-relaxed">
             Vous devez avoir au moins <strong>21 ans</strong> pour soumettre vos
             documents et effectuer une réservation.
           </p>

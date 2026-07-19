@@ -26,18 +26,20 @@ export default async function ReservationsPage() {
   const avisSet = new Set(avisExistants?.map((a) => a.demande_id) ?? []);
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl animate-fade-in">
       <BackLink href="/profil" label="Mon profil" />
-      <h1 className="mb-6 mt-2 text-2xl font-bold text-phoebe-anthracite">
+      <h1 className="mb-8 mt-3 text-3xl font-bold text-phoebe-anthracite">
         Mes réservations & achats
       </h1>
 
       {!demandes || demandes.length === 0 ? (
-        <p className="text-sm text-phoebe-anthracite/50">
-          Aucune demande pour le moment.
-        </p>
+        <div className="rounded-2xl border border-phoebe-pearl bg-white p-10 text-center shadow-sm">
+          <p className="text-sm text-phoebe-anthracite/45">
+            Aucune demande pour le moment.
+          </p>
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {demandes.map((d) => (
             <ReservationCard
               key={d.id}

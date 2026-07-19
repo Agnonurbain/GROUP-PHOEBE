@@ -81,7 +81,9 @@ export function ReservationCard({
   }
 
   return (
-    <div className="rounded-xl border border-phoebe-pearl bg-white p-4 space-y-3">
+    <div className="group rounded-2xl border border-phoebe-pearl bg-white p-6 space-y-4 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-phoebe-gold/20 relative overflow-hidden">
+      {/* Gold top-border reveal on hover */}
+      <span className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-phoebe-gold/0 via-phoebe-gold to-phoebe-gold/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       <div className="flex items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">

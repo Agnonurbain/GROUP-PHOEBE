@@ -32,8 +32,8 @@ export default async function DemandesPage() {
     .limit(20);
 
   return (
-    <div className="space-y-8">
-        <h1 className="text-2xl font-bold text-phoebe-anthracite">
+    <div className="space-y-10">
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
           Demandes de transport
         </h1>
 
@@ -42,7 +42,7 @@ export default async function DemandesPage() {
             Aucune demande en cours.
           </p>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {demandes.map((d) => {
               const v = d.vehicules;
               const u = d.users;
@@ -65,26 +65,27 @@ export default async function DemandesPage() {
               return (
                 <div
                   key={d.id}
-                  className="rounded-xl border border-phoebe-pearl bg-white p-4 shadow-sm"
+                  className="group relative overflow-hidden rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
                 >
+                  <span className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-phoebe-gold transition-transform duration-300 group-hover:scale-x-100" />
                   <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-phoebe-anthracite">
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="text-base font-bold text-phoebe-anthracite">
                           {vehiculeLabel}
                         </h3>
                         {s && (
-                          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.color}`}>
+                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${s.color}`}>
                             {s.label}
                           </span>
                         )}
                         {d.type === "achat" && (
-                          <span className="rounded-full bg-phoebe-gold/10 px-2 py-0.5 text-xs font-medium text-phoebe-gold">
+                          <span className="rounded-full bg-phoebe-gold/10 px-2.5 py-0.5 text-xs font-semibold text-phoebe-gold">
                             Achat
                           </span>
                         )}
                         {d.avec_chauffeur && (
-                          <span className="rounded-full bg-phoebe-green/10 px-2 py-0.5 text-xs font-medium text-phoebe-green-deep">
+                          <span className="rounded-full bg-phoebe-green/10 px-2.5 py-0.5 text-xs font-semibold text-phoebe-green-deep">
                             Avec chauffeur
                           </span>
                         )}
@@ -107,7 +108,7 @@ export default async function DemandesPage() {
                         </p>
                       )}
                       {lignes && lignes.length > 1 && (
-                        <ul className="space-y-0.5">
+                        <ul className="space-y-0.5 pt-1">
                           {lignes.map((l) => (
                             <li key={l.id} className="text-xs text-phoebe-anthracite/50">
                               {l.vehicules?.marque} {l.vehicules?.modele}
@@ -116,7 +117,7 @@ export default async function DemandesPage() {
                           ))}
                         </ul>
                       )}
-                      <p className="text-sm font-medium text-phoebe-anthracite">
+                      <p className="pt-1 text-sm font-bold text-phoebe-anthracite">
                         {d.montant ? `${Number(d.montant).toLocaleString("fr-FR")} FCFA` : "—"}
                         {d.caution ? ` + ${Number(d.caution).toLocaleString("fr-FR")} caution` : ""}
                       </p>
@@ -139,8 +140,8 @@ export default async function DemandesPage() {
 
         {historique && historique.length > 0 && (
           <div>
-            <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
-              Historique récent
+            <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
+              Historique recent
             </h2>
             <div className="space-y-2">
               {historique.map((d) => {
@@ -155,14 +156,14 @@ export default async function DemandesPage() {
                 return (
                   <div
                     key={d.id}
-                    className="flex items-center justify-between rounded-lg bg-phoebe-pearl/50 px-4 py-2 text-sm"
+                    className="flex items-center justify-between rounded-xl bg-phoebe-pearl/40 px-5 py-3 text-sm transition-colors hover:bg-phoebe-pearl/60"
                   >
                     <span className="text-phoebe-anthracite/70">
                       {hLabel} ·{" "}
                       {new Date(d.updated_at).toLocaleDateString("fr-FR")}
                     </span>
                     {s && (
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${s.color}`}>
+                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${s.color}`}>
                         {s.label}
                       </span>
                     )}
