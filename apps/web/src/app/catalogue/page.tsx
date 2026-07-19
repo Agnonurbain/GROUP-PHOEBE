@@ -93,16 +93,17 @@ async function VehiculeGrid({
       {groups.map((g) => (
         <div
           key={g.groupKey}
-          className="cursor-pointer overflow-hidden rounded-xl border border-phoebe-pearl bg-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg"
+          className="group/card relative cursor-pointer overflow-hidden rounded-2xl border border-phoebe-pearl bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-phoebe-green/8 hover:border-phoebe-gold/20"
         >
-          <Link href={`/catalogue/groupe/${encodeURIComponent(g.groupKey)}/choix`} className="relative block aspect-[4/3]">
+          <div className="absolute inset-x-0 top-0 z-10 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark transition-transform duration-300 group-hover/card:scale-x-100" />
+          <Link href={`/catalogue/groupe/${encodeURIComponent(g.groupKey)}/choix`} className="relative block aspect-[4/3] overflow-hidden">
             {g.photoUrl ? (
               <Image
                 src={g.photoUrl}
                 alt={`${g.marque} ${g.modele}`}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                className="object-cover"
+                className="object-cover transition-transform duration-500 group-hover/card:scale-105"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center bg-phoebe-pearl text-phoebe-anthracite/30">
@@ -110,19 +111,19 @@ async function VehiculeGrid({
               </div>
             )}
             {g.totalCount > 1 && (
-              <span className="absolute right-2 top-2 rounded-full bg-phoebe-green px-2.5 py-0.5 text-xs font-semibold text-white shadow">
+              <span className="absolute right-3 top-3 rounded-full bg-phoebe-green/90 px-2.5 py-0.5 text-xs font-semibold text-white shadow-md backdrop-blur-sm">
                 {g.totalCount} dispo
               </span>
             )}
           </Link>
 
-          <div className="space-y-2 p-4">
+          <div className="space-y-2.5 p-5">
             <div className="flex items-start justify-between gap-2">
               <Link href={`/catalogue/groupe/${encodeURIComponent(g.groupKey)}/choix`} className="min-w-0">
-                <h2 className="font-semibold text-phoebe-anthracite hover:text-phoebe-green">
+                <h2 className="font-bold text-phoebe-anthracite transition-colors group-hover/card:text-phoebe-green">
                   {g.marque} {g.modele}
                 </h2>
-                <p className="text-xs text-phoebe-anthracite/50">
+                <p className="text-xs text-phoebe-anthracite/45">
                   {CAT_LABELS[g.categorie] ?? g.categorie}
                   {g.annee && g.annee < 9999 ? ` · ${g.annee}` : ""}
                   {g.nbPlaces ? ` · ${g.nbPlaces} places` : ""}
@@ -135,19 +136,19 @@ async function VehiculeGrid({
                   </span>
                 ) : (
                   <span className="rounded-full bg-phoebe-anthracite/10 px-2.5 py-0.5 text-xs font-medium text-phoebe-anthracite">
-                    Indisponible actuellement
+                    Indisponible
                   </span>
                 )}
               </div>
             </div>
 
             {g.prixJournalier > 0 && (
-              <p className="text-sm font-medium text-phoebe-green">
-                à partir de {g.prixJournalier.toLocaleString("fr-FR")} FCFA/jour
+              <p className="text-sm font-semibold text-phoebe-green">
+                à partir de {g.prixJournalier.toLocaleString("fr-FR")} FCFA<span className="font-normal text-phoebe-anthracite/40">/jour</span>
               </p>
             )}
             {g.prixVente && (
-              <p className="text-sm font-medium text-phoebe-gold">
+              <p className="text-sm font-semibold text-phoebe-gold">
                 Achat : {g.prixVente.toLocaleString("fr-FR")} FCFA
               </p>
             )}

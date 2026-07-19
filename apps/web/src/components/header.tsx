@@ -48,7 +48,7 @@ export async function Header() {
       ];
 
   return (
-    <header className="sticky top-0 z-40 border-b border-phoebe-pearl/80 bg-white/95 backdrop-blur-sm">
+    <header className="sticky top-0 z-40 border-b border-phoebe-pearl/80 bg-white/98 backdrop-blur-md shadow-sm shadow-phoebe-green/3">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2.5">
           <LogoMark />
