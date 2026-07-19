@@ -188,8 +188,41 @@ textarea:focus-visible {
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-14px) rotate(1.5deg); }
+  75% { transform: translateY(6px) rotate(-1deg); }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(10px, -12px) rotate(2.5deg); }
+  66% { transform: translate(-8px, 6px) rotate(-2deg); }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(211, 140, 55, 0.15); }
+  50% { box-shadow: 0 0 50px rgba(211, 140, 55, 0.45); }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes reveal-clip {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse-gold {
@@ -219,8 +252,46 @@ textarea:focus-visible {
 }
 
 .animate-float {
-  animation: float 4s ease-in-out infinite;
+  animation: float 6s ease-in-out infinite;
 }
+
+.animate-drift {
+  animation: drift 12s ease-in-out infinite;
+}
+
+.animate-breathe {
+  animation: breathe 4s ease-in-out infinite;
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.animate-gradient-shift {
+  background-size: 300% 100%;
+  animation: gradient-shift 6s ease-in-out infinite;
+}
+
+.animate-reveal-clip {
+  animation: reveal-clip 1s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+}
+
+.gold-orb {
+  border-radius: 50%;
+  background: radial-gradient(circle, #d4af37 30%, transparent 70%);
+  position: absolute;
+  animation: drift 12s ease-in-out infinite, breathe 4s ease-in-out infinite;
+}
+
+[data-in-view] > * {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+[data-in-view] > :nth-child(1) { transition-delay: 0s; }
+[data-in-view] > :nth-child(2) { transition-delay: 0.1s; }
+[data-in-view] > :nth-child(3) { transition-delay: 0.15s; }
+[data-in-view] > :nth-child(4) { transition-delay: 0.2s; }
 
 .animate-pulse-gold {
   animation: pulse-gold 2s ease-in-out infinite;
