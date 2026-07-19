@@ -13,12 +13,12 @@ function GridSkeleton() {
   return (
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="overflow-hidden rounded-xl border border-phoebe-pearl bg-white">
-          <div className="aspect-[4/3] w-full animate-pulse bg-phoebe-pearl" />
-          <div className="space-y-3 p-4">
-            <div className="h-5 w-3/4 animate-pulse rounded bg-phoebe-pearl" />
-            <div className="h-4 w-1/2 animate-pulse rounded bg-phoebe-pearl" />
-            <div className="h-4 w-1/3 animate-pulse rounded bg-phoebe-pearl" />
+        <div key={i} className="overflow-hidden rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
+          <div className="aspect-[4/3] w-full animate-pulse bg-gradient-to-br from-phoebe-pearl to-phoebe-pearl-warm" />
+          <div className="space-y-3 p-5">
+            <div className="h-5 w-3/4 animate-pulse rounded-lg bg-phoebe-pearl" />
+            <div className="h-4 w-1/2 animate-pulse rounded-lg bg-phoebe-pearl/70" />
+            <div className="h-4 w-1/3 animate-pulse rounded-lg bg-phoebe-pearl/50" />
           </div>
         </div>
       ))}
@@ -77,9 +77,19 @@ async function VehiculeGrid({
 
   if (!vehicules || vehicules.length === 0) {
     return (
-      <p className="text-center text-phoebe-anthracite/50">
-        Aucun véhicule ne correspond à vos critères.
-      </p>
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-phoebe-pearl bg-white py-16 text-center shadow-sm animate-fade-in">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-anthracite/15">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          <line x1="8" y1="11" x2="14" y2="11" />
+        </svg>
+        <p className="text-lg text-phoebe-anthracite/45">
+          Aucun véhicule ne correspond à vos critères.
+        </p>
+        <p className="text-sm text-phoebe-anthracite/30">
+          Essayez de modifier vos filtres pour voir plus de résultats.
+        </p>
+      </div>
     );
   }
 
@@ -194,19 +204,33 @@ export default async function CataloguePage({
   return (
     <>
       <Header />
-      <main className="mx-auto max-w-6xl px-4 py-8">
-        <BackLink href="/" label="Accueil" />
-        <h1 className="mb-6 mt-2 text-2xl font-bold text-phoebe-anthracite">
-          Catalogue véhicules
-        </h1>
+      <main className="flex-1">
+        {/* Hero bandeau catalogue */}
+        <section className="relative overflow-hidden border-b border-phoebe-pearl bg-gradient-to-br from-phoebe-green-darkest via-phoebe-green-darker to-phoebe-green-deep">
+          <div className="absolute inset-0 bg-[url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cpath d='M30 5 L52 17.5 L52 42.5 L30 55 L8 42.5 L8 17.5 Z' fill='none' stroke='%23D38C37' stroke-width='0.4' opacity='0.1'/%3E%3C/svg%3E&quot;)] bg-[length:60px_60px] opacity-60" />
+          <div className="absolute -right-32 -top-32 h-[400px] w-[400px] rounded-full bg-phoebe-green/10 blur-[100px]" />
+          <div className="absolute -bottom-20 -left-20 h-[300px] w-[300px] rounded-full bg-phoebe-gold/5 blur-[80px]" />
 
-        <Suspense>
-          <Filtres />
-        </Suspense>
+          <div className="relative mx-auto max-w-6xl px-4 py-12 md:py-16">
+            <BackLink href="/" label="Accueil" />
+            <h1 className="mt-3 text-3xl font-bold tracking-tight text-white md:text-4xl">
+              Notre catalogue
+            </h1>
+            <p className="mt-2 max-w-lg text-sm leading-relaxed text-white/50">
+              Location et vente de véhicules premium — trouvez le véhicule idéal pour vos besoins.
+            </p>
+          </div>
+        </section>
 
-        <Suspense fallback={<GridSkeleton />}>
-          <VehiculeGrid searchParams={sp} />
-        </Suspense>
+        <div className="mx-auto max-w-6xl px-4 py-8">
+          <Suspense>
+            <Filtres />
+          </Suspense>
+
+          <Suspense fallback={<GridSkeleton />}>
+            <VehiculeGrid searchParams={sp} />
+          </Suspense>
+        </div>
       </main>
     </>
   );

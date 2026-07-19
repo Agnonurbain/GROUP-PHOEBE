@@ -4,14 +4,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 
 const inputClass =
-  "w-full rounded-lg border border-phoebe-anthracite/20 bg-white px-3 py-2 text-sm transition-colors focus:border-phoebe-green focus:outline-none";
+  "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/30 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
 
 const chipBase =
-  "rounded-full border px-3 py-1.5 text-xs font-medium transition-all cursor-pointer select-none";
+  "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer select-none";
 const chipActive =
-  "border-phoebe-green bg-phoebe-green/10 text-phoebe-green-deep";
+  "border-phoebe-green bg-phoebe-green/10 text-phoebe-green-deep shadow-sm shadow-phoebe-green/10";
 const chipInactive =
-  "border-phoebe-anthracite/15 text-phoebe-anthracite/60 hover:border-phoebe-anthracite/30 hover:text-phoebe-anthracite";
+  "border-phoebe-anthracite/12 text-phoebe-anthracite/55 hover:border-phoebe-green/30 hover:bg-phoebe-green/5 hover:text-phoebe-green-deep";
 
 export default function Filtres() {
   const router = useRouter();
@@ -56,24 +56,24 @@ export default function Filtres() {
   const activeCount = Array.from(searchParams.keys()).length;
 
   return (
-    <div className="mb-6 space-y-4 rounded-xl border border-phoebe-pearl bg-white p-4">
+    <div className="mb-8 space-y-5 rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm transition-shadow hover:shadow-md">
       {/* Row 1: Search + Category */}
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <label htmlFor="f-recherche" className="sr-only">
             Recherche
           </label>
           <div className="relative">
             <svg
-              width="16"
-              height="16"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-phoebe-anthracite/30"
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-phoebe-anthracite/25"
             >
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -83,7 +83,7 @@ export default function Filtres() {
               placeholder="Rechercher marque, modèle..."
               defaultValue={get("q")}
               onChange={(e) => debouncedUpdate("q", e.target.value)}
-              className={`${inputClass} pl-9`}
+              className={`${inputClass} pl-11`}
             />
           </div>
         </div>
@@ -166,7 +166,7 @@ export default function Filtres() {
 
       {/* Row 3: Advanced filters (collapsible) */}
       {showMore && (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in">
+        <div className="grid gap-4 rounded-xl border border-phoebe-pearl/60 bg-phoebe-pearl/20 p-4 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in">
           <div>
             <label
               htmlFor="f-carburant"
@@ -266,15 +266,17 @@ export default function Filtres() {
 
       {/* Active filter count + Reset */}
       {hasFilters && (
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-phoebe-anthracite/40">
-            {activeCount} filtre{activeCount > 1 ? "s" : ""} actif
-            {activeCount > 1 ? "s" : ""}
+        <div className="flex items-center gap-3 border-t border-phoebe-pearl pt-4">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-phoebe-green-deep">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-phoebe-green/10 text-[10px] font-bold text-phoebe-green">
+              {activeCount}
+            </span>
+            filtre{activeCount > 1 ? "s" : ""} actif{activeCount > 1 ? "s" : ""}
           </span>
           <button
             type="button"
             onClick={() => router.push("/catalogue")}
-            className="cursor-pointer text-xs text-phoebe-anthracite/50 transition-colors hover:text-error"
+            className="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-medium text-phoebe-anthracite/50 transition-all hover:bg-error/5 hover:text-error"
           >
             Réinitialiser
           </button>
