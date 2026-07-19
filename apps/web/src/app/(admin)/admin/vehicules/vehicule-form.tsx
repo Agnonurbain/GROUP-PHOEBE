@@ -166,25 +166,25 @@ export default function VehiculeForm({
                 <option value="neuf">Neuf</option>
               </select>
             </div>
-            {!vehicule && (
-              <div>
-                <label htmlFor="quantite" className={labelClass}>
-                  Quantité
-                </label>
-                <input
-                  id="quantite"
-                  name="quantite"
-                  type="number"
-                  min={1}
-                  max={20}
-                  defaultValue={1}
-                  className={inputClass}
-                />
-                <p className="mt-1 text-xs text-phoebe-anthracite/50">
-                  Nombre d&apos;exemplaires identiques à créer
-                </p>
-              </div>
-            )}
+            <div>
+              <label htmlFor="quantite" className={labelClass}>
+                Quantité
+              </label>
+              <input
+                id="quantite"
+                name="quantite"
+                type="number"
+                min={vehicule ? 0 : 1}
+                max={20}
+                defaultValue={vehicule ? 0 : 1}
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-phoebe-anthracite/50">
+                {vehicule
+                  ? "Exemplaires supplémentaires à ajouter (0 = aucun)"
+                  : "Nombre d’exemplaires identiques à créer"}
+              </p>
+            </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

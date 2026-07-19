@@ -184,6 +184,34 @@ export async function modifierVehicule(
     p_chauffeur_ids: chauffeurIds,
   });
 
+  const quantiteSupp = Math.max(0, Math.min(20, num(formData.get("quantite")) ?? 0));
+  if (quantiteSupp > 0) {
+    const copies = Array.from({ length: quantiteSupp }, () => ({
+      categorie: categorie as "leger" | "car" | "minibus",
+      marque,
+      modele,
+      annee: num(formData.get("annee")),
+      nb_places: num(formData.get("nb_places")),
+      climatisation: formData.get("climatisation") === "on",
+      boite: (str(formData.get("boite")) as "automatique" | "manuelle") ?? null,
+      carburant: str(formData.get("carburant")),
+      kilometrage: num(formData.get("kilometrage")),
+      localisation: str(formData.get("localisation")),
+      prix_journalier: num(formData.get("prix_journalier")),
+      prix_mensuel: num(formData.get("prix_mensuel")),
+      prix_vente: prixVente,
+      chauffeur_disponible: formData.get("chauffeur_disponible") === "on",
+      camera_interieure: formData.get("camera_interieure") === "on",
+      gps: formData.get("gps") === "on",
+      etat: etat as "neuf" | "occasion",
+      niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
+      taux_caution: numCaution(formData.get("taux_caution")),
+      description: str(formData.get("description")),
+      statut: "disponible" as const,
+    }));
+    await supabase.from("vehicules").insert(copies);
+  }
+
   revalidatePath(`/admin/vehicules/${id}`);
   revalidatePath("/admin/vehicules");
   revalidatePath("/catalogue");
