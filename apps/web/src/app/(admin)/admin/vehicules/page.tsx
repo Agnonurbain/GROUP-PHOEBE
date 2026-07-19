@@ -59,7 +59,7 @@ export default async function VehiculesListPage() {
 
       {vehicules && vehicules.length > 0 ? (
         <div className="overflow-x-auto rounded-xl border border-phoebe-pearl">
-          <table className="w-full min-w-[600px] text-sm">
+          <table className="w-full min-w-[700px] text-sm">
             <thead className="bg-phoebe-pearl/50">
               <tr>
                 <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
@@ -73,6 +73,9 @@ export default async function VehiculesListPage() {
                 </th>
                 <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                   Prix/jour
+                </th>
+                <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
+                  Localisation
                 </th>
                 <th scope="col" className="px-4 py-3 text-left font-medium text-phoebe-anthracite/60">
                   Statut
@@ -102,9 +105,19 @@ export default async function VehiculesListPage() {
                         </div>
                       )}
                     </td>
-                    <td className="px-4 py-3 font-medium text-phoebe-anthracite">
-                      {v.marque} {v.modele}
-                      {v.annee ? ` (${v.annee})` : ""}
+                    <td className="px-4 py-3">
+                      <span className="font-medium text-phoebe-anthracite">
+                        {v.marque} {v.modele}
+                        {v.annee ? ` (${v.annee})` : ""}
+                      </span>
+                      <span className="block text-xs text-phoebe-anthracite/40">
+                        {[
+                          v.etat === "neuf" ? "Neuf" : "Occasion",
+                          v.carburant,
+                          v.kilometrage ? `${Number(v.kilometrage).toLocaleString("fr-FR")} km` : null,
+                          v.nb_places ? `${v.nb_places} pl.` : null,
+                        ].filter(Boolean).join(" · ") || "—"}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-phoebe-anthracite/70">
                       {CAT_LABELS[v.categorie] ?? v.categorie}
@@ -113,6 +126,9 @@ export default async function VehiculesListPage() {
                       {v.prix_journalier
                         ? `${Number(v.prix_journalier).toLocaleString("fr-FR")} FCFA`
                         : "—"}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-phoebe-anthracite/50">
+                      {v.localisation ?? "—"}
                     </td>
                     <td className="px-4 py-3">
                       <span

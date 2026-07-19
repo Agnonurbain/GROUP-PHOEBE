@@ -243,6 +243,24 @@ export default function Filtres() {
               className={inputClass}
             />
           </div>
+          <div>
+            <label
+              htmlFor="f-etat"
+              className="mb-1 block text-xs font-medium text-phoebe-anthracite/50"
+            >
+              État
+            </label>
+            <select
+              id="f-etat"
+              value={get("etat")}
+              onChange={(e) => update("etat", e.target.value)}
+              className={inputClass}
+            >
+              <option value="">Tous</option>
+              <option value="neuf">Neuf</option>
+              <option value="occasion">Occasion</option>
+            </select>
+          </div>
         </div>
       )}
 

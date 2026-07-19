@@ -264,6 +264,12 @@ export default async function GroupeDetailPage({
                 )}
                 {mode === "achat" ? (
                   <>
+                    {rep.etat && (
+                      <>
+                        <dt className="text-phoebe-anthracite/60">État</dt>
+                        <dd className="font-medium text-phoebe-anthracite capitalize">{rep.etat === "neuf" ? "Neuf" : "Occasion"}</dd>
+                      </>
+                    )}
                     {rep.carburant && (
                       <>
                         <dt className="text-phoebe-anthracite/60">Carburant</dt>

@@ -19,6 +19,7 @@ export type VehicleGroup = {
   carburant: string | null;
   kilometrage: number | null;
   localisation: string | null;
+  etat: string | null;
 };
 
 export function makeGroupKey(marque: string, modele: string): string {
@@ -59,6 +60,7 @@ type VehiculeRow = {
   carburant: string | null;
   kilometrage: number | null;
   localisation: string | null;
+  etat: string | null;
 };
 
 export function groupVehicles(
@@ -125,6 +127,10 @@ export function groupVehicles(
       })(),
       kilometrage: rep.kilometrage ? Number(rep.kilometrage) : null,
       localisation: rep.localisation,
+      etat: (() => {
+        const e = new Set(items.map((v) => v.etat).filter(Boolean));
+        return e.size === 1 ? [...e][0]! : null;
+      })(),
     });
   }
 

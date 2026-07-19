@@ -56,6 +56,7 @@ async function VehiculeGrid({
   if (sp.clim === "oui") query = query.eq("climatisation", true);
   if (sp.gps === "oui") query = query.eq("gps", true);
   if (sp.vente === "oui") query = query.gt("prix_vente", 0);
+  if (sp.etat) query = query.eq("etat", sp.etat);
 
   const { data: vehicules } = await query;
 

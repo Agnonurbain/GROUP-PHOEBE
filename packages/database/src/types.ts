@@ -1237,6 +1237,7 @@ export type Database = {
           climatisation: boolean
           created_at: string
           description: string | null
+          etat: string
           gps: boolean
           id: string
           kilometrage: number | null
@@ -1268,6 +1269,7 @@ export type Database = {
           climatisation?: boolean
           created_at?: string
           description?: string | null
+          etat?: string
           gps?: boolean
           id?: string
           kilometrage?: number | null
@@ -1299,6 +1301,7 @@ export type Database = {
           climatisation?: boolean
           created_at?: string
           description?: string | null
+          etat?: string
           gps?: boolean
           id?: string
           kilometrage?: number | null

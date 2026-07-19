@@ -59,44 +59,51 @@ export async function creerVehicule(
   }
 
   const prixVente = num(formData.get("prix_vente"));
+  const quantite = Math.max(1, Math.min(20, num(formData.get("quantite")) ?? 1));
+  const etat = (formData.get("etat") as string) || "occasion";
+
+  const baseRow = {
+    categorie: categorie as "leger" | "car" | "minibus",
+    marque,
+    modele,
+    annee: num(formData.get("annee")),
+    nb_places: num(formData.get("nb_places")),
+    climatisation: formData.get("climatisation") === "on",
+    boite: (str(formData.get("boite")) as "automatique" | "manuelle") ?? null,
+    carburant: str(formData.get("carburant")),
+    kilometrage: num(formData.get("kilometrage")),
+    localisation: str(formData.get("localisation")),
+    prix_journalier: num(formData.get("prix_journalier")),
+    prix_mensuel: num(formData.get("prix_mensuel")),
+    prix_vente: prixVente,
+    chauffeur_disponible: formData.get("chauffeur_disponible") === "on",
+    camera_interieure: formData.get("camera_interieure") === "on",
+    gps: formData.get("gps") === "on",
+    etat: etat as "neuf" | "occasion",
+    niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
+    taux_caution: numCaution(formData.get("taux_caution")),
+    description: str(formData.get("description")),
+    statut: "disponible" as const,
+  };
+
+  const rows = Array.from({ length: quantite }, () => ({ ...baseRow }));
 
   const { data, error } = await supabase
     .from("vehicules")
-    .insert({
-      categorie: categorie as "leger" | "car" | "minibus",
-      marque,
-      modele,
-      annee: num(formData.get("annee")),
-      nb_places: num(formData.get("nb_places")),
-      climatisation: formData.get("climatisation") === "on",
-      boite: (str(formData.get("boite")) as "automatique" | "manuelle") ?? null,
-      carburant: str(formData.get("carburant")),
-      kilometrage: num(formData.get("kilometrage")),
-      localisation: str(formData.get("localisation")),
-      prix_journalier: num(formData.get("prix_journalier")),
-      prix_mensuel: num(formData.get("prix_mensuel")),
-      prix_vente: prixVente,
-      chauffeur_disponible: formData.get("chauffeur_disponible") === "on",
-      camera_interieure: formData.get("camera_interieure") === "on",
-      gps: formData.get("gps") === "on",
-      niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
-      taux_caution: numCaution(formData.get("taux_caution")),
-      description: str(formData.get("description")),
-      statut: "indisponible" as const,
-    })
-    .select("id")
-    .single();
+    .insert(rows)
+    .select("id");
 
   if (error) return { error: error.message };
 
   const chauffeurIds = formData.getAll("chauffeur_ids") as string[];
-  if (chauffeurIds.length > 0) {
-    await supabase.from("vehicule_chauffeurs").insert(
-      chauffeurIds.map((cid) => ({ vehicule_id: data.id, chauffeur_id: cid }))
+  if (chauffeurIds.length > 0 && data.length > 0) {
+    const links = data.flatMap((v) =>
+      chauffeurIds.map((cid) => ({ vehicule_id: v.id, chauffeur_id: cid }))
     );
+    await supabase.from("vehicule_chauffeurs").insert(links);
   }
 
-  redirect(`/admin/vehicules/${data.id}`);
+  redirect(`/admin/vehicules/${data[0].id}`);
 }
 
 export async function modifierVehicule(
@@ -132,6 +139,8 @@ export async function modifierVehicule(
 
   const prixVente = num(formData.get("prix_vente"));
 
+  const etat = (formData.get("etat") as string) || "occasion";
+
   const { error } = await supabase
     .from("vehicules")
     .update({
@@ -152,6 +161,7 @@ export async function modifierVehicule(
       chauffeur_disponible: formData.get("chauffeur_disponible") === "on",
       camera_interieure: formData.get("camera_interieure") === "on",
       gps: formData.get("gps") === "on",
+      etat: etat as "neuf" | "occasion",
       niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
       taux_caution: numCaution(formData.get("taux_caution")),
       description: str(formData.get("description")),

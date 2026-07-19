@@ -145,9 +145,46 @@ export default function VehiculeForm({
                 name="carburant"
                 defaultValue={vehicule?.carburant ?? ""}
                 className={inputClass}
-                placeholder="Essence, Diesel…"
+                placeholder="Essence, Diesel���"
               />
             </div>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label htmlFor="etat" className={labelClass}>
+                État *
+              </label>
+              <select
+                id="etat"
+                name="etat"
+                required
+                defaultValue={vehicule?.etat ?? "occasion"}
+                className={inputClass}
+              >
+                <option value="occasion">Occasion</option>
+                <option value="neuf">Neuf</option>
+              </select>
+            </div>
+            {!vehicule && (
+              <div>
+                <label htmlFor="quantite" className={labelClass}>
+                  Quantité
+                </label>
+                <input
+                  id="quantite"
+                  name="quantite"
+                  type="number"
+                  min={1}
+                  max={20}
+                  defaultValue={1}
+                  className={inputClass}
+                />
+                <p className="mt-1 text-xs text-phoebe-anthracite/50">
+                  Nombre d&apos;exemplaires identiques à créer
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -247,32 +284,7 @@ export default function VehiculeForm({
           <legend className="text-lg font-semibold text-phoebe-anthracite">
             Détails
           </legend>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <label htmlFor="kilometrage" className={labelClass}>
-                Kilométrage
-              </label>
-              <input
-                id="kilometrage"
-                name="kilometrage"
-                type="number"
-                min={0}
-                defaultValue={vehicule?.kilometrage ?? ""}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label htmlFor="localisation" className={labelClass}>
-                Localisation
-              </label>
-              <input
-                id="localisation"
-                name="localisation"
-                defaultValue={vehicule?.localisation ?? ""}
-                className={inputClass}
-                placeholder="Abidjan, Cocody"
-              />
-            </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label htmlFor="niveau_carburant" className={labelClass}>
                 Niveau carburant
