@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import { VerificationBadge } from "@/components/verification-badge";
 import { VerificationActions } from "./actions-client";
 import { getSignedDocUrl } from "@/lib/storage";
@@ -52,10 +53,13 @@ export default async function VerificationsPage() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-        Vérifications d&apos;identité
-      </h1>
+      <ScrollReveal variant="fade-up">
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+          Vérifications d&apos;identité
+        </h1>
+      </ScrollReveal>
 
+      <ScrollReveal variant="fade-up" delay={0.1}>
       <section>
         <h2 className="mb-3 text-lg font-semibold text-phoebe-gold">
           En attente ({pending?.length ?? 0})
@@ -110,8 +114,10 @@ export default async function VerificationsPage() {
           </p>
         )}
       </section>
+      </ScrollReveal>
 
       {others && others.length > 0 && (
+        <ScrollReveal variant="fade-up" delay={0.2}>
         <section>
           <h2 className="mb-3 text-lg font-semibold text-phoebe-anthracite">
             Historique
@@ -165,6 +171,7 @@ export default async function VerificationsPage() {
             </table>
           </div>
         </section>
+        </ScrollReveal>
       )}
     </div>
   );

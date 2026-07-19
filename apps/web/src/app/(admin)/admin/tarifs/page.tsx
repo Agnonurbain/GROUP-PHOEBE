@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import { CommunesList } from "./communes-list";
 import { IntervallesList } from "./intervalles-list";
 import { AjouterCommuneForm } from "./ajouter-commune-form";
@@ -44,11 +45,13 @@ export default async function TarifsPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-        Zones &amp; Tarifs
-      </h1>
+      <ScrollReveal variant="fade-up">
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+          Zones &amp; Tarifs
+        </h1>
+      </ScrollReveal>
 
-      {(zones ?? []).map((zone) => {
+      {(zones ?? []).map((zone, zoneIndex) => {
         const zoneCommunes = (communes ?? []).filter(
           (c) => c.zone_id === zone.id
         );
@@ -57,8 +60,8 @@ export default async function TarifsPage() {
         );
 
         return (
+          <ScrollReveal key={zone.id} variant="fade-up" delay={0.1 * (zoneIndex + 1)}>
           <section
-            key={zone.id}
             className="group relative overflow-hidden rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm space-y-6 transition-all hover:shadow-md"
           >
             <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark transition-transform duration-300 group-hover:scale-x-100" />
@@ -103,6 +106,7 @@ export default async function TarifsPage() {
               </div>
             </div>
           </section>
+          </ScrollReveal>
         );
       })}
     </div>

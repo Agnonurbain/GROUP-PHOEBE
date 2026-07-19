@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import { ReservationPourClientForm } from "./reservation-pour-client-form";
 
 export const metadata = { title: "Réserver pour un client — Admin" };
@@ -33,23 +34,27 @@ export default async function ReserverPourClientPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-          Réserver pour un client
-        </h1>
-        <p className="mt-2 text-sm text-phoebe-anthracite/55">
-          Créez une réservation au nom d&apos;un client (ex : appel
-          téléphonique). Le client recevra une notification et pourra voir sa
-          réservation.
-        </p>
-      </div>
+      <ScrollReveal variant="fade-up">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+            Réserver pour un client
+          </h1>
+          <p className="mt-2 text-sm text-phoebe-anthracite/55">
+            Créez une réservation au nom d&apos;un client (ex : appel
+            téléphonique). Le client recevra une notification et pourra voir sa
+            réservation.
+          </p>
+        </div>
+      </ScrollReveal>
 
-      <ReservationPourClientForm
-        clients={clients ?? []}
-        vehicules={vehicules ?? []}
-        zones={zones ?? []}
-        communes={communes ?? []}
-      />
+      <ScrollReveal variant="fade-up" delay={0.1}>
+        <ReservationPourClientForm
+          clients={clients ?? []}
+          vehicules={vehicules ?? []}
+          zones={zones ?? []}
+          communes={communes ?? []}
+        />
+      </ScrollReveal>
     </div>
   );
 }

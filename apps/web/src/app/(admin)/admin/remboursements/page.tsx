@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import { MarquerRembourse } from "./marquer-rembourse";
 
 export default async function RemboursementsPage() {
@@ -19,21 +20,26 @@ export default async function RemboursementsPage() {
 
   return (
     <div className="space-y-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-            Remboursements à traiter
-          </h1>
-          <p className="mt-2 text-sm text-phoebe-anthracite/55">
-            Remboursements en attente : paiements tardifs, refus, annulations,
-            ou libération de caution (CinetPay). À traiter manuellement.
-          </p>
-        </div>
+        <ScrollReveal variant="fade-up">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+              Remboursements à traiter
+            </h1>
+            <p className="mt-2 text-sm text-phoebe-anthracite/55">
+              Remboursements en attente : paiements tardifs, refus, annulations,
+              ou libération de caution (CinetPay). À traiter manuellement.
+            </p>
+          </div>
+        </ScrollReveal>
 
         {!paiements || paiements.length === 0 ? (
-          <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
-            <p className="text-phoebe-anthracite/45">Aucun remboursement en attente.</p>
-          </div>
+          <ScrollReveal variant="fade-up" delay={0.1}>
+            <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
+              <p className="text-phoebe-anthracite/45">Aucun remboursement en attente.</p>
+            </div>
+          </ScrollReveal>
         ) : (
+          <ScrollReveal variant="fade-up" delay={0.1}>
           <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
             <table className="w-full min-w-[700px] text-sm">
               <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
@@ -84,9 +90,11 @@ export default async function RemboursementsPage() {
               </tbody>
             </table>
           </div>
+          </ScrollReveal>
         )}
 
         {traites && traites.length > 0 && (
+          <ScrollReveal variant="fade-up" delay={0.2}>
           <div>
             <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
               Récemment remboursés
@@ -123,6 +131,7 @@ export default async function RemboursementsPage() {
               </table>
             </div>
           </div>
+          </ScrollReveal>
         )}
     </div>
   );

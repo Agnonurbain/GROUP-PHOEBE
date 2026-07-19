@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import { EtatLieuxForm } from "./etat-lieux-form";
 
 export default async function EtatLieuxPage({
@@ -23,21 +24,24 @@ export default async function EtatLieuxPage({
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-        <Link
-          href="/admin/demandes"
-          className="inline-flex items-center gap-1.5 text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
-            <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Retour aux demandes
-        </Link>
+        <ScrollReveal variant="fade-up">
+          <Link
+            href="/admin/demandes"
+            className="inline-flex items-center gap-1.5 text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
+              <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            Retour aux demandes
+          </Link>
 
-        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-          État des lieux — {v ? `${v.marque} ${v.modele}` : "—"}
-        </h1>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-phoebe-anthracite">
+            État des lieux — {v ? `${v.marque} ${v.modele}` : "—"}
+          </h1>
+        </ScrollReveal>
 
         {demande.etat_lieux_depart_photos && (
+          <ScrollReveal variant="fade-up" delay={0.1}>
           <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
             <h3 className="mb-2 text-sm font-semibold text-phoebe-anthracite/60">
               Départ enregistré
@@ -57,9 +61,11 @@ export default async function EtatLieuxPage({
               ))}
             </div>
           </div>
+          </ScrollReveal>
         )}
 
         {demande.etat_lieux_retour_photos && (
+          <ScrollReveal variant="fade-up" delay={0.15}>
           <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
             <h3 className="mb-2 text-sm font-semibold text-phoebe-anthracite/60">
               Retour enregistré
@@ -84,24 +90,31 @@ export default async function EtatLieuxPage({
               ))}
             </div>
           </div>
+          </ScrollReveal>
         )}
 
         {demande.statut === "acceptee" && (
-          <EtatLieuxForm demandeId={id} type="depart" />
+          <ScrollReveal variant="fade-up" delay={0.2}>
+            <EtatLieuxForm demandeId={id} type="depart" />
+          </ScrollReveal>
         )}
 
         {demande.statut === "en_cours" && (
-          <EtatLieuxForm
-            demandeId={id}
-            type="retour"
-            cautionMax={demande.caution ? Number(demande.caution) : 0}
-          />
+          <ScrollReveal variant="fade-up" delay={0.2}>
+            <EtatLieuxForm
+              demandeId={id}
+              type="retour"
+              cautionMax={demande.caution ? Number(demande.caution) : 0}
+            />
+          </ScrollReveal>
         )}
 
         {demande.statut === "terminee" && (
-          <p className="text-sm text-phoebe-green font-medium">
-            Location terminée — les deux états des lieux sont enregistrés.
-          </p>
+          <ScrollReveal variant="fade-up" delay={0.2}>
+            <p className="text-sm text-phoebe-green font-medium">
+              Location terminée — les deux états des lieux sont enregistrés.
+            </p>
+          </ScrollReveal>
         )}
     </div>
   );

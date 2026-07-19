@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import { PropositionActions } from "./proposition-actions";
 
 const CHAMP_LABELS: Record<string, string> = {
@@ -37,20 +38,25 @@ export default async function PropositionsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-          Propositions de prix
-        </h1>
-        <p className="mt-2 text-sm text-phoebe-anthracite/55">
-          Modifications de prix proposées par les opérateurs, en attente de votre validation.
-        </p>
-      </div>
+      <ScrollReveal variant="fade-up">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+            Propositions de prix
+          </h1>
+          <p className="mt-2 text-sm text-phoebe-anthracite/55">
+            Modifications de prix proposées par les opérateurs, en attente de votre validation.
+          </p>
+        </div>
+      </ScrollReveal>
 
       {!enAttente || enAttente.length === 0 ? (
-        <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
-          <p className="text-phoebe-anthracite/45">Aucune proposition en attente.</p>
-        </div>
+        <ScrollReveal variant="fade-up" delay={0.1}>
+          <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
+            <p className="text-phoebe-anthracite/45">Aucune proposition en attente.</p>
+          </div>
+        </ScrollReveal>
       ) : (
+        <ScrollReveal variant="fade-up" delay={0.1}>
         <div className="space-y-4">
           {enAttente.map((p) => {
             const v = p.vehicules;
@@ -93,9 +99,11 @@ export default async function PropositionsPage() {
             );
           })}
         </div>
+        </ScrollReveal>
       )}
 
       {historique && historique.length > 0 && (
+        <ScrollReveal variant="fade-up" delay={0.2}>
         <div>
           <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
             Historique
@@ -126,6 +134,7 @@ export default async function PropositionsPage() {
             })}
           </div>
         </div>
+        </ScrollReveal>
       )}
     </div>
   );

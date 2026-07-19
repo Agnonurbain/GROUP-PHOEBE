@@ -3,6 +3,7 @@ import { Header } from "@/components/header";
 import { BackLink } from "@/components/back-link";
 import { createClient } from "@/lib/supabase/server";
 import { CheckoutForm } from "./checkout-form";
+import { ScrollReveal } from "@/components/effects";
 
 export const metadata = { title: "Finaliser la réservation" };
 
@@ -41,15 +42,19 @@ export default async function CheckoutPage() {
       <Header />
       <main className="mx-auto max-w-3xl px-4 py-10">
         <BackLink href="/panier" label="Panier" />
-        <h1 className="mb-8 mt-3 text-3xl font-bold text-phoebe-anthracite">
-          Finaliser la réservation
-        </h1>
-        <CheckoutForm
-          verifie={verifie}
-          zones={zones ?? []}
-          communes={communes ?? []}
-          intervalles={intervalles ?? []}
-        />
+        <ScrollReveal variant="fade-up">
+          <h1 className="mb-8 mt-3 text-3xl font-bold text-phoebe-anthracite">
+            Finaliser la réservation
+          </h1>
+        </ScrollReveal>
+        <ScrollReveal variant="fade-up" delay={0.1}>
+          <CheckoutForm
+            verifie={verifie}
+            zones={zones ?? []}
+            communes={communes ?? []}
+            intervalles={intervalles ?? []}
+          />
+        </ScrollReveal>
       </main>
     </>
   );

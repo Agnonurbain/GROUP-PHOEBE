@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import VehiculeForm from "../vehicule-form";
 import { creerVehicule } from "@/app/actions/vehicules";
 import { BackLink } from "@/components/back-link";
@@ -14,11 +15,15 @@ export default async function NouveauVehiculePage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
-      <BackLink href="/admin/vehicules" label="Véhicules" />
-      <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-        Nouveau véhicule
-      </h1>
-      <VehiculeForm action={creerVehicule} chauffeurs={chauffeurs ?? []} />
+      <ScrollReveal variant="fade-up">
+        <BackLink href="/admin/vehicules" label="Véhicules" />
+        <h1 className="mt-2 text-3xl font-bold tracking-tight text-phoebe-anthracite">
+          Nouveau véhicule
+        </h1>
+      </ScrollReveal>
+      <ScrollReveal variant="fade-up" delay={0.1}>
+        <VehiculeForm action={creerVehicule} chauffeurs={chauffeurs ?? []} />
+      </ScrollReveal>
     </div>
   );
 }

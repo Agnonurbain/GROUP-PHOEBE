@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import { BlocageVehiculeForm, BlocageChauffeurForm } from "./blocage-form";
 import { BlocagesVehiculeList, BlocagesChauffeurList } from "./blocages-list";
 
@@ -62,18 +63,21 @@ export default async function DisponibilitesPage({
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-          Disponibilités — {vehicule.marque} {vehicule.modele}
-        </h1>
-        <Link
-          href={`/admin/vehicules/${id}`}
-          className="text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
-        >
-          ← Retour au véhicule
-        </Link>
-      </div>
+      <ScrollReveal variant="fade-up">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+            Disponibilités — {vehicule.marque} {vehicule.modele}
+          </h1>
+          <Link
+            href={`/admin/vehicules/${id}`}
+            className="text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
+          >
+            ← Retour au véhicule
+          </Link>
+        </div>
+      </ScrollReveal>
 
+      <ScrollReveal variant="fade-up" delay={0.1}>
       <section className="space-y-4 rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-phoebe-anthracite">
           Périodes bloquées — Véhicule
@@ -91,8 +95,10 @@ export default async function DisponibilitesPage({
           <BlocageVehiculeForm vehiculeId={id} />
         </div>
       </section>
+      </ScrollReveal>
 
       {vehicule.chauffeur_disponible && (
+        <ScrollReveal variant="fade-up" delay={0.2}>
         <section className="space-y-6 rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-phoebe-anthracite">
             Périodes bloquées — Chauffeurs
@@ -121,6 +127,7 @@ export default async function DisponibilitesPage({
             </p>
           )}
         </section>
+        </ScrollReveal>
       )}
     </div>
   );

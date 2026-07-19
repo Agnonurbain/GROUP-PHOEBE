@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import { BackLink } from "@/components/back-link";
 
 export default async function HistoriqueVerificationsPage() {
@@ -101,19 +102,22 @@ export default async function HistoriqueVerificationsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <BackLink href="/admin/verifications" label="Vérifications" />
-        <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">
-          Historique des vérifications
-        </h1>
-        <p className="mt-1 text-sm text-phoebe-anthracite/60">
-          {isProprietaire
-            ? "Vue d'ensemble de toutes les vérifications traitées par l'équipe."
-            : "Historique de vos vérifications traitées."}
-        </p>
-      </div>
+      <ScrollReveal variant="fade-up">
+        <div>
+          <BackLink href="/admin/verifications" label="Vérifications" />
+          <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">
+            Historique des vérifications
+          </h1>
+          <p className="mt-1 text-sm text-phoebe-anthracite/60">
+            {isProprietaire
+              ? "Vue d'ensemble de toutes les vérifications traitées par l'équipe."
+              : "Historique de vos vérifications traitées."}
+          </p>
+        </div>
+      </ScrollReveal>
 
       {/* Stats cards */}
+      <ScrollReveal variant="fade-up" delay={0.1}>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm border-l-4 border-l-phoebe-anthracite/30">
           <p className="text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/50">Total traitées</p>
@@ -130,9 +134,11 @@ export default async function HistoriqueVerificationsPage() {
           <p className="mt-1 text-xs text-phoebe-anthracite/50">{rejectedPct}%</p>
         </div>
       </div>
+      </ScrollReveal>
 
       {/* Donut chart */}
       {total > 0 && (
+        <ScrollReveal variant="fade-up" delay={0.15}>
         <div className="rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
             Répartition
@@ -167,9 +173,11 @@ export default async function HistoriqueVerificationsPage() {
             </div>
           </div>
         </div>
+        </ScrollReveal>
       )}
 
       {/* Monthly bar chart */}
+      <ScrollReveal variant="fade-up" delay={0.2}>
       <div className="rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
           Activité mensuelle
@@ -215,9 +223,11 @@ export default async function HistoriqueVerificationsPage() {
           </span>
         </div>
       </div>
+      </ScrollReveal>
 
       {/* Per-staff breakdown (proprietaire only) */}
       {isProprietaire && staffStats.length > 0 && (
+        <ScrollReveal variant="fade-up" delay={0.25}>
         <div className="rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-phoebe-anthracite">
             Par membre du staff
@@ -262,10 +272,12 @@ export default async function HistoriqueVerificationsPage() {
             })}
           </div>
         </div>
+        </ScrollReveal>
       )}
 
       {/* Recent history table */}
       {items.length > 0 && (
+        <ScrollReveal variant="fade-up" delay={0.3}>
         <div className="rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
           <div className="border-b border-phoebe-pearl px-6 py-4">
             <h2 className="text-lg font-semibold text-phoebe-anthracite">
@@ -333,12 +345,15 @@ export default async function HistoriqueVerificationsPage() {
             </table>
           </div>
         </div>
+        </ScrollReveal>
       )}
 
       {items.length === 0 && (
-        <div className="rounded-xl border border-phoebe-pearl bg-white p-8 text-center">
-          <p className="text-phoebe-anthracite/50">Aucune vérification traitée pour le moment.</p>
-        </div>
+        <ScrollReveal variant="fade-up" delay={0.15}>
+          <div className="rounded-xl border border-phoebe-pearl bg-white p-8 text-center">
+            <p className="text-phoebe-anthracite/50">Aucune vérification traitée pour le moment.</p>
+          </div>
+        </ScrollReveal>
       )}
     </div>
   );

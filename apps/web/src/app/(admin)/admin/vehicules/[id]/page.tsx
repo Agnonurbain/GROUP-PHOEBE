@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { ScrollReveal } from "@/components/effects";
 import VehiculeForm from "../vehicule-form";
 import PhotosManager from "./photos-manager";
 import { ProposerPrixForm } from "./proposer-prix-form";
@@ -60,56 +61,68 @@ export default async function EditVehiculePage({
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-          {vehicule.marque} {vehicule.modele}
-        </h1>
-        <Link
-          href="/admin/vehicules"
-          className="text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
-        >
-          ← Retour à la liste
-        </Link>
-      </div>
+      <ScrollReveal variant="fade-up">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+            {vehicule.marque} {vehicule.modele}
+          </h1>
+          <Link
+            href="/admin/vehicules"
+            className="text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
+          >
+            ← Retour à la liste
+          </Link>
+        </div>
+      </ScrollReveal>
 
-      <div className="flex gap-3">
-        <Link
-          href={`/admin/vehicules/${id}/disponibilites`}
-          className="rounded-xl border border-phoebe-green px-5 py-2.5 text-sm font-semibold text-phoebe-green shadow-sm transition-all hover:bg-phoebe-green hover:text-white hover:shadow-md"
-        >
-          Gérer les disponibilités
-        </Link>
-      </div>
+      <ScrollReveal variant="fade-up" delay={0.1}>
+        <div className="flex gap-3">
+          <Link
+            href={`/admin/vehicules/${id}/disponibilites`}
+            className="rounded-xl border border-phoebe-green px-5 py-2.5 text-sm font-semibold text-phoebe-green shadow-sm transition-all hover:bg-phoebe-green hover:text-white hover:shadow-md"
+          >
+            Gérer les disponibilités
+          </Link>
+        </div>
+      </ScrollReveal>
 
-      <PhotosManager vehiculeId={id} photos={photos ?? []} />
+      <ScrollReveal variant="fade-up" delay={0.15}>
+        <PhotosManager vehiculeId={id} photos={photos ?? []} />
+      </ScrollReveal>
 
-      <VehiculeForm
-        vehicule={vehicule}
-        action={modifierVehicule}
-        chauffeurs={chauffeurs ?? []}
-        chauffeurIds={chauffeurIds}
-      />
+      <ScrollReveal variant="fade-up" delay={0.2}>
+        <VehiculeForm
+          vehicule={vehicule}
+          action={modifierVehicule}
+          chauffeurs={chauffeurs ?? []}
+          chauffeurIds={chauffeurIds}
+        />
+      </ScrollReveal>
 
       {!isProprietaire && (
-        <ProposerPrixForm
-          vehiculeId={id}
-          prixActuels={{
-            prix_journalier: vehicule.prix_journalier,
-            prix_mensuel: vehicule.prix_mensuel,
-            prix_vente: vehicule.prix_vente,
-          }}
-        />
+        <ScrollReveal variant="fade-up" delay={0.25}>
+          <ProposerPrixForm
+            vehiculeId={id}
+            prixActuels={{
+              prix_journalier: vehicule.prix_journalier,
+              prix_mensuel: vehicule.prix_mensuel,
+              prix_vente: vehicule.prix_vente,
+            }}
+          />
+        </ScrollReveal>
       )}
 
       {isProprietaire && (
-        <section className="rounded-2xl border border-error/20 bg-error/5 p-5">
-          <h2 className="mb-3 text-sm font-semibold text-error">Zone danger</h2>
-          <form action={handleDelete}>
-            <SubmitButton variant="danger">
-              Supprimer ce véhicule
-            </SubmitButton>
-          </form>
-        </section>
+        <ScrollReveal variant="fade-up" delay={0.25}>
+          <section className="rounded-2xl border border-error/20 bg-error/5 p-5">
+            <h2 className="mb-3 text-sm font-semibold text-error">Zone danger</h2>
+            <form action={handleDelete}>
+              <SubmitButton variant="danger">
+                Supprimer ce véhicule
+              </SubmitButton>
+            </form>
+          </section>
+        </ScrollReveal>
       )}
     </div>
   );
