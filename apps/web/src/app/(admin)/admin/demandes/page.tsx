@@ -101,9 +101,9 @@ export default async function DemandesPage() {
                         {d.ville_depart && ` · ${d.ville_depart}`}
                         {d.destination && ` → ${d.destination}`}
                       </p>
-                      {d.type === "achat" && d.negociation_note && (
-                        <p className="text-xs italic text-phoebe-anthracite/50">
-                          &laquo; {d.negociation_note} &raquo;
+                      {d.type === "achat" && (
+                        <p className="text-xs text-phoebe-anthracite/40">
+                          Négociation via WhatsApp
                         </p>
                       )}
                       {lignes && lignes.length > 1 && (

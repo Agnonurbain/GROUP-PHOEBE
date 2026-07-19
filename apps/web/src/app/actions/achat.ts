@@ -48,9 +48,6 @@ export async function creerDemandeAchat(
   const marque = formData.get("marque") as string;
   const modele = formData.get("modele") as string;
   const categorie = formData.get("categorie") as string;
-  const message = (formData.get("message") as string) ?? "";
-  const prixProposeStr = formData.get("prix_propose") as string;
-  const prixPropose = prixProposeStr ? Number(prixProposeStr) : null;
 
   if (!vehiculeId || !marque || !modele) {
     return { error: "Véhicule invalide." };
@@ -71,14 +68,6 @@ export async function creerDemandeAchat(
 
   const montant = vehicule.prix_vente ? Number(vehicule.prix_vente) : null;
 
-  let note = "";
-  if (prixPropose && prixPropose > 0) {
-    note += `Prix proposé : ${prixPropose.toLocaleString("fr-FR")} FCFA`;
-  }
-  if (message) {
-    note += note ? `\n${message}` : message;
-  }
-
   const { data: demande, error: demandeErr } = await admin
     .from("demandes_transport")
     .insert({
@@ -89,7 +78,6 @@ export async function creerDemandeAchat(
       statut: "en_attente_validation",
       montant,
       avec_chauffeur: false,
-      negociation_note: note || null,
     })
     .select("id")
     .single();
