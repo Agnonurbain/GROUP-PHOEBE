@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AuthLayout({
   children,
@@ -21,19 +22,16 @@ export default function AuthLayout({
 
         {/* Brand content */}
         <div className="relative z-10 flex flex-col items-center px-12 text-center">
-          <svg width="64" height="64" viewBox="0 0 34 34" fill="none" aria-hidden="true" className="mb-6 drop-shadow-lg">
-            <rect width="34" height="34" rx="8" fill="#22282B" />
-            <path d="M9 24V10h5.5c1.6 0 2.85.4 3.75 1.2.9.8 1.35 1.9 1.35 3.3 0 1.4-.45 2.5-1.35 3.3-.9.8-2.15 1.2-3.75 1.2H12.2V24H9z" fill="#39A044" />
-            <circle cx="23" cy="14" r="2.5" fill="#D38C37" />
-          </svg>
-          <h2 className="text-3xl font-bold text-white">
-            GROUP <span className="text-phoebe-green">PHOEBE</span>
-          </h2>
-          <p className="mt-2 text-sm font-medium tracking-[0.15em] text-phoebe-gold">
-            LEADER &middot; EXCELLENCE &middot; EFFICACITE
-          </p>
-          <div className="mt-8 h-px w-24 bg-gradient-to-r from-transparent via-phoebe-gold/40 to-transparent" />
-          <p className="mt-8 max-w-xs text-sm leading-relaxed text-white/60">
+          <Image
+            src="/logo.png"
+            alt="Group PHOEBE"
+            width={240}
+            height={96}
+            className="mb-6 h-24 w-auto object-contain drop-shadow-lg"
+            priority
+          />
+          <div className="mt-4 h-px w-24 bg-gradient-to-r from-transparent via-phoebe-gold/40 to-transparent" />
+          <p className="mt-6 max-w-xs text-sm leading-relaxed text-white/60">
             Votre plateforme premium de location et vente de vehicules en Cote d&apos;Ivoire.
           </p>
         </div>
@@ -42,20 +40,15 @@ export default function AuthLayout({
       {/* Right form panel */}
       <div className="flex min-h-screen flex-1 flex-col bg-white lg:w-1/2">
         {/* Mobile brand header */}
-        <div className="flex items-center justify-center gap-3 border-b border-phoebe-pearl px-6 py-5 lg:hidden">
-          <svg width="30" height="30" viewBox="0 0 34 34" fill="none" aria-hidden="true">
-            <rect width="34" height="34" rx="8" fill="#22282B" />
-            <path d="M9 24V10h5.5c1.6 0 2.85.4 3.75 1.2.9.8 1.35 1.9 1.35 3.3 0 1.4-.45 2.5-1.35 3.3-.9.8-2.15 1.2-3.75 1.2H12.2V24H9z" fill="#39A044" />
-            <circle cx="23" cy="14" r="2.5" fill="#D38C37" />
-          </svg>
-          <div className="flex flex-col leading-none">
-            <span className="text-lg font-bold text-phoebe-anthracite">
-              GROUP <span className="text-phoebe-green">PHOEBE</span>
-            </span>
-            <span className="text-[8px] font-medium tracking-[0.1em] text-phoebe-gold">
-              LEADER &middot; EXCELLENCE &middot; EFFICACITE
-            </span>
-          </div>
+        <div className="flex items-center justify-center border-b border-phoebe-pearl px-6 py-4 lg:hidden">
+          <Image
+            src="/logo.png"
+            alt="Group PHOEBE"
+            width={160}
+            height={64}
+            className="h-12 w-auto object-contain"
+            priority
+          />
         </div>
 
         {/* Form area */}

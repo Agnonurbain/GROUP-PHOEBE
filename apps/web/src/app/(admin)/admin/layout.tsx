@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
 import { AdminMobileNav } from "./admin-mobile-nav";
@@ -50,12 +51,16 @@ export default async function AdminShellLayout({
         />
       <aside className="hidden md:flex w-60 shrink-0 flex-col overflow-y-auto border-r border-phoebe-pearl bg-gradient-to-b from-white to-phoebe-pearl/40">
         {/* Admin branding */}
-        <div className="border-b border-phoebe-pearl px-5 py-4">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold">
-            Back-office
-          </p>
-          <p className="mt-0.5 text-xs text-phoebe-anthracite/40">
-            {isProprietaire ? "Propriétaire" : "Opérateur"}
+        <div className="border-b border-phoebe-pearl px-4 py-4">
+          <Image
+            src="/logo.png"
+            alt="Group PHOEBE"
+            width={120}
+            height={48}
+            className="h-9 w-auto object-contain"
+          />
+          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold">
+            Back-office · {isProprietaire ? "Propriétaire" : "Opérateur"}
           </p>
         </div>
 

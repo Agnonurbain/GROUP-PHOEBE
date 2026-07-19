@@ -1,18 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { MobileNav } from "./mobile-nav";
 import { LogoutButton } from "./logout-button";
 import { CartBadge } from "./cart-badge";
-
-function LogoMark() {
-  return (
-    <svg width="34" height="34" viewBox="0 0 34 34" fill="none" aria-hidden="true" className="shrink-0">
-      <rect width="34" height="34" rx="8" fill="#22282B" />
-      <path d="M9 24V10h5.5c1.6 0 2.85.4 3.75 1.2.9.8 1.35 1.9 1.35 3.3 0 1.4-.45 2.5-1.35 3.3-.9.8-2.15 1.2-3.75 1.2H12.2V24H9z" fill="#39A044" />
-      <circle cx="23" cy="14" r="2.5" fill="#D38C37" />
-    </svg>
-  );
-}
 
 export async function Header() {
   const supabase = await createClient();
@@ -50,16 +41,15 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-phoebe-pearl/80 bg-white/98 backdrop-blur-md shadow-sm shadow-phoebe-green/3">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-2.5">
-          <LogoMark />
-          <div className="flex flex-col leading-none">
-            <span className="text-[15px] font-bold tracking-tight text-phoebe-anthracite">
-              GROUP <span className="text-phoebe-green">PHOEBE</span>
-            </span>
-            <span className="text-[9px] font-medium tracking-[0.12em] text-phoebe-gold">
-              LEADER &middot; EXCELLENCE &middot; EFFICACITE
-            </span>
-          </div>
+        <Link href="/" className="flex items-center gap-1">
+          <Image
+            src="/logo.png"
+            alt="Group PHOEBE"
+            width={140}
+            height={56}
+            className="h-11 w-auto object-contain"
+            priority
+          />
         </Link>
 
         <nav className="hidden items-center gap-1 text-sm md:flex">

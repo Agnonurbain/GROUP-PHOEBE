@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Header } from "@/components/header";
 import { createClient } from "@/lib/supabase/server";
 
@@ -170,15 +171,13 @@ export default async function Home() {
       <footer className="border-t border-phoebe-pearl bg-white py-10">
         <div className="mx-auto max-w-6xl px-4">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-bold text-phoebe-anthracite">
-                GROUP <span className="text-phoebe-green">PHOEBE</span>
-              </span>
-              <span className="hidden h-4 w-px bg-phoebe-anthracite/15 sm:block" />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.15em] text-phoebe-gold">
-                Leader &middot; Excellence &middot; Efficacité
-              </span>
-            </div>
+            <Image
+              src="/logo.png"
+              alt="Group PHOEBE"
+              width={120}
+              height={48}
+              className="h-10 w-auto object-contain"
+            />
             <p className="text-xs text-phoebe-anthracite/40">
               &copy; {new Date().getFullYear()} GROUP PHOEBE. Tous droits réservés.
             </p>
