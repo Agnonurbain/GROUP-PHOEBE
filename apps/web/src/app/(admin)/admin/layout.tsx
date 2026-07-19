@@ -42,7 +42,7 @@ export default async function AdminShellLayout({
   ]);
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)]">
+    <div className="flex min-h-[calc(100vh-5rem)]">
       <AdminMobileNav
           isProprietaire={isProprietaire}
           nbDemandesEnAttente={nbDemandesEnAttente ?? null}
@@ -115,7 +115,7 @@ export default async function AdminShellLayout({
           </p>
         </div>
       </aside>
-      <div className="flex-1 overflow-y-auto bg-phoebe-pearl/15 p-4 md:p-8">{children}</div>
+      <div className="flex-1 overflow-y-auto bg-phoebe-pearl/15 px-4 pb-4 pt-6 md:p-8">{children}</div>
     </div>
   );
 }
