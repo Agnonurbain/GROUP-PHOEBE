@@ -6,3 +6,4 @@ export { MagneticButton } from "./magnetic-button";
 export { AnimatedCounter } from "./animated-counter";
 export { HeroEffects } from "./hero-effects";
 export { ServiceCard } from "./service-cards";
+export { ParallaxImage } from "./parallax-image";

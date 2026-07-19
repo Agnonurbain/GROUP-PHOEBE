@@ -2,15 +2,24 @@ import Link from "next/link";
 import Image from "next/image";
 import { Header } from "@/components/header";
 import { createClient } from "@/lib/supabase/server";
-import { HeroEffects, ServiceCard, ScrollReveal, MagneticButton, AnimatedCounter } from "@/components/effects";
+import {
+  HeroEffects,
+  ServiceCard,
+  ScrollReveal,
+  MagneticButton,
+  AnimatedCounter,
+  ParallaxImage,
+  TiltCard,
+} from "@/components/effects";
 
 const services = [
   {
     title: "Transport",
     description:
       "Véhicules avec chauffeur pour vos déplacements professionnels et personnels à Abidjan et en Côte d'Ivoire.",
+    image: "/images/transport.jpg",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <path d="M5 17h14M5 17a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v1m-12 9h1m12 0h1m0 0a2 2 0 002-2v-4a2 2 0 00-2-2h-3l-2-3H9" />
         <circle cx="7.5" cy="17" r="1.5" />
         <circle cx="16.5" cy="17" r="1.5" />
@@ -21,8 +30,9 @@ const services = [
     title: "Livraison",
     description:
       "Service de livraison de colis rapide et fiable dans toute la ville.",
+    image: "/images/livraison.jpg",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
         <path d="M3.27 6.96L12 12.01l8.73-5.05M12 22.08V12" />
       </svg>
@@ -32,8 +42,9 @@ const services = [
     title: "Immobilier",
     description:
       "Accompagnement dans vos projets immobiliers : location, achat et gestion de biens.",
+    image: "/images/immobilier.jpg",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6" />
       </svg>
     ),
@@ -42,8 +53,9 @@ const services = [
     title: "Assistance Voyages",
     description:
       "Organisation de voyages et accompagnement des étudiants pour les études à l'étranger.",
+    image: "/images/voyages.jpg",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-7 w-7">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
         <circle cx="12" cy="12" r="10" />
         <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
       </svg>
@@ -149,7 +161,7 @@ export default async function Home() {
           </ScrollReveal>
         </section>
 
-        {/* Services — tilt cards + stagger */}
+        {/* Services — cards avec images interactives */}
         <section className="bg-white py-20 md:py-28">
           <div className="mx-auto max-w-6xl px-4">
             <ScrollReveal>
@@ -165,21 +177,133 @@ export default async function Home() {
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {services.map((s, i) => (
                 <ServiceCard key={s.title} index={i}>
-                  <div className="group relative h-full cursor-pointer overflow-hidden rounded-2xl border border-phoebe-pearl bg-white p-7 shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-phoebe-green/8">
-                    <div className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark transition-transform duration-300 group-hover:scale-x-100" />
-                    <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-phoebe-green/8 text-phoebe-green transition-all duration-300 group-hover:bg-phoebe-green group-hover:text-white group-hover:shadow-lg group-hover:shadow-phoebe-green/20">
-                      {s.icon}
+                  <div className="group relative h-full cursor-pointer overflow-hidden rounded-2xl border border-phoebe-pearl bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:shadow-phoebe-green/8">
+                    <div className="absolute inset-x-0 top-0 z-10 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark transition-transform duration-300 group-hover:scale-x-100" />
+                    {/* Image avec zoom au hover */}
+                    <div className="relative h-44 overflow-hidden">
+                      <Image
+                        src={s.image}
+                        alt={s.title}
+                        width={400}
+                        height={250}
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                      <div className="absolute bottom-3 left-3 flex h-9 w-9 items-center justify-center rounded-lg bg-white/90 text-phoebe-green shadow-sm backdrop-blur-sm">
+                        {s.icon}
+                      </div>
                     </div>
-                    <h3 className="mb-2 font-bold text-phoebe-anthracite">
-                      {s.title}
-                    </h3>
-                    <p className="text-sm leading-relaxed text-phoebe-anthracite/55">
-                      {s.description}
-                    </p>
+                    <div className="p-5">
+                      <h3 className="mb-2 font-bold text-phoebe-anthracite">
+                        {s.title}
+                      </h3>
+                      <p className="text-sm leading-relaxed text-phoebe-anthracite/55">
+                        {s.description}
+                      </p>
+                    </div>
                   </div>
                 </ServiceCard>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* Galerie véhicules — images interactives parallaxe */}
+        <section className="bg-phoebe-pearl/30 py-20 md:py-28">
+          <div className="mx-auto max-w-6xl px-4">
+            <ScrollReveal>
+              <div className="mb-14 text-center">
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-phoebe-gold">
+                  Notre flotte
+                </p>
+                <h2 className="text-3xl font-bold tracking-tight text-phoebe-anthracite md:text-4xl">
+                  Des véhicules d&apos;exception
+                </h2>
+              </div>
+            </ScrollReveal>
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {/* Grande image principale */}
+              <ScrollReveal variant="slide-left" className="lg:col-span-2 lg:row-span-2">
+                <TiltCard className="h-full">
+                  <div className="group relative h-full min-h-[300px] cursor-pointer overflow-hidden rounded-2xl shadow-lg md:min-h-[400px]">
+                    <ParallaxImage
+                      src="/images/hero-car.jpg"
+                      alt="Porsche Panamera — flotte premium"
+                      width={1400}
+                      height={900}
+                      className="h-full rounded-2xl"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                      <span className="mb-2 inline-block rounded-full bg-phoebe-gold/90 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white">
+                        Premium
+                      </span>
+                      <h3 className="text-xl font-bold text-white md:text-2xl">
+                        Flotte haut de gamme
+                      </h3>
+                      <p className="mt-1 text-sm text-white/70">
+                        Des véhicules premium pour tous vos déplacements
+                      </p>
+                    </div>
+                  </div>
+                </TiltCard>
+              </ScrollReveal>
+
+              {/* Image transport */}
+              <ScrollReveal variant="slide-right" delay={0.15}>
+                <TiltCard>
+                  <div className="group relative h-[250px] cursor-pointer overflow-hidden rounded-2xl shadow-lg">
+                    <ParallaxImage
+                      src="/images/transport.jpg"
+                      alt="Mercedes AMG — transport premium"
+                      width={800}
+                      height={500}
+                      className="h-full rounded-2xl"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="font-bold text-white">Transport VIP</h3>
+                      <p className="text-xs text-white/60">Avec chauffeur professionnel</p>
+                    </div>
+                  </div>
+                </TiltCard>
+              </ScrollReveal>
+
+              {/* Image voyages */}
+              <ScrollReveal variant="slide-right" delay={0.3}>
+                <TiltCard>
+                  <div className="group relative h-[250px] cursor-pointer overflow-hidden rounded-2xl shadow-lg">
+                    <ParallaxImage
+                      src="/images/voyages.jpg"
+                      alt="Assistance voyages"
+                      width={800}
+                      height={500}
+                      className="h-full rounded-2xl"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="font-bold text-white">Assistance Voyages</h3>
+                      <p className="text-xs text-white/60">Accompagnement personnalisé</p>
+                    </div>
+                  </div>
+                </TiltCard>
+              </ScrollReveal>
+            </div>
+
+            <ScrollReveal>
+              <div className="mt-10 text-center">
+                <MagneticButton>
+                  <Link
+                    href="/catalogue"
+                    className="group relative inline-block overflow-hidden rounded-xl bg-gradient-to-r from-phoebe-gold to-phoebe-gold-dark px-8 py-4 font-semibold text-white shadow-lg shadow-phoebe-gold/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-phoebe-gold/30"
+                  >
+                    <span className="relative z-10">Découvrir tous nos véhicules</span>
+                    <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
+                  </Link>
+                </MagneticButton>
+              </div>
+            </ScrollReveal>
           </div>
         </section>
 
