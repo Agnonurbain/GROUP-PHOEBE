@@ -150,6 +150,35 @@ export default function VehiculeForm({
             </div>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="kilometrage" className={labelClass}>
+                Kilométrage
+              </label>
+              <input
+                id="kilometrage"
+                name="kilometrage"
+                type="number"
+                min={0}
+                defaultValue={vehicule?.kilometrage ?? ""}
+                className={inputClass}
+                placeholder="Ex : 85000"
+              />
+            </div>
+            <div>
+              <label htmlFor="localisation" className={labelClass}>
+                Localisation
+              </label>
+              <input
+                id="localisation"
+                name="localisation"
+                defaultValue={vehicule?.localisation ?? ""}
+                className={inputClass}
+                placeholder="Ex : Cocody, Abidjan"
+              />
+            </div>
+          </div>
+
           <div className="flex flex-wrap gap-6">
             <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
               <input

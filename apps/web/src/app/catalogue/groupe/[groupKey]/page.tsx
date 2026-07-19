@@ -262,22 +262,33 @@ export default async function GroupeDetailPage({
                     </dd>
                   </>
                 )}
-                {rep.carburant && (
+                {mode === "achat" ? (
                   <>
-                    <dt className="text-phoebe-anthracite/60">Carburant</dt>
-                    <dd className="font-medium text-phoebe-anthracite capitalize">{rep.carburant}</dd>
+                    {rep.carburant && (
+                      <>
+                        <dt className="text-phoebe-anthracite/60">Carburant</dt>
+                        <dd className="font-medium text-phoebe-anthracite capitalize">{rep.carburant}</dd>
+                      </>
+                    )}
+                    {rep.kilometrage != null && rep.kilometrage > 0 && (
+                      <>
+                        <dt className="text-phoebe-anthracite/60">Kilométrage</dt>
+                        <dd className="font-medium text-phoebe-anthracite">{Number(rep.kilometrage).toLocaleString("fr-FR")} km</dd>
+                      </>
+                    )}
+                    {rep.localisation && (
+                      <>
+                        <dt className="text-phoebe-anthracite/60">Localisation</dt>
+                        <dd className="font-medium text-phoebe-anthracite">{rep.localisation}</dd>
+                      </>
+                    )}
                   </>
-                )}
-                {rep.kilometrage != null && rep.kilometrage > 0 && (
+                ) : (
                   <>
-                    <dt className="text-phoebe-anthracite/60">Kilométrage</dt>
-                    <dd className="font-medium text-phoebe-anthracite">{Number(rep.kilometrage).toLocaleString("fr-FR")} km</dd>
-                  </>
-                )}
-                {rep.localisation && (
-                  <>
-                    <dt className="text-phoebe-anthracite/60">Localisation</dt>
-                    <dd className="font-medium text-phoebe-anthracite">{rep.localisation}</dd>
+                    <dt className="text-phoebe-anthracite/60">Climatisation</dt>
+                    <dd className="font-medium text-phoebe-anthracite">{group.climatisation ? "Oui" : "Non"}</dd>
+                    <dt className="text-phoebe-anthracite/60">GPS</dt>
+                    <dd className="font-medium text-phoebe-anthracite">{group.gps ? "Oui" : "Non"}</dd>
                   </>
                 )}
               </dl>
