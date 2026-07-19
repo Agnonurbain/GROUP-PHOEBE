@@ -24,15 +24,15 @@ export function NavLink({
   return (
     <Link
       href={href}
-      className={`flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-all duration-150 ${
+      className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200 ${
         isActive
-          ? "bg-phoebe-green/10 font-semibold text-phoebe-green shadow-sm"
-          : "text-phoebe-anthracite/70 hover:bg-phoebe-pearl hover:text-phoebe-green"
+          ? "bg-phoebe-green/10 font-semibold text-phoebe-green-deep shadow-sm shadow-phoebe-green/8 border border-phoebe-green/15"
+          : "text-phoebe-anthracite/65 hover:bg-phoebe-green/5 hover:text-phoebe-green-deep"
       }`}
     >
       {children}
       {!!badge && badge > 0 && (
-        <span className={`rounded-full ${badgeColor} px-2 py-0.5 text-xs font-bold text-white`}>
+        <span className={`rounded-full ${badgeColor} px-2 py-0.5 text-[10px] font-bold text-white shadow-sm`}>
           {badge}
         </span>
       )}

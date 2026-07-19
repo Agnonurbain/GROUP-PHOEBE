@@ -15,8 +15,8 @@ type Props = {
 };
 
 const inputClass =
-  "w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm transition-colors focus:border-phoebe-green";
-const labelClass = "mb-1 block text-sm font-medium text-phoebe-anthracite";
+  "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
+const labelClass = "mb-1.5 block text-sm font-medium text-phoebe-anthracite";
 
 export default function VehiculeForm({
   vehicule,
@@ -32,12 +32,12 @@ export default function VehiculeForm({
   return (
     <>
       {state.error && (
-        <div className="mb-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div className="mb-5 animate-fade-in rounded-xl border border-error/20 bg-error/5 px-5 py-3.5 text-sm text-error">
           {state.error}
         </div>
       )}
       {state.success && (
-        <div className="mb-4 rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
+        <div className="mb-5 animate-fade-in rounded-xl border border-phoebe-green/20 bg-phoebe-green/5 px-5 py-3.5 text-sm font-medium text-phoebe-green-deep">
           Véhicule enregistré.
         </div>
       )}
@@ -46,8 +46,8 @@ export default function VehiculeForm({
         {vehicule && <input type="hidden" name="id" value={vehicule.id} />}
 
         {/* Identification */}
-        <fieldset className="space-y-4">
-          <legend className="text-lg font-semibold text-phoebe-anthracite">
+        <fieldset className="space-y-4 rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
+          <legend className="text-lg font-bold tracking-tight text-phoebe-anthracite">
             Identification
           </legend>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -280,8 +280,8 @@ export default function VehiculeForm({
         </fieldset>
 
         {/* Détails */}
-        <fieldset className="space-y-4">
-          <legend className="text-lg font-semibold text-phoebe-anthracite">
+        <fieldset className="space-y-4 rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
+          <legend className="text-lg font-bold tracking-tight text-phoebe-anthracite">
             Détails
           </legend>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -334,8 +334,8 @@ export default function VehiculeForm({
         </fieldset>
 
         {/* Tarification */}
-        <fieldset className="space-y-4">
-          <legend className="text-lg font-semibold text-phoebe-anthracite">
+        <fieldset className="space-y-4 rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
+          <legend className="text-lg font-bold tracking-tight text-phoebe-anthracite">
             Tarification (FCFA)
           </legend>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -405,8 +405,8 @@ export default function VehiculeForm({
 
         {/* Statut (edit only) */}
         {vehicule && (
-          <fieldset className="space-y-4">
-            <legend className="text-lg font-semibold text-phoebe-anthracite">
+          <fieldset className="space-y-4 rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
+            <legend className="text-lg font-bold tracking-tight text-phoebe-anthracite">
               Statut
             </legend>
             <select

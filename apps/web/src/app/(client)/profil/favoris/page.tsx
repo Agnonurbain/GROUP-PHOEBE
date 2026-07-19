@@ -42,8 +42,8 @@ export default async function FavorisPage() {
     <div className="space-y-8 animate-fade-in">
       <div>
         <BackLink href="/profil" label="Mon profil" />
-        <h1 className="mt-3 text-3xl font-bold text-phoebe-anthracite">
-          Mes favoris
+        <h1 className="mt-3 text-3xl font-bold tracking-tight text-phoebe-anthracite">
+          Mes <span className="text-gradient-gold">favoris</span>
         </h1>
       </div>
 
@@ -90,7 +90,7 @@ export default async function FavorisPage() {
                     </p>
                   </div>
                   <div className="flex items-end justify-between">
-                    <span className="text-sm font-bold text-phoebe-green">
+                    <span className="text-sm font-bold text-phoebe-gold">
                       {formatPrice(v.prix_journalier) ?? "—"}
                       <span className="font-normal text-phoebe-anthracite/45">
                         /jour

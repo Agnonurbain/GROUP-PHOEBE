@@ -43,7 +43,7 @@ export function BlocageVehiculeForm({
             type="date"
             name="debut"
             required
-            className="w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm focus:border-phoebe-green"
+            className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
           />
         </div>
         <div>
@@ -55,7 +55,7 @@ export function BlocageVehiculeForm({
             type="date"
             name="fin"
             required
-            className="w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm focus:border-phoebe-green"
+            className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
           />
         </div>
         <div>
@@ -66,7 +66,7 @@ export function BlocageVehiculeForm({
             id="bloc-v-type"
             name="type"
             defaultValue="maintenance"
-            className="w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm focus:border-phoebe-green"
+            className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
           >
             <option value="maintenance">Maintenance</option>
             <option value="bloque">Bloqué</option>
@@ -117,7 +117,7 @@ export function BlocageChauffeurForm({
             type="date"
             name="debut"
             required
-            className="w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm focus:border-phoebe-green"
+            className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
           />
         </div>
         <div>
@@ -129,7 +129,7 @@ export function BlocageChauffeurForm({
             type="date"
             name="fin"
             required
-            className="w-full rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-sm focus:border-phoebe-green"
+            className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
           />
         </div>
       </div>

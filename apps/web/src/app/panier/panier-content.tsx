@@ -64,7 +64,7 @@ export function PanierContent() {
               <div>
                 <Link
                   href={`/catalogue/groupe/${encodeURIComponent(item.groupKey)}/choix`}
-                  className="font-bold text-phoebe-anthracite transition-colors hover:text-phoebe-green"
+                  className="font-bold text-phoebe-anthracite transition-colors hover:text-phoebe-gold"
                 >
                   {item.marque} {item.modele}
                   {item.quantite > 1 && (
@@ -78,7 +78,7 @@ export function PanierContent() {
                 </p>
               </div>
               <div className="flex items-center gap-4 text-sm">
-                <span className="font-semibold text-phoebe-green">
+                <span className="font-semibold text-phoebe-gold">
                   {item.prixJournalier.toLocaleString("fr-FR")} FCFA/jour
                   {item.quantite > 1 && " chacun"}
                 </span>
@@ -101,7 +101,7 @@ export function PanierContent() {
                     type="button"
                     onClick={() => updateQuantity(item.groupKey, item.quantite - 1)}
                     disabled={item.quantite <= 1}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-phoebe-anthracite/15 text-sm text-phoebe-anthracite transition-colors hover:border-phoebe-green hover:text-phoebe-green disabled:opacity-30"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-phoebe-anthracite/15 text-sm text-phoebe-anthracite transition-colors hover:border-phoebe-gold hover:text-phoebe-gold disabled:opacity-30"
                   >
                     &minus;
                   </button>
@@ -112,7 +112,7 @@ export function PanierContent() {
                     type="button"
                     onClick={() => updateQuantity(item.groupKey, item.quantite + 1)}
                     disabled={item.quantite >= item.maxDisponible}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-phoebe-anthracite/15 text-sm text-phoebe-anthracite transition-colors hover:border-phoebe-green hover:text-phoebe-green disabled:opacity-30"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-phoebe-anthracite/15 text-sm text-phoebe-anthracite transition-colors hover:border-phoebe-gold hover:text-phoebe-gold disabled:opacity-30"
                   >
                     +
                   </button>
@@ -161,10 +161,10 @@ export function PanierContent() {
       {/* CTA */}
       <Link
         href="/panier/reserver"
-        className="relative block w-full overflow-hidden rounded-2xl bg-phoebe-green py-4 text-center text-sm font-bold text-white shadow-md transition-all hover:bg-phoebe-green-deep hover:shadow-xl active:scale-[0.98]"
+        className="group relative block w-full overflow-hidden rounded-2xl bg-gradient-to-r from-phoebe-gold to-phoebe-gold-dark py-4 text-center text-sm font-bold text-white shadow-md shadow-phoebe-gold/20 transition-all hover:shadow-xl hover:shadow-phoebe-gold/30 active:scale-[0.98]"
       >
         <span className="relative z-10">Finaliser la réservation</span>
-        <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent transition-transform duration-700 hover:translate-x-full" />
+        <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-full" />
       </Link>
     </div>
   );

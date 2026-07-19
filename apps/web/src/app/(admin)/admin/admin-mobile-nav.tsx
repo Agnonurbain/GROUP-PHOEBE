@@ -22,7 +22,7 @@ export function AdminMobileNav({
       <button
         onClick={() => setOpen(true)}
         aria-label="Ouvrir le menu"
-        className="fixed bottom-4 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-phoebe-green shadow-lg"
+        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-phoebe-green shadow-lg shadow-phoebe-green/30 transition-transform active:scale-95"
       >
         <svg
           width="24"
@@ -43,10 +43,15 @@ export function AdminMobileNav({
       {open && (
         <div className="animate-fade-in fixed inset-0 z-50 flex flex-col bg-white">
           {/* Header with close button */}
-          <div className="flex items-center justify-between border-b border-phoebe-pearl px-4 py-3">
-            <span className="text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
-              Menu
-            </span>
+          <div className="flex items-center justify-between border-b border-phoebe-pearl px-5 py-4">
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold">
+                Back-office
+              </span>
+              <span className="ml-2 text-[10px] uppercase tracking-wider text-phoebe-anthracite/30">
+                Menu
+              </span>
+            </div>
             <button
               onClick={() => setOpen(false)}
               aria-label="Fermer le menu"

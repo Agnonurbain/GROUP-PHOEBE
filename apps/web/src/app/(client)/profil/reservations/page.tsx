@@ -28,8 +28,8 @@ export default async function ReservationsPage() {
   return (
     <div className="mx-auto max-w-2xl animate-fade-in">
       <BackLink href="/profil" label="Mon profil" />
-      <h1 className="mb-8 mt-3 text-3xl font-bold text-phoebe-anthracite">
-        Mes réservations & achats
+      <h1 className="mb-8 mt-3 text-3xl font-bold tracking-tight text-phoebe-anthracite">
+        Mes réservations <span className="text-gradient-gold">&amp; achats</span>
       </h1>
 
       {!demandes || demandes.length === 0 ? (

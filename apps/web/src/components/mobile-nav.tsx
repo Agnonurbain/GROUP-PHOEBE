@@ -40,21 +40,21 @@ export function MobileNav({
       </button>
 
       {open && (
-        <div className="animate-fade-in absolute left-0 right-0 top-16 z-50 border-b border-phoebe-pearl bg-white/98 px-4 py-3 shadow-lg backdrop-blur-sm">
-          <nav className="flex flex-col gap-1">
+        <div className="animate-fade-in absolute left-0 right-0 top-16 z-50 border-b border-phoebe-pearl bg-white/98 px-5 py-4 shadow-xl shadow-phoebe-green/5 backdrop-blur-md">
+          <nav className="flex flex-col gap-0.5">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
+                className="rounded-xl px-4 py-3 text-sm font-medium text-phoebe-anthracite/70 transition-all hover:bg-phoebe-green/5 hover:text-phoebe-green-deep"
               >
                 {link.label}
               </Link>
             ))}
           </nav>
           {authAction && (
-            <div className="mt-2 border-t border-phoebe-pearl pt-2">
+            <div className="mt-3 border-t border-phoebe-pearl pt-3">
               {authAction}
             </div>
           )}

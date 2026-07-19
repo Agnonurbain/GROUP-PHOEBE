@@ -48,56 +48,75 @@ export default async function AdminShellLayout({
           nbRemboursements={nbRemboursements ?? null}
           nbPropositions={nbPropositions ?? null}
         />
-      <aside className="hidden md:block w-56 shrink-0 overflow-y-auto border-r border-phoebe-pearl bg-phoebe-pearl/30 p-4 space-y-6">
-        {isProprietaire && (
-          <div>
-            <NavLink href="/admin">Tableau de bord</NavLink>
-          </div>
-        )}
-
-        <div>
-          <SectionTitle>Transport</SectionTitle>
-          <nav className="space-y-0.5">
-            <NavLink href="/admin/demandes" badge={nbDemandesEnAttente}>
-              Demandes
-            </NavLink>
-            <NavLink href="/admin/vehicules">Véhicules</NavLink>
-            <NavLink href="/admin/reserver-pour-client">Réserver pour client</NavLink>
-            <NavLink href="/admin/verifications" exact>Vérifications</NavLink>
-            <NavLink href="/admin/verifications/historique">Historique vérif.</NavLink>
-            {isProprietaire && (
-              <NavLink href="/admin/remboursements" badge={nbRemboursements} badgeColor="bg-error">
-                Remboursements
-              </NavLink>
-            )}
-            {isProprietaire && (
-              <NavLink href="/admin/propositions" badge={nbPropositions}>
-                Propositions de prix
-              </NavLink>
-            )}
-            {isProprietaire && (
-              <NavLink href="/admin/tarifs">Zones &amp; Tarifs</NavLink>
-            )}
-          </nav>
+      <aside className="hidden md:flex w-60 shrink-0 flex-col overflow-y-auto border-r border-phoebe-pearl bg-gradient-to-b from-white to-phoebe-pearl/40">
+        {/* Admin branding */}
+        <div className="border-b border-phoebe-pearl px-5 py-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold">
+            Back-office
+          </p>
+          <p className="mt-0.5 text-xs text-phoebe-anthracite/40">
+            {isProprietaire ? "Propriétaire" : "Opérateur"}
+          </p>
         </div>
 
-        {isProprietaire && (
+        <div className="flex-1 space-y-6 p-4">
+          {isProprietaire && (
+            <div>
+              <NavLink href="/admin">Tableau de bord</NavLink>
+            </div>
+          )}
+
           <div>
-            <SectionTitle>Administration</SectionTitle>
+            <SectionTitle>Transport</SectionTitle>
             <nav className="space-y-0.5">
-              <NavLink href="/admin/comptes">Comptes internes</NavLink>
+              <NavLink href="/admin/demandes" badge={nbDemandesEnAttente}>
+                Demandes
+              </NavLink>
+              <NavLink href="/admin/vehicules">Véhicules</NavLink>
+              <NavLink href="/admin/reserver-pour-client">Réserver pour client</NavLink>
+              <NavLink href="/admin/verifications" exact>Vérifications</NavLink>
+              <NavLink href="/admin/verifications/historique">Historique vérif.</NavLink>
+              {isProprietaire && (
+                <NavLink href="/admin/remboursements" badge={nbRemboursements} badgeColor="bg-error">
+                  Remboursements
+                </NavLink>
+              )}
+              {isProprietaire && (
+                <NavLink href="/admin/propositions" badge={nbPropositions}>
+                  Propositions de prix
+                </NavLink>
+              )}
+              {isProprietaire && (
+                <NavLink href="/admin/tarifs">Zones &amp; Tarifs</NavLink>
+              )}
             </nav>
           </div>
-        )}
+
+          {isProprietaire && (
+            <div>
+              <SectionTitle>Administration</SectionTitle>
+              <nav className="space-y-0.5">
+                <NavLink href="/admin/comptes">Comptes internes</NavLink>
+              </nav>
+            </div>
+          )}
+        </div>
+
+        {/* Bottom branding */}
+        <div className="border-t border-phoebe-pearl px-5 py-3">
+          <p className="text-[9px] font-medium tracking-[0.12em] text-phoebe-anthracite/30">
+            GROUP PHOEBE &copy; {new Date().getFullYear()}
+          </p>
+        </div>
       </aside>
-      <div className="flex-1 overflow-y-auto p-4 md:p-6">{children}</div>
+      <div className="flex-1 overflow-y-auto bg-phoebe-pearl/15 p-4 md:p-8">{children}</div>
     </div>
   );
 }
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+    <h2 className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-phoebe-anthracite/35">
       {children}
     </h2>
   );
