@@ -22,11 +22,14 @@ export default async function ProfilPage() {
   if (!profile) redirect("/connexion");
 
   const statut = profile.statut_verification as StatutVerification;
+  const isClient = profile.role === "client";
 
-  const [pieceUrl, permisUrl] = await Promise.all([
-    getSignedDocUrl(supabase, profile.piece_identite_url),
-    getSignedDocUrl(supabase, profile.permis_conduire_url),
-  ]);
+  const [pieceUrl, permisUrl] = isClient
+    ? await Promise.all([
+        getSignedDocUrl(supabase, profile.piece_identite_url),
+        getSignedDocUrl(supabase, profile.permis_conduire_url),
+      ])
+    : [null, null];
 
   return (
     <div className="space-y-6">
@@ -43,7 +46,7 @@ export default async function ProfilPage() {
         role={profile.role}
       />
 
-      <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
+      {isClient && <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-lg font-semibold text-phoebe-anthracite">
@@ -175,9 +178,9 @@ export default async function ProfilPage() {
             )}
           </div>
         )}
-      </div>
+      </div>}
 
-      <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
+      {isClient && <div className="rounded-xl border border-phoebe-pearl bg-white p-6">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-phoebe-anthracite">
             Favoris
@@ -189,7 +192,7 @@ export default async function ProfilPage() {
             Voir mes favoris →
           </Link>
         </div>
-      </div>
+      </div>}
     </div>
   );
 }
