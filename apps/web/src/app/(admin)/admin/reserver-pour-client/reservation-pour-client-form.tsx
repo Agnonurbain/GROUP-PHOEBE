@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useState, useEffect, useTransition } from "react";
 import {
   creerReservationPourClient,
+  verifierDisponibilite,
   type ReservationOperateurState,
 } from "@/app/actions/reservation-operateur";
 import { SubmitButton } from "@/components/submit-button";
@@ -54,8 +55,20 @@ export function ReservationPourClientForm({
   const [autreDestNom, setAutreDestNom] = useState("");
   const [prixManuel, setPrixManuel] = useState("");
   const [copied, setCopied] = useState(false);
+  const [dispoMap, setDispoMap] = useState<Record<string, boolean>>({});
+  const [checkingDispo, startCheckDispo] = useTransition();
 
   const today = new Date().toISOString().slice(0, 10);
+
+  useEffect(() => {
+    if (!debut || !fin || selectedVehicules.length === 0) return;
+    if (new Date(fin) <= new Date(debut)) return;
+    startCheckDispo(async () => {
+      const ids = selectedVehicules.map((sv) => sv.vehicule.id);
+      const result = await verifierDisponibilite(ids, debut, fin);
+      setDispoMap(result);
+    });
+  }, [debut, fin, selectedVehicules]);
 
   const filteredClients = clientSearch.length >= 2
     ? clients.filter(
@@ -301,6 +314,15 @@ export function ReservationPourClientForm({
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
+                    {debut && fin && sv.vehicule.id in dispoMap && (
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                        dispoMap[sv.vehicule.id]
+                          ? "bg-phoebe-green/10 text-phoebe-green-deep"
+                          : "bg-error/10 text-error"
+                      }`}>
+                        {checkingDispo ? "..." : dispoMap[sv.vehicule.id] ? "Disponible" : "Indisponible"}
+                      </span>
+                    )}
                     {sv.vehicule.chauffeur_disponible && (
                       <label className="flex items-center gap-1.5 text-xs text-phoebe-anthracite">
                         <input
@@ -542,6 +564,17 @@ export function ReservationPourClientForm({
                 className={`max-w-xs ${inputClass}`}
               />
             </div>
+          </div>
+        )}
+
+        {debut && fin && Object.values(dispoMap).some((d) => !d) && (
+          <div className="flex items-center gap-3 rounded-xl border border-error/20 bg-error/5 px-5 py-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-error">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <p className="text-sm font-medium text-error">
+              Un ou plusieurs véhicules sont indisponibles sur cette période. La réservation sera refusée.
+            </p>
           </div>
         )}
 

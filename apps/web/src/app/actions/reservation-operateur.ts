@@ -304,3 +304,28 @@ export async function creerReservationPourClient(
 
   return { success: true, demandeId: demande.id, lienClient };
 }
+
+export async function verifierDisponibilite(
+  vehiculeIds: string[],
+  debut: string,
+  fin: string
+): Promise<Record<string, boolean>> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  if (!claimsData?.claims) return {};
+
+  const periode = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
+  const result: Record<string, boolean> = {};
+
+  for (const vid of vehiculeIds) {
+    const { data } = await (supabase.from as Function)("disponibilites_vehicule")
+      .select("id")
+      .eq("vehicule_id", vid)
+      .overlaps("periode", periode)
+      .limit(1) as { data: { id: string }[] | null };
+
+    result[vid] = !data || data.length === 0;
+  }
+
+  return result;
+}
