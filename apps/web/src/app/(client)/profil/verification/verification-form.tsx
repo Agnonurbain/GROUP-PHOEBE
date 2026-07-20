@@ -46,7 +46,7 @@ export function VerificationForm() {
         </h1>
         <p className="mt-1 text-sm text-phoebe-anthracite/60">
           Envoyez une photo de votre pièce d&apos;identité et de votre permis de
-          conduire. Formats acceptés : JPG, PNG, PDF (5 Mo max par fichier).
+          conduire. Formats acceptés : JPG, PNG, PDF (10 Mo max par fichier).
         </p>
       </div>
 

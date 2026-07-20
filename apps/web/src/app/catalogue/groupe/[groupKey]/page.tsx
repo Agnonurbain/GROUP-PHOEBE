@@ -64,13 +64,6 @@ export default async function GroupeDetailPage({
   const group = groups[0];
   if (!group) notFound();
 
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const user = claimsData?.claims;
-
-  if (!user) {
-    redirect(`/inscription?redirect=/catalogue/groupe/${encodeURIComponent(groupKey)}?mode=${mode}`);
-  }
-
   const rep = vehicules[0];
 
   const { data: intervalles } = await supabase

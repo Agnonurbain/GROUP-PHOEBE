@@ -25,9 +25,9 @@ export async function soumettreDocuments(
     return { error: "Les deux documents sont obligatoires." };
   }
 
-  const maxSize = 5 * 1024 * 1024; // 5 Mo
+  const maxSize = 10 * 1024 * 1024; // 10 Mo
   if (pieceIdentite.size > maxSize || permisConduire.size > maxSize) {
-    return { error: "Chaque fichier ne doit pas dépasser 5 Mo." };
+    return { error: "Chaque fichier ne doit pas dépasser 10 Mo." };
   }
 
   const ext1 = pieceIdentite.name.split(".").pop();

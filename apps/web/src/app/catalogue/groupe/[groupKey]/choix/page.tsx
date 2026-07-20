@@ -41,15 +41,8 @@ export default async function GroupeChoixPage({
 
   const photo = photos?.[0]?.url;
 
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const user = claimsData?.claims;
-
   const hasLocation = vehicules.some((v) => v.prix_journalier || v.prix_mensuel);
   const hasVente = vehicules.some((v) => v.prix_vente);
-
-  if (!user) {
-    redirect(`/inscription?redirect=/catalogue/groupe/${encodeURIComponent(groupKey)}/choix`);
-  }
 
   const disponibles = vehicules.filter((v) => v.statut === "disponible");
 
