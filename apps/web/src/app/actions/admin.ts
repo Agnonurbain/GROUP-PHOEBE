@@ -191,42 +191,51 @@ export async function creerCompteInterne(
   return { success: true };
 }
 
-export async function supprimerCompteInterne(
+export async function desactiverCompteInterne(
   userId: string,
   motif: string
 ): Promise<AdminState> {
   const staff = await requireStaff();
   if (staff.role !== "proprietaire") {
-    return { error: "Seul le propriétaire peut supprimer des comptes." };
+    return { error: "Seul le propriétaire peut désactiver des comptes." };
   }
 
   if (!motif.trim()) {
-    return { error: "Le motif de suppression est obligatoire." };
+    return { error: "Le motif est obligatoire." };
   }
 
   const supabase = await createClient();
   const { data: target } = await supabase
     .from("users")
-    .select("role")
+    .select("role, nom")
     .eq("id", userId)
     .single();
 
   if (!target || !["operateur", "livreur"].includes(target.role)) {
-    return { error: "Ce compte ne peut pas être supprimé." };
+    return { error: "Ce compte ne peut pas être désactivé." };
   }
 
   const admin = createAdminClient();
 
-  const { error: delPublic } = await admin
+  const { error: updateErr } = await admin
     .from("users")
-    .delete()
+    .update({ role: "desactive", updated_at: new Date().toISOString() })
     .eq("id", userId);
 
-  if (delPublic) return { error: delPublic.message };
+  if (updateErr) return { error: updateErr.message };
 
-  const { error: delAuth } = await admin.auth.admin.deleteUser(userId);
+  await admin.auth.admin.updateUserById(userId, {
+    ban_duration: "876000h",
+  });
 
-  if (delAuth) return { error: delAuth.message };
+  await logAudit({
+    userId: staff.userId,
+    action: "desactiver",
+    tableName: "users",
+    recordId: userId,
+    oldValues: { role: target.role, nom: target.nom },
+    newValues: { role: "desactive", motif: motif.trim() },
+  });
 
   revalidatePath("/admin/comptes");
   return { success: true };

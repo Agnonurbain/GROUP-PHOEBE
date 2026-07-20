@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { supprimerCompteInterne } from "@/app/actions/admin";
+import { desactiverCompteInterne } from "@/app/actions/admin";
 
 export function DeleteAccountButton({
   userId,
@@ -22,7 +22,7 @@ export function DeleteAccountButton({
         onClick={() => setShowModal(true)}
         className="text-xs text-error/70 transition-colors hover:text-error disabled:opacity-50"
       >
-        Supprimer
+        Desactiver
       </button>
 
       {showModal && (
@@ -35,16 +35,17 @@ export function DeleteAccountButton({
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-semibold text-phoebe-anthracite">
-              Supprimer le compte
+              Desactiver le compte
             </h3>
             <p className="mt-1 text-sm text-phoebe-anthracite/60">
-              Vous êtes sur le point de supprimer le compte de{" "}
-              <strong>{nom}</strong>. Cette action est irréversible.
+              Le compte de <strong>{nom}</strong> sera desactive.
+              L&apos;utilisateur ne pourra plus se connecter, mais son historique
+              d&apos;actions sera conserve dans le journal d&apos;audit.
             </p>
             <textarea
               value={motif}
               onChange={(e) => setMotif(e.target.value)}
-              placeholder="Motif de la suppression..."
+              placeholder="Motif de la desactivation..."
               rows={3}
               className="mt-3 w-full rounded-lg border border-phoebe-pearl px-3 py-2 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-error focus:outline-none focus:ring-1 focus:ring-error"
             />
@@ -63,14 +64,14 @@ export function DeleteAccountButton({
                 disabled={pending || !motif.trim()}
                 onClick={() =>
                   startTransition(async () => {
-                    await supprimerCompteInterne(userId, motif);
+                    await desactiverCompteInterne(userId, motif);
                     setShowModal(false);
                     setMotif("");
                   })
                 }
                 className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-error/90 hover:shadow-md disabled:opacity-50"
               >
-                Supprimer définitivement
+                Desactiver
               </button>
             </div>
           </div>

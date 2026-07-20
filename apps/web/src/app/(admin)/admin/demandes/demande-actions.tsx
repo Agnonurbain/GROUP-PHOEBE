@@ -52,6 +52,7 @@ export function DemandeActions({
   const [showPrixForm, setShowPrixForm] = useState(false);
   const [showAchatForm, setShowAchatForm] = useState(false);
   const [showInspForm, setShowInspForm] = useState(false);
+  const [showRefusForm, setShowRefusForm] = useState(false);
   const isAchat = type === "achat";
 
   const whatsappUrl = clientTelephone
@@ -79,19 +80,47 @@ export function DemandeActions({
       )}
 
       {statut === "en_attente_validation" && !isAchat && (
-        <div className="flex gap-2">
-          <form action={acceptAction}>
-            <input type="hidden" name="demande_id" value={demandeId} />
-            <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md">
-              Accepter
-            </SubmitButton>
-          </form>
-          <form action={refusAction}>
-            <input type="hidden" name="demande_id" value={demandeId} />
-            <SubmitButton className="rounded-lg border border-error/20 bg-error/5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error hover:text-white hover:shadow-md">
-              Refuser
-            </SubmitButton>
-          </form>
+        <div className="space-y-2">
+          <div className="flex gap-2">
+            <form action={acceptAction}>
+              <input type="hidden" name="demande_id" value={demandeId} />
+              <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md">
+                Accepter
+              </SubmitButton>
+            </form>
+            {!showRefusForm ? (
+              <button
+                type="button"
+                onClick={() => setShowRefusForm(true)}
+                className="rounded-lg border border-error/20 bg-error/5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error hover:text-white hover:shadow-md"
+              >
+                Refuser
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowRefusForm(false)}
+                className="rounded-lg border border-phoebe-anthracite/15 px-3 py-1.5 text-xs text-phoebe-anthracite/50 hover:bg-phoebe-pearl"
+              >
+                Annuler
+              </button>
+            )}
+          </div>
+          {showRefusForm && (
+            <form action={refusAction} className="space-y-2">
+              <input type="hidden" name="demande_id" value={demandeId} />
+              <textarea
+                name="motif_refus"
+                required
+                rows={2}
+                placeholder="Motif du refus (obligatoire)…"
+                className="w-full rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-error focus:outline-none focus:ring-1 focus:ring-error/30"
+              />
+              <SubmitButton className="rounded-lg bg-error px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-error/90 hover:shadow-md">
+                Confirmer le refus
+              </SubmitButton>
+            </form>
+          )}
         </div>
       )}
 
@@ -109,20 +138,48 @@ export function DemandeActions({
             </a>
           )}
           {!showAchatForm ? (
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setShowAchatForm(true)}
-                className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/90 hover:shadow-md"
-              >
-                Confirmer le prix
-              </button>
-              <form action={refusAction}>
-                <input type="hidden" name="demande_id" value={demandeId} />
-                <SubmitButton className="rounded-lg border border-error/20 bg-error/5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error hover:text-white hover:shadow-md">
-                  Refuser
-                </SubmitButton>
-              </form>
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAchatForm(true)}
+                  className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/90 hover:shadow-md"
+                >
+                  Confirmer le prix
+                </button>
+                {!showRefusForm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowRefusForm(true)}
+                    className="rounded-lg border border-error/20 bg-error/5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error hover:text-white hover:shadow-md"
+                  >
+                    Refuser
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowRefusForm(false)}
+                    className="rounded-lg border border-phoebe-anthracite/15 px-3 py-1.5 text-xs text-phoebe-anthracite/50 hover:bg-phoebe-pearl"
+                  >
+                    Annuler
+                  </button>
+                )}
+              </div>
+              {showRefusForm && (
+                <form action={refusAction} className="space-y-2">
+                  <input type="hidden" name="demande_id" value={demandeId} />
+                  <textarea
+                    name="motif_refus"
+                    required
+                    rows={2}
+                    placeholder="Motif du refus (obligatoire)…"
+                    className="w-full rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-error focus:outline-none focus:ring-1 focus:ring-error/30"
+                  />
+                  <SubmitButton className="rounded-lg bg-error px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-error/90 hover:shadow-md">
+                    Confirmer le refus
+                  </SubmitButton>
+                </form>
+              )}
             </div>
           ) : (
             <form action={achatAction} className="space-y-2">

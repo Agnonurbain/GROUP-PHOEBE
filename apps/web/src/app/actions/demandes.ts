@@ -96,6 +96,11 @@ export async function refuserDemande(
   const staff = await requireStaff();
   const admin = getAdmin();
   const demandeId = formData.get("demande_id") as string;
+  const motifRefus = (formData.get("motif_refus") as string)?.trim();
+
+  if (!motifRefus) {
+    return { error: "Le motif de refus est obligatoire." };
+  }
 
   const { data: demande } = await admin
     .from("demandes_transport")
@@ -122,7 +127,7 @@ export async function refuserDemande(
     tableName: "demandes_transport",
     recordId: demandeId,
     oldValues: { statut: "en_attente_validation" },
-    newValues: { statut: "refusee" },
+    newValues: { statut: "refusee", motif_refus: motifRefus },
   });
 
   if (demande.vehicule_id && demande.periode) {
@@ -148,8 +153,8 @@ export async function refuserDemande(
     demande.client_id,
     isAchatRefus ? "Demande d'achat refusée" : "Réservation refusée",
     isAchatRefus
-      ? "Votre demande d'achat a été refusée."
-      : "Votre réservation a été refusée. Le remboursement intégral sera effectué sous 48h."
+      ? `Votre demande d'achat a été refusée. Motif : ${motifRefus}`
+      : `Votre réservation a été refusée. Motif : ${motifRefus}. Le remboursement intégral sera effectué sous 48h.`
   );
 
   revalidatePath("/admin/demandes");

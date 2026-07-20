@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { DemandeActions } from "./demande-actions";
+import { ExportCsvButton } from "./export-csv-button";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
 import { ScrollReveal } from "@/components/effects";
 
@@ -20,6 +21,17 @@ export default async function DemandesPage() {
 
   const supabase = await createClient();
 
+  const { data: communes } = await supabase
+    .from("communes")
+    .select("nom, zones_tarifaires!inner(nom)")
+    .order("nom");
+
+  const communeZoneMap = new Map<string, string>();
+  for (const c of communes ?? []) {
+    const zn = (c.zones_tarifaires as { nom: string } | null)?.nom;
+    if (zn) communeZoneMap.set(c.nom, zn);
+  }
+
   const { data: demandes } = await supabase
     .from("demandes_transport")
     .select("*, vehicules(marque, modele), users!demandes_transport_client_id_fkey(nom, telephone), lignes_demande(id, vehicules(marque, modele), avec_chauffeur)")
@@ -35,9 +47,33 @@ export default async function DemandesPage() {
 
   return (
     <div className="space-y-10">
-        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-          Demandes de transport
-        </h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+            Demandes de transport
+          </h1>
+          <ExportCsvButton
+            demandes={[...(demandes ?? []), ...(historique ?? [])].map((d) => {
+              const v = d.vehicules;
+              const u = d.users;
+              const hLignes = (d as Record<string, unknown>).lignes_demande as { id: string; vehicules: { marque: string; modele: string } | null }[] | undefined;
+              return {
+                id: d.id,
+                statut: d.statut,
+                type: d.type,
+                montant: d.montant ? Number(d.montant) : null,
+                caution: d.caution ? Number(d.caution) : null,
+                caution_retenue: Number(d.caution_retenue ?? 0),
+                destination: d.destination,
+                ville_depart: d.ville_depart,
+                created_at: d.created_at,
+                client: (u as { nom: string } | null)?.nom ?? "",
+                vehicule: hLignes && hLignes.length > 1
+                  ? `${hLignes.length} vehicules`
+                  : v ? `${v.marque} ${v.modele}` : "",
+              };
+            })}
+          />
+        </div>
 
         {!demandes || demandes.length === 0 ? (
           <p className="text-sm text-phoebe-anthracite/50">
@@ -104,6 +140,17 @@ export default async function DemandesPage() {
                         {d.ville_depart && ` · ${d.ville_depart}`}
                         {d.destination && ` → ${d.destination}`}
                       </p>
+                      {d.destination && communeZoneMap.get(d.destination) && (
+                        <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          communeZoneMap.get(d.destination)!.toLowerCase().includes("intérieur") || communeZoneMap.get(d.destination)!.toLowerCase().includes("interieur")
+                            ? "bg-error/10 text-error"
+                            : communeZoneMap.get(d.destination)!.toLowerCase().includes("grand")
+                              ? "bg-phoebe-gold/10 text-phoebe-gold"
+                              : "bg-phoebe-green/10 text-phoebe-green-deep"
+                        }`}>
+                          Zone : {communeZoneMap.get(d.destination)}
+                        </span>
+                      )}
                       {d.type === "achat" && (
                         <p className="text-xs text-phoebe-anthracite/40">
                           Négociation via WhatsApp
