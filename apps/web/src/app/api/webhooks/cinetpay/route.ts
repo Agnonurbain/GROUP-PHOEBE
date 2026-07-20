@@ -7,19 +7,26 @@ import {
   traiterPaiementConfirme,
   traiterPaiementEchoue,
 } from "@/lib/payments/traitement";
+import { estDejaTraite, marquerTraite } from "@/lib/payments/webhook-utils";
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
   const signature = request.headers.get("x-cinetpay-signature") ?? "";
+  const idempotencyKey = request.headers.get("x-cinetpay-idempotency-key")
+    ?? request.headers.get("x-idempotency-key")
+    ?? "";
 
-  if (process.env.CINETPAY_WEBHOOK_SECRET && signature) {
-    const valid = verifierSignatureCinetPay(body, signature);
-    if (!valid) {
-      return NextResponse.json(
-        { error: "Signature invalide" },
-        { status: 400 }
-      );
-    }
+  if (!signature) {
+    return NextResponse.json({ error: "Signature manquante" }, { status: 401 });
+  }
+
+  if (!process.env.CINETPAY_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Webhook secret non configuré" }, { status: 500 });
+  }
+
+  const valid = verifierSignatureCinetPay(body, signature);
+  if (!valid) {
+    return NextResponse.json({ error: "Signature invalide" }, { status: 401 });
   }
 
   let parsed: { cpm_trans_id?: string };
@@ -34,6 +41,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ received: true });
   }
 
+  // Idempotence
+  const key = idempotencyKey || `cinetpay-${paiementId}`;
+  if (await estDejaTraite(key)) {
+    return NextResponse.json({ received: true, already: true });
+  }
+
   const check = await verifierTransactionCinetPay(paiementId);
 
   if (check.status === "ACCEPTED") {
@@ -42,5 +55,6 @@ export async function POST(request: NextRequest) {
     await traiterPaiementEchoue(paiementId);
   }
 
+  await marquerTraite(key);
   return NextResponse.json({ received: true });
 }

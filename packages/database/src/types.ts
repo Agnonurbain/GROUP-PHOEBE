@@ -1442,6 +1442,21 @@ export type Database = {
           },
         ]
       }
+      webhook_idempotency: {
+        Row: {
+          idempotency_key: string
+          processed_at: string
+        }
+        Insert: {
+          idempotency_key: string
+          processed_at?: string
+        }
+        Update: {
+          idempotency_key?: string
+          processed_at?: string
+        }
+        Relationships: []
+      }
       zones_tarifaires: {
         Row: {
           created_at: string

@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 
 type Canal = "whatsapp" | "sms" | "email";
 
@@ -25,7 +26,7 @@ async function envoyerWhatsApp(telephone: string, contenu: string): Promise<bool
   if (!sid || !token || !from) return false;
 
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
       {
         method: "POST",
@@ -38,7 +39,8 @@ async function envoyerWhatsApp(telephone: string, contenu: string): Promise<bool
           To: `whatsapp:${telephone}`,
           Body: contenu,
         }),
-      }
+      },
+      { timeout: 3000 }
     );
     return res.ok;
   } catch {
@@ -53,7 +55,7 @@ async function envoyerSMS(telephone: string, contenu: string): Promise<boolean> 
   if (!sid || !token || !from) return false;
 
   try {
-    const res = await fetch(
+    const res = await fetchWithTimeout(
       `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`,
       {
         method: "POST",
@@ -62,7 +64,8 @@ async function envoyerSMS(telephone: string, contenu: string): Promise<boolean> 
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: new URLSearchParams({ From: from, To: telephone, Body: contenu }),
-      }
+      },
+      { timeout: 3000 }
     );
     return res.ok;
   } catch {
@@ -76,19 +79,23 @@ async function envoyerEmail(email: string, sujet: string, contenu: string): Prom
   if (!apiKey || !from) return false;
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
+    const res = await fetchWithTimeout(
+      "https://api.resend.com/emails",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from,
+          to: [email],
+          subject: sujet,
+          text: contenu,
+        }),
       },
-      body: JSON.stringify({
-        from,
-        to: [email],
-        subject: sujet,
-        text: contenu,
-      }),
-    });
+      { timeout: 5000 }
+    );
     return res.ok;
   } catch {
     return false;

@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
 
 const CINETPAY_BASE = "https://api-checkout.cinetpay.com/v2";
 
@@ -21,7 +22,7 @@ export async function creerSessionCinetPay(params: {
     channels: "ALL",
   };
 
-  const res = await fetch(`${CINETPAY_BASE}/payment`, {
+  const res = await fetchWithTimeout(`${CINETPAY_BASE}/payment`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
@@ -39,7 +40,7 @@ export async function creerSessionCinetPay(params: {
 export async function verifierTransactionCinetPay(
   transactionId: string
 ): Promise<{ status: "ACCEPTED" | "REFUSED" | "PENDING" }> {
-  const res = await fetch(`${CINETPAY_BASE}/payment/check`, {
+  const res = await fetchWithTimeout(`${CINETPAY_BASE}/payment/check`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
