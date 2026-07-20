@@ -65,6 +65,16 @@ export async function enregistrerEtatLieuxDepart(
     return { error: "Cette demande doit être acceptée pour enregistrer l'état des lieux de départ." };
   }
 
+  const { data: clientProfile } = await admin
+    .from("users")
+    .select("statut_verification")
+    .eq("id", demande.client_id)
+    .single();
+
+  if (!clientProfile || clientProfile.statut_verification !== "verifie") {
+    return { error: "L'identité du client n'est pas encore vérifiée. L'état des lieux ne peut pas être enregistré." };
+  }
+
   const photoUrls: string[] = [];
   for (const file of photos) {
     if (!file.size) continue;

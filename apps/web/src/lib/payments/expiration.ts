@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 
-const DELAI_EXPIRATION_MS = 30 * 60 * 1000;
+const DELAI_EXPIRATION_MS = 15 * 60 * 1000;
 
 function getAdminClient() {
   return createClient<Database>(

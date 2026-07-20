@@ -16,14 +16,6 @@ export default async function CheckoutPage() {
     redirect("/inscription?redirect=/panier");
   }
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("statut_verification")
-    .eq("id", user.sub)
-    .single();
-
-  const verifie = profile?.statut_verification === "verifie";
-
   const [{ data: zones }, { data: communes }, { data: intervalles }] =
     await Promise.all([
       supabase
@@ -49,7 +41,6 @@ export default async function CheckoutPage() {
         </ScrollReveal>
         <ScrollReveal variant="fade-up" delay={0.1}>
           <CheckoutForm
-            verifie={verifie}
             zones={zones ?? []}
             communes={communes ?? []}
             intervalles={intervalles ?? []}

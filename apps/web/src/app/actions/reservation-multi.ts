@@ -7,7 +7,7 @@ import type { Database } from "@group-phoebe/database/types";
 import { creerSessionStripe } from "@/lib/payments/stripe";
 import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
-import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
+import { expirerDemandesSansReponse, expirerNonPresentations, expirerNegociationsAbandonnees } from "@/lib/payments/expiration-demandes";
 import { assignerVehiculesGroupe, type AssignedVehicle, type ZoneTarif } from "@/app/actions/vehicle-assignment";
 
 function getAdmin() {
@@ -46,12 +46,6 @@ export async function creerReservationMultiple(
     .single();
 
   if (!profile) return { error: "Profil introuvable." };
-  if (profile.statut_verification !== "verifie") {
-    return {
-      error:
-        "Votre identité doit être vérifiée avant de réserver. Rendez-vous sur votre profil pour soumettre vos documents.",
-    };
-  }
 
   const debut = formData.get("debut") as string;
   const fin = formData.get("fin") as string;
@@ -101,6 +95,7 @@ export async function creerReservationMultiple(
     expirerReservationsAbandonnees(),
     expirerDemandesSansReponse(),
     expirerNonPresentations(),
+    expirerNegociationsAbandonnees(),
   ]);
 
   let zone: ZoneTarif | undefined;

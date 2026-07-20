@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { notifierClient } from "@/lib/notifications";
 import { getStripe } from "@/lib/payments/stripe";
-import { DELAI_SANS_REPONSE_HEURES, DELAI_NON_PRESENTATION_HEURES } from "@/lib/constants";
+import { DELAI_SANS_REPONSE_HEURES, DELAI_NON_PRESENTATION_HEURES, DELAI_NEGOCIATION_MS } from "@/lib/constants";
 
 type AdminClient = ReturnType<typeof getAdminClient>;
 
@@ -73,34 +73,23 @@ export async function expirerDemandesSansReponse(): Promise<number> {
 
   let nb = 0;
   for (const d of expirees) {
-    if (d.vehicule_id && d.periode) {
+    if (d.vehicule_id) {
       await admin
-        .from("disponibilites_vehicule")
-        .delete()
-        .eq("vehicule_id", d.vehicule_id)
-        .eq("type", "reservation")
-        .eq("periode", d.periode);
+        .from("vehicules")
+        .update({ statut: "reserve", updated_at: new Date().toISOString() })
+        .eq("id", d.vehicule_id);
     }
-    if (d.chauffeur_id && d.periode) {
-      await admin
-        .from("disponibilites_chauffeur")
-        .delete()
-        .eq("chauffeur_id", d.chauffeur_id)
-        .eq("periode", d.periode);
-    }
-
-    await rembourserPaiement(admin, d.id, 0);
 
     await admin
       .from("demandes_transport")
-      .update({ statut: "annulee", updated_at: new Date().toISOString() })
+      .update({ statut: "acceptee", updated_at: new Date().toISOString() })
       .eq("id", d.id)
       .eq("statut", "en_attente_validation");
 
     await notifierClient(
       d.client_id,
-      "Réservation annulée",
-      `Votre réservation a été annulée automatiquement faute de réponse du propriétaire dans les 24h. Le remboursement intégral sera effectué.`
+      "Réservation confirmée automatiquement",
+      `Votre réservation a été automatiquement acceptée. Présentez-vous au lieu de retrait à la date convenue.`
     );
 
     nb++;
@@ -164,6 +153,53 @@ export async function expirerNonPresentations(): Promise<number> {
       d.client_id,
       "Non-présentation — réservation annulée",
       `Vous ne vous êtes pas présenté(e) au retrait du véhicule. La réservation est annulée et la caution est retenue.`
+    );
+
+    nb++;
+  }
+  return nb;
+}
+
+export async function expirerNegociationsAbandonnees(): Promise<number> {
+  const admin = getAdminClient();
+  const seuil = new Date(Date.now() - DELAI_NEGOCIATION_MS).toISOString();
+
+  const { data: expirees } = await admin
+    .from("demandes_transport")
+    .select("id, client_id, vehicule_id, chauffeur_id, periode")
+    .eq("statut", "en_negociation")
+    .lt("created_at", seuil);
+
+  if (!expirees || expirees.length === 0) return 0;
+
+  let nb = 0;
+  for (const d of expirees) {
+    if (d.vehicule_id && d.periode) {
+      await admin
+        .from("disponibilites_vehicule")
+        .delete()
+        .eq("vehicule_id", d.vehicule_id)
+        .eq("type", "reservation")
+        .eq("periode", d.periode);
+    }
+    if (d.chauffeur_id && d.periode) {
+      await admin
+        .from("disponibilites_chauffeur")
+        .delete()
+        .eq("chauffeur_id", d.chauffeur_id)
+        .eq("periode", d.periode);
+    }
+
+    await admin
+      .from("demandes_transport")
+      .update({ statut: "annulee", updated_at: new Date().toISOString() })
+      .eq("id", d.id)
+      .eq("statut", "en_negociation");
+
+    await notifierClient(
+      d.client_id,
+      "Négociation expirée",
+      `Votre demande de négociation a expiré après 30 minutes sans réponse. Vous pouvez soumettre une nouvelle demande.`
     );
 
     nb++;

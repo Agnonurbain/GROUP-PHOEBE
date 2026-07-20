@@ -33,12 +33,10 @@ type IntervallePrix = {
 };
 
 export function CheckoutForm({
-  verifie,
   zones,
   communes,
   intervalles,
 }: {
-  verifie: boolean;
   zones: Zone[];
   communes: Commune[];
   intervalles: IntervallePrix[];
@@ -455,18 +453,10 @@ export function CheckoutForm({
           </div>
         </fieldset>
 
-        {!verifie ? (
-          <div className="rounded-lg bg-phoebe-gold/10 px-4 py-3 text-sm text-phoebe-gold">
-            Votre identité n&apos;est pas encore vérifiée. Vous devez soumettre vos
-            documents depuis votre profil avant de pouvoir réserver.
-          </div>
-        ) : (
-          <SubmitButton>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
-        )}
+        <SubmitButton>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
       </form>
 
-      {verifie && (
-        <div className="mt-3 space-y-3">
+      <div className="mt-3 space-y-3">
           <div className="relative flex items-center gap-3 py-1">
             <div className="flex-1 border-t border-phoebe-anthracite/10" />
             <span className="text-xs text-phoebe-anthracite/40">ou</span>
@@ -516,7 +506,6 @@ export function CheckoutForm({
             </div>
           )}
         </div>
-      )}
     </>
   );
 }
