@@ -91,17 +91,21 @@ async function VehiculeGrid({
   if (!vehicules || vehicules.length === 0) {
     return (
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-phoebe-pearl bg-white py-16 text-center shadow-sm animate-fade-in">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-anthracite/15">
-          <circle cx="11" cy="11" r="8" />
-          <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          <line x1="8" y1="11" x2="14" y2="11" />
-        </svg>
-        <p className="text-lg text-phoebe-anthracite/45">
-          Aucun véhicule ne correspond à vos critères.
-        </p>
-        <p className="text-sm text-phoebe-anthracite/30">
-          Essayez de modifier vos filtres pour voir plus de résultats.
-        </p>
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-phoebe-pearl/60">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-anthracite/25">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            <line x1="8" y1="11" x2="14" y2="11" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-phoebe-anthracite">
+            Aucun résultat pour ces filtres
+          </p>
+          <p className="mt-1 text-sm text-phoebe-anthracite/40">
+            Essayez d&apos;élargir vos critères ou de réinitialiser les filtres.
+          </p>
+        </div>
       </div>
     );
   }
@@ -133,11 +137,18 @@ async function VehiculeGrid({
                 Pas de photo
               </div>
             )}
-            {g.totalCount > 1 && (
-              <span className="absolute right-3 top-3 rounded-full bg-phoebe-green/90 px-2.5 py-0.5 text-xs font-semibold text-white shadow-md backdrop-blur-sm">
-                {g.totalCount} dispo
-              </span>
-            )}
+            <div className="absolute left-3 right-3 top-3 flex items-start justify-between gap-2">
+              {g.prixJournalier > 0 && (
+                <span className="rounded-full bg-phoebe-gold/90 px-2.5 py-1 text-xs font-bold text-white shadow-md backdrop-blur-sm">
+                  Dès {g.prixJournalier.toLocaleString("fr-FR")} FCFA/j
+                </span>
+              )}
+              {g.totalCount > 1 && (
+                <span className="ml-auto rounded-full bg-phoebe-green/90 px-2.5 py-0.5 text-xs font-semibold text-white shadow-md backdrop-blur-sm">
+                  {g.totalCount} dispo
+                </span>
+              )}
+            </div>
           </Link>
 
           <div className="space-y-2.5 p-5">

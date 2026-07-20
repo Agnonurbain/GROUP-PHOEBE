@@ -106,16 +106,25 @@ export default async function FavorisPage() {
           })}
         </div>
       ) : (
-        <div className="rounded-2xl border border-phoebe-pearl bg-white p-10 text-center shadow-sm">
-          <p className="text-sm text-phoebe-anthracite/45">
-            Vous n&apos;avez pas encore de favoris.{" "}
-            <Link
-              href="/catalogue"
-              className="font-medium text-phoebe-green hover:text-phoebe-green-deep"
-            >
-              Parcourir le catalogue
-            </Link>
-          </p>
+        <div className="flex flex-col items-center gap-4 rounded-2xl border border-phoebe-pearl bg-white py-16 text-center shadow-sm animate-fade-in">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-phoebe-pearl/60">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-anthracite/25">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </svg>
+          </div>
+          <div>
+            <p className="text-base font-semibold text-phoebe-anthracite">Aucun favori pour le moment</p>
+            <p className="mt-1 text-sm text-phoebe-anthracite/40">
+              Ajoutez des véhicules à vos favoris en cliquant sur le cœur {" "}
+              <span className="text-phoebe-anthracite/30">&lt;3</span>.
+            </p>
+          </div>
+          <Link
+            href="/catalogue"
+            className="rounded-2xl bg-phoebe-green px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep"
+          >
+            Parcourir le catalogue
+          </Link>
         </div>
       )}
     </div>

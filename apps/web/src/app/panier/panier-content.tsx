@@ -12,13 +12,20 @@ export function PanierContent() {
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-6 rounded-2xl border border-phoebe-pearl bg-white py-20 text-center shadow-sm animate-fade-in">
-        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-anthracite/15">
-          <circle cx="9" cy="21" r="1" />
-          <circle cx="20" cy="21" r="1" />
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-        </svg>
-        <p className="text-phoebe-anthracite/45 text-lg">Votre panier est vide.</p>
+      <div className="flex flex-col items-center gap-5 rounded-2xl border border-phoebe-pearl bg-white py-20 text-center shadow-sm animate-fade-in">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-phoebe-pearl/60">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-phoebe-anthracite/25">
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+        </div>
+        <div>
+          <p className="text-lg font-semibold text-phoebe-anthracite">Votre panier est vide</p>
+          <p className="mt-1 text-sm text-phoebe-anthracite/40">
+            Ajoutez un véhicule depuis notre catalogue pour commencer.
+          </p>
+        </div>
         <Link
           href="/catalogue"
           className="relative overflow-hidden rounded-2xl bg-phoebe-green px-8 py-3.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-lg"
