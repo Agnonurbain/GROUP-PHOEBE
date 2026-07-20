@@ -17,6 +17,11 @@ const inputNormal =
 const inputError =
   "border-error/50 bg-error/5 focus:border-error focus:ring-error/20";
 
+const ETAPES = [
+  { num: 1, label: "Véhicules" },
+  { num: 2, label: "Dates & Trajet" },
+  { num: 3, label: "Paiement" },
+];
 
 type Zone = {
   id: string;
@@ -49,6 +54,74 @@ function validerChamps(
   return e;
 }
 
+function StepIndicator({ etape }: { etape: number }) {
+  return (
+    <div className="mb-8">
+      <div className="flex items-center justify-between">
+        {ETAPES.map((s, i) => (
+          <div key={s.num} className="flex items-center gap-2">
+            <div
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-all ${
+                etape === s.num
+                  ? "bg-phoebe-green text-white shadow-md shadow-phoebe-green/25"
+                  : etape > s.num
+                    ? "bg-phoebe-green/20 text-phoebe-green-deep"
+                    : "bg-phoebe-pearl text-phoebe-anthracite/40"
+              }`}
+            >
+              {etape > s.num ? "✓" : s.num}
+            </div>
+            <span
+              className={`hidden text-sm sm:inline ${
+                etape === s.num ? "font-semibold text-phoebe-anthracite" : "text-phoebe-anthracite/40"
+              }`}
+            >
+              {s.label}
+            </span>
+            {i < ETAPES.length - 1 && (
+              <div
+                className={`mx-2 h-px w-8 sm:w-12 ${
+                  etape > s.num ? "bg-phoebe-green" : "bg-phoebe-anthracite/10"
+                }`}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MobileMoneyLogos() {
+  return (
+    <div className="flex flex-wrap items-center gap-3 mt-2">
+      <span className="rounded-lg border border-phoebe-anthracite/10 bg-white px-3 py-1.5 text-xs font-semibold text-[#FF6B00]">Orange</span>
+      <span className="rounded-lg border border-phoebe-anthracite/10 bg-white px-3 py-1.5 text-xs font-semibold text-[#FFCC00]">MTN</span>
+      <span className="rounded-lg border border-phoebe-anthracite/10 bg-white px-3 py-1.5 text-xs font-semibold text-[#00A3E0]">Wave</span>
+      <span className="rounded-lg border border-phoebe-anthracite/10 bg-white px-3 py-1.5 text-xs font-semibold text-[#E30613]">Moov</span>
+    </div>
+  );
+}
+
+function TrustBadges() {
+  return (
+    <div className="flex flex-wrap items-center gap-4 rounded-xl border border-phoebe-pearl bg-white px-4 py-3 text-xs text-phoebe-anthracite/60">
+      <span className="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-phoebe-green"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        Paiement sécurisé
+      </span>
+      <span className="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-phoebe-green"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Livraison garantie
+      </span>
+      <span className="flex items-center gap-1.5">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-phoebe-green"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+        Support 24/7
+      </span>
+    </div>
+  );
+}
+
 export function CheckoutForm({
   zones,
   communes,
@@ -58,6 +131,7 @@ export function CheckoutForm({
 }) {
   const router = useRouter();
   const { items, clearCart, count } = useCart();
+  const [etape, setEtape] = useState(1);
   const [state, formAction] = useActionState<ReservationMultiState, FormData>(
     async (prev, fd) => {
       const result = await creerReservationMultiple(prev, fd);
@@ -122,12 +196,26 @@ export function CheckoutForm({
       e.preventDefault();
       const errors = validerChamps(debut, fin, communeDepart, communeDest, accepteCgv, today);
       setFieldErrors(errors);
-      if (Object.keys(errors).length > 0) return;
+      if (Object.keys(errors).length > 0) {
+        setEtape(2);
+        return;
+      }
       const fd = new FormData(e.currentTarget);
       formAction(fd);
     },
     [debut, fin, communeDepart, communeDest, accepteCgv, today, formAction]
   );
+
+  const handleSuivant = useCallback(() => {
+    if (etape === 1) {
+      setEtape(2);
+    } else if (etape === 2) {
+      const errors = validerChamps(debut, fin, communeDepart, communeDest, true, today);
+      setFieldErrors(errors);
+      if (Object.keys(errors).length > 0) return;
+      setEtape(3);
+    }
+  }, [etape, debut, fin, communeDepart, communeDest, today]);
 
   if (negoState.success) {
     const whatsappUrl = `https://wa.me/2250778631983?text=${encodeURIComponent(
@@ -237,345 +325,411 @@ export function CheckoutForm({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <StepIndicator etape={etape} />
+
+      <form onSubmit={etape === 3 ? handleSubmit : (e) => e.preventDefault()} className="space-y-8">
         <input type="hidden" name="lignes" value={lignesJson} />
 
-        {/* Recap véhicules */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-semibold text-phoebe-anthracite">
-            Véhicules sélectionnés ({count})
-          </h2>
-          <div className="space-y-2">
-            {lignesCalc.map((item) => (
-              <div
-                key={item.groupKey}
-                className="flex items-center gap-3 rounded-xl border border-phoebe-pearl bg-white p-3"
-              >
-                <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-phoebe-pearl">
-                  {item.photoUrl ? (
-                    <Image
-                      src={item.photoUrl}
-                      alt={`${item.marque} ${item.modele}`}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-[9px] text-phoebe-anthracite/30">
-                      &mdash;
+        {etape === 1 && (
+          <>
+            <div className="space-y-3">
+              <h2 className="text-lg font-semibold text-phoebe-anthracite">
+                Véhicules sélectionnés ({count})
+              </h2>
+              <div className="space-y-2">
+                {lignesCalc.map((item) => (
+                  <div
+                    key={item.groupKey}
+                    className="flex items-center gap-3 rounded-xl border border-phoebe-pearl bg-white p-3"
+                  >
+                    <div className="relative h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-phoebe-pearl">
+                      {item.photoUrl ? (
+                        <Image
+                          src={item.photoUrl}
+                          alt={`${item.marque} ${item.modele}`}
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-[9px] text-phoebe-anthracite/30">
+                          &mdash;
+                        </div>
+                      )}
                     </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-phoebe-anthracite">
+                        {item.marque} {item.modele}
+                        {item.quantite > 1 && (
+                          <span className="ml-1 text-phoebe-anthracite/50">&times;{item.quantite}</span>
+                        )}
+                      </p>
+                      <p className="text-xs text-phoebe-anthracite/50">
+                        {CAT_LABELS[item.categorie] ?? item.categorie}
+                        {item.avecChauffeur && " · Avec chauffeur"}
+                      </p>
+                    </div>
+                    <span className="text-sm font-medium text-phoebe-green">
+                      {item.prixJournalier.toLocaleString("fr-FR")} FCFA/jour
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleSuivant}
+              className="w-full rounded-xl bg-phoebe-green py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-phoebe-green/25 transition-all hover:bg-phoebe-green-deep active:scale-[0.98]"
+            >
+              Suivant — Dates & Trajet
+            </button>
+          </>
+        )}
+
+        {etape === 2 && (
+          <>
+            {/* Période */}
+            <fieldset className="space-y-4">
+              <legend className="text-lg font-semibold text-phoebe-anthracite">
+                Période de location
+              </legend>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="ck-debut" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+                    Date de début *
+                  </label>
+                  <input
+                    id="ck-debut"
+                    type="date"
+                    name="debut"
+                    required
+                    min={today}
+                    value={debut}
+                    onChange={(e) => { setDebut(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.debut; return n; }); }}
+                    className={fc("debut")}
+                  />
+                  {fe("debut") && <p className="mt-1 text-xs text-error">{fe("debut")}</p>}
+                </div>
+                <div>
+                  <label htmlFor="ck-fin" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+                    Date de fin *
+                  </label>
+                  <input
+                    id="ck-fin"
+                    type="date"
+                    name="fin"
+                    required
+                    min={debut ? new Date(new Date(debut).getTime() + 86400000).toISOString().split("T")[0] : today}
+                    value={fin}
+                    onChange={(e) => { setFin(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.fin; return n; }); }}
+                    className={fc("fin")}
+                  />
+                  {fe("fin") && <p className="mt-1 text-xs text-error">{fe("fin")}</p>}
+                </div>
+              </div>
+            </fieldset>
+
+            {/* Trajet */}
+            <fieldset className="space-y-4">
+              <legend className="text-lg font-semibold text-phoebe-anthracite">
+                Trajet
+              </legend>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="ck-commune-depart" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+                    Commune de départ
+                  </label>
+                  <CommuneSearch
+                    id="ck-commune-depart"
+                    name="ville_depart"
+                    value={communeDepart}
+                    onChange={(v) => { setCommuneDepart(v); setFieldErrors((p) => { const n = { ...p }; delete n.ville_depart; return n; }); }}
+                    communes={communeOptions}
+                    placeholder="Rechercher une commune…"
+                    className={fc("ville_depart")}
+                  />
+                  {fe("ville_depart") && <p className="mt-1 text-xs text-error">{fe("ville_depart")}</p>}
+                  {communeDepart === "autre" && (
+                    <input
+                      name="ville_depart_autre"
+                      placeholder="Nom de votre commune"
+                      value={autreDepartNom}
+                      onChange={(e) => setAutreDepartNom(e.target.value)}
+                      className={`mt-2 ${inputClass} ${inputNormal}`}
+                    />
                   )}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-phoebe-anthracite">
-                    {item.marque} {item.modele}
-                    {item.quantite > 1 && (
-                      <span className="ml-1 text-phoebe-anthracite/50">&times;{item.quantite}</span>
+                <div>
+                  <label htmlFor="ck-commune-dest" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+                    Commune de destination
+                  </label>
+                  <CommuneSearch
+                    id="ck-commune-dest"
+                    name="destination"
+                    value={communeDest}
+                    onChange={(v) => { setCommuneDest(v); setFieldErrors((p) => { const n = { ...p }; delete n.destination; return n; }); }}
+                    communes={communeOptions}
+                    placeholder="Rechercher une commune…"
+                    className={fc("destination")}
+                  />
+                  {fe("destination") && <p className="mt-1 text-xs text-error">{fe("destination")}</p>}
+                  {communeDest === "autre" && (
+                    <input
+                      name="destination_autre"
+                      placeholder="Nom de votre commune"
+                      value={autreDestNom}
+                      onChange={(e) => setAutreDestNom(e.target.value)}
+                      className={`mt-2 ${inputClass} ${inputNormal}`}
+                    />
+                  )}
+                </div>
+              </div>
+
+              {destZone && communeDest !== "autre" && (
+                <div className="space-y-2 rounded-lg bg-phoebe-green/5 px-4 py-3">
+                  <p className="text-sm text-phoebe-anthracite/60">
+                    Zone tarifaire :{" "}
+                    <span className="font-medium text-phoebe-green-deep">
+                      {destZone.nom}
+                    </span>
+                    {coeff > 1 && (
+                      <span className="ml-2 text-xs text-phoebe-gold">
+                        (coefficient ×{coeff.toFixed(2)})
+                      </span>
                     )}
                   </p>
                   <p className="text-xs text-phoebe-anthracite/50">
-                    {CAT_LABELS[item.categorie] ?? item.categorie}
-                    {item.avecChauffeur && " · Avec chauffeur"}
+                    {destZone.km_inclus_par_jour} km inclus/jour · Supplément {destZone.supplement_km_fcfa} FCFA/km au-delà
                   </p>
-                </div>
-                {nbJours > 0 && (
-                  <span className="text-sm font-medium text-phoebe-green">
-                    {item.montant.toLocaleString("fr-FR")} FCFA
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Période */}
-        <fieldset className="space-y-4">
-          <legend className="text-lg font-semibold text-phoebe-anthracite">
-            Période de location
-          </legend>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="ck-debut" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-                Date de début *
-              </label>
-              <input
-                id="ck-debut"
-                type="date"
-                name="debut"
-                required
-                min={today}
-                value={debut}
-                onChange={(e) => { setDebut(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.debut; return n; }); }}
-                className={fc("debut")}
-              />
-              {fe("debut") && <p className="mt-1 text-xs text-error">{fe("debut")}</p>}
-            </div>
-            <div>
-              <label htmlFor="ck-fin" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-                Date de fin *
-              </label>
-              <input
-                id="ck-fin"
-                type="date"
-                name="fin"
-                required
-                min={debut ? new Date(new Date(debut).getTime() + 86400000).toISOString().split("T")[0] : today}
-                value={fin}
-                onChange={(e) => { setFin(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.fin; return n; }); }}
-                className={fc("fin")}
-              />
-              {fe("fin") && <p className="mt-1 text-xs text-error">{fe("fin")}</p>}
-            </div>
-          </div>
-        </fieldset>
-
-        {/* Trajet */}
-        <fieldset className="space-y-4">
-          <legend className="text-lg font-semibold text-phoebe-anthracite">
-            Trajet
-          </legend>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label htmlFor="ck-commune-depart" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-                Commune de départ
-              </label>
-              <CommuneSearch
-                id="ck-commune-depart"
-                name="ville_depart"
-                value={communeDepart}
-                onChange={(v) => { setCommuneDepart(v); setFieldErrors((p) => { const n = { ...p }; delete n.ville_depart; return n; }); }}
-                communes={communeOptions}
-                placeholder="Rechercher une commune…"
-                className={fc("ville_depart")}
-              />
-              {fe("ville_depart") && <p className="mt-1 text-xs text-error">{fe("ville_depart")}</p>}
-              {communeDepart === "autre" && (
-                <input
-                  name="ville_depart_autre"
-                  placeholder="Nom de votre commune"
-                  value={autreDepartNom}
-                  onChange={(e) => setAutreDepartNom(e.target.value)}
-                  className={`mt-2 ${inputClass} ${inputNormal}`}
-                />
-              )}
-            </div>
-            <div>
-              <label htmlFor="ck-commune-dest" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-                Commune de destination
-              </label>
-              <CommuneSearch
-                id="ck-commune-dest"
-                name="destination"
-                value={communeDest}
-                onChange={(v) => { setCommuneDest(v); setFieldErrors((p) => { const n = { ...p }; delete n.destination; return n; }); }}
-                communes={communeOptions}
-                placeholder="Rechercher une commune…"
-                className={fc("destination")}
-              />
-              {fe("destination") && <p className="mt-1 text-xs text-error">{fe("destination")}</p>}
-              {communeDest === "autre" && (
-                <input
-                  name="destination_autre"
-                  placeholder="Nom de votre commune"
-                  value={autreDestNom}
-                  onChange={(e) => setAutreDestNom(e.target.value)}
-                  className={`mt-2 ${inputClass} ${inputNormal}`}
-                />
-              )}
-            </div>
-          </div>
-
-          {destZone && communeDest !== "autre" && (
-            <div className="space-y-2 rounded-lg bg-phoebe-green/5 px-4 py-3">
-              <p className="text-sm text-phoebe-anthracite/60">
-                Zone tarifaire :{" "}
-                <span className="font-medium text-phoebe-green-deep">
-                  {destZone.nom}
-                </span>
-                {coeff > 1 && (
-                  <span className="ml-2 text-xs text-phoebe-gold">
-                    (coefficient ×{coeff.toFixed(2)})
-                  </span>
-                )}
-              </p>
-              <p className="text-xs text-phoebe-anthracite/50">
-                {destZone.km_inclus_par_jour} km inclus/jour · Supplément {destZone.supplement_km_fcfa} FCFA/km au-delà
-              </p>
-              {chauffeurStatut === "obligatoire" && (
-                <p className="text-xs font-medium text-error">
-                  Chauffeur obligatoire pour cette zone ({tarifChauffeur.toLocaleString("fr-FR")} FCFA/jour inclus)
-                </p>
-              )}
-              {chauffeurStatut === "recommande" && (
-                <p className="text-xs font-medium text-phoebe-gold">
-                  Chauffeur recommandé pour cette zone ({tarifChauffeur.toLocaleString("fr-FR")} FCFA/jour)
-                </p>
-              )}
-            </div>
-          )}
-        </fieldset>
-
-        {/* Récapitulatif financier */}
-        {nbJours > 0 && (
-          <div className="rounded-xl bg-phoebe-pearl p-4">
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
-              Récapitulatif
-            </h3>
-            <dl className="space-y-1 text-sm">
-              {lignesCalc.map((l) => (
-                <div key={l.groupKey}>
-                  <div className="flex justify-between">
-                    <dt className="text-phoebe-anthracite/60">
-                      {l.marque} {l.modele}
-                      {l.quantite > 1 ? ` ×${l.quantite}` : ""} — {l.prixZone.toLocaleString("fr-FR")} FCFA/j × {nbJours}j
-                    </dt>
-                    <dd className="font-medium text-phoebe-anthracite">
-                      {l.montantLocation.toLocaleString("fr-FR")} FCFA
-                    </dd>
-                  </div>
-                  {l.montantChauffeur > 0 && (
-                    <div className="flex justify-between text-xs">
-                      <dt className="text-phoebe-anthracite/40 pl-4">
-                        + Chauffeur{l.avecChauffeurEffectif && chauffeurStatut === "obligatoire" ? " (obligatoire)" : ""}
-                      </dt>
-                      <dd className="text-phoebe-anthracite/60">
-                        {l.montantChauffeur.toLocaleString("fr-FR")} FCFA
-                      </dd>
-                    </div>
+                  {chauffeurStatut === "obligatoire" && (
+                    <p className="text-xs font-medium text-error">
+                      Chauffeur obligatoire pour cette zone ({tarifChauffeur.toLocaleString("fr-FR")} FCFA/jour inclus)
+                    </p>
+                  )}
+                  {chauffeurStatut === "recommande" && (
+                    <p className="text-xs font-medium text-phoebe-gold">
+                      Chauffeur recommandé pour cette zone ({tarifChauffeur.toLocaleString("fr-FR")} FCFA/jour)
+                    </p>
                   )}
                 </div>
-              ))}
-              <div className="flex justify-between border-t border-phoebe-anthracite/10 pt-1">
-                <dt className="text-phoebe-anthracite/60">Montant location</dt>
-                <dd className="font-medium text-phoebe-anthracite">
-                  {totalMontant.toLocaleString("fr-FR")} FCFA
-                </dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-phoebe-anthracite/60">
-                  Dépôt de garantie (caution remboursable)
-                  {cautionMult > 1 && <span className="text-xs text-phoebe-gold"> ×{cautionMult.toFixed(1)}</span>}
-                </dt>
-                <dd className="font-medium text-phoebe-anthracite">
-                  {totalCaution.toLocaleString("fr-FR")} FCFA
-                </dd>
-              </div>
-              <div className="flex justify-between border-t border-phoebe-anthracite/10 pt-2 mt-1">
-                <dt className="font-semibold text-phoebe-anthracite">Total à payer aujourd&apos;hui</dt>
-                <dd className="font-bold text-phoebe-green">
-                  {grandTotal.toLocaleString("fr-FR")} FCFA
-                </dd>
-              </div>
-            </dl>
-            <p className="mt-2 text-xs text-phoebe-anthracite/40">
-              La caution est intégralement restituée au retour du véhicule, sauf retenue pour dégâts ou carburant manquant.
-            </p>
-          </div>
+              )}
+            </fieldset>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setEtape(1)}
+                className="flex-1 rounded-xl border border-phoebe-anthracite/20 py-3.5 text-center text-sm font-semibold text-phoebe-anthracite/60 transition-all hover:border-phoebe-anthracite/40"
+              >
+                Retour
+              </button>
+              <button
+                type="button"
+                onClick={handleSuivant}
+                className="flex-[2] rounded-xl bg-phoebe-green py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-phoebe-green/25 transition-all hover:bg-phoebe-green-deep active:scale-[0.98]"
+              >
+                Suivant — Paiement
+              </button>
+            </div>
+          </>
         )}
 
-        {/* Paiement */}
-        <fieldset className="space-y-3">
-          <legend className="text-lg font-semibold text-phoebe-anthracite">
-            Moyen de paiement *
-          </legend>
-          <div className="flex gap-4">
-            <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
-              <input
-                type="radio"
-                name="methode_paiement"
-                value="cinetpay"
-                defaultChecked
-                className="text-phoebe-green focus:ring-phoebe-green"
-              />
-              Mobile Money (CinetPay)
-            </label>
-            <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
-              <input
-                type="radio"
-                name="methode_paiement"
-                value="stripe"
-                className="text-phoebe-green focus:ring-phoebe-green"
-              />
-              Carte bancaire (Stripe)
-            </label>
-          </div>
-        </fieldset>
+        {etape === 3 && (
+          <>
+            {/* Récapitulatif financier */}
+            {nbJours > 0 && (
+              <div className="rounded-xl bg-phoebe-pearl p-4">
+                <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+                  Récapitulatif
+                </h3>
+                <dl className="space-y-1 text-sm">
+                  {lignesCalc.map((l) => (
+                    <div key={l.groupKey}>
+                      <div className="flex justify-between">
+                        <dt className="text-phoebe-anthracite/60">
+                          {l.marque} {l.modele}
+                          {l.quantite > 1 ? ` ×${l.quantite}` : ""} — {l.prixZone.toLocaleString("fr-FR")} FCFA/j × {nbJours}j
+                        </dt>
+                        <dd className="font-medium text-phoebe-anthracite">
+                          {l.montantLocation.toLocaleString("fr-FR")} FCFA
+                        </dd>
+                      </div>
+                      {l.montantChauffeur > 0 && (
+                        <div className="flex justify-between text-xs">
+                          <dt className="text-phoebe-anthracite/40 pl-4">
+                            + Chauffeur{l.avecChauffeurEffectif && chauffeurStatut === "obligatoire" ? " (obligatoire)" : ""}
+                          </dt>
+                          <dd className="text-phoebe-anthracite/60">
+                            {l.montantChauffeur.toLocaleString("fr-FR")} FCFA
+                          </dd>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  <div className="flex justify-between border-t border-phoebe-anthracite/10 pt-1">
+                    <dt className="text-phoebe-anthracite/60">Montant location</dt>
+                    <dd className="font-medium text-phoebe-anthracite">
+                      {totalMontant.toLocaleString("fr-FR")} FCFA
+                    </dd>
+                  </div>
+                  <div className="flex justify-between">
+                    <dt className="text-phoebe-anthracite/60 flex items-center gap-1">
+                      Dépôt de garantie (caution remboursable)
+                      <span className="group relative inline-flex">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="cursor-help text-phoebe-anthracite/30 hover:text-phoebe-anthracite/60">
+                          <circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>
+                        </svg>
+                        <span className="absolute -top-2 left-6 z-10 w-56 scale-0 rounded-lg border border-phoebe-pearl bg-white p-2.5 text-xs text-phoebe-anthracite shadow-lg transition-transform group-hover:scale-100">
+                          La caution vous est restituée sous 72h après le retour du véhicule, déduction faite des éventuelles amendes ou carburant manquant.
+                        </span>
+                      </span>
+                      {cautionMult > 1 && <span className="text-xs text-phoebe-gold"> ×{cautionMult.toFixed(1)}</span>}
+                    </dt>
+                    <dd className="font-medium text-phoebe-anthracite">
+                      {totalCaution.toLocaleString("fr-FR")} FCFA
+                    </dd>
+                  </div>
+                  <div className="flex justify-between border-t border-phoebe-anthracite/10 pt-2 mt-1">
+                    <dt className="font-bold text-phoebe-anthracite text-base">Total à payer aujourd&apos;hui</dt>
+                    <dd className="text-xl font-bold text-phoebe-green">
+                      {grandTotal.toLocaleString("fr-FR")} FCFA
+                    </dd>
+                  </div>
+                </dl>
+                <p className="mt-2 text-xs text-phoebe-anthracite/40">
+                  Forfait {destZone?.km_inclus_par_jour ?? "—"} km inclus par jour. Supplément {destZone?.supplement_km_fcfa ?? "—"} FCFA/km au-delà.
+                </p>
+              </div>
+            )}
 
-        {/* CGV */}
-        <div>
-          <label className={`flex items-start gap-3 rounded-xl border p-4 ${fe("accepte_cgv") ? "border-error/50 bg-error/5" : "border-phoebe-pearl bg-white"}`}>
-            <input
-              type="checkbox"
-              name="accepte_cgv"
-              checked={accepteCgv}
-              onChange={(e) => { setAccepteCgv(e.target.checked); setFieldErrors((p) => { const n = { ...p }; delete n.accepte_cgv; return n; }); }}
-              required
-              className="mt-0.5 rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
-            />
-            <span className="text-sm text-phoebe-anthracite/70 leading-relaxed">
-              J&apos;accepte les{" "}
-              <a href="/cgv" target="_blank" className="text-phoebe-green underline hover:text-phoebe-green-deep">
-                conditions générales de vente
-              </a>{" "}
-              et la politique de restitution de la caution.
-            </span>
-          </label>
-          {fe("accepte_cgv") && <p className="mt-1 text-xs text-error">{fe("accepte_cgv")}</p>}
-        </div>
+            {/* Paiement */}
+            <fieldset className="space-y-3">
+              <legend className="text-lg font-semibold text-phoebe-anthracite">
+                Moyen de paiement *
+              </legend>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm text-phoebe-anthracite cursor-pointer">
+                  <input
+                    type="radio"
+                    name="methode_paiement"
+                    value="cinetpay"
+                    defaultChecked
+                    className="text-phoebe-green focus:ring-phoebe-green"
+                  />
+                  <div>
+                    <span className="font-medium">Mobile Money (CinetPay)</span>
+                    <MobileMoneyLogos />
+                  </div>
+                </label>
+                <label className="flex items-start gap-2 text-sm text-phoebe-anthracite cursor-pointer">
+                  <input
+                    type="radio"
+                    name="methode_paiement"
+                    value="stripe"
+                    className="text-phoebe-green focus:ring-phoebe-green mt-0.5"
+                  />
+                  <div>
+                    <span className="font-medium">Carte bancaire (Stripe)</span>
+                    <div className="mt-1 flex gap-1">
+                      <span className="rounded border border-phoebe-anthracite/10 px-2 py-0.5 text-xs">Visa</span>
+                      <span className="rounded border border-phoebe-anthracite/10 px-2 py-0.5 text-xs">Mastercard</span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </fieldset>
 
-        <SubmitButton disabled={!accepteCgv}>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
+            {/* CGV */}
+            <div>
+              <label className={`flex items-start gap-3 rounded-xl border p-4 cursor-pointer ${fe("accepte_cgv") ? "border-error/50 bg-error/5" : "border-phoebe-pearl bg-white"}`}>
+                <input
+                  type="checkbox"
+                  name="accepte_cgv"
+                  checked={accepteCgv}
+                  onChange={(e) => { setAccepteCgv(e.target.checked); setFieldErrors((p) => { const n = { ...p }; delete n.accepte_cgv; return n; }); }}
+                  required
+                  className="mt-0.5 rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
+                />
+                <span className="text-sm text-phoebe-anthracite/70 leading-relaxed">
+                  J&apos;accepte les{" "}
+                  <a href="/cgv" target="_blank" className="text-phoebe-green underline hover:text-phoebe-green-deep">
+                    conditions générales de vente
+                  </a>{" "}
+                  et la politique de restitution de la caution.
+                </span>
+              </label>
+              {fe("accepte_cgv") && <p className="mt-1 text-xs text-error">{fe("accepte_cgv")}</p>}
+            </div>
+
+            <TrustBadges />
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setEtape(2)}
+                className="flex-1 rounded-xl border border-phoebe-anthracite/20 py-3.5 text-center text-sm font-semibold text-phoebe-anthracite/60 transition-all hover:border-phoebe-anthracite/40"
+              >
+                Retour
+              </button>
+              <SubmitButton disabled={!accepteCgv} className="flex-[2] rounded-xl bg-phoebe-green py-3.5 text-center text-sm font-bold text-white shadow-lg shadow-phoebe-green/25 transition-all hover:bg-phoebe-green-deep active:scale-[0.98] disabled:opacity-50">
+                Confirmer et payer — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}
+              </SubmitButton>
+            </div>
+          </>
+        )}
       </form>
 
-      <div className="mt-3 space-y-3">
-          <div className="relative flex items-center gap-3 py-1">
-            <div className="flex-1 border-t border-phoebe-anthracite/10" />
-            <span className="text-xs text-phoebe-anthracite/40">ou</span>
-            <div className="flex-1 border-t border-phoebe-anthracite/10" />
-          </div>
-
-          {!showNego ? (
-            <button
-              type="button"
-              onClick={() => setShowNego(true)}
-              className="block w-full rounded-xl border-2 border-phoebe-gold/30 py-3 text-center text-sm font-semibold text-phoebe-gold transition-all hover:border-phoebe-gold hover:bg-phoebe-gold/5"
-            >
-              Négocier le prix
-            </button>
-          ) : (
-            <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4 space-y-3">
-              <p className="text-sm font-medium text-phoebe-anthracite">
-                Négocier le prix via WhatsApp
-              </p>
-              <p className="text-xs text-phoebe-anthracite/60">
-                Votre réservation sera créée et les véhicules bloqués.
-                Un opérateur vous enverra le prix final après discussion.
-              </p>
-              <textarea
-                value={negoNote}
-                onChange={(e) => setNegoNote(e.target.value)}
-                placeholder="Votre proposition ou commentaire (optionnel)"
-                rows={2}
-                className={`${inputClass} ${inputNormal}`}
-              />
-              {negoState.error && (
-                <p className="text-xs text-error">{negoState.error}</p>
-              )}
-              <form action={negoAction}>
-                <input type="hidden" name="debut" value={debut} />
-                <input type="hidden" name="fin" value={fin} />
-                <input type="hidden" name="ville_depart" value={communeDepart} />
-                <input type="hidden" name="ville_depart_autre" value={autreDepartNom} />
-                <input type="hidden" name="destination" value={communeDest} />
-                <input type="hidden" name="destination_autre" value={autreDestNom} />
-                <input type="hidden" name="negociation_note" value={negoNote} />
-                <input type="hidden" name="lignes" value={lignesJson} />
-                <SubmitButton className="w-full rounded-xl bg-phoebe-gold py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/90 hover:shadow-md">
-                  Envoyer la demande de négociation
-                </SubmitButton>
-              </form>
-            </div>
-          )}
+      <div className="mt-6 space-y-3">
+        <div className="relative flex items-center gap-3 py-1">
+          <div className="flex-1 border-t border-phoebe-anthracite/10" />
+          <span className="text-xs text-phoebe-anthracite/40">ou</span>
+          <div className="flex-1 border-t border-phoebe-anthracite/10" />
         </div>
+
+        {!showNego ? (
+          <button
+            type="button"
+            onClick={() => setShowNego(true)}
+            className="block w-full rounded-xl border-2 border-phoebe-gold/30 py-3 text-center text-sm font-semibold text-phoebe-gold transition-all hover:border-phoebe-gold hover:bg-phoebe-gold/5"
+          >
+            <span className="text-phoebe-anthracite/40">💬 Vous souhaitez négocier ce prix ?</span> Contactez-nous sur WhatsApp
+          </button>
+        ) : (
+          <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4 space-y-3">
+            <p className="text-sm font-medium text-phoebe-anthracite">
+              Négocier le prix via WhatsApp
+            </p>
+            <p className="text-xs text-phoebe-anthracite/60">
+              Votre réservation sera créée et les véhicules bloqués.
+              Un opérateur vous enverra le prix final après discussion.
+            </p>
+            <textarea
+              value={negoNote}
+              onChange={(e) => setNegoNote(e.target.value)}
+              placeholder="Votre proposition ou commentaire (optionnel)"
+              rows={2}
+              className={`${inputClass} ${inputNormal}`}
+            />
+            {negoState.error && (
+              <p className="text-xs text-error">{negoState.error}</p>
+            )}
+            <form action={negoAction}>
+              <input type="hidden" name="debut" value={debut} />
+              <input type="hidden" name="fin" value={fin} />
+              <input type="hidden" name="ville_depart" value={communeDepart} />
+              <input type="hidden" name="ville_depart_autre" value={autreDepartNom} />
+              <input type="hidden" name="destination" value={communeDest} />
+              <input type="hidden" name="destination_autre" value={autreDestNom} />
+              <input type="hidden" name="negociation_note" value={negoNote} />
+              <input type="hidden" name="lignes" value={lignesJson} />
+              <SubmitButton className="w-full rounded-xl bg-phoebe-gold py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-gold/90 hover:shadow-md">
+                Envoyer la demande de négociation
+              </SubmitButton>
+            </form>
+          </div>
+        )}
+      </div>
     </>
   );
 }
