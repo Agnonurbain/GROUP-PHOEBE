@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
+import { SEUIL_APPROBATION_AUTO_PCT } from "@/lib/constants";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -56,6 +57,12 @@ export async function proposerPrix(
 
   const valeurActuelle = vehicule[champ as keyof typeof vehicule] as number | null;
 
+  const reductionPct = valeurActuelle && valeurActuelle > 0
+    ? Math.abs(valeurProposee - valeurActuelle) / valeurActuelle * 100
+    : null;
+
+  const autoApprouve = reductionPct !== null && reductionPct <= SEUIL_APPROBATION_AUTO_PCT;
+
   const { error } = await admin.from("propositions_prix").insert({
     vehicule_id: vehiculeId,
     operateur_id: user.sub,
@@ -63,12 +70,24 @@ export async function proposerPrix(
     valeur_actuelle: valeurActuelle,
     valeur_proposee: valeurProposee,
     commentaire,
+    ...(autoApprouve ? { statut: "acceptee" as const } : {}),
   });
 
   if (error) return { error: error.message };
 
+  if (autoApprouve) {
+    await admin
+      .from("vehicules")
+      .update({
+        [champ]: valeurProposee,
+        updated_at: new Date().toISOString(),
+      } as never)
+      .eq("id", vehiculeId);
+  }
+
   revalidatePath("/admin/vehicules");
   revalidatePath("/admin/propositions");
+  revalidatePath(`/catalogue/${vehiculeId}`);
   return { success: true };
 }
 

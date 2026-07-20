@@ -33,6 +33,7 @@ export function ProposerPrixForm({
       </h2>
       <p className="mb-3 text-xs text-phoebe-anthracite/60">
         La proposition sera soumise au propriétaire pour validation.
+        Les modifications de ±15 % ou moins sont approuvées automatiquement.
       </p>
 
       <div className="mb-3 text-xs text-phoebe-anthracite/50 space-y-0.5">
