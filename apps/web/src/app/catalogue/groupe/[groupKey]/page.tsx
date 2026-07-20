@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { AjouterPanierButton } from "@/components/ajouter-panier-button";
 import { DemandeAchatForm } from "@/components/demande-achat-form";
@@ -8,8 +9,109 @@ import { DateSelector } from "@/components/date-selector";
 import { createClient } from "@/lib/supabase/server";
 import { makeGroupKey, groupVehicles } from "@/lib/vehicle-group";
 import { CAT_LABELS } from "@/lib/constants";
+import { JsonLd } from "@/components/json-ld";
 import { ScrollReveal, ParallaxImage } from "@/components/effects";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://group-phoebe.com";
+
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ groupKey: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+}): Promise<Metadata> {
+  const { groupKey: rawKey } = await params;
+  const groupKey = decodeURIComponent(rawKey);
+  const sp = await searchParams;
+  const mode = sp.mode as string | undefined;
+
+  const supabase = await createClient();
+  const { data: allVehicules } = await supabase
+    .from("vehicules")
+    .select("id, marque, modele, categorie, annee, nb_places, prix_journalier, prix_vente")
+    .neq("statut", "indisponible")
+    .neq("statut", "reserve");
+
+  const vehicules = (allVehicules ?? []).filter(
+    (v) => makeGroupKey(v.marque, v.modele) === groupKey
+  );
+  if (!vehicules.length) return {};
+
+  const rep = vehicules[0];
+  const ids = vehicules.map((v) => v.id);
+
+  const { data: photos } = await supabase
+    .from("vehicule_photos")
+    .select("url")
+    .in("vehicule_id", ids)
+    .order("ordre", { ascending: true })
+    .limit(1);
+
+  const photo = photos?.[0]?.url;
+  const modeTag = mode === "achat" ? "Achat" : "Location";
+  const title = `${rep.marque} ${rep.modele} — ${modeTag} | GROUP PHOEBE`;
+  const description = `Réservez un ${rep.marque} ${rep.modele} en ${modeTag.toLowerCase()} à Abidjan. ${CAT_LABELS[rep.categorie] ?? rep.categorie}${rep.annee ? `, ${rep.annee}` : ""}. Prix compétitifs, livraison partout en Côte d'Ivoire.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      locale: "fr_CI",
+      siteName: "GROUP PHOEBE",
+      url: `${BASE_URL}/catalogue/groupe/${encodeURIComponent(groupKey)}?mode=${mode ?? "location"}`,
+      images: photo ? [{ url: photo, width: 1200, height: 630 }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: photo ? [photo] : [],
+    },
+  };
+}
+
+function jsonLdForRental(rep: {
+  marque: string; modele: string; categorie: string; annee: number | null;
+  prix_journalier: number | null; prix_mensuel: number | null;
+  nb_places: number | null; chauffeur_disponible: boolean | null;
+}, photo: string | undefined, zones: Array<{ nom: string; prix_min: number; prix_max: number }>) {
+  const vehicleName = `${rep.marque} ${rep.modele}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "AutomobileRental",
+    name: vehicleName,
+    description: `${vehicleName} — ${CAT_LABELS[rep.categorie] ?? rep.categorie} disponible à la location à Abidjan, Côte d'Ivoire.`,
+    image: photo ?? undefined,
+    brand: rep.marque,
+    model: rep.modele,
+    vehicleCategory: rep.categorie,
+    numberOfPassengers: rep.nb_places ?? undefined,
+    offers: {
+      "@type": "Offer",
+      price: rep.prix_journalier ?? undefined,
+      priceCurrency: "XOF",
+      priceSpecification: [{
+        "@type": "UnitPriceSpecification",
+        name: "Journalier",
+        price: rep.prix_journalier ?? undefined,
+        priceCurrency: "XOF",
+        unitText: "DAY",
+      },
+      ...(rep.prix_mensuel ? [{
+        "@type": "UnitPriceSpecification",
+        name: "Mensuel",
+        price: rep.prix_mensuel,
+        priceCurrency: "XOF",
+        unitText: "MONTH",
+      }] : [])],
+    },
+    areaServed: zones.map((z) => z.nom),
+  };
+}
 
 function formatPrice(val: number | null): string | null {
   if (!val) return null;
@@ -104,6 +206,13 @@ export default async function GroupeDetailPage({
 
   return (
     <>
+      {mode === "location" && (
+        <JsonLd data={jsonLdForRental(rep, mainPhoto, (zones ?? []).map((z) => ({
+          nom: z.nom,
+          prix_min: 0,
+          prix_max: 0,
+        })))} />
+      )}
       <Header />
       <main className="mx-auto max-w-5xl px-4 py-10 sm:py-12">
         <Link

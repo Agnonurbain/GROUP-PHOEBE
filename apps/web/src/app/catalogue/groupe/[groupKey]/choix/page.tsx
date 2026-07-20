@@ -1,12 +1,103 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { Header } from "@/components/header";
 import { createClient } from "@/lib/supabase/server";
 import { makeGroupKey } from "@/lib/vehicle-group";
 import { CAT_LABELS } from "@/lib/constants";
 import { ScrollReveal } from "@/components/effects";
+import { JsonLd } from "@/components/json-ld";
 
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://group-phoebe.com";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ groupKey: string }>;
+}): Promise<Metadata> {
+  const { groupKey: rawKey } = await params;
+  const groupKey = decodeURIComponent(rawKey);
+
+  const supabase = await createClient();
+  const { data: allVehicules } = await supabase
+    .from("vehicules")
+    .select("id, marque, modele, categorie, annee, nb_places, prix_journalier, prix_vente")
+    .neq("statut", "indisponible")
+    .neq("statut", "reserve");
+
+  const vehicules = (allVehicules ?? []).filter(
+    (v) => makeGroupKey(v.marque, v.modele) === groupKey
+  );
+  if (!vehicules.length) return {};
+
+  const rep = vehicules[0];
+
+  const { data: photos } = await supabase
+    .from("vehicule_photos")
+    .select("url, vehicule_id")
+    .in("vehicule_id", vehicules.map((v) => v.id))
+    .order("ordre", { ascending: true })
+    .limit(1);
+
+  const photo = photos?.[0]?.url;
+  const title = `${rep.marque} ${rep.modele} — Location & Achat | GROUP PHOEBE`;
+  const description = `Réservez un ${rep.marque} ${rep.modele} à Abidjan. ${CAT_LABELS[rep.categorie] ?? rep.categorie}${rep.annee ? `, ${rep.annee}` : ""}${rep.nb_places ? `, ${rep.nb_places} places` : ""}. Location courte/longue durée ou achat.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      type: "website",
+      locale: "fr_CI",
+      siteName: "GROUP PHOEBE",
+      url: `${BASE_URL}/catalogue/groupe/${encodeURIComponent(groupKey)}/choix`,
+      images: photo ? [{ url: photo, width: 1200, height: 630 }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: photo ? [photo] : [],
+    },
+  };
+}
+
+function jsonLdForVehicule(rep: {
+  marque: string; modele: string; categorie: string; annee: number | null;
+  prix_journalier: number | null; prix_vente: number | null;
+  nb_places: number | null;
+}, photo: string | undefined) {
+  const vehicleName = `${rep.marque} ${rep.modele}`;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: vehicleName,
+    description: `${vehicleName} — ${CAT_LABELS[rep.categorie] ?? rep.categorie} disponible à la location et à l'achat à Abidjan, Côte d'Ivoire.`,
+    category: rep.categorie,
+    image: photo ?? undefined,
+    brand: { "@type": "Brand", name: rep.marque },
+    model: rep.modele,
+    offers: [
+      ...(rep.prix_journalier ? [{
+        "@type": "Offer",
+        name: "Location journalière",
+        price: rep.prix_journalier,
+        priceCurrency: "XOF",
+        availability: "https://schema.org/InStock",
+      }] : []),
+      ...(rep.prix_vente ? [{
+        "@type": "Offer",
+        name: "Achat",
+        price: rep.prix_vente,
+        priceCurrency: "XOF",
+        availability: "https://schema.org/InStock",
+      }] : []),
+    ],
+  };
+}
 
 export default async function GroupeChoixPage({
   params,
@@ -48,6 +139,7 @@ export default async function GroupeChoixPage({
 
   return (
     <>
+      <JsonLd data={jsonLdForVehicule(rep, photo)} />
       <Header />
       <main className="mx-auto max-w-2xl px-4 py-10 sm:py-12">
         <Link
