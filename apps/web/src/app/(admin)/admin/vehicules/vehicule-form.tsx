@@ -187,7 +187,7 @@ export default function VehiculeForm({
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="kilometrage" className={labelClass}>
                 Kilométrage
@@ -213,6 +213,21 @@ export default function VehiculeForm({
                 className={inputClass}
                 placeholder="Ex : Cocody, Abidjan"
               />
+            </div>
+            <div>
+              <label htmlFor="prefixe_plaque" className={labelClass}>
+                Préfixe plaque
+              </label>
+              <input
+                id="prefixe_plaque"
+                name="prefixe_plaque"
+                defaultValue=""
+                className={inputClass}
+                placeholder="Ex: Corolla-"
+              />
+              <p className="mt-1 text-xs text-phoebe-anthracite/50">
+                Utile pour différencier les exemplaires (ex: Corolla-001, Corolla-002)
+              </p>
             </div>
           </div>
 

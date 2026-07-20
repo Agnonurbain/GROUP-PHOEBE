@@ -2,7 +2,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal, AnimatedCounter } from "@/components/effects";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ periode?: string }>;
+}) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
@@ -16,8 +20,11 @@ export default async function DashboardPage() {
 
   if (profile?.role !== "proprietaire") redirect("/admin/demandes");
 
+  const { periode: rawPeriode } = await searchParams;
+  const periodeJours = rawPeriode === "7" ? 7 : rawPeriode === "90" ? 90 : 30;
+
   const now = new Date();
-  const il30j = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const ilXj = new Date(now.getTime() - periodeJours * 24 * 60 * 60 * 1000).toISOString();
 
   const [
     { count: totalDemandes30j },
@@ -36,27 +43,27 @@ export default async function DashboardPage() {
     supabase
       .from("demandes_transport")
       .select("id", { count: "exact", head: true })
-      .gte("created_at", il30j),
+      .gte("created_at", ilXj),
     supabase
       .from("demandes_transport")
       .select("id", { count: "exact", head: true })
       .eq("statut", "acceptee")
-      .gte("created_at", il30j),
+      .gte("created_at", ilXj),
     supabase
       .from("demandes_transport")
       .select("id", { count: "exact", head: true })
       .eq("statut", "refusee")
-      .gte("created_at", il30j),
+      .gte("created_at", ilXj),
     supabase
       .from("demandes_transport")
       .select("id", { count: "exact", head: true })
       .eq("statut", "annulee")
-      .gte("created_at", il30j),
+      .gte("created_at", ilXj),
     supabase
       .from("demandes_transport")
       .select("id", { count: "exact", head: true })
       .eq("statut", "terminee")
-      .gte("created_at", il30j),
+      .gte("created_at", ilXj),
     supabase
       .from("users")
       .select("id", { count: "exact", head: true })
@@ -70,7 +77,7 @@ export default async function DashboardPage() {
       .from("demandes_transport")
       .select("created_at, updated_at, statut, vehicule_id")
       .in("statut", ["acceptee", "en_cours", "terminee"])
-      .gte("created_at", il30j),
+      .gte("created_at", ilXj),
     supabase
       .from("demandes_transport")
       .select("id", { count: "exact", head: true })
@@ -79,7 +86,7 @@ export default async function DashboardPage() {
       .from("demandes_transport")
       .select("montant")
       .in("statut", ["acceptee", "en_cours", "terminee"])
-      .gte("created_at", il30j),
+      .gte("created_at", ilXj),
     supabase
       .from("propositions_prix")
       .select("id", { count: "exact", head: true })
@@ -150,11 +157,30 @@ export default async function DashboardPage() {
     }
   }
 
+  const PERIODE_LABELS: Record<number, string> = { 7: "7 jours", 30: "30 jours", 90: "90 jours" };
+
   return (
     <div className="space-y-10">
-      <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-        Tableau de bord — Transport
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
+          Tableau de bord — Transport
+        </h1>
+        <div className="flex gap-1.5">
+          {[7, 30, 90].map((p) => (
+            <a
+              key={p}
+              href={`/admin?periode=${p}`}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                periodeJours === p
+                  ? "bg-phoebe-green text-white shadow-sm"
+                  : "border border-phoebe-pearl text-phoebe-anthracite/60 hover:bg-phoebe-pearl"
+              }`}
+            >
+              {PERIODE_LABELS[p]}
+            </a>
+          ))}
+        </div>
+      </div>
 
       {(alertEnAttente > 0 || (propositionsEnAttente ?? 0) > 0 || (remboursementsEnAttente ?? 0) > 0) && (
         <div className="space-y-3">
@@ -228,7 +254,7 @@ export default async function DashboardPage() {
       {topVehicules.length > 0 && (
         <ScrollReveal delay={0.2}>
           <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
-            Top vehicules (30 derniers jours)
+            Top vehicules ({PERIODE_LABELS[periodeJours]})
           </h2>
           <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
             <table className="w-full text-sm">

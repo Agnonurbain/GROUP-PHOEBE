@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { compressImage } from "@/lib/compress-image";
 
 async function requireStaff() {
   const supabase = await createClient();
@@ -87,7 +88,18 @@ export async function creerVehicule(
     statut: "disponible" as const,
   };
 
-  const rows = Array.from({ length: quantite }, () => ({ ...baseRow }));
+  const prefixePlaque = str(formData.get("prefixe_plaque"));
+
+  const rows = Array.from({ length: quantite }, (_, i) => {
+    const row = { ...baseRow };
+    if (prefixePlaque && quantite > 1) {
+      const suffix = String(i + 1).padStart(3, "0");
+      row.localisation = row.localisation
+        ? `${row.localisation} (${prefixePlaque}${suffix})`
+        : `${prefixePlaque}${suffix}`;
+    }
+    return row;
+  });
 
   const { data, error } = await supabase
     .from("vehicules")
@@ -279,12 +291,13 @@ export async function ajouterPhotos(
   for (const file of files) {
     if (!file.size) continue;
 
-    const ext = file.name.split(".").pop() ?? "jpg";
+    const compressed = await compressImage(file);
+    const ext = compressed.name.split(".").pop() ?? "jpg";
     const path = `${vehiculeId}/${crypto.randomUUID()}.${ext}`;
 
     const { error: upErr } = await supabase.storage
       .from("vehicle-photos")
-      .upload(path, await file.arrayBuffer(), { contentType: file.type });
+      .upload(path, await compressed.arrayBuffer(), { contentType: compressed.type });
 
     if (upErr) return { error: `Upload erreur : ${upErr.message}` };
 

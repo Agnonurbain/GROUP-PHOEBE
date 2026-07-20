@@ -18,6 +18,16 @@ export default async function VerificationsPage() {
     .in("statut_verification", ["documents_soumis", "verifie", "rejete"])
     .order("created_at", { ascending: false });
 
+  function calculAge(dateNaissance: string | null): number | null {
+    if (!dateNaissance) return null;
+    const today = new Date();
+    const birth = new Date(dateNaissance);
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
+
   const pending = users?.filter(
     (u) => u.statut_verification === "documents_soumis"
   );
@@ -66,47 +76,56 @@ export default async function VerificationsPage() {
         </h2>
         {pending && pending.length > 0 ? (
           <div className="space-y-3">
-            {pending.map((user) => (
-              <div
-                key={user.id}
-                className="group/card relative flex items-start justify-between overflow-hidden rounded-2xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-5 transition-all hover:shadow-md"
-              >
-                <span className="absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark transition-transform duration-300 group-hover/card:scale-x-100" />
-                <div className="space-y-1">
-                  <p className="font-medium text-phoebe-anthracite">
-                    {user.nom}
-                  </p>
-                  <p className="text-sm text-phoebe-anthracite/60">
-                    {user.telephone || user.email}
-                    {user.date_naissance &&
-                      ` · Né(e) le ${new Date(user.date_naissance).toLocaleDateString("fr-FR")}`}
-                  </p>
-                  <div className="flex gap-3 pt-1 text-xs">
-                    {signedUrls[user.id]?.piece && (
-                      <a
-                        href={signedUrls[user.id].piece!}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-phoebe-green underline hover:text-phoebe-green-deep"
-                      >
-                        Pièce d&apos;identité
-                      </a>
+              {pending.map((user) => {
+                const age = calculAge(user.date_naissance);
+                const sousAge = age !== null && age < 21;
+                return (
+                <div
+                  key={user.id}
+                  className={`group/card relative flex items-start justify-between overflow-hidden rounded-2xl border p-5 transition-all hover:shadow-md ${sousAge ? "border-error/40 bg-error/5" : "border-phoebe-gold/30 bg-phoebe-gold/5"}`}
+                >
+                  <span className={`absolute inset-x-0 top-0 h-[3px] origin-left scale-x-0 bg-gradient-to-r transition-transform duration-300 group-hover/card:scale-x-100 ${sousAge ? "from-error via-error to-error" : "from-phoebe-gold-light via-phoebe-gold to-phoebe-gold-dark"}`} />
+                  <div className="space-y-1">
+                    <p className="font-medium text-phoebe-anthracite">
+                      {user.nom}
+                    </p>
+                    <p className="text-sm text-phoebe-anthracite/60">
+                      {user.telephone || user.email}
+                      {user.date_naissance &&
+                        ` · Né(e) le ${new Date(user.date_naissance).toLocaleDateString("fr-FR")}`}
+                    </p>
+                    {age !== null && (
+                      <p className={`text-sm font-semibold ${sousAge ? "text-error" : "text-phoebe-anthracite/60"}`}>
+                        Âge : {age} ans
+                        {sousAge && " — NON ÉLIGIBLE (min. 21 ans)"}
+                      </p>
                     )}
-                    {signedUrls[user.id]?.permis && (
-                      <a
-                        href={signedUrls[user.id].permis!}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-phoebe-green underline hover:text-phoebe-green-deep"
-                      >
-                        Permis de conduire
-                      </a>
-                    )}
+                    <div className="flex gap-3 pt-1 text-xs">
+                      {signedUrls[user.id]?.piece && (
+                        <a
+                          href={signedUrls[user.id].piece!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                        >
+                          Pièce d&apos;identité
+                        </a>
+                      )}
+                      {signedUrls[user.id]?.permis && (
+                        <a
+                          href={signedUrls[user.id].permis!}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-phoebe-green underline hover:text-phoebe-green-deep"
+                        >
+                          Permis de conduire
+                        </a>
+                      )}
+                    </div>
                   </div>
+                  <VerificationActions userId={user.id} sousAge={sousAge} />
                 </div>
-                <VerificationActions userId={user.id} />
-              </div>
-            ))}
+              )})}
           </div>
         ) : (
           <p className="text-sm text-phoebe-anthracite/50">

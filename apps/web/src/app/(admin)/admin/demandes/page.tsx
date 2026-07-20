@@ -1,7 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { DemandeActions } from "./demande-actions";
 import { ExportCsvButton } from "./export-csv-button";
+import { NegotiationTimer } from "./negotiation-timer";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
+import { DELAI_NEGOCIATION_MS } from "@/lib/constants";
 import { ScrollReveal } from "@/components/effects";
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
@@ -15,6 +17,8 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   annulee: { label: "Annulée", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite" },
   terminee: { label: "Terminée", color: "bg-phoebe-pearl text-phoebe-anthracite" },
 };
+
+const DELAI_NEGOCIATION_MINUTES = DELAI_NEGOCIATION_MS / (1000 * 60);
 
 export default async function DemandesPage() {
   await Promise.all([expirerDemandesSansReponse(), expirerNonPresentations()]);
@@ -116,6 +120,9 @@ export default async function DemandesPage() {
                           <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${s.color}`}>
                             {s.label}
                           </span>
+                        )}
+                        {d.statut === "en_negociation" && (
+                          <NegotiationTimer updatedAt={d.updated_at} delaiMinutes={DELAI_NEGOCIATION_MINUTES} />
                         )}
                         {d.type === "achat" && (
                           <span className="rounded-full bg-phoebe-gold/10 px-2.5 py-0.5 text-xs font-semibold text-phoebe-gold">

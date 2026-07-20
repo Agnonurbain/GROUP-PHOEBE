@@ -6,6 +6,20 @@ import { DELAI_SANS_REPONSE_HEURES, DELAI_NON_PRESENTATION_HEURES, DELAI_NEGOCIA
 
 type AdminClient = ReturnType<typeof getAdminClient>;
 
+function estJourOuvre(): boolean {
+  const now = new Date();
+  const day = now.getDay();
+  if (day === 0 || day === 6) return false;
+  const dateStr = now.toISOString().slice(0, 10);
+  const joursFeriesCIV: string[] = [
+    "2026-01-01", "2026-04-06", "2026-04-07", "2026-04-08",
+    "2026-05-01", "2026-05-21", "2026-06-07", "2026-07-14",
+    "2026-08-07", "2026-08-15", "2026-10-21", "2026-11-01",
+    "2026-11-15", "2026-12-25",
+  ];
+  return !joursFeriesCIV.includes(dateStr);
+}
+
 function getAdminClient() {
   return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -60,6 +74,7 @@ export async function rembourserPaiement(
 }
 
 export async function expirerDemandesSansReponse(): Promise<number> {
+  if (!estJourOuvre()) return 0;
   const admin = getAdminClient();
   const seuil = new Date(Date.now() - DELAI_SANS_REPONSE_HEURES * 60 * 60 * 1000).toISOString();
 

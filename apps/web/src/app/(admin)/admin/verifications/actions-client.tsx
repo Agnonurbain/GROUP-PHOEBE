@@ -6,32 +6,54 @@ import {
   rejeterVerification,
 } from "@/app/actions/admin";
 
-export function VerificationActions({ userId }: { userId: string }) {
+export function VerificationActions({ userId, sousAge }: { userId: string; sousAge?: boolean }) {
   const [pending, startTransition] = useTransition();
   const [showRejet, setShowRejet] = useState(false);
   const [motif, setMotif] = useState("");
+  const [derogation, setDerogation] = useState(false);
 
   return (
     <>
-      <div className="flex gap-2">
-        <button
-          disabled={pending}
-          onClick={() =>
-            startTransition(() => {
-              validerVerification(userId);
-            })
-          }
-          className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md disabled:opacity-50"
-        >
-          Valider
-        </button>
-        <button
-          disabled={pending}
-          onClick={() => setShowRejet(true)}
-          className="rounded-lg border border-error/30 px-3 py-1.5 text-xs font-semibold text-error hover:bg-error hover:text-white hover:shadow-md disabled:opacity-50"
-        >
-          Rejeter
-        </button>
+      <div className="flex flex-col items-end gap-2">
+        {sousAge && (
+          <div className="flex items-center gap-1.5">
+            <input
+              id={`derog-${userId}`}
+              type="checkbox"
+              checked={derogation}
+              onChange={(e) => setDerogation(e.target.checked)}
+              className="rounded border-error/30 text-phoebe-gold focus:ring-phoebe-gold"
+            />
+            <label htmlFor={`derog-${userId}`} className="text-[10px] font-medium text-error">
+              Dérogation exceptionnelle
+            </label>
+          </div>
+        )}
+        <div className="flex gap-2">
+          <button
+            disabled={pending || (sousAge && !derogation)}
+            onClick={() =>
+              startTransition(() => {
+                validerVerification(userId);
+              })
+            }
+            className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md disabled:opacity-50"
+          >
+            Valider
+          </button>
+          <button
+            disabled={pending}
+            onClick={() => setShowRejet(true)}
+            className="rounded-lg border border-error/30 px-3 py-1.5 text-xs font-semibold text-error hover:bg-error hover:text-white hover:shadow-md disabled:opacity-50"
+          >
+            Rejeter
+          </button>
+        </div>
+        {sousAge && !derogation && (
+          <p className="text-[10px] text-error/70 text-right max-w-32 leading-tight">
+            Cocher &laquo;Dérogation&raquo; pour valider un mineur de moins de 21 ans
+          </p>
+        )}
       </div>
 
       {showRejet && (

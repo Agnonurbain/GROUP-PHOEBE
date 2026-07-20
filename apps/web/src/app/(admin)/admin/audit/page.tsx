@@ -115,6 +115,11 @@ export default async function AuditPage({
                         {log.record_id.slice(0, 8)}…
                       </span>
                     )}
+                    {log.ip_address && (
+                      <span className="text-[10px] text-phoebe-anthracite/30">
+                        IP : {log.ip_address}
+                      </span>
+                    )}
                   </div>
 
                   {(log.old_values || log.new_values) && (
@@ -180,6 +185,7 @@ type AuditRow = {
   record_id: string | null;
   old_values: Record<string, unknown> | null;
   new_values: Record<string, unknown> | null;
+  ip_address?: string | null;
   created_at: string;
   users: { nom: string; role: string } | null;
 };

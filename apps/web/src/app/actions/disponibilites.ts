@@ -37,6 +37,8 @@ export async function ajouterBlocageVehicule(
   const debut = formData.get("debut") as string;
   const fin = formData.get("fin") as string;
   const type = formData.get("type") as string;
+  const recurrence = formData.get("recurrence") as string;
+  const recurrenceFin = formData.get("recurrence_fin") as string;
 
   if (!vehiculeId || !debut || !fin) {
     return { error: "Véhicule, date de début et date de fin sont obligatoires." };
@@ -50,17 +52,44 @@ export async function ajouterBlocageVehicule(
     return { error: "Type invalide." };
   }
 
-  const periode = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
+  const periods: { debut: Date; fin: Date }[] = [];
+  const debutDate = new Date(debut);
+  const finDate = new Date(fin);
+  const dureeJours = Math.ceil((finDate.getTime() - debutDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  const { error } = await supabase.from("disponibilites_vehicule").insert({
+  if (recurrence === "aucune" || !recurrenceFin) {
+    periods.push({ debut: debutDate, fin: finDate });
+  } else {
+    const until = new Date(recurrenceFin);
+    let current = new Date(debutDate);
+    while (current <= until) {
+      const pFin = new Date(current);
+      pFin.setDate(pFin.getDate() + dureeJours);
+      periods.push({ debut: current, fin: pFin });
+
+      if (recurrence === "quotidienne") {
+        current.setDate(current.getDate() + 1);
+      } else if (recurrence === "hebdomadaire") {
+        current.setDate(current.getDate() + 7);
+      } else if (recurrence === "mensuelle") {
+        current.setMonth(current.getMonth() + 1);
+      } else {
+        break;
+      }
+    }
+  }
+
+  const rows = periods.map((p) => ({
     vehicule_id: vehiculeId,
-    periode,
+    periode: `[${p.debut.toISOString()},${p.fin.toISOString()})`,
     type: type as "maintenance" | "bloque",
-  });
+  }));
+
+  const { error } = await supabase.from("disponibilites_vehicule").insert(rows);
 
   if (error) {
     if (error.code === "23P01") {
-      return { error: "Cette période chevauche un blocage ou une réservation existante." };
+      return { error: "Une ou plusieurs périodes chevauchent un blocage ou une réservation existante." };
     }
     return { error: error.message };
   }

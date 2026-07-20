@@ -5,8 +5,19 @@ import { ScrollReveal } from "@/components/effects";
 import VehiculeForm from "../vehicule-form";
 import PhotosManager from "./photos-manager";
 import { ProposerPrixForm } from "./proposer-prix-form";
+import { MaintenanceSection } from "./maintenance-section";
 import { modifierVehicule, supprimerVehicule } from "@/app/actions/vehicules";
 import { SubmitButton } from "@/components/submit-button";
+
+function parsePeriode(raw: string | null): { debut: string; fin: string } {
+  if (!raw) return { debut: "—", fin: "—" };
+  const cleaned = raw.replace(/[\[\]()]/g, "");
+  const [debut, fin] = cleaned.split(",");
+  return {
+    debut: new Date(debut.trim()).toLocaleDateString("fr-FR"),
+    fin: new Date(fin.trim()).toLocaleDateString("fr-FR"),
+  };
+}
 
 export default async function EditVehiculePage({
   params,
@@ -54,6 +65,14 @@ export default async function EditVehiculePage({
     .eq("vehicule_id", id);
   const chauffeurIds = vcLinks?.map((l) => l.chauffeur_id) ?? [];
 
+  const { data: maintenances } = await supabase
+    .from("disponibilites_vehicule")
+    .select("*")
+    .eq("vehicule_id", id)
+    .eq("type", "maintenance")
+    .order("periode", { ascending: false })
+    .limit(10);
+
   async function handleDelete() {
     "use server";
     await supprimerVehicule(id);
@@ -96,6 +115,13 @@ export default async function EditVehiculePage({
           action={modifierVehicule}
           chauffeurs={chauffeurs ?? []}
           chauffeurIds={chauffeurIds}
+        />
+      </ScrollReveal>
+
+      <ScrollReveal variant="fade-up" delay={0.22}>
+        <MaintenanceSection
+          vehiculeId={id}
+          maintenances={(maintenances ?? []) as { id: string; periode: string | null }[]}
         />
       </ScrollReveal>
 

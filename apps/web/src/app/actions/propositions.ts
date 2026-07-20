@@ -6,6 +6,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { SEUIL_APPROBATION_AUTO_PCT } from "@/lib/constants";
 import { logAudit } from "@/lib/audit";
+import { notifier } from "@/lib/notifications";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -27,7 +28,7 @@ export async function proposerPrix(
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role")
+    .select("role, nom")
     .eq("id", user.sub)
     .single();
   if (!profile || profile.role !== "operateur") {
@@ -50,7 +51,7 @@ export async function proposerPrix(
   const admin = getAdmin();
   const { data: vehicule } = await admin
     .from("vehicules")
-    .select("prix_journalier, prix_mensuel, prix_vente")
+    .select("marque, modele, prix_journalier, prix_mensuel, prix_vente")
     .eq("id", vehiculeId)
     .single();
 
@@ -75,6 +76,22 @@ export async function proposerPrix(
   });
 
   if (error) return { error: error.message };
+
+  if (!autoApprouve) {
+    const { data: proprios } = await getAdmin()
+      .from("users")
+      .select("id, telephone")
+      .eq("role", "proprietaire");
+
+    for (const p of proprios ?? []) {
+      await notifier({
+        userId: p.id,
+        evenement: "Nouvelle proposition de prix",
+        contenu: `Une proposition de modification de prix a été soumise pour ${vehicule.marque} ${vehicule.modele} par ${profile.nom}. Consultez-la dans votre back-office.`,
+        telephone: p.telephone ?? undefined,
+      });
+    }
+  }
 
   if (autoApprouve) {
     await admin
