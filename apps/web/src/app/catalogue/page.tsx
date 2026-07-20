@@ -95,7 +95,7 @@ async function VehiculeGrid({
   }
 
   const groups = groupVehicles(
-    vehicules as Parameters<typeof groupVehicles>[0],
+    vehicules as unknown as Parameters<typeof groupVehicles>[0],
     photoMap
   );
 

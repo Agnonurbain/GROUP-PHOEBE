@@ -41,7 +41,7 @@ export default async function CheckoutPage() {
         </ScrollReveal>
         <ScrollReveal variant="fade-up" delay={0.1}>
           <CheckoutForm
-            zones={zones ?? []}
+            zones={(zones ?? []) as never[]}
             communes={communes ?? []}
             intervalles={intervalles ?? []}
           />

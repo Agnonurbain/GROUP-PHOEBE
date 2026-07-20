@@ -128,6 +128,11 @@ export function CheckoutForm({
         )
       : 0;
 
+  const selectedDestCommune = communes.find((c) => c.nom === communeDest);
+  const destZone = selectedDestCommune
+    ? zones.find((z) => z.id === selectedDestCommune.zone_id)
+    : null;
+
   const coeff = destZone?.coefficient_majoration ?? 1;
   const cautionMult = destZone?.caution_multiplicateur ?? 1;
   const chauffeurStatut = destZone?.chauffeur_statut ?? "optionnel";
@@ -153,11 +158,6 @@ export function CheckoutForm({
     ...z,
     communes: communes.filter((c) => c.zone_id === z.id),
   }));
-
-  const selectedDestCommune = communes.find((c) => c.nom === communeDest);
-  const destZone = selectedDestCommune
-    ? zones.find((z) => z.id === selectedDestCommune.zone_id)
-    : null;
 
   const lignesJson = JSON.stringify(
     items.map((i) => ({

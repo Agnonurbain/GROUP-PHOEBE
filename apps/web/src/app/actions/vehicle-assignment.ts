@@ -157,7 +157,7 @@ export async function assignerVehiculesGroupe(
       ? (zone?.tarif_chauffeur_journalier ?? 0) * nbJours
       : 0;
     const montant = montantLocation + montantChauffeur;
-    const cautionBase = Number(v.caution_base_fcfa) || CAUTION_BASE_DEFAUT;
+    const cautionBase = Number((v as Record<string, unknown>).caution_base_fcfa) || CAUTION_BASE_DEFAUT;
     const cautionMult = zone?.caution_multiplicateur ?? 1;
     const caution = Math.round(cautionBase * cautionMult);
 

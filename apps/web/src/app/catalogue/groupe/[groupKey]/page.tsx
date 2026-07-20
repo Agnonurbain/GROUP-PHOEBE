@@ -60,7 +60,7 @@ export default async function GroupeDetailPage({
     if (!photoMap.has(p.vehicule_id)) photoMap.set(p.vehicule_id, p.url);
   }
 
-  const groups = groupVehicles(vehicules as Parameters<typeof groupVehicles>[0], photoMap);
+  const groups = groupVehicles(vehicules as unknown as Parameters<typeof groupVehicles>[0], photoMap);
   const group = groups[0];
   if (!group) notFound();
 

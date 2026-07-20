@@ -393,7 +393,7 @@ export default function VehiculeForm({
                 type="number"
                 min={0}
                 step="1000"
-                defaultValue={vehicule?.caution_base_fcfa ?? ""}
+                defaultValue={(vehicule as Record<string, unknown>)?.caution_base_fcfa as number ?? ""}
                 placeholder="50000"
                 className={inputClass}
               />

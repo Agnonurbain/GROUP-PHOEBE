@@ -110,7 +110,7 @@ export async function creerDemandeNegociation(
         .select("coefficient_majoration, caution_multiplicateur, tarif_chauffeur_journalier, chauffeur_statut")
         .eq("id", commune.zone_id)
         .single();
-      if (zoneData) zone = zoneData;
+      if (zoneData) zone = zoneData as unknown as ZoneTarif;
     }
   }
 

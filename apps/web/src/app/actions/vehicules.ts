@@ -91,7 +91,7 @@ export async function creerVehicule(
 
   const { data, error } = await supabase
     .from("vehicules")
-    .insert(rows)
+    .insert(rows as never[])
     .select("id");
 
   if (error) return { error: error.message };
@@ -142,9 +142,7 @@ export async function modifierVehicule(
 
   const etat = (formData.get("etat") as string) || "occasion";
 
-  const { error } = await supabase
-    .from("vehicules")
-    .update({
+  const updateData = {
       categorie: categorie as "leger" | "car" | "minibus",
       marque,
       modele,
@@ -175,7 +173,10 @@ export async function modifierVehicule(
         | "indisponible",
       ...(assurancePath ? { assurance_url: assurancePath } : {}),
       updated_at: new Date().toISOString(),
-    })
+    };
+  const { error } = await supabase
+    .from("vehicules")
+    .update(updateData as never)
     .eq("id", id);
 
   if (error) return { error: error.message };
@@ -212,7 +213,7 @@ export async function modifierVehicule(
       description: str(formData.get("description")),
       statut: "disponible" as const,
     }));
-    await supabase.from("vehicules").insert(copies);
+    await supabase.from("vehicules").insert(copies as never[]);
   }
 
   revalidatePath(`/admin/vehicules/${id}`);
