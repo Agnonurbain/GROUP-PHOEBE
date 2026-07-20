@@ -8,6 +8,7 @@ import { creerSessionStripe } from "@/lib/payments/stripe";
 import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
+import { notifierAdminNouvelleReservation } from "./notifications-admin";
 
 const TAUX_CAUTION_DEFAUT = 0.3;
 
@@ -278,6 +279,13 @@ export async function creerReservation(
       error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
     };
   }
+
+  await notifierAdminNouvelleReservation(
+    demande.id,
+    profile.nom,
+    1,
+    total
+  );
 
   redirect(paymentUrl);
 }

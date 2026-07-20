@@ -2,6 +2,8 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
 import { AdminMobileNav } from "./admin-mobile-nav";
+import { NotificationsDropdown } from "@/components/notifications-dropdown";
+import { getNotificationsAdmin } from "@/app/actions/notifications-admin";
 
 export default async function AdminShellLayout({
   children,
@@ -26,6 +28,7 @@ export default async function AdminShellLayout({
     { count: nbRemboursements },
     { count: nbDemandesEnAttente },
     { count: nbPropositions },
+    notifsData,
   ] = await Promise.all([
     supabase
       .from("paiements")
@@ -39,6 +42,7 @@ export default async function AdminShellLayout({
       .from("propositions_prix")
       .select("id", { count: "exact", head: true })
       .eq("statut", "en_attente"),
+    getNotificationsAdmin(),
   ]);
 
   return (
@@ -116,7 +120,15 @@ export default async function AdminShellLayout({
           </p>
         </div>
       </aside>
-      <div className="flex-1 overflow-y-auto bg-phoebe-pearl/15 px-4 pb-4 pt-6 md:p-8">{children}</div>
+      <div className="flex-1 overflow-y-auto bg-phoebe-pearl/15">
+        <div className="flex items-center justify-end border-b border-phoebe-pearl bg-white px-4 py-2 md:px-8">
+          <NotificationsDropdown
+            initialNonLues={notifsData.nonLues}
+            initialRecentes={notifsData.recentes}
+          />
+        </div>
+        <div className="px-4 pb-4 pt-6 md:p-8">{children}</div>
+      </div>
     </div>
   );
 }

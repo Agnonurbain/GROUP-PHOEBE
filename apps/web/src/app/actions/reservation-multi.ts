@@ -9,6 +9,7 @@ import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations, expirerNegociationsAbandonnees } from "@/lib/payments/expiration-demandes";
 import { assignerVehiculesGroupe, type AssignedVehicle, type ZoneTarif } from "@/app/actions/vehicle-assignment";
+import { notifierAdminNouvelleReservation } from "./notifications-admin";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -266,6 +267,13 @@ export async function creerReservationMultiple(
       error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
     };
   }
+
+  await notifierAdminNouvelleReservation(
+    demande.id,
+    profile.nom,
+    totalVehicules,
+    totalMontant
+  );
 
   redirect(paymentUrl);
 }

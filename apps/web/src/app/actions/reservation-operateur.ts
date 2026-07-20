@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { notifierClient } from "@/lib/notifications";
+import { notifierAdminNouvelleReservation } from "./notifications-admin";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import {
   expirerDemandesSansReponse,
@@ -297,6 +298,20 @@ export async function creerReservationPourClient(
     clientId,
     "Réservation confirmée",
     `Une réservation de ${vehiculeLabel} a été créée pour vous par l'équipe GROUP PHOEBE. Montant : ${totalMontant.toLocaleString("fr-FR")} FCFA. Consultez vos réservations : ${lienClient}`
+  );
+
+  const { data: clientData } = await admin
+    .from("users")
+    .select("nom")
+    .eq("id", clientId)
+    .single();
+  const clientNom = clientData?.nom ?? "Client";
+
+  await notifierAdminNouvelleReservation(
+    demande.id,
+    clientNom,
+    nbVehicules,
+    totalMontant
   );
 
   revalidatePath("/admin/demandes");
