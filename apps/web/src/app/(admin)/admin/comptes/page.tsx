@@ -22,7 +22,7 @@ export default async function ComptesPage() {
   const { data: staff } = await supabase
     .from("users")
     .select("id, nom, role, telephone, email, created_at")
-    .in("role", ["operateur", "proprietaire", "livreur"])
+    .in("role", ["operateur", "proprietaire", "livreur", "desactive"])
     .order("role")
     .order("nom");
 
@@ -30,6 +30,7 @@ export default async function ComptesPage() {
     proprietaire: "Propriétaire",
     operateur: "Opérateur",
     livreur: "Livreur",
+    desactive: "Désactivé",
   };
 
   return (
@@ -74,7 +75,7 @@ export default async function ComptesPage() {
               </thead>
               <tbody className="divide-y divide-phoebe-pearl/70">
                 {staff.map((member) => (
-                  <tr key={member.id} className="transition-colors hover:bg-phoebe-pearl/40">
+                  <tr key={member.id} className={`transition-colors hover:bg-phoebe-pearl/40 ${member.role === "desactive" ? "opacity-40" : ""}`}>
                     <td className="px-5 py-3.5 font-semibold text-phoebe-anthracite">
                       {member.nom}
                     </td>
@@ -88,7 +89,9 @@ export default async function ComptesPage() {
                             ? "bg-phoebe-gold/20 text-phoebe-gold"
                             : member.role === "operateur"
                               ? "bg-phoebe-green/10 text-phoebe-green-deep"
-                              : "bg-phoebe-pearl text-phoebe-anthracite/60"
+                              : member.role === "desactive"
+                                ? "bg-error/10 text-error line-through"
+                                : "bg-phoebe-pearl text-phoebe-anthracite/60"
                         }`}
                       >
                         {roleLabels[member.role] ?? member.role}
@@ -99,7 +102,7 @@ export default async function ComptesPage() {
                     </td>
                     {isProprietaire && (
                       <td className="px-5 py-3.5">
-                        {member.role !== "proprietaire" && (
+                        {member.role !== "proprietaire" && member.role !== "desactive" && (
                           <DeleteAccountButton
                             userId={member.id}
                             nom={member.nom}

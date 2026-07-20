@@ -14,13 +14,17 @@ export default async function EtatLieuxPage({
 
   const { data: demande } = await supabase
     .from("demandes_transport")
-    .select("*, vehicules(marque, modele)")
+    .select("*, vehicules(marque, modele, km_inclus_par_jour, supplement_km_fcfa)")
     .eq("id", id)
     .single();
 
   if (!demande) notFound();
 
-  const v = demande.vehicules;
+  const v = demande.vehicules as { marque: string; modele: string; km_inclus_par_jour?: number; supplement_km_fcfa?: number } | null;
+  const p = demande.periode as string | null;
+  const nbJours = p
+    ? Math.max(1, Math.ceil((new Date(p.split(",")[1].replace(")", "")).getTime() - new Date(p.replace("[", "").split(",")[0]).getTime()) / 86400000))
+    : undefined;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
@@ -106,6 +110,11 @@ export default async function EtatLieuxPage({
                 demandeId={id}
                 type="retour"
                 cautionMax={demande.caution ? Number(demande.caution) : 0}
+                kmDepart={demande.kilometrage_depart ?? undefined}
+                carburantDepart={demande.carburant_depart ?? undefined}
+                kmInclusParJour={v?.km_inclus_par_jour ?? undefined}
+                supplementKmFcfa={v?.supplement_km_fcfa ?? undefined}
+                nbJours={nbJours}
               />
               <a
                 href={`/api/etat-lieux-pdf?id=${id}`}
