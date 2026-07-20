@@ -26,6 +26,18 @@ export default async function ComptesPage() {
     .order("role")
     .order("nom");
 
+  const { data: lastActivities } = await (supabase.from as Function)("audit_logs")
+    .select("user_id, created_at")
+    .in("user_id", (staff ?? []).map((s: { id: string }) => s.id))
+    .order("created_at", { ascending: false }) as { data: { user_id: string; created_at: string }[] | null };
+
+  const lastActivityMap = new Map<string, string>();
+  for (const a of lastActivities ?? []) {
+    if (a.user_id && !lastActivityMap.has(a.user_id)) {
+      lastActivityMap.set(a.user_id, a.created_at);
+    }
+  }
+
   const roleLabels: Record<string, string> = {
     proprietaire: "Propriétaire",
     operateur: "Opérateur",
@@ -64,7 +76,10 @@ export default async function ComptesPage() {
                     Role
                   </th>
                   <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
-                    Ajoute le
+                    Ajouté le
+                  </th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                    Dernière activité
                   </th>
                   {isProprietaire && (
                     <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
@@ -99,6 +114,11 @@ export default async function ComptesPage() {
                     </td>
                     <td className="px-5 py-3.5 text-phoebe-anthracite/50">
                       {new Date(member.created_at).toLocaleDateString("fr-FR")}
+                    </td>
+                    <td className="px-5 py-3.5 text-phoebe-anthracite/50">
+                      {lastActivityMap.get(member.id)
+                        ? new Date(lastActivityMap.get(member.id)!).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })
+                        : "—"}
                     </td>
                     {isProprietaire && (
                       <td className="px-5 py-3.5">

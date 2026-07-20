@@ -30,6 +30,8 @@ export default async function DashboardPage() {
     { data: demandes30j },
     { count: enAttenteCount },
     { data: demandesCA },
+    { count: propositionsEnAttente },
+    { count: remboursementsEnAttente },
   ] = await Promise.all([
     supabase
       .from("demandes_transport")
@@ -78,6 +80,14 @@ export default async function DashboardPage() {
       .select("montant")
       .in("statut", ["acceptee", "en_cours", "terminee"])
       .gte("created_at", il30j),
+    supabase
+      .from("propositions_prix")
+      .select("id", { count: "exact", head: true })
+      .eq("statut", "en_attente"),
+    supabase
+      .from("paiements")
+      .select("id", { count: "exact", head: true })
+      .eq("statut", "remboursement_requis"),
   ]);
 
   const caBrut30j = (demandesCA ?? []).reduce(
@@ -146,18 +156,48 @@ export default async function DashboardPage() {
         Tableau de bord — Transport
       </h1>
 
-      {alertEnAttente > 0 && (
-        <div className="flex items-center gap-3 rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 px-5 py-3">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-phoebe-gold">
-            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-          </svg>
-          <p className="text-sm font-medium text-phoebe-gold">
-            {alertEnAttente} demande{alertEnAttente > 1 ? "s" : ""} en attente de validation
-          </p>
-          <a href="/admin/demandes" className="ml-auto text-xs font-semibold text-phoebe-gold hover:underline">
-            Voir
-          </a>
+      {(alertEnAttente > 0 || (propositionsEnAttente ?? 0) > 0 || (remboursementsEnAttente ?? 0) > 0) && (
+        <div className="space-y-3">
+          {alertEnAttente > 0 && (
+            <div className="flex items-center gap-3 rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 px-5 py-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-phoebe-gold">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <p className="text-sm font-medium text-phoebe-gold">
+                {alertEnAttente} demande{alertEnAttente > 1 ? "s" : ""} en attente de validation
+              </p>
+              <a href="/admin/demandes" className="ml-auto text-xs font-semibold text-phoebe-gold hover:underline">
+                Voir
+              </a>
+            </div>
+          )}
+          {(propositionsEnAttente ?? 0) > 0 && (
+            <div className="flex items-center gap-3 rounded-xl border border-phoebe-green/30 bg-phoebe-green/5 px-5 py-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-phoebe-green">
+                <polyline points="20 12 12 4 4 12"/><line x1="12" y1="4" x2="12" y2="20"/>
+              </svg>
+              <p className="text-sm font-medium text-phoebe-green-deep">
+                {propositionsEnAttente} proposition{(propositionsEnAttente ?? 0) > 1 ? "s" : ""} de prix à valider
+              </p>
+              <a href="/admin/propositions" className="ml-auto text-xs font-semibold text-phoebe-green-deep hover:underline">
+                Voir
+              </a>
+            </div>
+          )}
+          {(remboursementsEnAttente ?? 0) > 0 && (
+            <div className="flex items-center gap-3 rounded-xl border border-error/20 bg-error/5 px-5 py-3">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-error">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <p className="text-sm font-medium text-error">
+                {remboursementsEnAttente} remboursement{(remboursementsEnAttente ?? 0) > 1 ? "s" : ""} en attente
+              </p>
+              <a href="/admin/remboursements" className="ml-auto text-xs font-semibold text-error hover:underline">
+                Voir
+              </a>
+            </div>
+          )}
         </div>
       )}
 
