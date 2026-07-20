@@ -66,12 +66,29 @@ export default async function GroupeDetailPage({
 
   const rep = vehicules[0];
 
-  const { data: intervalles } = await supabase
-    .from("intervalles_prix")
-    .select("*, zones_tarifaires!inner(nom, ordre)")
-    .eq("categorie_vehicule", rep.categorie)
-    .eq("type", mode === "achat" ? "vente" : "location")
-    .order("ordre", { referencedTable: "zones_tarifaires", ascending: true });
+  const { data: zones } = await supabase
+    .from("zones_tarifaires")
+    .select("id, nom, ordre")
+    .order("ordre", { ascending: true });
+
+  const sameCategory = allVehicules.filter((v) => v.categorie === rep.categorie);
+  const basePrices = sameCategory
+    .map((v) => Number(v.prix_journalier))
+    .filter((p) => p > 0);
+  const baseMin = basePrices.length > 0 ? Math.min(...basePrices) : 0;
+  const baseMax = basePrices.length > 0 ? Math.max(...basePrices) : 0;
+
+  const intervalles = mode === "location" && baseMin > 0
+    ? (zones ?? []).map((z) => {
+        const coeff = Number((z as unknown as Record<string, unknown>).coefficient_majoration) || 1;
+        return {
+          id: z.id,
+          prix_min: Math.round(baseMin * coeff),
+          prix_max: Math.round(baseMax * coeff),
+          zones_tarifaires: { nom: z.nom },
+        };
+      })
+    : [];
 
   const mainPhotos = allPhotos?.filter((p) => p.vehicule_id === group.representativeId) ?? [];
   const mainPhoto = mainPhotos[0]?.url;

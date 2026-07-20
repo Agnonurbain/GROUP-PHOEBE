@@ -25,22 +25,12 @@ type Zone = {
   tarif_chauffeur_journalier: number;
 };
 type Commune = { id: string; nom: string; zone_id: string };
-type IntervallePrix = {
-  id: string;
-  zone_id: string;
-  categorie_vehicule: string;
-  prix_min: number;
-  prix_max: number;
-};
-
 export function CheckoutForm({
   zones,
   communes,
-  intervalles,
 }: {
   zones: Zone[];
   communes: Commune[];
-  intervalles: IntervallePrix[];
 }) {
   const router = useRouter();
   const { items, clearCart, count } = useCart();

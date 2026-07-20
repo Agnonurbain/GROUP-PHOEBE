@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
+import { logAudit } from "@/lib/audit";
 
 async function requireProprietaire() {
   const supabase = await createClient();
@@ -118,35 +119,49 @@ export async function modifierCoefficients(
   _prev: TarifState,
   formData: FormData
 ): Promise<TarifState> {
-  await requireProprietaire();
-  const zoneId = formData.get("zone_id") as string;
-  const coefficient = Number(formData.get("coefficient_majoration"));
-  const cautionMult = Number(formData.get("caution_multiplicateur"));
-  const kmInclus = Number(formData.get("km_inclus_par_jour"));
-  const supplementKm = Number(formData.get("supplement_km_fcfa"));
-  const chauffeurStatut = formData.get("chauffeur_statut") as string;
-  const tarifChauffeur = Number(formData.get("tarif_chauffeur_journalier"));
+  const supabase = await requireProprietaire();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub as string;
 
-  if (!zoneId || isNaN(coefficient) || isNaN(cautionMult) || isNaN(kmInclus) || isNaN(supplementKm) || isNaN(tarifChauffeur)) {
+  const zoneId = formData.get("zone_id") as string;
+  const newValues = {
+    coefficient_majoration: Number(formData.get("coefficient_majoration")),
+    caution_multiplicateur: Number(formData.get("caution_multiplicateur")),
+    km_inclus_par_jour: Number(formData.get("km_inclus_par_jour")),
+    supplement_km_fcfa: Number(formData.get("supplement_km_fcfa")),
+    chauffeur_statut: formData.get("chauffeur_statut") as string,
+    tarif_chauffeur_journalier: Number(formData.get("tarif_chauffeur_journalier")),
+  };
+
+  if (!zoneId || isNaN(newValues.coefficient_majoration) || isNaN(newValues.caution_multiplicateur) || isNaN(newValues.km_inclus_par_jour) || isNaN(newValues.supplement_km_fcfa) || isNaN(newValues.tarif_chauffeur_journalier)) {
     return { error: "Valeurs invalides." };
   }
-  if (!["optionnel", "recommande", "obligatoire"].includes(chauffeurStatut)) {
+  if (!["optionnel", "recommande", "obligatoire"].includes(newValues.chauffeur_statut)) {
     return { error: "Statut chauffeur invalide." };
   }
 
   const admin = getAdmin();
+
+  const { data: oldZone } = await (admin.from as Function)("zones_tarifaires")
+    .select("coefficient_majoration, caution_multiplicateur, km_inclus_par_jour, supplement_km_fcfa, chauffeur_statut, tarif_chauffeur_journalier")
+    .eq("id", zoneId)
+    .single();
+
   const { error } = await (admin.from as Function)("zones_tarifaires")
-    .update({
-      coefficient_majoration: coefficient,
-      caution_multiplicateur: cautionMult,
-      km_inclus_par_jour: kmInclus,
-      supplement_km_fcfa: supplementKm,
-      chauffeur_statut: chauffeurStatut,
-      tarif_chauffeur_journalier: tarifChauffeur,
-    })
+    .update(newValues)
     .eq("id", zoneId);
 
   if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: "modifier_coefficients",
+    tableName: "zones_tarifaires",
+    recordId: zoneId,
+    oldValues: oldZone ?? undefined,
+    newValues,
+  });
+
   revalidatePath("/admin/tarifs");
   return { success: true };
 }
@@ -162,7 +177,9 @@ export async function sauvegarderGeojson(
   zoneId: string,
   geojson: Record<string, unknown> | null
 ): Promise<TarifState> {
-  await requireProprietaire();
+  const supabase = await requireProprietaire();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub as string;
 
   if (geojson && geojson.type !== "Polygon" && geojson.type !== "MultiPolygon") {
     return { error: "Le GeoJSON doit être de type Polygon ou MultiPolygon." };
@@ -174,6 +191,15 @@ export async function sauvegarderGeojson(
     .eq("id", zoneId);
 
   if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: geojson ? "modifier_geojson" : "supprimer_geojson",
+    tableName: "zones_tarifaires",
+    recordId: zoneId,
+    newValues: geojson ? { type: geojson.type } : undefined,
+  });
+
   revalidatePath("/admin/tarifs");
   return { success: true };
 }
