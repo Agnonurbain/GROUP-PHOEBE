@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import type { Database } from "@group-phoebe/database/types";
 
 async function requireProprietaire() {
   const supabase = await createClient();
@@ -108,6 +110,33 @@ export async function ajouterIntervalle(
     return { error: error.message };
   }
 
+  revalidatePath("/admin/tarifs");
+  return { success: true };
+}
+
+function getAdmin() {
+  return createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
+export async function sauvegarderGeojson(
+  zoneId: string,
+  geojson: Record<string, unknown> | null
+): Promise<TarifState> {
+  await requireProprietaire();
+
+  if (geojson && geojson.type !== "Polygon" && geojson.type !== "MultiPolygon") {
+    return { error: "Le GeoJSON doit être de type Polygon ou MultiPolygon." };
+  }
+
+  const admin = getAdmin();
+  const { error } = await (admin.from as Function)("zones_tarifaires")
+    .update({ geojson })
+    .eq("id", zoneId);
+
+  if (error) return { error: error.message };
   revalidatePath("/admin/tarifs");
   return { success: true };
 }

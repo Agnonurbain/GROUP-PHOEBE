@@ -5,6 +5,7 @@ import { CommunesList } from "./communes-list";
 import { IntervallesList } from "./intervalles-list";
 import { AjouterCommuneForm } from "./ajouter-commune-form";
 import { AjouterIntervalleForm } from "./ajouter-intervalle-form";
+import { GeojsonEditor } from "./geojson-editor";
 import { CAT_LABELS } from "@/lib/constants";
 
 
@@ -74,6 +75,13 @@ export default async function TarifsPage() {
                   {zone.description}
                 </p>
               )}
+              <div className="mt-2">
+                <GeojsonEditor
+                  zoneId={zone.id}
+                  zoneName={zone.nom}
+                  initialGeojson={(zone as Record<string, unknown>).geojson as Record<string, unknown> | null}
+                />
+              </div>
             </div>
 
             {/* Communes */}
