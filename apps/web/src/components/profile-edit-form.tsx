@@ -134,6 +134,7 @@ export function ProfileEditForm({
             id="telephone"
             name="telephone"
             type="tel"
+            pattern="[+][0-9]{7,15}"
             defaultValue={telephone ?? ""}
             placeholder="+225 07 00 00 00 00"
             className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-gold focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-gold/20"

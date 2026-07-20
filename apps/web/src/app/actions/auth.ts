@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { hasMinimumAge } from "@/lib/auth";
+import { validerTelephone } from "@/lib/telephone";
 
 export type AuthState = {
   error?: string;
@@ -34,6 +35,11 @@ export async function inscription(
 
   if (password.length < 8) {
     return { error: "Le mot de passe doit contenir au moins 8 caractères." };
+  }
+
+  if (mode === "phone" && telephone) {
+    const errTel = validerTelephone(telephone);
+    if (errTel) return { error: errTel };
   }
 
   const supabase = await createClient();
@@ -157,6 +163,9 @@ export async function envoyerCodeReset(
     return { error: "Le numéro de téléphone est obligatoire." };
   }
 
+  const errTel = validerTelephone(telephone);
+  if (errTel) return { error: errTel };
+
   const supabase = await createClient();
 
   const { error } = await supabase.auth.signInWithOtp({ phone: telephone });
@@ -242,6 +251,11 @@ export async function updateProfile(
     return { error: "Le nom est obligatoire." };
   }
 
+  if (telephone) {
+    const errTel = validerTelephone(telephone);
+    if (errTel) return { error: errTel };
+  }
+
   if (dateNaissance && !hasMinimumAge(dateNaissance, 21)) {
     return { error: "Vous devez avoir au moins 21 ans." };
   }
@@ -278,6 +292,9 @@ export async function renvoyerCode(
   if (!phone) {
     return { error: "Numéro de téléphone requis." };
   }
+
+  const errTel = validerTelephone(phone);
+  if (errTel) return { error: errTel };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({ phone });

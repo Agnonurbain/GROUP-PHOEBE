@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
@@ -22,7 +23,12 @@ export default async function AdminShellLayout({
         .single()
     : { data: null };
 
-  const isProprietaire = profile?.role === "proprietaire";
+  const role = profile?.role;
+  if (!role || (role !== "operateur" && role !== "proprietaire")) {
+    notFound();
+  }
+
+  const isProprietaire = role === "proprietaire";
 
   const [
     { count: nbRemboursements },
