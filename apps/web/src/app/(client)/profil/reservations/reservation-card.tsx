@@ -12,6 +12,7 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   en_attente_validation: { label: "En attente de validation", color: "bg-phoebe-gold/10 text-phoebe-gold" },
   acceptee: { label: "Acceptée", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
   en_cours: { label: "En cours", color: "bg-blue-50 text-blue-700" },
+  retour_en_inspection: { label: "Inspection en cours", color: "bg-purple-50 text-purple-700" },
   refusee: { label: "Refusée", color: "bg-error/10 text-error" },
   annulee: { label: "Annulée", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite" },
   terminee: { label: "Terminée", color: "bg-phoebe-pearl text-phoebe-anthracite" },

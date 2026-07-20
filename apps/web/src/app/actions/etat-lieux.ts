@@ -153,8 +153,45 @@ export async function enregistrerEtatLieuxRetour(
   }
 
   const cautionMax = demande.caution ? Number(demande.caution) : 0;
-  if (montantCautionRetenu < 0 || montantCautionRetenu > cautionMax) {
-    return { error: `Le montant retenu doit être entre 0 et ${cautionMax.toLocaleString("fr-FR")} FCFA.` };
+
+  let supplementKm = 0;
+  const kmDepart = demande.kilometrage_depart ? Number(demande.kilometrage_depart) : null;
+  if (kmDepart !== null && kilometrage > kmDepart && demande.destination) {
+    const { data: commune } = await admin
+      .from("communes")
+      .select("zone_id")
+      .eq("nom", demande.destination)
+      .single();
+
+    if (commune?.zone_id) {
+      const { data: zoneData } = await (admin.from as Function)("zones_tarifaires")
+        .select("km_inclus_par_jour, supplement_km_fcfa")
+        .eq("id", commune.zone_id)
+        .single();
+
+      if (zoneData) {
+        const kmParcourus = kilometrage - kmDepart;
+        let nbJours = 1;
+        if (demande.periode) {
+          const parts = demande.periode.replace(/[\[\]()]/g, "").split(",");
+          if (parts.length === 2) {
+            const d0 = new Date(parts[0].trim());
+            const d1 = new Date(parts[1].trim());
+            nbJours = Math.max(1, Math.ceil((d1.getTime() - d0.getTime()) / (1000 * 60 * 60 * 24)));
+          }
+        }
+        const kmAutorise = (zoneData as { km_inclus_par_jour: number; supplement_km_fcfa: number }).km_inclus_par_jour * nbJours;
+        const kmExcedent = kmParcourus - kmAutorise;
+        if (kmExcedent > 0) {
+          supplementKm = kmExcedent * (zoneData as { km_inclus_par_jour: number; supplement_km_fcfa: number }).supplement_km_fcfa;
+        }
+      }
+    }
+  }
+
+  const totalRetenu = montantCautionRetenu + supplementKm;
+  if (totalRetenu < 0 || totalRetenu > cautionMax) {
+    return { error: `Le montant total retenu (${totalRetenu.toLocaleString("fr-FR")} FCFA dont ${supplementKm.toLocaleString("fr-FR")} FCFA de supplément km) dépasse la caution de ${cautionMax.toLocaleString("fr-FR")} FCFA.` };
   }
 
   const photoUrls: string[] = [];
@@ -174,15 +211,63 @@ export async function enregistrerEtatLieuxRetour(
   const { error } = await admin
     .from("demandes_transport")
     .update({
-      statut: "terminee",
+      statut: "retour_en_inspection" as never,
       kilometrage_retour: kilometrage,
       carburant_retour: carburant as Carburant,
       etat_lieux_retour_photos: photoUrls.length > 0 ? photoUrls : null,
-      caution_retenue: montantCautionRetenu,
+      caution_retenue: totalRetenu,
       updated_at: new Date().toISOString(),
     })
     .eq("id", demandeId)
     .eq("statut", "en_cours");
+
+  if (error) return { error: error.message };
+
+  await notifierClient(
+    demande.client_id,
+    "Véhicule retourné — inspection en cours",
+    `L'état des lieux de retour a été enregistré. L'inspection du véhicule est en cours.`
+  );
+
+  revalidatePath(`/admin/demandes/${demandeId}/etat-lieux`);
+  revalidatePath("/admin/demandes");
+  return { success: true };
+}
+
+export async function finaliserInspection(
+  _prev: EtatLieuxState,
+  formData: FormData
+): Promise<EtatLieuxState> {
+  await requireStaff();
+  const admin = getAdmin();
+
+  const demandeId = formData.get("demande_id") as string;
+  const cautionRetenue = Number(formData.get("caution_retenue") || 0);
+
+  if (!demandeId) return { error: "Demande obligatoire." };
+
+  const { data: demande } = await admin
+    .from("demandes_transport")
+    .select("*")
+    .eq("id", demandeId)
+    .single();
+
+  if (!demande) return { error: "Demande introuvable." };
+  if ((demande.statut as string) !== "retour_en_inspection") {
+    return { error: "Cette demande n'est pas en inspection." };
+  }
+
+  const cautionMax = demande.caution ? Number(demande.caution) : 0;
+  const totalRetenu = Math.min(Math.max(0, cautionRetenue), cautionMax);
+
+  const { error } = await admin
+    .from("demandes_transport")
+    .update({
+      statut: "terminee",
+      caution_retenue: totalRetenu,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", demandeId);
 
   if (error) return { error: error.message };
 
@@ -210,19 +295,19 @@ export async function enregistrerEtatLieuxRetour(
   }
 
   const montantLocation = demande.montant ? Number(demande.montant) : 0;
-  await rembourserPaiement(admin, demandeId, montantLocation + montantCautionRetenu);
+  await rembourserPaiement(admin, demandeId, montantLocation + totalRetenu);
 
-  const montantCautionLibere = cautionMax - montantCautionRetenu;
-  const msgCaution = montantCautionRetenu >= cautionMax
-    ? `La caution de ${cautionMax.toLocaleString("fr-FR")} FCFA a été retenue suite à l'état du véhicule constaté.`
-    : montantCautionRetenu > 0
-      ? `${montantCautionRetenu.toLocaleString("fr-FR")} FCFA retenus sur la caution. Le reste (${montantCautionLibere.toLocaleString("fr-FR")} FCFA) sera remboursé sous 48h.`
+  const montantCautionLibere = cautionMax - totalRetenu;
+  const msgCaution = totalRetenu >= cautionMax
+    ? `La caution de ${cautionMax.toLocaleString("fr-FR")} FCFA a été retenue suite à l'inspection.`
+    : totalRetenu > 0
+      ? `${totalRetenu.toLocaleString("fr-FR")} FCFA retenus sur la caution. Le reste (${montantCautionLibere.toLocaleString("fr-FR")} FCFA) sera remboursé sous 48h.`
       : "Votre caution sera intégralement remboursée sous 48h.";
 
   await notifierClient(
     demande.client_id,
-    "Location terminée",
-    `L'état des lieux de retour a été enregistré. ${msgCaution} Vous pouvez maintenant noter votre expérience.`
+    "Inspection terminée — location clôturée",
+    `L'inspection du véhicule est terminée. ${msgCaution}`
   );
 
   revalidatePath(`/admin/demandes/${demandeId}/etat-lieux`);

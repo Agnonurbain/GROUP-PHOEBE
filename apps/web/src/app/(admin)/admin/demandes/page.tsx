@@ -9,6 +9,7 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   en_attente_paiement: { label: "Att. paiement", color: "bg-blue-50 text-blue-700" },
   acceptee: { label: "Acceptée", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
   en_cours: { label: "En cours", color: "bg-blue-50 text-blue-700" },
+  retour_en_inspection: { label: "Inspection", color: "bg-purple-50 text-purple-700" },
   refusee: { label: "Refusée", color: "bg-error/10 text-error" },
   annulee: { label: "Annulée", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite" },
   terminee: { label: "Terminée", color: "bg-phoebe-pearl text-phoebe-anthracite" },
@@ -22,7 +23,7 @@ export default async function DemandesPage() {
   const { data: demandes } = await supabase
     .from("demandes_transport")
     .select("*, vehicules(marque, modele), users!demandes_transport_client_id_fkey(nom, telephone), lignes_demande(id, vehicules(marque, modele), avec_chauffeur)")
-    .in("statut", ["en_attente_paiement", "en_attente_validation", "en_negociation", "acceptee", "en_cours"])
+    .in("statut", ["en_attente_paiement", "en_attente_validation", "en_negociation", "acceptee", "en_cours", "retour_en_inspection"])
     .order("created_at", { ascending: false });
 
   const { data: historique } = await supabase
@@ -131,6 +132,7 @@ export default async function DemandesPage() {
                       negociationNote={(d as Record<string, unknown>).negociation_note as string | null}
                       montantEstime={d.montant ? Number(d.montant) : null}
                       clientTelephone={(u as { nom: string; telephone: string | null } | null)?.telephone ?? null}
+                      cautionMax={d.caution ? Number(d.caution) : null}
                     />
                   </div>
                 </div>

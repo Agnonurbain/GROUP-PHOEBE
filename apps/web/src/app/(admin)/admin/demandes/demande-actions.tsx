@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/demandes";
 import { envoyerPrixNegocie, type NegociationState } from "@/app/actions/negociation";
 import { envoyerPrixAchat, type AchatState } from "@/app/actions/achat";
+import { finaliserInspection, type EtatLieuxState } from "@/app/actions/etat-lieux";
 import { SubmitButton } from "@/components/submit-button";
 
 export function DemandeActions({
@@ -18,6 +19,7 @@ export function DemandeActions({
   negociationNote,
   montantEstime,
   clientTelephone,
+  cautionMax,
 }: {
   demandeId: string;
   statut: string;
@@ -25,6 +27,7 @@ export function DemandeActions({
   negociationNote?: string | null;
   montantEstime?: number | null;
   clientTelephone?: string | null;
+  cautionMax?: number | null;
 }) {
   const [acceptState, acceptAction] = useActionState<DemandeActionState, FormData>(
     accepterDemande,
@@ -42,8 +45,13 @@ export function DemandeActions({
     envoyerPrixAchat,
     {}
   );
+  const [inspState, inspAction] = useActionState<EtatLieuxState, FormData>(
+    finaliserInspection,
+    {}
+  );
   const [showPrixForm, setShowPrixForm] = useState(false);
   const [showAchatForm, setShowAchatForm] = useState(false);
+  const [showInspForm, setShowInspForm] = useState(false);
   const isAchat = type === "achat";
 
   const whatsappUrl = clientTelephone
@@ -52,9 +60,9 @@ export function DemandeActions({
 
   return (
     <div className="flex flex-col items-end gap-2">
-      {(acceptState.error || refusState.error || negoState.error || achatState.error) && (
+      {(acceptState.error || refusState.error || negoState.error || achatState.error || inspState.error) && (
         <p className="text-xs text-error">
-          {acceptState.error || refusState.error || negoState.error || achatState.error}
+          {acceptState.error || refusState.error || negoState.error || achatState.error || inspState.error}
         </p>
       )}
       {acceptState.success && (
@@ -207,6 +215,48 @@ export function DemandeActions({
         >
           État des lieux
         </Link>
+      )}
+
+      {statut === "retour_en_inspection" && !inspState.success && (
+        <div className="space-y-2">
+          {!showInspForm ? (
+            <button
+              type="button"
+              onClick={() => setShowInspForm(true)}
+              className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-purple-700 hover:shadow-md"
+            >
+              Finaliser l&apos;inspection
+            </button>
+          ) : (
+            <form action={inspAction} className="flex items-end gap-2">
+              <input type="hidden" name="demande_id" value={demandeId} />
+              <div>
+                <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/50">
+                  Caution retenue (FCFA)
+                </label>
+                <input
+                  name="caution_retenue"
+                  type="number"
+                  min={0}
+                  max={cautionMax ?? undefined}
+                  defaultValue={0}
+                  className="w-32 rounded-lg border border-phoebe-anthracite/20 px-2 py-1.5 text-sm"
+                />
+                {cautionMax != null && (
+                  <p className="mt-0.5 text-[10px] text-phoebe-anthracite/40">
+                    Max : {Number(cautionMax).toLocaleString("fr-FR")} FCFA
+                  </p>
+                )}
+              </div>
+              <SubmitButton className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-purple-700 hover:shadow-md">
+                Clôturer
+              </SubmitButton>
+            </form>
+          )}
+        </div>
+      )}
+      {inspState.success && (
+        <p className="text-xs text-phoebe-green">Inspection terminée — location clôturée</p>
       )}
 
       {statut === "acceptee" && isAchat && (

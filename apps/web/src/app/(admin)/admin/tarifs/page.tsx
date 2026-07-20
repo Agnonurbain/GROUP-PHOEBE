@@ -6,6 +6,7 @@ import { IntervallesList } from "./intervalles-list";
 import { AjouterCommuneForm } from "./ajouter-commune-form";
 import { AjouterIntervalleForm } from "./ajouter-intervalle-form";
 import { GeojsonEditor } from "./geojson-editor";
+import { CoefficientsForm } from "./coefficients-form";
 import { CAT_LABELS } from "@/lib/constants";
 
 
@@ -75,7 +76,18 @@ export default async function TarifsPage() {
                   {zone.description}
                 </p>
               )}
-              <div className="mt-2">
+              <div className="mt-3 flex flex-wrap gap-4">
+                <CoefficientsForm
+                  zoneId={zone.id}
+                  initial={{
+                    coefficient_majoration: Number((zone as Record<string, unknown>).coefficient_majoration) || 1,
+                    caution_multiplicateur: Number((zone as Record<string, unknown>).caution_multiplicateur) || 1,
+                    km_inclus_par_jour: Number((zone as Record<string, unknown>).km_inclus_par_jour) || 150,
+                    supplement_km_fcfa: Number((zone as Record<string, unknown>).supplement_km_fcfa) || 200,
+                    chauffeur_statut: ((zone as Record<string, unknown>).chauffeur_statut as string) || "optionnel",
+                    tarif_chauffeur_journalier: Number((zone as Record<string, unknown>).tarif_chauffeur_journalier) || 10000,
+                  }}
+                />
                 <GeojsonEditor
                   zoneId={zone.id}
                   zoneName={zone.nom}

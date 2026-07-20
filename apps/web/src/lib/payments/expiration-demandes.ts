@@ -168,7 +168,7 @@ export async function expirerNegociationsAbandonnees(): Promise<number> {
     .from("demandes_transport")
     .select("id, client_id, vehicule_id, chauffeur_id, periode")
     .eq("statut", "en_negociation")
-    .lt("created_at", seuil);
+    .lt("updated_at", seuil);
 
   if (!expirees || expirees.length === 0) return 0;
 

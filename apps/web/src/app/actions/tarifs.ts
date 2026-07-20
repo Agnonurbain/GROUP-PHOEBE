@@ -114,6 +114,43 @@ export async function ajouterIntervalle(
   return { success: true };
 }
 
+export async function modifierCoefficients(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  await requireProprietaire();
+  const zoneId = formData.get("zone_id") as string;
+  const coefficient = Number(formData.get("coefficient_majoration"));
+  const cautionMult = Number(formData.get("caution_multiplicateur"));
+  const kmInclus = Number(formData.get("km_inclus_par_jour"));
+  const supplementKm = Number(formData.get("supplement_km_fcfa"));
+  const chauffeurStatut = formData.get("chauffeur_statut") as string;
+  const tarifChauffeur = Number(formData.get("tarif_chauffeur_journalier"));
+
+  if (!zoneId || isNaN(coefficient) || isNaN(cautionMult) || isNaN(kmInclus) || isNaN(supplementKm) || isNaN(tarifChauffeur)) {
+    return { error: "Valeurs invalides." };
+  }
+  if (!["optionnel", "recommande", "obligatoire"].includes(chauffeurStatut)) {
+    return { error: "Statut chauffeur invalide." };
+  }
+
+  const admin = getAdmin();
+  const { error } = await (admin.from as Function)("zones_tarifaires")
+    .update({
+      coefficient_majoration: coefficient,
+      caution_multiplicateur: cautionMult,
+      km_inclus_par_jour: kmInclus,
+      supplement_km_fcfa: supplementKm,
+      chauffeur_statut: chauffeurStatut,
+      tarif_chauffeur_journalier: tarifChauffeur,
+    })
+    .eq("id", zoneId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/admin/tarifs");
+  return { success: true };
+}
+
 function getAdmin() {
   return createAdminClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

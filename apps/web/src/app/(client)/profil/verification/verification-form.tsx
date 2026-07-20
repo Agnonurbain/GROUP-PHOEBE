@@ -8,10 +8,28 @@ import {
 } from "@/app/actions/verification";
 import { SubmitButton } from "@/components/submit-button";
 import { BackLink } from "@/components/back-link";
+import { compressImage } from "@/lib/compress-image";
+
+async function compressAndSubmit(
+  _prev: VerificationState,
+  formData: FormData
+): Promise<VerificationState> {
+  const piece = formData.get("piece_identite") as File | null;
+  const permis = formData.get("permis_conduire") as File | null;
+
+  const compressed = new FormData();
+  if (piece && piece.size > 0) {
+    compressed.set("piece_identite", await compressImage(piece));
+  }
+  if (permis && permis.size > 0) {
+    compressed.set("permis_conduire", await compressImage(permis));
+  }
+  return soumettreDocuments(_prev, compressed);
+}
 
 export function VerificationForm() {
   const [state, action] = useActionState<VerificationState, FormData>(
-    soumettreDocuments,
+    compressAndSubmit,
     {}
   );
 
