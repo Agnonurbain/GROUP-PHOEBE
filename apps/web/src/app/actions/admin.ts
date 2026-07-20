@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { logAudit } from "@/lib/audit";
 
 async function rollbackUser(
   admin: ReturnType<typeof createAdminClient>,
@@ -64,6 +65,15 @@ export async function validerVerification(
 
   if (error) return { error: error.message };
 
+  await logAudit({
+    userId: staff.userId,
+    action: "verifier",
+    tableName: "users",
+    recordId: userId,
+    oldValues: { statut_verification: "documents_soumis" },
+    newValues: { statut_verification: "verifie" },
+  });
+
   revalidatePath("/admin/verifications");
   return { success: true };
 }
@@ -92,6 +102,15 @@ export async function rejeterVerification(
     .eq("statut_verification", "documents_soumis");
 
   if (error) return { error: error.message };
+
+  await logAudit({
+    userId: staff.userId,
+    action: "refuser",
+    tableName: "users",
+    recordId: userId,
+    oldValues: { statut_verification: "documents_soumis" },
+    newValues: { statut_verification: "rejete", motif_rejet: motif.trim() },
+  });
 
   revalidatePath("/admin/verifications");
   return { success: true };
@@ -159,6 +178,14 @@ export async function creerCompteInterne(
       return { error: livreurError.message };
     }
   }
+
+  await logAudit({
+    userId: staff.userId,
+    action: "creer",
+    tableName: "users",
+    recordId: data.user.id,
+    newValues: { nom, telephone, role },
+  });
 
   revalidatePath("/admin/comptes");
   return { success: true };

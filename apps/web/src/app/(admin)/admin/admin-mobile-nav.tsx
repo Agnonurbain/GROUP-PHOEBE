@@ -126,6 +126,7 @@ export function AdminMobileNav({
                 </h2>
                 <div className="space-y-0.5">
                   <NavLink href="/admin/comptes">Comptes internes</NavLink>
+                  <NavLink href="/admin/audit">Journal d&apos;audit</NavLink>
                 </div>
               </div>
             )}

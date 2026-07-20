@@ -6,6 +6,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { notifierClient } from "@/lib/notifications";
 import { rembourserPaiement } from "@/lib/payments/expiration-demandes";
+import { logAudit } from "@/lib/audit";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -36,7 +37,7 @@ export async function accepterDemande(
   _prev: DemandeActionState,
   formData: FormData
 ): Promise<DemandeActionState> {
-  await requireStaff();
+  const staff = await requireStaff();
   const admin = getAdmin();
   const demandeId = formData.get("demande_id") as string;
 
@@ -58,6 +59,15 @@ export async function accepterDemande(
     .eq("statut", "en_attente_validation");
 
   if (error) return { error: error.message };
+
+  await logAudit({
+    userId: staff.sub,
+    action: "accepter",
+    tableName: "demandes_transport",
+    recordId: demandeId,
+    oldValues: { statut: "en_attente_validation" },
+    newValues: { statut: "acceptee" },
+  });
 
   if (demande.vehicule_id) {
     await admin
@@ -83,7 +93,7 @@ export async function refuserDemande(
   _prev: DemandeActionState,
   formData: FormData
 ): Promise<DemandeActionState> {
-  await requireStaff();
+  const staff = await requireStaff();
   const admin = getAdmin();
   const demandeId = formData.get("demande_id") as string;
 
@@ -105,6 +115,15 @@ export async function refuserDemande(
     .eq("statut", "en_attente_validation");
 
   if (error) return { error: error.message };
+
+  await logAudit({
+    userId: staff.sub,
+    action: "refuser",
+    tableName: "demandes_transport",
+    recordId: demandeId,
+    oldValues: { statut: "en_attente_validation" },
+    newValues: { statut: "refusee" },
+  });
 
   if (demande.vehicule_id && demande.periode) {
     await admin

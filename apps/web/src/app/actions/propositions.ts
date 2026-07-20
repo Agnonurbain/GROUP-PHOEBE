@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { SEUIL_APPROBATION_AUTO_PCT } from "@/lib/constants";
+import { logAudit } from "@/lib/audit";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -83,6 +84,15 @@ export async function proposerPrix(
         updated_at: new Date().toISOString(),
       } as never)
       .eq("id", vehiculeId);
+
+    await logAudit({
+      userId: user.sub,
+      action: "auto_approuver",
+      tableName: "propositions_prix",
+      recordId: vehiculeId,
+      oldValues: { [champ]: valeurActuelle },
+      newValues: { [champ]: valeurProposee, ecart_pct: reductionPct },
+    });
   }
 
   revalidatePath("/admin/vehicules");
@@ -136,6 +146,15 @@ export async function traiterProposition(
     })
     .eq("id", propositionId)
     .eq("statut", "en_attente");
+
+  await logAudit({
+    userId: user.sub,
+    action: decision === "acceptee" ? "accepter" : "refuser",
+    tableName: "propositions_prix",
+    recordId: propositionId,
+    oldValues: { statut: "en_attente", valeur_actuelle: prop.valeur_actuelle },
+    newValues: { statut: decision, valeur_proposee: prop.valeur_proposee },
+  });
 
   if (decision === "acceptee") {
     const champ = prop.champ as "prix_journalier" | "prix_mensuel" | "prix_vente";

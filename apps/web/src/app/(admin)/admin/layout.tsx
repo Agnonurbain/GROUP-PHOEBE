@@ -103,6 +103,7 @@ export default async function AdminShellLayout({
               <SectionTitle>Administration</SectionTitle>
               <nav className="space-y-0.5">
                 <NavLink href="/admin/comptes">Comptes internes</NavLink>
+                <NavLink href="/admin/audit">Journal d&apos;audit</NavLink>
               </nav>
             </div>
           )}
