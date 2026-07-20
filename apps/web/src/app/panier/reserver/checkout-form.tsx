@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
+import { useActionState, useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
@@ -61,6 +61,28 @@ export function CheckoutForm({
   const [showNego, setShowNego] = useState(false);
   const [negoNote, setNegoNote] = useState("");
   const [accepteCgv, setAccepteCgv] = useState(false);
+
+  const SAVE_KEY = "gp-checkout-draft";
+
+  useEffect(() => {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (!saved) return;
+    try {
+      const s = JSON.parse(saved);
+      if (s.debut) setDebut(s.debut);
+      if (s.fin) setFin(s.fin);
+      if (s.communeDepart) setCommuneDepart(s.communeDepart);
+      if (s.communeDest) setCommuneDest(s.communeDest);
+      if (s.autreDepartNom) setAutreDepartNom(s.autreDepartNom);
+      if (s.autreDestNom) setAutreDestNom(s.autreDestNom);
+      if (s.negoNote) setNegoNote(s.negoNote);
+    } catch { /* ignore */ }
+  }, []);
+
+  useEffect(() => {
+    const data = { debut, fin, communeDepart, communeDest, autreDepartNom, autreDestNom, negoNote };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  }, [debut, fin, communeDepart, communeDest, autreDepartNom, autreDestNom, negoNote]);
 
   const today = new Date().toISOString().slice(0, 10);
 

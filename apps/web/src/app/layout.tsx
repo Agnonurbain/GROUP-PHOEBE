@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { CartProvider } from "@/lib/cart-context";
 import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { PushNotificationSetup } from "@/components/push-notification-setup";
+import { OfflineBanner } from "@/components/offline-banner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -49,6 +50,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <CartProvider>
+          <OfflineBanner />
           {children}
           <WhatsAppFloat />
           <PushNotificationSetup />
