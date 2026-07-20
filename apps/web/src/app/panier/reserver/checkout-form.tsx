@@ -7,6 +7,7 @@ import { useCart } from "@/lib/cart-context";
 import { creerReservationMultiple, type ReservationMultiState } from "@/app/actions/reservation-multi";
 import { creerDemandeNegociation, type NegociationState } from "@/app/actions/negociation";
 import { SubmitButton } from "@/components/submit-button";
+import { CommuneSearch } from "@/components/commune-search";
 import { CAT_LABELS } from "@/lib/constants";
 
 const inputClass =
@@ -154,9 +155,10 @@ export function CheckoutForm({
   const totalCaution = lignesCalc.reduce((s, l) => s + l.caution, 0);
   const grandTotal = totalMontant + totalCaution;
 
-  const communesByZone = zones.map((z) => ({
-    ...z,
-    communes: communes.filter((c) => c.zone_id === z.id),
+  const communeOptions = communes.map((c) => ({
+    id: c.id,
+    nom: c.nom,
+    zoneNom: zones.find((z) => z.id === c.zone_id)?.nom ?? "",
   }));
 
   const lignesJson = JSON.stringify(
@@ -277,23 +279,15 @@ export function CheckoutForm({
               <label htmlFor="ck-commune-depart" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
                 Commune de départ
               </label>
-              <select
+              <CommuneSearch
                 id="ck-commune-depart"
                 name="ville_depart"
                 value={communeDepart}
-                onChange={(e) => setCommuneDepart(e.target.value)}
+                onChange={setCommuneDepart}
+                communes={communeOptions}
+                placeholder="Rechercher une commune…"
                 className={inputClass}
-              >
-                <option value="">Sélectionner une commune</option>
-                {communesByZone.map((z) => (
-                  <optgroup key={z.id} label={z.nom}>
-                    {z.communes.map((c) => (
-                      <option key={c.id} value={c.nom}>{c.nom}</option>
-                    ))}
-                  </optgroup>
-                ))}
-                <option value="autre">Autre commune...</option>
-              </select>
+              />
               {communeDepart === "autre" && (
                 <input
                   name="ville_depart_autre"
@@ -308,23 +302,15 @@ export function CheckoutForm({
               <label htmlFor="ck-commune-dest" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
                 Commune de destination
               </label>
-              <select
+              <CommuneSearch
                 id="ck-commune-dest"
                 name="destination"
                 value={communeDest}
-                onChange={(e) => setCommuneDest(e.target.value)}
+                onChange={setCommuneDest}
+                communes={communeOptions}
+                placeholder="Rechercher une commune…"
                 className={inputClass}
-              >
-                <option value="">Sélectionner une commune</option>
-                {communesByZone.map((z) => (
-                  <optgroup key={z.id} label={z.nom}>
-                    {z.communes.map((c) => (
-                      <option key={c.id} value={c.nom}>{c.nom}</option>
-                    ))}
-                  </optgroup>
-                ))}
-                <option value="autre">Autre commune...</option>
-              </select>
+              />
               {communeDest === "autre" && (
                 <input
                   name="destination_autre"

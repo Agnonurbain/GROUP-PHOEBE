@@ -101,19 +101,41 @@ export default async function EtatLieuxPage({
 
         {demande.statut === "en_cours" && (
           <ScrollReveal variant="fade-up" delay={0.2}>
-            <EtatLieuxForm
-              demandeId={id}
-              type="retour"
-              cautionMax={demande.caution ? Number(demande.caution) : 0}
-            />
+            <div className="space-y-4">
+              <EtatLieuxForm
+                demandeId={id}
+                type="retour"
+                cautionMax={demande.caution ? Number(demande.caution) : 0}
+              />
+              <a
+                href={`/api/etat-lieux-pdf?id=${id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block rounded-lg bg-phoebe-anthracite px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-phoebe-anthracite/80"
+              >
+                PDF état des lieux départ
+              </a>
+            </div>
           </ScrollReveal>
         )}
 
-        {demande.statut === "terminee" && (
+        {(demande.statut === "terminee" || (demande.statut as string) === "retour_en_inspection") && (
           <ScrollReveal variant="fade-up" delay={0.2}>
-            <p className="text-sm text-phoebe-green font-medium">
-              Location terminée — les deux états des lieux sont enregistrés.
-            </p>
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-phoebe-green font-medium">
+                {(demande.statut as string) === "retour_en_inspection"
+                  ? "Inspection en cours — en attente de finalisation."
+                  : "Location terminée — les deux états des lieux sont enregistrés."}
+              </p>
+              <a
+                href={`/api/etat-lieux-pdf?id=${id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 rounded-lg bg-phoebe-anthracite px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-phoebe-anthracite/80"
+              >
+                Télécharger PDF
+              </a>
+            </div>
           </ScrollReveal>
         )}
     </div>
