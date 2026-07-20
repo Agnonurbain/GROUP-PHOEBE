@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/server";
 import { makeGroupKey, groupVehicles } from "@/lib/vehicle-group";
 import { CAT_LABELS } from "@/lib/constants";
 import { JsonLd } from "@/components/json-ld";
+import { VehicleMap } from "@/components/vehicle-map";
 import { ScrollReveal, ParallaxImage } from "@/components/effects";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://group-phoebe.com";
@@ -29,7 +30,7 @@ export async function generateMetadata({
   const supabase = await createClient();
   const { data: allVehicules } = await supabase
     .from("vehicules")
-    .select("id, marque, modele, categorie, annee, nb_places, prix_journalier, prix_vente")
+    .select("id, marque, modele, categorie, annee, nb_places, prix_journalier, prix_vente, latitude, longitude")
     .neq("statut", "indisponible")
     .neq("statut", "reserve");
 
@@ -449,6 +450,19 @@ export default async function GroupeDetailPage({
             </ScrollReveal>
           </div>
         </div>
+
+        {/* Carte localisation */}
+        {rep.latitude && rep.longitude && (
+          <ScrollReveal variant="fade-up" delay={0.35}>
+            <div className="mt-12">
+              <VehicleMap
+                latitude={Number(rep.latitude)}
+                longitude={Number(rep.longitude)}
+                localisation={rep.localisation}
+              />
+            </div>
+          </ScrollReveal>
+        )}
 
         {/* Avis clients */}
         {avisData && avisData.length > 0 && (
