@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export type CartItem = {
   groupKey: string;
@@ -26,6 +27,7 @@ type CartContextValue = {
   isInCart: (groupKey: string) => boolean;
   getQuantity: (groupKey: string) => number;
   count: number;
+  loaded: boolean;
 };
 
 const STORAGE_KEY = "gp-cart";
@@ -35,7 +37,7 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 type StoredCart = { v: number; items: CartItem[] };
 
-function loadCart(): CartItem[] {
+function loadLocal(): CartItem[] {
   if (typeof window === "undefined") return [];
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -51,7 +53,7 @@ function loadCart(): CartItem[] {
   }
 }
 
-function saveCart(items: CartItem[]) {
+function saveLocal(items: CartItem[]) {
   try {
     const data: StoredCart = { v: CART_VERSION, items };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -60,17 +62,96 @@ function saveCart(items: CartItem[]) {
   }
 }
 
+async function saveServer(items: CartItem[]) {
+  try {
+    const { loadServerCart, saveServerCart, clearServerCart } = await import("@/app/actions/cart");
+    if (items.length === 0) {
+      await clearServerCart();
+    } else {
+      const fd = new FormData();
+      fd.set("items", JSON.stringify(items));
+      await saveServerCart({}, fd);
+    }
+  } catch {
+    // offline or not authenticated
+  }
+}
+
+async function loadServer(): Promise<CartItem[] | null> {
+  try {
+    const { loadServerCart } = await import("@/app/actions/cart");
+    return await loadServerCart();
+  } catch {
+    return null;
+  }
+}
+
+function mergeCarts(local: CartItem[], server: CartItem[]): CartItem[] {
+  if (server.length === 0) return local;
+  if (local.length === 0) return server;
+
+  const map = new Map<string, CartItem>();
+  for (const item of [...server, ...local]) {
+    const existing = map.get(item.groupKey);
+    if (existing) {
+      map.set(item.groupKey, {
+        ...item,
+        quantite: Math.min(item.quantite, item.maxDisponible),
+      });
+    } else {
+      map.set(item.groupKey, item);
+    }
+  }
+  return Array.from(map.values());
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setItems(loadCart());
-    setLoaded(true);
+    let cancelled = false;
+
+    async function init() {
+      const local = loadLocal();
+
+      const supabase = createClient();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const isAuthed = !!sessionData?.session?.user;
+
+      if (isAuthed) {
+        const server = await loadServer();
+        if (server !== null) {
+          const merged = mergeCarts(local, server);
+          if (!cancelled) {
+            setItems(merged);
+            saveLocal(merged);
+            saveServer(merged);
+          }
+          return;
+        }
+      }
+
+      if (!cancelled) {
+        setItems(local);
+      }
+    }
+
+    init().finally(() => {
+      if (!cancelled) setLoaded(true);
+    });
+
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
-    if (loaded) saveCart(items);
+    if (loaded) saveLocal(items);
+  }, [items, loaded]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    const timer = setTimeout(() => saveServer(items), 500);
+    return () => clearTimeout(timer);
   }, [items, loaded]);
 
   const addItem = useCallback((item: Omit<CartItem, "avecChauffeur">) => {
@@ -135,6 +216,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       isInCart,
       getQuantity,
       count,
+      loaded,
     }}>
       {children}
     </CartContext>

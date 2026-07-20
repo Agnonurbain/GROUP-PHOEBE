@@ -1004,6 +1004,35 @@ export type Database = {
           },
         ]
       }
+      paniers: {
+        Row: {
+          client_id: string
+          created_at: string
+          items: unknown
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          items?: unknown
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          items?: unknown
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paniers_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       paiements: {
         Row: {
           created_at: string
