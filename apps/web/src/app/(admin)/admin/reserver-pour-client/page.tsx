@@ -27,7 +27,7 @@ export default async function ReserverPourClientPage() {
       .order("marque"),
     supabase
       .from("zones_tarifaires")
-      .select("id, nom")
+      .select("id, nom, coefficient_majoration, caution_multiplicateur, km_inclus_par_jour, supplement_km_fcfa, chauffeur_statut, tarif_chauffeur_journalier")
       .order("ordre", { ascending: true }),
     supabase.from("communes").select("id, nom, zone_id").order("nom"),
   ]);
@@ -51,7 +51,7 @@ export default async function ReserverPourClientPage() {
         <ReservationPourClientForm
           clients={clients ?? []}
           vehicules={vehicules ?? []}
-          zones={zones ?? []}
+          zones={(zones ?? []) as never[]}
           communes={communes ?? []}
         />
       </ScrollReveal>

@@ -22,7 +22,16 @@ type Vehicule = {
   chauffeur_disponible: boolean;
   statut: string;
 };
-type Zone = { id: string; nom: string };
+type Zone = {
+  id: string;
+  nom: string;
+  coefficient_majoration: number;
+  caution_multiplicateur: number;
+  km_inclus_par_jour: number;
+  supplement_km_fcfa: number;
+  chauffeur_statut: string;
+  tarif_chauffeur_journalier: number;
+};
 type Commune = { id: string; nom: string; zone_id: string };
 
 export function ReservationPourClientForm({
@@ -129,6 +138,13 @@ export function ReservationPourClientForm({
 
   const totalMontant = lignesCalc.reduce((s, l) => s + l.montant, 0);
   const totalCaution = lignesCalc.reduce((s, l) => s + l.caution, 0);
+
+  const destCommune = communeDest && communeDest !== "autre"
+    ? communes.find((c) => c.nom === communeDest)
+    : null;
+  const destZone = destCommune
+    ? zones.find((z) => z.id === destCommune.zone_id)
+    : null;
 
   const communesByZone = zones.map((z) => ({
     ...z,
@@ -506,6 +522,35 @@ export function ReservationPourClientForm({
               )}
             </div>
           </div>
+
+          {destZone && communeDest !== "autre" && (
+            <div className="space-y-2 rounded-lg bg-phoebe-green/5 px-4 py-3">
+              <p className="text-sm text-phoebe-anthracite/60">
+                Zone tarifaire proposée :{" "}
+                <span className="font-medium text-phoebe-green-deep">
+                  {destZone.nom}
+                </span>
+                {destZone.coefficient_majoration > 1 && (
+                  <span className="ml-2 text-xs text-phoebe-gold">
+                    (coefficient ×{Number(destZone.coefficient_majoration).toFixed(2)})
+                  </span>
+                )}
+              </p>
+              <p className="text-xs text-phoebe-anthracite/50">
+                {destZone.km_inclus_par_jour} km inclus/jour · Supplément {destZone.supplement_km_fcfa} FCFA/km au-delà
+              </p>
+              {destZone.chauffeur_statut === "obligatoire" && (
+                <p className="text-xs font-medium text-error">
+                  Chauffeur obligatoire pour cette zone ({Number(destZone.tarif_chauffeur_journalier).toLocaleString("fr-FR")} FCFA/jour inclus)
+                </p>
+              )}
+              {destZone.chauffeur_statut === "recommande" && (
+                <p className="text-xs font-medium text-phoebe-gold">
+                  Chauffeur recommandé pour cette zone ({Number(destZone.tarif_chauffeur_journalier).toLocaleString("fr-FR")} FCFA/jour)
+                </p>
+              )}
+            </div>
+          )}
         </fieldset>
 
         {/* 5. Prix et récap */}
