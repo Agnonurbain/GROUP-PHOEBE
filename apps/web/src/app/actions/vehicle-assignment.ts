@@ -3,9 +3,16 @@
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 
-const TAUX_CAUTION_DEFAUT = 0.3;
+const CAUTION_BASE_DEFAUT = 50000;
 
 type AdminClient = ReturnType<typeof createAdminClient<Database>>;
+
+export type ZoneTarif = {
+  coefficient_majoration: number;
+  caution_multiplicateur: number;
+  tarif_chauffeur_journalier: number;
+  chauffeur_statut: string;
+};
 
 export type AssignedVehicle = {
   vehiculeId: string;
@@ -27,7 +34,8 @@ export async function assignerVehiculesGroupe(
   quantite: number,
   periode: string,
   avecChauffeur: boolean,
-  nbJours: number
+  nbJours: number,
+  zone?: ZoneTarif
 ): Promise<AssignmentResult> {
   const { data: candidats } = await admin
     .from("vehicules")
@@ -141,11 +149,17 @@ export async function assignerVehiculesGroupe(
       reservedChauffeurs.push({ chauffeurId, periode });
     }
 
-    const montant = Number(v.prix_journalier) * nbJours;
-    const tauxCaution = v.taux_caution
-      ? Number(v.taux_caution)
-      : TAUX_CAUTION_DEFAUT;
-    const caution = Math.round(montant * tauxCaution);
+    const coeff = zone?.coefficient_majoration ?? 1;
+    const prixZone = Math.round(Number(v.prix_journalier) * coeff);
+    const montantLocation = prixZone * nbJours;
+    const chauffeurObligatoire = zone?.chauffeur_statut === "obligatoire";
+    const montantChauffeur = (avecChauffeur || chauffeurObligatoire)
+      ? (zone?.tarif_chauffeur_journalier ?? 0) * nbJours
+      : 0;
+    const montant = montantLocation + montantChauffeur;
+    const cautionBase = Number(v.caution_base_fcfa) || CAUTION_BASE_DEFAUT;
+    const cautionMult = zone?.caution_multiplicateur ?? 1;
+    const caution = Math.round(cautionBase * cautionMult);
 
     reserved.push({ vehiculeId: v.id, chauffeurId, montant, caution });
   }

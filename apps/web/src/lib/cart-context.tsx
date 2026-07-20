@@ -8,7 +8,7 @@ export type CartItem = {
   modele: string;
   categorie: string;
   prixJournalier: number;
-  tauxCaution: number;
+  cautionBaseFcfa: number;
   chauffeurDisponible: boolean;
   avecChauffeur: boolean;
   quantite: number;
@@ -29,7 +29,7 @@ type CartContextValue = {
 };
 
 const STORAGE_KEY = "gp-cart";
-const CART_VERSION = 2;
+const CART_VERSION = 3;
 
 const CartContext = createContext<CartContextValue | null>(null);
 

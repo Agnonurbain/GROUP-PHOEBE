@@ -13,7 +13,16 @@ const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
 
 
-type Zone = { id: string; nom: string };
+type Zone = {
+  id: string;
+  nom: string;
+  coefficient_majoration: number;
+  caution_multiplicateur: number;
+  km_inclus_par_jour: number;
+  supplement_km_fcfa: number;
+  chauffeur_statut: string;
+  tarif_chauffeur_journalier: number;
+};
 type Commune = { id: string; nom: string; zone_id: string };
 type IntervallePrix = {
   id: string;
@@ -121,11 +130,21 @@ export function CheckoutForm({
         )
       : 0;
 
+  const coeff = destZone?.coefficient_majoration ?? 1;
+  const cautionMult = destZone?.caution_multiplicateur ?? 1;
+  const chauffeurStatut = destZone?.chauffeur_statut ?? "optionnel";
+  const tarifChauffeur = destZone?.tarif_chauffeur_journalier ?? 0;
+
   const lignesCalc = items.map((item) => {
-    const montantUnitaire = item.prixJournalier * nbJours;
-    const montant = montantUnitaire * item.quantite;
-    const caution = Math.round(montant * item.tauxCaution);
-    return { ...item, montant, caution, total: montant + caution };
+    const prixZone = Math.round(item.prixJournalier * coeff);
+    const montantLocation = prixZone * nbJours * item.quantite;
+    const chauffeurObligatoire = chauffeurStatut === "obligatoire";
+    const avecChauffeurEffectif = item.avecChauffeur || chauffeurObligatoire;
+    const montantChauffeur = avecChauffeurEffectif ? tarifChauffeur * nbJours * item.quantite : 0;
+    const montant = montantLocation + montantChauffeur;
+    const cautionBase = item.cautionBaseFcfa || Math.round(montantLocation * 0.3);
+    const caution = Math.round(cautionBase * cautionMult) * item.quantite;
+    return { ...item, prixZone, montant, montantLocation, montantChauffeur, caution, avecChauffeurEffectif, total: montant + caution };
   });
 
   const totalMontant = lignesCalc.reduce((s, l) => s + l.montant, 0);
@@ -321,13 +340,31 @@ export function CheckoutForm({
           </div>
 
           {destZone && communeDest !== "autre" && (
-            <div className="rounded-lg bg-phoebe-green/5 px-4 py-3">
+            <div className="space-y-2 rounded-lg bg-phoebe-green/5 px-4 py-3">
               <p className="text-sm text-phoebe-anthracite/60">
                 Zone tarifaire :{" "}
                 <span className="font-medium text-phoebe-green-deep">
                   {destZone.nom}
                 </span>
+                {coeff > 1 && (
+                  <span className="ml-2 text-xs text-phoebe-gold">
+                    (coefficient ×{coeff.toFixed(2)})
+                  </span>
+                )}
               </p>
+              <p className="text-xs text-phoebe-anthracite/50">
+                {destZone.km_inclus_par_jour} km inclus/jour · Supplément {destZone.supplement_km_fcfa} FCFA/km au-delà
+              </p>
+              {chauffeurStatut === "obligatoire" && (
+                <p className="text-xs font-medium text-error">
+                  Chauffeur obligatoire pour cette zone ({tarifChauffeur.toLocaleString("fr-FR")} FCFA/jour inclus)
+                </p>
+              )}
+              {chauffeurStatut === "recommande" && (
+                <p className="text-xs font-medium text-phoebe-gold">
+                  Chauffeur recommandé pour cette zone ({tarifChauffeur.toLocaleString("fr-FR")} FCFA/jour)
+                </p>
+              )}
             </div>
           )}
         </fieldset>
@@ -340,37 +377,52 @@ export function CheckoutForm({
             </h3>
             <dl className="space-y-1 text-sm">
               {lignesCalc.map((l) => (
-                <div key={l.groupKey} className="flex justify-between">
-                  <dt className="text-phoebe-anthracite/60">
-                    {l.marque} {l.modele}
-                    {l.quantite > 1 ? ` ×${l.quantite}` : ""} ({nbJours}j)
-                  </dt>
-                  <dd className="font-medium text-phoebe-anthracite">
-                    {l.montant.toLocaleString("fr-FR")} FCFA
-                  </dd>
+                <div key={l.groupKey}>
+                  <div className="flex justify-between">
+                    <dt className="text-phoebe-anthracite/60">
+                      {l.marque} {l.modele}
+                      {l.quantite > 1 ? ` ×${l.quantite}` : ""} — {l.prixZone.toLocaleString("fr-FR")} FCFA/j × {nbJours}j
+                    </dt>
+                    <dd className="font-medium text-phoebe-anthracite">
+                      {l.montantLocation.toLocaleString("fr-FR")} FCFA
+                    </dd>
+                  </div>
+                  {l.montantChauffeur > 0 && (
+                    <div className="flex justify-between text-xs">
+                      <dt className="text-phoebe-anthracite/40 pl-4">
+                        + Chauffeur{l.avecChauffeurEffectif && chauffeurStatut === "obligatoire" ? " (obligatoire)" : ""}
+                      </dt>
+                      <dd className="text-phoebe-anthracite/60">
+                        {l.montantChauffeur.toLocaleString("fr-FR")} FCFA
+                      </dd>
+                    </div>
+                  )}
                 </div>
               ))}
               <div className="flex justify-between border-t border-phoebe-anthracite/10 pt-1">
-                <dt className="text-phoebe-anthracite/60">Sous-total location</dt>
+                <dt className="text-phoebe-anthracite/60">Montant location</dt>
                 <dd className="font-medium text-phoebe-anthracite">
                   {totalMontant.toLocaleString("fr-FR")} FCFA
                 </dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-phoebe-anthracite/60">Caution globale</dt>
+                <dt className="text-phoebe-anthracite/60">
+                  Dépôt de garantie (caution remboursable)
+                  {cautionMult > 1 && <span className="text-xs text-phoebe-gold"> ×{cautionMult.toFixed(1)}</span>}
+                </dt>
                 <dd className="font-medium text-phoebe-anthracite">
                   {totalCaution.toLocaleString("fr-FR")} FCFA
                 </dd>
               </div>
-              <div className="flex justify-between border-t border-phoebe-anthracite/10 pt-1">
-                <dt className="font-semibold text-phoebe-anthracite">Total à payer</dt>
+              <div className="flex justify-between border-t border-phoebe-anthracite/10 pt-2 mt-1">
+                <dt className="font-semibold text-phoebe-anthracite">Total à payer aujourd&apos;hui</dt>
                 <dd className="font-bold text-phoebe-green">
                   {grandTotal.toLocaleString("fr-FR")} FCFA
                 </dd>
               </div>
             </dl>
             <p className="mt-2 text-xs text-phoebe-anthracite/40">
-              Le tarif final peut varier selon la négociation. La caution est restituée au retour des véhicules.
+              La caution est intégralement restituée au retour du véhicule, sauf retenue pour dégâts ou carburant manquant.
             </p>
           </div>
         )}

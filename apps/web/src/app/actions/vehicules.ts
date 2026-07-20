@@ -82,6 +82,7 @@ export async function creerVehicule(
     etat: etat as "neuf" | "occasion",
     niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
     taux_caution: numCaution(formData.get("taux_caution")),
+    caution_base_fcfa: num(formData.get("caution_base_fcfa")),
     description: str(formData.get("description")),
     statut: "disponible" as const,
   };
@@ -164,6 +165,7 @@ export async function modifierVehicule(
       etat: etat as "neuf" | "occasion",
       niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
       taux_caution: numCaution(formData.get("taux_caution")),
+      caution_base_fcfa: num(formData.get("caution_base_fcfa")),
       description: str(formData.get("description")),
       statut: statut as
         | "disponible"
@@ -206,6 +208,7 @@ export async function modifierVehicule(
       etat: etat as "neuf" | "occasion",
       niveau_carburant: (str(formData.get("niveau_carburant")) as "vide" | "quart" | "demi" | "trois_quarts" | "plein") ?? null,
       taux_caution: numCaution(formData.get("taux_caution")),
+      caution_base_fcfa: num(formData.get("caution_base_fcfa")),
       description: str(formData.get("description")),
       statut: "disponible" as const,
     }));

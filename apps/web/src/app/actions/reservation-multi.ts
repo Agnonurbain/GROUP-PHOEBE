@@ -8,7 +8,7 @@ import { creerSessionStripe } from "@/lib/payments/stripe";
 import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
-import { assignerVehiculesGroupe, type AssignedVehicle } from "@/app/actions/vehicle-assignment";
+import { assignerVehiculesGroupe, type AssignedVehicle, type ZoneTarif } from "@/app/actions/vehicle-assignment";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -103,17 +103,38 @@ export async function creerReservationMultiple(
     expirerNonPresentations(),
   ]);
 
+  let zone: ZoneTarif | undefined;
+  let zoneId: string | null = null;
+  if (destination) {
+    const { data: commune } = await admin
+      .from("communes")
+      .select("zone_id")
+      .eq("nom", destination)
+      .maybeSingle();
+    if (commune?.zone_id) {
+      zoneId = commune.zone_id;
+      const { data: zoneData } = await admin
+        .from("zones_tarifaires")
+        .select("coefficient_majoration, caution_multiplicateur, tarif_chauffeur_journalier, chauffeur_statut")
+        .eq("id", commune.zone_id)
+        .single();
+      if (zoneData) zone = zoneData;
+    }
+  }
+
   const allAssigned: (AssignedVehicle & { avecChauffeur: boolean })[] = [];
 
   for (const ligne of lignes) {
+    const avecChauffeurEffectif = ligne.avecChauffeur || zone?.chauffeur_statut === "obligatoire";
     const result = await assignerVehiculesGroupe(
       admin,
       ligne.marque,
       ligne.modele,
       ligne.quantite,
       periode,
-      ligne.avecChauffeur,
-      nbJours
+      avecChauffeurEffectif,
+      nbJours,
+      zone
     );
 
     if (!result.ok) {

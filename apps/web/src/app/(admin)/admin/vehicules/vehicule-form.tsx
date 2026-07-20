@@ -382,24 +382,44 @@ export default function VehiculeForm({
               />
             </div>
           </div>
-          <div className="max-w-xs">
-            <label htmlFor="taux_caution" className={labelClass}>
-              Taux de caution (%)
-            </label>
-            <input
-              id="taux_caution"
-              name="taux_caution"
-              type="number"
-              min={1}
-              max={99}
-              step="1"
-              defaultValue={vehicule?.taux_caution ? Math.round(Number(vehicule.taux_caution) * 100) : ""}
-              placeholder="30"
-              className={inputClass}
-            />
-            <p className="mt-1 text-xs text-phoebe-anthracite/50">
-              Laisser vide pour utiliser le défaut (30%)
-            </p>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="caution_base_fcfa" className={labelClass}>
+                Caution de base (FCFA)
+              </label>
+              <input
+                id="caution_base_fcfa"
+                name="caution_base_fcfa"
+                type="number"
+                min={0}
+                step="1000"
+                defaultValue={vehicule?.caution_base_fcfa ?? ""}
+                placeholder="50000"
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-phoebe-anthracite/50">
+                Montant fixe multiplié par le coefficient de zone (×1.0 / ×1.5 / ×2.0)
+              </p>
+            </div>
+            <div>
+              <label htmlFor="taux_caution" className={labelClass}>
+                Taux de caution (%) — ancien
+              </label>
+              <input
+                id="taux_caution"
+                name="taux_caution"
+                type="number"
+                min={1}
+                max={99}
+                step="1"
+                defaultValue={vehicule?.taux_caution ? Math.round(Number(vehicule.taux_caution) * 100) : ""}
+                placeholder="30"
+                className={inputClass}
+              />
+              <p className="mt-1 text-xs text-phoebe-anthracite/50">
+                Fallback si la caution de base n&apos;est pas définie
+              </p>
+            </div>
           </div>
         </fieldset>
 

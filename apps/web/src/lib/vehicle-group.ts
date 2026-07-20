@@ -4,7 +4,7 @@ export type VehicleGroup = {
   modele: string;
   categorie: string;
   prixJournalier: number;
-  tauxCaution: number;
+  cautionBaseFcfa: number;
   chauffeurDisponible: boolean;
   totalCount: number;
   photoUrl: string | null;
@@ -48,6 +48,7 @@ type VehiculeRow = {
   categorie: string;
   prix_journalier: number | null;
   taux_caution: number | null;
+  caution_base_fcfa: number | null;
   chauffeur_disponible: boolean;
   statut: string;
   climatisation: boolean;
@@ -106,7 +107,7 @@ export function groupVehicles(
       modele: rep.modele,
       categorie: rep.categorie,
       prixJournalier: prices.length > 0 ? Math.min(...prices) : 0,
-      tauxCaution: Math.max(...items.map((v) => Number(v.taux_caution) || 0.3)),
+      cautionBaseFcfa: Math.max(...items.map((v) => Number(v.caution_base_fcfa) || 0)),
       chauffeurDisponible: items.some((v) => v.chauffeur_disponible),
       totalCount: disponibles.length,
       photoUrl: photo,

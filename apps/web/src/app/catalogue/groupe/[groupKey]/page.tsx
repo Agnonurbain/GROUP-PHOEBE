@@ -223,7 +223,7 @@ export default async function GroupeDetailPage({
                   modele: group.modele,
                   categorie: group.categorie,
                   prixJournalier: group.prixJournalier,
-                  tauxCaution: group.tauxCaution,
+                  cautionBaseFcfa: group.cautionBaseFcfa,
                   chauffeurDisponible: group.chauffeurDisponible,
                   quantite: 1,
                   maxDisponible: group.totalCount,
