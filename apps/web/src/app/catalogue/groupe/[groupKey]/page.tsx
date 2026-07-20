@@ -79,6 +79,13 @@ export default async function GroupeDetailPage({
   const baseMin = basePrices.length > 0 ? Math.min(...basePrices) : 0;
   const baseMax = basePrices.length > 0 ? Math.max(...basePrices) : 0;
 
+  const { data: avisData } = await supabase
+    .from("avis_transport")
+    .select("note, commentaire, created_at, demandes_transport!inner(vehicule_id)")
+    .in("demandes_transport.vehicule_id", ids)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
   const intervalles = mode === "location" && baseMin > 0
     ? (zones ?? []).map((z) => {
         const coeff = Number((z as unknown as Record<string, unknown>).coefficient_majoration) || 1;
@@ -333,6 +340,36 @@ export default async function GroupeDetailPage({
             </ScrollReveal>
           </div>
         </div>
+
+        {/* Avis clients */}
+        {avisData && avisData.length > 0 && (
+          <ScrollReveal variant="fade-up" delay={0.4}>
+          <div className="mt-12">
+            <h2 className="mb-6 text-xl font-bold tracking-tight text-phoebe-anthracite">
+              Avis clients
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {avisData.map((a) => (
+                <div key={a.created_at + (a.note?.toString() ?? "0")} className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
+                  <div className="flex items-center gap-1 mb-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill={i < (a.note ?? 0) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" className={i < (a.note ?? 0) ? "text-phoebe-gold" : "text-phoebe-anthracite/20"}>
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                      </svg>
+                    ))}
+                  </div>
+                  {a.commentaire && (
+                    <p className="text-sm text-phoebe-anthracite/70 leading-relaxed">{a.commentaire}</p>
+                  )}
+                  <p className="mt-2 text-xs text-phoebe-anthracite/40">
+                    {new Date(a.created_at).toLocaleDateString("fr-FR")}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+          </ScrollReveal>
+        )}
       </main>
     </>
   );
