@@ -60,6 +60,7 @@ export function CheckoutForm({
   const [autreDestNom, setAutreDestNom] = useState("");
   const [showNego, setShowNego] = useState(false);
   const [negoNote, setNegoNote] = useState("");
+  const [accepteCgv, setAccepteCgv] = useState(false);
 
   const today = new Date().toISOString().slice(0, 10);
 
@@ -429,7 +430,26 @@ export function CheckoutForm({
           </div>
         </fieldset>
 
-        <SubmitButton>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
+        {/* CGV */}
+        <label className="flex items-start gap-3 rounded-xl border border-phoebe-pearl bg-white p-4">
+          <input
+            type="checkbox"
+            name="accepte_cgv"
+            checked={accepteCgv}
+            onChange={(e) => setAccepteCgv(e.target.checked)}
+            required
+            className="mt-0.5 rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
+          />
+          <span className="text-sm text-phoebe-anthracite/70 leading-relaxed">
+            J&apos;accepte les{" "}
+            <a href="/cgv" target="_blank" className="text-phoebe-green underline hover:text-phoebe-green-deep">
+              conditions générales de vente
+            </a>{" "}
+            et la politique de restitution de la caution.
+          </span>
+        </label>
+
+        <SubmitButton disabled={!accepteCgv}>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
       </form>
 
       <div className="mt-3 space-y-3">

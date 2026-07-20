@@ -59,6 +59,18 @@ async function VehiculeGrid({
   if (sp.vente === "oui") query = query.gt("prix_vente", 0);
   if (sp.etat) query = query.eq("etat", sp.etat);
 
+  const { data: zones } = await supabase
+    .from("zones_tarifaires")
+    .select("id, nom, ordre")
+    .order("ordre", { ascending: true });
+
+  const selectedZone = sp.zone
+    ? (zones ?? []).find((z) => z.id === sp.zone)
+    : null;
+  const coeffZone = selectedZone
+    ? Number((selectedZone as unknown as Record<string, unknown>).coefficient_majoration) || 1
+    : null;
+
   const { data: vehicules } = await query;
 
   const ids = vehicules?.map((v) => v.id) ?? [];
@@ -154,9 +166,16 @@ async function VehiculeGrid({
             </div>
 
             {g.prixJournalier > 0 && (
-              <p className="text-sm font-semibold text-phoebe-green">
-                à partir de {g.prixJournalier.toLocaleString("fr-FR")} FCFA<span className="font-normal text-phoebe-anthracite/40">/jour</span>
-              </p>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-phoebe-green">
+                  à partir de {g.prixJournalier.toLocaleString("fr-FR")} FCFA<span className="font-normal text-phoebe-anthracite/40">/jour</span>
+                </p>
+                {selectedZone && coeffZone && (
+                  <p className="text-xs font-medium text-phoebe-gold">
+                    {selectedZone.nom} : {Math.round(g.prixJournalier * coeffZone).toLocaleString("fr-FR")} FCFA/jour
+                  </p>
+                )}
+              </div>
             )}
             {g.prixVente && (
               <p className="text-sm font-semibold text-phoebe-gold">
@@ -202,6 +221,12 @@ export default async function CataloguePage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const sp = await searchParams;
+  const supabase = await createClient();
+
+  const { data: zones } = await supabase
+    .from("zones_tarifaires")
+    .select("id, nom, ordre")
+    .order("ordre", { ascending: true });
 
   return (
     <>
@@ -230,7 +255,7 @@ export default async function CataloguePage({
 
         <div className="mx-auto max-w-6xl px-4 py-8">
           <Suspense>
-            <Filtres />
+            <Filtres zones={zones ?? []} />
           </Suspense>
 
           <Suspense fallback={<GridSkeleton />}>

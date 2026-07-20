@@ -441,6 +441,7 @@ export type Database = {
       }
       demandes_transport: {
         Row: {
+          accepte_cgv: boolean
           avec_chauffeur: boolean
           carburant_depart: string | null
           carburant_retour: string | null
@@ -469,6 +470,7 @@ export type Database = {
           ville_depart: string | null
         }
         Insert: {
+          accepte_cgv?: boolean
           avec_chauffeur?: boolean
           carburant_depart?: string | null
           carburant_retour?: string | null
@@ -497,6 +499,7 @@ export type Database = {
           ville_depart?: string | null
         }
         Update: {
+          accepte_cgv?: boolean
           avec_chauffeur?: boolean
           carburant_depart?: string | null
           carburant_retour?: string | null

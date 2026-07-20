@@ -60,6 +60,11 @@ export async function creerReservationMultiple(
     : destinationRaw;
   const methode = formData.get("methode_paiement") as string;
   const lignesRaw = formData.get("lignes") as string;
+  const accepteCgv = formData.get("accepte_cgv") === "on";
+
+  if (!accepteCgv) {
+    return { error: "Vous devez accepter les conditions générales de vente." };
+  }
 
   if (!debut || !fin) {
     return { error: "Les dates de début et de fin sont obligatoires." };
@@ -165,6 +170,7 @@ export async function creerReservationMultiple(
   const { data: demande, error: demandeErr } = await admin
     .from("demandes_transport")
     .insert({
+      accepte_cgv: true,
       client_id: user.sub,
       vehicule_id: allAssigned[0].vehiculeId,
       type: "reservation_directe",

@@ -1,17 +1,30 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-import { verifierOtp, type AuthState } from "@/app/actions/auth";
+import { verifierOtp, renvoyerCode, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { ScrollReveal } from "@/components/effects";
+
+const RESEND_COOLDOWN = 60;
 
 function OtpForm() {
   const searchParams = useSearchParams();
   const phone = searchParams.get("phone") ?? "";
   const next = searchParams.get("next") ?? "";
   const [state, action] = useActionState<AuthState, FormData>(verifierOtp, {});
+  const [resendState, resendAction] = useActionState<AuthState, FormData>(renvoyerCode, {});
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendState.phone === "resent") setCooldown(RESEND_COOLDOWN);
+  }, [resendState]);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setInterval(() => setCooldown((c) => c - 1), 1000);
+    return () => clearInterval(id);
+  }, [cooldown]);
 
   return (
     <ScrollReveal variant="scale-in">
@@ -62,6 +75,30 @@ function OtpForm() {
         </div>
         <SubmitButton>Verifier</SubmitButton>
       </form>
+
+      <div className="mt-6 text-center">
+        {cooldown > 0 ? (
+          <p className="text-xs text-phoebe-anthracite/40">
+            Renvoyer le code dans {cooldown}s
+          </p>
+        ) : (
+          <form action={resendAction}>
+            <input type="hidden" name="phone" value={phone} />
+            <button
+              type="submit"
+              className="text-sm font-medium text-phoebe-green transition-colors hover:text-phoebe-green-deep hover:underline"
+            >
+              Renvoyer le code
+            </button>
+          </form>
+        )}
+        {resendState.error && (
+          <p className="mt-2 text-xs text-error">{resendState.error}</p>
+        )}
+        {resendState.phone === "resent" && (
+          <p className="mt-2 text-xs text-phoebe-green-deep">Nouveau code envoyé !</p>
+        )}
+      </div>
     </ScrollReveal>
   );
 }

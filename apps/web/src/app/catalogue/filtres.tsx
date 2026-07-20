@@ -13,7 +13,9 @@ const chipActive =
 const chipInactive =
   "border-phoebe-anthracite/12 text-phoebe-anthracite/55 hover:border-phoebe-green/30 hover:bg-phoebe-green/5 hover:text-phoebe-green-deep";
 
-export default function Filtres() {
+type Zone = { id: string; nom: string; ordre: number };
+
+export default function Filtres({ zones }: { zones: Zone[] }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -142,6 +144,16 @@ export default function Filtres() {
         >
           À vendre
         </button>
+        {zones.map((z) => (
+          <button
+            key={z.id}
+            type="button"
+            onClick={() => toggle("zone", z.id)}
+            className={`${chipBase} ${get("zone") === z.id ? "border-phoebe-gold bg-phoebe-gold/10 text-phoebe-gold" : chipInactive}`}
+          >
+            {z.nom}
+          </button>
+        ))}
         <button
           type="button"
           onClick={() => setShowMore((s) => !s)}

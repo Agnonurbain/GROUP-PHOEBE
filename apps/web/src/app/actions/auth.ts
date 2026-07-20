@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import type { Database } from "@group-phoebe/database/types";
 import { hasMinimumAge } from "@/lib/auth";
 
 export type AuthState = {
@@ -265,6 +267,46 @@ export async function updateProfile(
   }
 
   redirect("/profil");
+}
+
+export async function renvoyerCode(
+  _prev: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+  const phone = formData.get("phone") as string;
+
+  if (!phone) {
+    return { error: "Numéro de téléphone requis." };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithOtp({ phone });
+
+  if (error) {
+    return { error: "Impossible de renvoyer le code. Réessayez plus tard." };
+  }
+
+  return { phone: "resent" };
+}
+
+export async function supprimerCompte(): Promise<AuthState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Session expirée." };
+
+  const admin = createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { error: deleteError } = await admin.auth.admin.deleteUser(user.sub);
+
+  if (deleteError) {
+    return { error: "Impossible de supprimer le compte." };
+  }
+
+  redirect("/");
 }
 
 export async function deconnexion() {

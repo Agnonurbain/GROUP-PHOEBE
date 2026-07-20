@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Header } from "@/components/header";
 import { AjouterPanierButton } from "@/components/ajouter-panier-button";
 import { DemandeAchatForm } from "@/components/demande-achat-form";
+import { DateSelector } from "@/components/date-selector";
 import { createClient } from "@/lib/supabase/server";
 import { makeGroupKey, groupVehicles } from "@/lib/vehicle-group";
 import { CAT_LABELS } from "@/lib/constants";
@@ -226,20 +227,23 @@ export default async function GroupeDetailPage({
             {/* CTA Location */}
             {mode === "location" && group.prixJournalier > 0 && group.totalCount > 0 && (
               <ScrollReveal variant="scale-in" delay={0.3}>
-              <AjouterPanierButton
-                vehicule={{
-                  groupKey: group.groupKey,
-                  marque: group.marque,
-                  modele: group.modele,
-                  categorie: group.categorie,
-                  prixJournalier: group.prixJournalier,
-                  cautionBaseFcfa: group.cautionBaseFcfa,
-                  chauffeurDisponible: group.chauffeurDisponible,
-                  quantite: 1,
-                  maxDisponible: group.totalCount,
-                  photoUrl: group.photoUrl,
-                }}
-              />
+              <div className="space-y-4">
+                <DateSelector prixJournalier={group.prixJournalier} />
+                <AjouterPanierButton
+                  vehicule={{
+                    groupKey: group.groupKey,
+                    marque: group.marque,
+                    modele: group.modele,
+                    categorie: group.categorie,
+                    prixJournalier: group.prixJournalier,
+                    cautionBaseFcfa: group.cautionBaseFcfa,
+                    chauffeurDisponible: group.chauffeurDisponible,
+                    quantite: 1,
+                    maxDisponible: group.totalCount,
+                    photoUrl: group.photoUrl,
+                  }}
+                />
+              </div>
               </ScrollReveal>
             )}
 

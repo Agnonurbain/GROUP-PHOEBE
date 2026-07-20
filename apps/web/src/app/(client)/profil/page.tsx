@@ -7,6 +7,7 @@ import { BackLink } from "@/components/back-link";
 import { getSignedDocUrl } from "@/lib/storage";
 import { ScrollReveal } from "@/components/effects";
 import type { StatutVerification } from "@/lib/auth";
+import { DeleteAccountButton } from "@/components/delete-account-button";
 
 export default async function ProfilPage() {
   const supabase = await createClient();
@@ -205,6 +206,19 @@ export default async function ProfilPage() {
           </Link>
         </div>
       </div></ScrollReveal>}
+
+      <ScrollReveal variant="fade-up" delay={0.35}>
+        <div className="rounded-2xl border border-error/15 bg-error/5 p-7 shadow-sm transition-all duration-300 hover:shadow-xl hover:border-error/30">
+          <h2 className="text-lg font-bold text-error">Supprimer mon compte</h2>
+          <p className="mt-2 text-sm text-phoebe-anthracite/60 leading-relaxed">
+            Cette action est irreversible. Toutes vos donnees personnelles seront definitivement effacees
+            conformement au RGPD (droit a l&apos;effacement).
+          </p>
+          <div className="mt-4">
+            <DeleteAccountButton />
+          </div>
+        </div>
+      </ScrollReveal>
     </div>
   );
 }

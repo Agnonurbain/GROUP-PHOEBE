@@ -13,7 +13,7 @@ export default async function CheckoutPage() {
   const user = claimsData?.claims;
 
   if (!user) {
-    redirect("/inscription?redirect=/panier");
+    redirect("/inscription?redirect=/panier/reserver");
   }
 
   const [{ data: zones }, { data: communes }] =
