@@ -15,22 +15,22 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "GROUP PHOEBE — Transport, Livraison, Immobilier & Assistance Voyages",
+    default: "GROUP PHOEBE — Transport, Livraison, Immobilier & Assistance Migration",
     template: "%s | GROUP PHOEBE",
   },
   description:
-    "Plateforme numérique de services professionnels : transport, livraison de colis, immobilier et assistance voyages et études en Côte d'Ivoire.",
+    "Plateforme numérique de services professionnels : transport, livraison de colis, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
   openGraph: {
     type: "website",
     locale: "fr_CI",
     siteName: "GROUP PHOEBE",
     title: "GROUP PHOEBE — Services professionnels",
-    description: "Transport, livraison, immobilier et assistance voyages en Côte d'Ivoire.",
+    description: "Transport, livraison, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
   },
   twitter: {
     card: "summary",
     title: "GROUP PHOEBE",
-    description: "Transport, livraison, immobilier et assistance voyages en Côte d'Ivoire.",
+    description: "Transport, livraison, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
   },
 };
 

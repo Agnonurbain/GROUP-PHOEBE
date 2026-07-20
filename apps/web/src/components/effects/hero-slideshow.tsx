@@ -7,7 +7,7 @@ const slides = [
   { src: "/images/hero-chauffeur.jpg", alt: "Transport avec chauffeur — Rolls Royce" },
   { src: "/images/hero-livraison.jpg", alt: "Service de livraison de colis" },
   { src: "/images/hero-immobilier.jpg", alt: "Projets immobiliers premium" },
-  { src: "/images/hero-voyages.jpg", alt: "Assistance voyages internationaux" },
+  { src: "/images/hero-voyages.jpg", alt: "Assistance migration, visa et étude" },
   { src: "/images/hero-luxe.jpg", alt: "Véhicules de luxe" },
 ];
 

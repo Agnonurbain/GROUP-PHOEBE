@@ -39,10 +39,10 @@ const services = [
     href: "/catalogue",
   },
   {
-    title: "Assistance Voyages",
+    title: "Assistance Migration, Visa & Étude",
     subtitle: "Accompagnement total",
     description:
-      "Organisation de voyages et accompagnement des étudiants pour les études à l'étranger.",
+      "Assistance visa, accompagnement des étudiants pour les études à l'étranger et aide à la migration.",
     image: "/images/voyages.jpg",
     href: "/catalogue",
   },
@@ -92,7 +92,7 @@ export default async function Home() {
 
               <p className="max-w-xl text-lg leading-relaxed text-white/60">
                 Transport avec chauffeur, livraison, immobilier et assistance
-                voyages — tout en une seule plateforme.
+                migration — tout en une seule plateforme.
               </p>
 
               <div className="mt-6 flex flex-col gap-4 sm:flex-row">
@@ -282,14 +282,14 @@ export default async function Home() {
                   <div className="group relative h-[250px] cursor-pointer overflow-hidden rounded-2xl shadow-lg">
                     <ParallaxImage
                       src="/images/voyages.jpg"
-                      alt="Assistance voyages"
+                      alt="Assistance migration, visa et étude"
                       width={800}
                       height={500}
                       className="h-full rounded-2xl"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-5">
-                      <h3 className="font-bold text-white">Assistance Voyages</h3>
+                      <h3 className="font-bold text-white">Assistance Migration</h3>
                       <p className="text-xs text-white/60">Accompagnement personnalisé</p>
                     </div>
                   </div>
