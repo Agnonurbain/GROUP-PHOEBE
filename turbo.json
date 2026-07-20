@@ -15,7 +15,10 @@
         "SENTRY_AUTH_TOKEN",
         "SENTRY_ORG",
         "SENTRY_PROJECT",
-        "NEXT_PUBLIC_GA_MEASUREMENT_ID"
+        "NEXT_PUBLIC_GA_MEASUREMENT_ID",
+        "STRIPE_PUBLIC_KEY",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET"
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
