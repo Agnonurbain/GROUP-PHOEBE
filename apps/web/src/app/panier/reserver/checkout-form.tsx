@@ -11,7 +11,11 @@ import { CommuneSearch } from "@/components/commune-search";
 import { CAT_LABELS } from "@/lib/constants";
 
 const inputClass =
-  "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
+  "w-full rounded-xl border px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2";
+const inputNormal =
+  "border-phoebe-anthracite/12 bg-phoebe-pearl/20 focus:border-phoebe-green focus:ring-phoebe-green/15";
+const inputError =
+  "border-error/50 bg-error/5 focus:border-error focus:ring-error/20";
 
 
 type Zone = {
@@ -25,6 +29,26 @@ type Zone = {
   tarif_chauffeur_journalier: number;
 };
 type Commune = { id: string; nom: string; zone_id: string };
+
+function validerChamps(
+  debut: string,
+  fin: string,
+  communeDepart: string,
+  communeDest: string,
+  accepteCgv: boolean,
+  aujourdHui: string
+): Record<string, string> {
+  const e: Record<string, string> = {};
+  if (!debut) e.debut = "Date de début requise";
+  else if (debut < aujourdHui) e.debut = "La date de début doit être aujourd'hui ou après";
+  if (!fin) e.fin = "Date de fin requise";
+  else if (debut && fin && fin <= debut) e.fin = "La date de fin doit être après la date de début";
+  if (!communeDepart) e.ville_depart = "Commune de départ requise";
+  if (!communeDest) e.destination = "Commune de destination requise";
+  if (!accepteCgv) e.accepte_cgv = "Vous devez accepter les conditions générales";
+  return e;
+}
+
 export function CheckoutForm({
   zones,
   communes,
@@ -61,6 +85,7 @@ export function CheckoutForm({
   const [showNego, setShowNego] = useState(false);
   const [negoNote, setNegoNote] = useState("");
   const [accepteCgv, setAccepteCgv] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const SAVE_KEY = "gp-checkout-draft";
 
@@ -91,6 +116,18 @@ export function CheckoutForm({
       router.replace("/panier");
     }
   }, [items.length, router, negoState.success]);
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const errors = validerChamps(debut, fin, communeDepart, communeDest, accepteCgv, today);
+      setFieldErrors(errors);
+      if (Object.keys(errors).length > 0) return;
+      const fd = new FormData(e.currentTarget);
+      formAction(fd);
+    },
+    [debut, fin, communeDepart, communeDest, accepteCgv, today, formAction]
+  );
 
   if (negoState.success) {
     const whatsappUrl = `https://wa.me/2250778631983?text=${encodeURIComponent(
@@ -184,6 +221,14 @@ export function CheckoutForm({
     }))
   );
 
+  function fe(name: string): string | undefined {
+    return fieldErrors[name];
+  }
+
+  function fc(name: string): string {
+    return `${inputClass} ${fe(name) ? inputError : inputNormal}`;
+  }
+
   return (
     <>
       {state.error && (
@@ -192,7 +237,7 @@ export function CheckoutForm({
         </div>
       )}
 
-      <form action={formAction} className="space-y-8">
+      <form onSubmit={handleSubmit} className="space-y-8">
         <input type="hidden" name="lignes" value={lignesJson} />
 
         {/* Recap véhicules */}
@@ -260,9 +305,10 @@ export function CheckoutForm({
                 required
                 min={today}
                 value={debut}
-                onChange={(e) => setDebut(e.target.value)}
-                className={inputClass}
+                onChange={(e) => { setDebut(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.debut; return n; }); }}
+                className={fc("debut")}
               />
+              {fe("debut") && <p className="mt-1 text-xs text-error">{fe("debut")}</p>}
             </div>
             <div>
               <label htmlFor="ck-fin" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
@@ -275,9 +321,10 @@ export function CheckoutForm({
                 required
                 min={debut ? new Date(new Date(debut).getTime() + 86400000).toISOString().split("T")[0] : today}
                 value={fin}
-                onChange={(e) => setFin(e.target.value)}
-                className={inputClass}
+                onChange={(e) => { setFin(e.target.value); setFieldErrors((p) => { const n = { ...p }; delete n.fin; return n; }); }}
+                className={fc("fin")}
               />
+              {fe("fin") && <p className="mt-1 text-xs text-error">{fe("fin")}</p>}
             </div>
           </div>
         </fieldset>
@@ -296,18 +343,19 @@ export function CheckoutForm({
                 id="ck-commune-depart"
                 name="ville_depart"
                 value={communeDepart}
-                onChange={setCommuneDepart}
+                onChange={(v) => { setCommuneDepart(v); setFieldErrors((p) => { const n = { ...p }; delete n.ville_depart; return n; }); }}
                 communes={communeOptions}
                 placeholder="Rechercher une commune…"
-                className={inputClass}
+                className={fc("ville_depart")}
               />
+              {fe("ville_depart") && <p className="mt-1 text-xs text-error">{fe("ville_depart")}</p>}
               {communeDepart === "autre" && (
                 <input
                   name="ville_depart_autre"
                   placeholder="Nom de votre commune"
                   value={autreDepartNom}
                   onChange={(e) => setAutreDepartNom(e.target.value)}
-                  className={`mt-2 ${inputClass}`}
+                  className={`mt-2 ${inputClass} ${inputNormal}`}
                 />
               )}
             </div>
@@ -319,18 +367,19 @@ export function CheckoutForm({
                 id="ck-commune-dest"
                 name="destination"
                 value={communeDest}
-                onChange={setCommuneDest}
+                onChange={(v) => { setCommuneDest(v); setFieldErrors((p) => { const n = { ...p }; delete n.destination; return n; }); }}
                 communes={communeOptions}
                 placeholder="Rechercher une commune…"
-                className={inputClass}
+                className={fc("destination")}
               />
+              {fe("destination") && <p className="mt-1 text-xs text-error">{fe("destination")}</p>}
               {communeDest === "autre" && (
                 <input
                   name="destination_autre"
                   placeholder="Nom de votre commune"
                   value={autreDestNom}
                   onChange={(e) => setAutreDestNom(e.target.value)}
-                  className={`mt-2 ${inputClass}`}
+                  className={`mt-2 ${inputClass} ${inputNormal}`}
                 />
               )}
             </div>
@@ -453,23 +502,26 @@ export function CheckoutForm({
         </fieldset>
 
         {/* CGV */}
-        <label className="flex items-start gap-3 rounded-xl border border-phoebe-pearl bg-white p-4">
-          <input
-            type="checkbox"
-            name="accepte_cgv"
-            checked={accepteCgv}
-            onChange={(e) => setAccepteCgv(e.target.checked)}
-            required
-            className="mt-0.5 rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
-          />
-          <span className="text-sm text-phoebe-anthracite/70 leading-relaxed">
-            J&apos;accepte les{" "}
-            <a href="/cgv" target="_blank" className="text-phoebe-green underline hover:text-phoebe-green-deep">
-              conditions générales de vente
-            </a>{" "}
-            et la politique de restitution de la caution.
-          </span>
-        </label>
+        <div>
+          <label className={`flex items-start gap-3 rounded-xl border p-4 ${fe("accepte_cgv") ? "border-error/50 bg-error/5" : "border-phoebe-pearl bg-white"}`}>
+            <input
+              type="checkbox"
+              name="accepte_cgv"
+              checked={accepteCgv}
+              onChange={(e) => { setAccepteCgv(e.target.checked); setFieldErrors((p) => { const n = { ...p }; delete n.accepte_cgv; return n; }); }}
+              required
+              className="mt-0.5 rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
+            />
+            <span className="text-sm text-phoebe-anthracite/70 leading-relaxed">
+              J&apos;accepte les{" "}
+              <a href="/cgv" target="_blank" className="text-phoebe-green underline hover:text-phoebe-green-deep">
+                conditions générales de vente
+              </a>{" "}
+              et la politique de restitution de la caution.
+            </span>
+          </label>
+          {fe("accepte_cgv") && <p className="mt-1 text-xs text-error">{fe("accepte_cgv")}</p>}
+        </div>
 
         <SubmitButton disabled={!accepteCgv}>Procéder au paiement — {grandTotal > 0 ? `${grandTotal.toLocaleString("fr-FR")} FCFA` : ""}</SubmitButton>
       </form>
@@ -503,7 +555,7 @@ export function CheckoutForm({
                 onChange={(e) => setNegoNote(e.target.value)}
                 placeholder="Votre proposition ou commentaire (optionnel)"
                 rows={2}
-                className={inputClass}
+                className={`${inputClass} ${inputNormal}`}
               />
               {negoState.error && (
                 <p className="text-xs text-error">{negoState.error}</p>
