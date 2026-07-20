@@ -1126,6 +1126,35 @@ export type Database = {
           },
         ]
       }
+      push_subscriptions: {
+        Row: {
+          created_at: string
+          id: string
+          subscription: unknown
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          subscription: unknown
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          subscription?: unknown
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       users: {
         Row: {
           agence_id: string | null

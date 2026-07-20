@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { CartProvider } from "@/lib/cart-context";
 import { WhatsAppFloat } from "@/components/whatsapp-float";
+import { PushNotificationSetup } from "@/components/push-notification-setup";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -50,6 +51,7 @@ export default function RootLayout({
         <CartProvider>
           {children}
           <WhatsAppFloat />
+          <PushNotificationSetup />
         </CartProvider>
       </body>
     </html>
