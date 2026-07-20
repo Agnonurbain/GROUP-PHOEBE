@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useCart, type CartItem } from "@/lib/cart-context";
 
@@ -14,7 +14,17 @@ export function AjouterPanierButton({
   const inCart = isInCart(vehicule.groupKey);
   const currentQty = getQuantity(vehicule.groupKey);
   const [qty, setQty] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [added, setAdded] = useState(false);
   const max = vehicule.maxDisponible;
+
+  const handleAdd = useCallback(() => {
+    setLoading(true);
+    addItem({ ...vehicule, quantite: qty });
+    setAdded(true);
+    setLoading(false);
+    setTimeout(() => setAdded(false), 2000);
+  }, [addItem, vehicule, qty]);
 
   if (inCart) {
     return (
@@ -101,10 +111,19 @@ export function AjouterPanierButton({
       )}
       <button
         type="button"
-        onClick={() => addItem({ ...vehicule, quantite: qty })}
-        className="block w-full rounded-xl bg-phoebe-green py-3 text-center text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md active:scale-[0.98]"
+        onClick={handleAdd}
+        disabled={loading}
+        className={`block w-full rounded-xl py-3 text-center text-sm font-bold shadow-sm transition-all active:scale-[0.98] disabled:opacity-70 ${
+          added
+            ? "bg-phoebe-green-deep text-white shadow-md"
+            : "bg-phoebe-green text-white hover:bg-phoebe-green-deep hover:shadow-md"
+        }`}
       >
-        Ajouter au panier{qty > 1 ? ` (${qty})` : ""}
+        {loading
+          ? "⏳ Ajout en cours..."
+          : added
+            ? "✅ Ajouté au panier !"
+            : `Je réserve ce véhicule${qty > 1 ? ` (${qty})` : ""}`}
       </button>
     </div>
   );

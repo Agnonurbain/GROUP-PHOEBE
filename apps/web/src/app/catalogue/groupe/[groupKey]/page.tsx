@@ -11,6 +11,7 @@ import { makeGroupKey, groupVehicles } from "@/lib/vehicle-group";
 import { CAT_LABELS } from "@/lib/constants";
 import { JsonLd } from "@/components/json-ld";
 import { VehicleMap } from "@/components/vehicle-map";
+import { StickyCta } from "@/components/sticky-cta";
 import { ScrollReveal, ParallaxImage } from "@/components/effects";
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://group-phoebe.com";
@@ -341,10 +342,10 @@ export default async function GroupeDetailPage({
               </ScrollReveal>
             )}
 
-            {/* CTA Location */}
-            {mode === "location" && group.prixJournalier > 0 && group.totalCount > 0 && (
-              <ScrollReveal variant="scale-in" delay={0.3}>
-              <div className="space-y-4">
+             {/* CTA Location */}
+             {mode === "location" && group.prixJournalier > 0 && group.totalCount > 0 && (
+               <ScrollReveal variant="scale-in" delay={0.3}>
+               <div id="ajouter-panier" className="space-y-4">
                 <DateSelector prixJournalier={group.prixJournalier} />
                 <AjouterPanierButton
                   vehicule={{
@@ -494,6 +495,16 @@ export default async function GroupeDetailPage({
           </ScrollReveal>
         )}
       </main>
+
+      {mode === "location" && group.prixJournalier > 0 && (
+        <StickyCta
+          prix={group.prixJournalier}
+          label="À partir de"
+          onAction={() => {
+            document.getElementById("ajouter-panier")?.scrollIntoView({ behavior: "smooth" });
+          }}
+        />
+      )}
     </>
   );
 }
