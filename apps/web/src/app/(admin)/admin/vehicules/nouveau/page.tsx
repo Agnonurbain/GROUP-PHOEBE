@@ -7,11 +7,30 @@ import { BackLink } from "@/components/back-link";
 export default async function NouveauVehiculePage() {
   const supabase = await createClient();
 
-  const { data: chauffeurs } = await supabase
-    .from("chauffeurs")
-    .select("id, nom")
-    .eq("actif", true)
-    .order("nom");
+  const [
+    { data: chauffeurs },
+    { data: zones },
+    { data: intervallesPrix },
+  ] = await Promise.all([
+    supabase
+      .from("chauffeurs")
+      .select("id, nom")
+      .eq("actif", true)
+      .order("nom"),
+    supabase.from("zones_tarifaires").select("*"),
+    supabase
+      .from("intervalles_prix")
+      .select("categorie_vehicule, type, prix_min, prix_max, zone_id"),
+  ]);
+
+  const zonesData = (zones ?? []).map((z) => ({
+    id: z.id,
+    coefficient_majoration: Number((z as Record<string, unknown>).coefficient_majoration) || 1,
+  }));
+  const zoneRefId = zonesData.find((z) => z.coefficient_majoration === 1)?.id;
+  const intervallesRef = (intervallesPrix ?? []).filter(
+    (ip) => ip.zone_id === zoneRefId
+  );
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -22,7 +41,11 @@ export default async function NouveauVehiculePage() {
         </h1>
       </ScrollReveal>
       <ScrollReveal variant="fade-up" delay={0.1}>
-        <VehiculeForm action={creerVehicule} chauffeurs={chauffeurs ?? []} />
+        <VehiculeForm
+          action={creerVehicule}
+          chauffeurs={chauffeurs ?? []}
+          intervallesPrix={intervallesRef as { categorie_vehicule: string; type: string; prix_min: number; prix_max: number }[]}
+        />
       </ScrollReveal>
     </div>
   );

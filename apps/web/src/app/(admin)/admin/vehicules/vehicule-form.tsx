@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
 import type { Tables } from "@group-phoebe/database/types";
 import type { VehiculeState } from "@/app/actions/vehicules";
@@ -7,27 +8,60 @@ import { SubmitButton } from "@/components/submit-button";
 
 type Chauffeur = { id: string; nom: string };
 
+type IntervallePrix = {
+  categorie_vehicule: string;
+  type: string;
+  prix_min: number;
+  prix_max: number;
+};
+
 type Props = {
   vehicule?: Tables<"vehicules">;
   action: (prev: VehiculeState, formData: FormData) => Promise<VehiculeState>;
   chauffeurs?: Chauffeur[];
   chauffeurIds?: string[];
+  intervallesPrix?: IntervallePrix[];
 };
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
 const labelClass = "mb-1.5 block text-sm font-medium text-phoebe-anthracite";
 
+function suggererPrix(intervalle?: IntervallePrix): number | null {
+  if (!intervalle) return null;
+  const base = Math.round((intervalle.prix_min + intervalle.prix_max) / 2);
+  return Math.round(base / 1000) * 1000;
+}
+
+function formatPrix(n: number): string {
+  return n.toLocaleString("fr-FR");
+}
+
 export default function VehiculeForm({
   vehicule,
   action,
   chauffeurs = [],
   chauffeurIds = [],
+  intervallesPrix = [],
 }: Props) {
   const [state, formAction] = useActionState<VehiculeState, FormData>(
     action,
     {}
   );
+
+  const [selectedCategorie, setSelectedCategorie] = useState(
+    vehicule?.categorie ?? "leger"
+  );
+
+  const intervalLocation = intervallesPrix.find(
+    (ip) => ip.categorie_vehicule === selectedCategorie && ip.type === "location"
+  );
+  const intervalVente = intervallesPrix.find(
+    (ip) => ip.categorie_vehicule === selectedCategorie && ip.type === "vente"
+  );
+
+  const prixJourSuggere = suggererPrix(intervalLocation);
+  const prixVenteSuggere = suggererPrix(intervalVente);
 
   return (
     <>
@@ -61,6 +95,7 @@ export default function VehiculeForm({
                 required
                 defaultValue={vehicule?.categorie ?? "leger"}
                 className={inputClass}
+                onChange={(e) => setSelectedCategorie(e.target.value)}
               >
                 <option value="leger">Véhicule léger</option>
                 <option value="car">Car</option>
@@ -353,20 +388,43 @@ export default function VehiculeForm({
           <legend className="text-lg font-bold tracking-tight text-phoebe-anthracite">
             Tarification (FCFA)
           </legend>
+
+          {intervallesPrix.length > 0 && (
+            <div className="rounded-xl border border-blue-100 bg-blue-50/50 px-4 py-3">
+              <p className="text-xs text-blue-700">
+                Les prix sont hérités de la grille tarifaire. Modifiez les fourchettes
+                dans{" "}
+                <a
+                  href="/admin/tarifs"
+                  className="font-medium underline underline-offset-2 hover:text-blue-900"
+                >
+                  Zones &amp; Tarifs
+                </a>
+                .
+              </p>
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="prix_journalier" className={labelClass}>
-                Prix journalier
+                Prix journalier *
               </label>
               <input
                 id="prix_journalier"
                 name="prix_journalier"
                 type="number"
                 min={0}
-                step="1"
-                defaultValue={vehicule?.prix_journalier ?? ""}
+                step="1000"
+                key={vehicule ? undefined : selectedCategorie}
+                defaultValue={vehicule?.prix_journalier ?? prixJourSuggere ?? ""}
                 className={inputClass}
               />
+              {intervalLocation && (
+                <p className="mt-1 text-xs text-phoebe-anthracite/50">
+                  Fourchette {selectedCategorie} : {formatPrix(intervalLocation.prix_min)} — {formatPrix(intervalLocation.prix_max)} FCFA/j
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="prix_mensuel" className={labelClass}>
@@ -377,7 +435,7 @@ export default function VehiculeForm({
                 name="prix_mensuel"
                 type="number"
                 min={0}
-                step="1"
+                step="1000"
                 defaultValue={vehicule?.prix_mensuel ?? ""}
                 className={inputClass}
               />
@@ -391,10 +449,16 @@ export default function VehiculeForm({
                 name="prix_vente"
                 type="number"
                 min={0}
-                step="1"
-                defaultValue={vehicule?.prix_vente ?? ""}
+                step="1000"
+                key={vehicule ? undefined : `vente-${selectedCategorie}`}
+                defaultValue={vehicule?.prix_vente ?? prixVenteSuggere ?? ""}
                 className={inputClass}
               />
+              {intervalVente && (
+                <p className="mt-1 text-xs text-phoebe-anthracite/50">
+                  Fourchette {selectedCategorie} : {formatPrix(intervalVente.prix_min)} — {formatPrix(intervalVente.prix_max)} FCFA
+                </p>
+              )}
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

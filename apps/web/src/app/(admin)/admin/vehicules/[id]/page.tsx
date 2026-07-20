@@ -65,6 +65,19 @@ export default async function EditVehiculePage({
     .eq("vehicule_id", id);
   const chauffeurIds = vcLinks?.map((l) => l.chauffeur_id) ?? [];
 
+  const { data: zones } = await supabase.from("zones_tarifaires").select("*");
+  const zonesData = (zones ?? []).map((z) => ({
+    id: z.id,
+    coefficient_majoration: Number((z as Record<string, unknown>).coefficient_majoration) || 1,
+  }));
+  const { data: intervallesPrix } = await supabase
+    .from("intervalles_prix")
+    .select("categorie_vehicule, type, prix_min, prix_max, zone_id");
+  const zoneRefId = zonesData.find((z) => z.coefficient_majoration === 1)?.id;
+  const intervallesRef = (intervallesPrix ?? []).filter(
+    (ip) => ip.zone_id === zoneRefId
+  );
+
   const { data: maintenances } = await supabase
     .from("disponibilites_vehicule")
     .select("*")
@@ -115,6 +128,7 @@ export default async function EditVehiculePage({
           action={modifierVehicule}
           chauffeurs={chauffeurs ?? []}
           chauffeurIds={chauffeurIds}
+          intervallesPrix={intervallesRef as { categorie_vehicule: string; type: string; prix_min: number; prix_max: number }[]}
         />
       </ScrollReveal>
 
