@@ -4,6 +4,15 @@ import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
 import { BlocageVehiculeForm, BlocageChauffeurForm } from "./blocage-form";
 import { BlocagesVehiculeList, BlocagesChauffeurList } from "./blocages-list";
+import { CalendrierMensuel, type EvenementCalendrier } from "./calendrier";
+
+function parsePeriodeRange(raw: string | null): { debut: string; fin: string } | null {
+  if (!raw) return null;
+  const cleaned = raw.replace(/[\[\]()]/g, "");
+  const [debut, fin] = cleaned.split(",");
+  if (!debut || !fin) return null;
+  return { debut: debut.trim(), fin: fin.trim() };
+}
 
 export default async function DisponibilitesPage({
   params,
@@ -26,6 +35,52 @@ export default async function DisponibilitesPage({
     .select("*")
     .eq("vehicule_id", id)
     .order("periode", { ascending: true });
+
+  const { data: demandes } = await supabase
+    .from("demandes_transport")
+    .select("id, periode, statut, client_id, users!demandes_transport_client_id_fkey(nom)")
+    .eq("vehicule_id", id)
+    .in("statut", [
+      "en_attente_paiement",
+      "en_attente_validation",
+      "acceptee",
+      "en_cours",
+      "en_negociation",
+    ]);
+
+  type ClientInfo = { nom: string };
+  const demandesMap = new Map<string, ClientInfo>();
+  for (const d of demandes ?? []) {
+    const u = d.users as unknown as ClientInfo | null;
+    if (d.periode && u) {
+      demandesMap.set(d.id, u);
+    }
+  }
+
+  const evenements: EvenementCalendrier[] = [];
+
+  for (const b of blocagesVehicule ?? []) {
+    const parsed = parsePeriodeRange(b.periode);
+    if (!parsed) continue;
+
+    let titre = "";
+    if (b.type === "reservation") {
+      const client = demandesMap.get(b.id);
+      titre = client ? `Client: ${client.nom}` : "Réservation";
+    } else if (b.type === "maintenance") {
+      titre = "Maintenance";
+    } else {
+      titre = "Bloqué";
+    }
+
+    evenements.push({
+      id: b.id,
+      debut: parsed.debut,
+      fin: parsed.fin,
+      type: b.type as "reservation" | "maintenance" | "bloque",
+      titre,
+    });
+  }
 
   const { data: vcLinks } = await supabase
     .from("vehicule_chauffeurs")
@@ -62,7 +117,7 @@ export default async function DisponibilitesPage({
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
+    <div className="mx-auto max-w-4xl space-y-8">
       <ScrollReveal variant="fade-up">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
@@ -78,6 +133,25 @@ export default async function DisponibilitesPage({
       </ScrollReveal>
 
       <ScrollReveal variant="fade-up" delay={0.1}>
+        <CalendrierMensuel evenements={evenements} />
+      </ScrollReveal>
+
+      <div className="flex flex-wrap gap-4 text-xs text-phoebe-anthracite/50">
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
+          Réservation
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-500" />
+          Maintenance
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block h-2.5 w-2.5 rounded-full bg-gray-400" />
+          Bloqué
+        </span>
+      </div>
+
+      <ScrollReveal variant="fade-up" delay={0.15}>
       <section className="space-y-4 rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-phoebe-anthracite">
           Périodes bloquées — Véhicule
@@ -121,7 +195,7 @@ export default async function DisponibilitesPage({
             ))
           ) : (
             <p className="text-sm text-phoebe-anthracite/50">
-              L'option chauffeur est activée mais aucun chauffeur n'est affecté
+              L&apos;option chauffeur est activée mais aucun chauffeur n&apos;est affecté
               à ce véhicule. Affectez un ou plusieurs chauffeurs via le
               formulaire de modification pour gérer leurs disponibilités.
             </p>
