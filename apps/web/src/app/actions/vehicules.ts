@@ -383,3 +383,25 @@ export async function reordonnerPhoto(
   revalidatePath(`/admin/vehicules/${photo.vehicule_id}`);
   return { success: true };
 }
+
+export async function mettreAJourPositionGps(
+  vehiculeId: string,
+  latitude: number,
+  longitude: number
+): Promise<VehiculeState> {
+  const supabase = await requireStaff();
+
+  const { error } = await supabase
+    .from("vehicules")
+    .update({
+      latitude,
+      longitude,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", vehiculeId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/admin/vehicules/${vehiculeId}`);
+  return { success: true };
+}

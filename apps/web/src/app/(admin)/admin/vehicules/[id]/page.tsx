@@ -7,6 +7,7 @@ import PhotosManager from "./photos-manager";
 import { ProposerPrixForm } from "./proposer-prix-form";
 import { MaintenanceSection } from "./maintenance-section";
 import { modifierVehicule, supprimerVehicule } from "@/app/actions/vehicules";
+import { GpsCapture } from "@/components/gps-capture";
 import { SubmitButton } from "@/components/submit-button";
 
 function parsePeriode(raw: string | null): { debut: string; fin: string } {
@@ -120,6 +121,16 @@ export default async function EditVehiculePage({
 
       <ScrollReveal variant="fade-up" delay={0.15}>
         <PhotosManager vehiculeId={id} photos={photos ?? []} />
+      </ScrollReveal>
+
+      <ScrollReveal variant="fade-up" delay={0.18}>
+        <section className="rounded-2xl border border-phoebe-pearl bg-white p-6 shadow-sm">
+          <GpsCapture
+            vehiculeId={id}
+            latitude={vehicule.latitude as unknown as number | null}
+            longitude={vehicule.longitude as unknown as number | null}
+          />
+        </section>
       </ScrollReveal>
 
       <ScrollReveal variant="fade-up" delay={0.2}>
