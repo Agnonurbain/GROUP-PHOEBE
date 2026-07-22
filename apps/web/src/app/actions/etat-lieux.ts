@@ -6,6 +6,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { notifierClient } from "@/lib/notifications";
 import { rembourserPaiement } from "@/lib/payments/expiration-demandes";
+import { validateImageUpload } from "@/lib/upload-validation";
 
 type Carburant = "vide" | "quart" | "demi" | "trois_quarts" | "plein";
 const CARBURANTS: Carburant[] = ["vide", "quart", "demi", "trois_quarts", "plein"];
@@ -78,7 +79,8 @@ export async function enregistrerEtatLieuxDepart(
   const photoUrls: string[] = [];
   for (const file of photos) {
     if (!file.size) continue;
-    const ext = file.name.split(".").pop() ?? "jpg";
+    let ext: string;
+    try { ({ ext } = validateImageUpload(file)); } catch { continue; }
     const path = `etat-lieux/${demandeId}/depart/${crypto.randomUUID()}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from("vehicle-photos")
@@ -164,7 +166,8 @@ export async function enregistrerEtatLieuxRetour(
       .single();
 
     if (commune?.zone_id) {
-      const { data: zoneData } = await (admin.from as Function)("zones_tarifaires")
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: zoneData } = await (admin.from as any)("zones_tarifaires")
         .select("km_inclus_par_jour, supplement_km_fcfa")
         .eq("id", commune.zone_id)
         .single();
@@ -197,7 +200,8 @@ export async function enregistrerEtatLieuxRetour(
   const photoUrls: string[] = [];
   for (const file of photos) {
     if (!file.size) continue;
-    const ext = file.name.split(".").pop() ?? "jpg";
+    let ext: string;
+    try { ({ ext } = validateImageUpload(file)); } catch { continue; }
     const path = `etat-lieux/${demandeId}/retour/${crypto.randomUUID()}.${ext}`;
     const { error: upErr } = await supabase.storage
       .from("vehicle-photos")
@@ -211,7 +215,7 @@ export async function enregistrerEtatLieuxRetour(
   const { error } = await admin
     .from("demandes_transport")
     .update({
-      statut: "retour_en_inspection" as never,
+      statut: "terminee",
       kilometrage_retour: kilometrage,
       carburant_retour: carburant as Carburant,
       etat_lieux_retour_photos: photoUrls.length > 0 ? photoUrls : null,
@@ -223,10 +227,43 @@ export async function enregistrerEtatLieuxRetour(
 
   if (error) return { error: error.message };
 
+  if (demande.vehicule_id) {
+    await admin
+      .from("vehicules")
+      .update({ statut: "disponible", updated_at: new Date().toISOString() })
+      .eq("id", demande.vehicule_id);
+  }
+
+  if (demande.vehicule_id && demande.periode) {
+    await admin
+      .from("disponibilites_vehicule")
+      .delete()
+      .eq("vehicule_id", demande.vehicule_id)
+      .eq("type", "reservation")
+      .eq("periode", demande.periode);
+  }
+  if (demande.chauffeur_id && demande.periode) {
+    await admin
+      .from("disponibilites_chauffeur")
+      .delete()
+      .eq("chauffeur_id", demande.chauffeur_id)
+      .eq("periode", demande.periode);
+  }
+
+  const montantLocation = demande.montant ? Number(demande.montant) : 0;
+  await rembourserPaiement(admin, demandeId, montantLocation + totalRetenu);
+
+  const montantCautionLibere = cautionMax - totalRetenu;
+  const msgCaution = totalRetenu >= cautionMax
+    ? `La caution de ${cautionMax.toLocaleString("fr-FR")} FCFA a été retenue suite à l'inspection.`
+    : totalRetenu > 0
+      ? `${totalRetenu.toLocaleString("fr-FR")} FCFA retenus sur la caution. Le reste (${montantCautionLibere.toLocaleString("fr-FR")} FCFA) sera remboursé sous 48h.`
+      : "Votre caution sera intégralement remboursée sous 48h.";
+
   await notifierClient(
     demande.client_id,
-    "Véhicule retourné — inspection en cours",
-    `L'état des lieux de retour a été enregistré. L'inspection du véhicule est en cours.`
+    "Location terminée",
+    `L'état des lieux de retour a été enregistré. ${msgCaution}`
   );
 
   revalidatePath(`/admin/demandes/${demandeId}/etat-lieux`);

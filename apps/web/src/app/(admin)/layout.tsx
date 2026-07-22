@@ -1,6 +1,7 @@
+import "./admin.css"
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Header } from "@/components/header";
+import { AdminHeader } from "@/components/admin-header";
 
 export default async function AdminLayout({
   children,
@@ -20,12 +21,12 @@ export default async function AdminLayout({
     .single();
 
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
-    redirect("/profil");
+    redirect("/compte/profil");
   }
 
   return (
     <>
-      <Header />
+      <AdminHeader />
       {children}
     </>
   );

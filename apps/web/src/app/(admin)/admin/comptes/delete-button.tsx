@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { desactiverCompteInterne } from "@/app/actions/admin";
+import { Button } from "@/components/ui";
 
 export function DeleteAccountButton({
   userId,
@@ -16,14 +17,15 @@ export function DeleteAccountButton({
 
   return (
     <>
-      <button
-        type="button"
+      <Button
+        variant="admin-ghost"
+        size="sm"
         disabled={pending}
         onClick={() => setShowModal(true)}
-        className="text-xs text-error/70 transition-colors hover:text-error disabled:opacity-50"
+        className="border-0 text-error/70 hover:text-error"
       >
         Desactiver
-      </button>
+      </Button>
 
       {showModal && (
         <div
@@ -50,17 +52,11 @@ export function DeleteAccountButton({
               className="mt-3 w-full rounded-lg border border-phoebe-pearl px-3 py-2 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-error focus:outline-none focus:ring-1 focus:ring-error"
             />
             <div className="mt-4 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowModal(false);
-                  setMotif("");
-                }}
-                className="rounded-lg border border-phoebe-pearl px-4 py-2 text-sm text-phoebe-anthracite/70 hover:bg-phoebe-pearl hover:shadow-sm"
-              >
+              <Button variant="admin-ghost" onClick={() => { setShowModal(false); setMotif(""); }}>
                 Annuler
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="admin-danger"
                 disabled={pending || !motif.trim()}
                 onClick={() =>
                   startTransition(async () => {
@@ -69,10 +65,9 @@ export function DeleteAccountButton({
                     setMotif("");
                   })
                 }
-                className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-error/90 hover:shadow-md disabled:opacity-50"
               >
                 Desactiver
-              </button>
+              </Button>
             </div>
           </div>
         </div>

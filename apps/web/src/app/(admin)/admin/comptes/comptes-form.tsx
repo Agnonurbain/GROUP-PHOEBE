@@ -18,8 +18,14 @@ export function ComptesForm() {
         </div>
       )}
       {state.success && (
-        <div className="animate-fade-in rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
-          Compte créé avec succès.
+        <div className="animate-fade-in rounded-lg border border-phoebe-green/20 bg-phoebe-green/10 px-4 py-3 text-sm">
+          <p className="font-semibold text-phoebe-green-deep">Compte créé avec succès.</p>
+          <p className="mt-1 text-phoebe-anthracite/70">
+            Identifiant : <strong>{state.createdLogin}</strong>
+          </p>
+          <p className="text-phoebe-anthracite/70">
+            Mot de passe temporaire : <strong>{state.createdPassword}</strong>
+          </p>
         </div>
       )}
 

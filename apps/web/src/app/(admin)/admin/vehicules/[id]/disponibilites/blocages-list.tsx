@@ -5,6 +5,7 @@ import {
   supprimerBlocageVehicule,
   supprimerBlocageChauffeur,
 } from "@/app/actions/disponibilites";
+import { Button } from "@/components/ui";
 
 type Blocage = {
   id: string;
@@ -67,18 +68,19 @@ export function BlocagesVehiculeList({
               </span>
             </div>
             {b.type !== "reservation" && (
-              <button
-                type="button"
+              <Button
+                variant="admin-ghost"
+                size="sm"
                 disabled={isPending}
                 onClick={() => {
                   startTransition(async () => {
                     await supprimerBlocageVehicule(b.id, vehiculeId);
                   });
                 }}
-                className="text-xs text-error hover:underline disabled:opacity-30"
+                className="border-0 text-error hover:underline"
               >
                 Supprimer
-              </button>
+              </Button>
             )}
           </div>
         );
@@ -117,18 +119,19 @@ export function BlocagesChauffeurList({
             <span className="text-sm text-phoebe-anthracite">
               {debut} → {fin}
             </span>
-            <button
-              type="button"
+            <Button
+              variant="admin-ghost"
+              size="sm"
               disabled={isPending}
               onClick={() => {
                 startTransition(async () => {
                   await supprimerBlocageChauffeur(b.id, vehiculeId);
                 });
               }}
-              className="text-xs text-error hover:underline disabled:opacity-30"
+              className="border-0 text-error hover:underline"
             >
               Supprimer
-            </button>
+            </Button>
           </div>
         );
       })}

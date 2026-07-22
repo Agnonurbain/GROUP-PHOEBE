@@ -1,8 +1,14 @@
+import type { Metadata } from "next"
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { CAT_LABELS } from "@/lib/constants";
 import { ScrollReveal } from "@/components/effects";
+
+export const metadata: Metadata = {
+  title: "Véhicules — Administration",
+  description: "Gérez la flotte de véhicules GROUP PHOEBE — ajout, modification, disponibilité.",
+}
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   disponible: { label: "Disponible", color: "bg-phoebe-green/10 text-phoebe-green-deep" },

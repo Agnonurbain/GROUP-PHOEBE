@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { NavLink } from "./nav-link";
+import { Button } from "@/components/ui";
 
 export function AdminMobileNav({
   isProprietaire,
@@ -52,10 +53,10 @@ export function AdminMobileNav({
                 Menu
               </span>
             </div>
-            <button
+            <Button
+              variant="admin-icon"
               onClick={() => setOpen(false)}
               aria-label="Fermer le menu"
-              className="flex h-10 w-10 items-center justify-center rounded-lg text-phoebe-anthracite/70 hover:bg-phoebe-pearl"
             >
               <svg
                 width="24"
@@ -69,7 +70,7 @@ export function AdminMobileNav({
                 <line x1="6" y1="6" x2="18" y2="18" />
                 <line x1="6" y1="18" x2="18" y2="6" />
               </svg>
-            </button>
+            </Button>
           </div>
 
           {/* Navigation links */}
@@ -99,6 +100,7 @@ export function AdminMobileNav({
                 <NavLink href="/admin/verifications/historique">
                   Historique verif.
                 </NavLink>
+                <NavLink href="/admin/planning">Planning</NavLink>
                 {isProprietaire && (
                   <NavLink
                     href="/admin/remboursements"

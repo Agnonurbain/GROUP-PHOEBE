@@ -15,15 +15,7 @@ function urlBase64ToUint8Array(base64: string): Uint8Array {
   return arr;
 }
 
-export function PushNotificationSetup() {
-  useEffect(() => {
-    if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
-    if (Notification.permission === "granted") {
-      registerPush();
-    }
-  }, []);
-
-  async function registerPush() {
+async function registerPush() {
     if (!VAPID_PUBLIC_KEY) return;
     try {
       const reg = await navigator.serviceWorker.register("/sw.js");
@@ -40,6 +32,14 @@ export function PushNotificationSetup() {
       // Push non disponible ou refusé
     }
   }
+
+export function PushNotificationSetup() {
+  useEffect(() => {
+    if (!("Notification" in window) || !("serviceWorker" in navigator)) return;
+    if (Notification.permission === "granted") {
+      registerPush();
+    }
+  }, []);
 
   return null;
 }

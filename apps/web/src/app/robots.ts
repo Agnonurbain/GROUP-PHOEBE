@@ -11,8 +11,9 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           "/api/",
           "/admin/",
-          "/profil/",
+          "/compte/",
           "/panier/",
+          "/reservation/",
         ],
       },
     ],

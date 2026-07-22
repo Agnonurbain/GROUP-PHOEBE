@@ -1,8 +1,15 @@
+import type { Metadata } from "next"
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
 import { EtatLieuxForm } from "./etat-lieux-form";
+
+export const metadata: Metadata = {
+  title: "État des lieux — Administration",
+  description: "Saisie et consultation de l'état des lieux des véhicules GROUP PHOEBE.",
+}
 
 export default async function EtatLieuxPage({
   params,
@@ -56,11 +63,14 @@ export default async function EtatLieuxPage({
             </p>
             <div className="mt-2 flex gap-2 overflow-x-auto">
               {demande.etat_lieux_depart_photos.map((url, i) => (
-                <img
+                <Image
                   key={i}
                   src={url}
                   alt={`Départ ${i + 1}`}
+                  width={80}
+                  height={80}
                   className="h-20 w-20 rounded-xl object-cover ring-1 ring-black/5"
+                  unoptimized
                 />
               ))}
             </div>
@@ -85,11 +95,14 @@ export default async function EtatLieuxPage({
             </p>
             <div className="mt-2 flex gap-2 overflow-x-auto">
               {demande.etat_lieux_retour_photos.map((url, i) => (
-                <img
+                <Image
                   key={i}
                   src={url}
                   alt={`Retour ${i + 1}`}
+                  width={80}
+                  height={80}
                   className="h-20 w-20 rounded-xl object-cover ring-1 ring-black/5"
+                  unoptimized
                 />
               ))}
             </div>

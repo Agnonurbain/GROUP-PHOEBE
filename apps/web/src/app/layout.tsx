@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import { CartProvider } from "@/lib/cart-context";
 import { WhatsAppFloat } from "@/components/whatsapp-float";
@@ -7,17 +7,20 @@ import { PushNotificationSetup } from "@/components/push-notification-setup";
 import { OfflineBanner } from "@/components/offline-banner";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+export const viewport: Viewport = {
+  themeColor: "#0A0A0A",
+  width: "device-width",
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://group-phoebe.com"),
   title: {
     default: "GROUP PHOEBE — Transport, Livraison, Immobilier & Assistance Migration",
     template: "%s | GROUP PHOEBE",
@@ -32,9 +35,18 @@ export const metadata: Metadata = {
     description: "Transport, livraison, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "GROUP PHOEBE",
     description: "Transport, livraison, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
+  },
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
+  manifest: "/manifest.json",
+  other: {
+    "mobile-web-app-capable": "yes",
+    "apple-mobile-web-app-status-bar-style": "black-translucent",
   },
 };
 
@@ -46,7 +58,7 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} h-full antialiased`}
       style={{ colorScheme: "light" }}
     >
       <body className="min-h-full flex flex-col">

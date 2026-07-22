@@ -1,6 +1,12 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal, AnimatedCounter } from "@/components/effects";
+
+export const metadata: Metadata = {
+  title: "Tableau de bord — Administration",
+  description: "Panneau d'administration GROUP PHOEBE — gérez les réservations, véhicules et utilisateurs.",
+}
 
 export default async function DashboardPage({
   searchParams,

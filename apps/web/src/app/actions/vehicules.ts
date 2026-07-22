@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { compressImage } from "@/lib/compress-image";
+import { validateDocumentUpload, validateImageUpload } from "@/lib/upload-validation";
 
 async function requireStaff() {
   const supabase = await createClient();
@@ -138,7 +139,12 @@ export async function modifierVehicule(
   let assurancePath: string | undefined;
   const assuranceFile = formData.get("assurance") as File;
   if (assuranceFile && assuranceFile.size > 0) {
-    const ext = assuranceFile.name.split(".").pop() ?? "pdf";
+    let ext: string;
+    try {
+      ({ ext } = validateDocumentUpload(assuranceFile));
+    } catch (e: unknown) {
+      return { error: e instanceof Error ? e.message : "Document d'assurance invalide." };
+    }
     const path = `${id}/assurance.${ext}`;
     const { error: upErr } = await supabase.storage
       .from("vehicle-documents")
@@ -230,7 +236,7 @@ export async function modifierVehicule(
 
   revalidatePath(`/admin/vehicules/${id}`);
   revalidatePath("/admin/vehicules");
-  revalidatePath("/catalogue");
+  revalidatePath("/transport/catalogue");
   return { success: true };
 }
 
@@ -291,8 +297,15 @@ export async function ajouterPhotos(
   for (const file of files) {
     if (!file.size) continue;
 
+    let ext: string;
+    try {
+      validateImageUpload(file);
+      ({ ext } = validateImageUpload(file));
+    } catch (e: unknown) {
+      return { error: e instanceof Error ? e.message : "Photo invalide." };
+    }
+
     const compressed = await compressImage(file);
-    const ext = compressed.name.split(".").pop() ?? "jpg";
     const path = `${vehiculeId}/${crypto.randomUUID()}.${ext}`;
 
     const { error: upErr } = await supabase.storage

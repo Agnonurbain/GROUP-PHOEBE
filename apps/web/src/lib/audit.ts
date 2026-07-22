@@ -33,13 +33,16 @@ export async function logAudit(params: {
 }) {
   const admin = getAdmin();
   const ip = params.ipAddress ?? await getClientIp();
-  await (admin.from as Function)("audit_logs").insert({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (admin.from as any)("audit_log").insert({
     user_id: params.userId,
     action: params.action,
-    table_name: params.tableName,
-    record_id: params.recordId ?? null,
-    old_values: params.oldValues ?? null,
-    new_values: params.newValues ?? null,
-    ip_address: ip,
+    cible_table: params.tableName,
+    cible_id: params.recordId ?? null,
+    details: {
+      old: params.oldValues ?? null,
+      new: params.newValues ?? null,
+      ip: ip,
+    },
   });
 }

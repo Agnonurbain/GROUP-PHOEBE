@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -5,6 +6,11 @@ import { ScrollReveal } from "@/components/effects";
 import { BlocageVehiculeForm, BlocageChauffeurForm } from "./blocage-form";
 import { BlocagesVehiculeList, BlocagesChauffeurList } from "./blocages-list";
 import { CalendrierMensuel, type EvenementCalendrier } from "./calendrier";
+
+export const metadata: Metadata = {
+  title: "Disponibilités — Administration",
+  description: "Gérez les disponibilités et réservations d'un véhicule GROUP PHOEBE.",
+}
 
 function parsePeriodeRange(raw: string | null): { debut: string; fin: string } | null {
   if (!raw) return null;

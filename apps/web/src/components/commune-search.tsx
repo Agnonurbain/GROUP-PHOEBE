@@ -21,27 +21,27 @@ export function CommuneSearch({
   placeholder?: string;
   className?: string;
 }) {
-  const [query, setQuery] = useState(value);
+  const [localQuery, setLocalQuery] = useState(value);
   const [open, setOpen] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    setQuery(value);
-  }, [value]);
+  const displayValue = isSearching ? localQuery : value;
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
+        setIsSearching(false);
       }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  const normalized = query.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const normalized = localQuery.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
-  const filtered = query.length > 0
+  const filtered = localQuery.length > 0
     ? communes.filter((c) => {
         const n = c.nom.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
         return n.includes(normalized);
@@ -56,7 +56,8 @@ export function CommuneSearch({
   }
 
   const handleSelect = useCallback((nom: string) => {
-    setQuery(nom);
+    setLocalQuery(nom);
+    setIsSearching(false);
     onChange(nom);
     setOpen(false);
   }, [onChange]);
@@ -67,13 +68,17 @@ export function CommuneSearch({
       <input
         id={id}
         type="text"
-        value={query}
+        value={displayValue}
         onChange={(e) => {
-          setQuery(e.target.value);
+          setLocalQuery(e.target.value);
+          setIsSearching(true);
           setOpen(true);
           if (!e.target.value) onChange("");
         }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => {
+          setIsSearching(true);
+          setOpen(true);
+        }}
         placeholder={placeholder}
         autoComplete="off"
         className={className}
@@ -108,7 +113,7 @@ export function CommuneSearch({
         </div>
       )}
 
-      {open && filtered.length === 0 && query.length > 0 && (
+      {open && filtered.length === 0 && localQuery.length > 0 && (
         <div className="absolute z-20 mt-1 w-full rounded-xl border border-phoebe-pearl bg-white p-3 shadow-lg">
           <p className="text-xs text-phoebe-anthracite/50">Aucune commune trouvée.</p>
           <button

@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { trackAddToCart, trackRemoveFromCart } from "@/lib/analytics";
 
 export type CartItem = {
   groupKey: string;
@@ -163,12 +164,31 @@ export function CartProvider({ children }: { children: ReactNode }) {
           i.groupKey === item.groupKey ? { ...i, quantite: newQty, maxDisponible: item.maxDisponible } : i
         );
       }
+      // Track add_to_cart for new items only
+      trackAddToCart({
+        item_id: item.groupKey,
+        item_name: `${item.marque} ${item.modele}`,
+        item_category: item.categorie,
+        price: item.prixJournalier,
+        currency: "XOF",
+        quantity: item.quantite,
+        item_brand: item.marque,
+      });
       return [...prev, { ...item, avecChauffeur: false }];
     });
   }, []);
 
   const removeItem = useCallback((groupKey: string) => {
-    setItems((prev) => prev.filter((i) => i.groupKey !== groupKey));
+    setItems((prev) => {
+      const item = prev.find((i) => i.groupKey === groupKey);
+      if (item) {
+        trackRemoveFromCart({
+          item_id: item.groupKey,
+          item_name: `${item.marque} ${item.modele}`,
+        });
+      }
+      return prev.filter((i) => i.groupKey !== groupKey);
+    });
   }, []);
 
   const updateQuantity = useCallback((groupKey: string, qty: number) => {

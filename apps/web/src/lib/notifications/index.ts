@@ -1,13 +1,22 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { fetchWithTimeout } from "@/lib/fetch-with-timeout";
+import { renderTemplate, type NotificationEvent, type TemplateContext } from "./templates";
 
-type Canal = "whatsapp" | "sms" | "email";
+type Canal = "whatsapp" | "sms" | "email" | "push";
 
 export type NotificationParams = {
   userId: string;
-  evenement: string;
+  evenement: string | NotificationEvent;
   contenu: string;
+  telephone?: string;
+  email?: string;
+};
+
+export type NotificationWithTemplate = {
+  userId: string;
+  evenement: NotificationEvent;
+  variables: TemplateContext;
   telephone?: string;
   email?: string;
 };
@@ -152,6 +161,38 @@ export async function notifierClient(
     .single();
 
   if (!user) return;
+
+  await notifier({
+    userId: clientId,
+    evenement,
+    contenu,
+    telephone: user.telephone ?? undefined,
+    email: user.email ?? undefined,
+  });
+}
+
+export async function notifierClientWithTemplate(
+  clientId: string,
+  evenement: NotificationEvent,
+  variables: TemplateContext
+): Promise<void> {
+  const admin = getAdmin();
+  const { data: user } = await admin
+    .from("users")
+    .select("telephone, email, nom")
+    .eq("id", clientId)
+    .single();
+
+  if (!user) return;
+
+  const ctx: TemplateContext = {
+    ...variables,
+    client_nom: user.nom ?? undefined,
+    client_telephone: user.telephone ?? undefined,
+    client_email: user.email ?? undefined,
+  };
+
+  const { sujet, contenu } = renderTemplate(evenement, ctx);
 
   await notifier({
     userId: clientId,

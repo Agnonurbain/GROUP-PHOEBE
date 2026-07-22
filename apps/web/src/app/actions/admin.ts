@@ -45,6 +45,8 @@ async function requireStaff() {
 export type AdminState = {
   error?: string;
   success?: boolean;
+  createdLogin?: string;
+  createdPassword?: string;
 };
 
 export async function validerVerification(
@@ -142,12 +144,13 @@ export async function creerCompteInterne(
     return { error: "Le mot de passe doit contenir au moins 8 caractères." };
   }
 
+  const isEmail = telephone.includes("@");
   const admin = createAdminClient();
 
   const { data, error: authError } = await admin.auth.admin.createUser({
-    phone: telephone,
+    [isEmail ? "email" : "phone"]: telephone,
     password,
-    phone_confirm: true,
+    [isEmail ? "email_confirm" : "phone_confirm"]: true,
     user_metadata: { nom },
   });
 
@@ -188,7 +191,7 @@ export async function creerCompteInterne(
   });
 
   revalidatePath("/admin/comptes");
-  return { success: true };
+  return { success: true, createdLogin: telephone, createdPassword: password };
 }
 
 export async function desactiverCompteInterne(

@@ -10,6 +10,7 @@ import {
 import { envoyerPrixNegocie, type NegociationState } from "@/app/actions/negociation";
 import { envoyerPrixAchat, type AchatState } from "@/app/actions/achat";
 import { finaliserInspection, type EtatLieuxState } from "@/app/actions/etat-lieux";
+import { Button } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
 
 export function DemandeActions({
@@ -89,21 +90,24 @@ export function DemandeActions({
               </SubmitButton>
             </form>
             {!showRefusForm ? (
-              <button
+              <Button
+                variant="admin-ghost"
+                size="sm"
                 type="button"
                 onClick={() => setShowRefusForm(true)}
-                className="rounded-lg border border-error/20 bg-error/5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error hover:text-white hover:shadow-md"
+                className="border-error/20 bg-error/5 text-error hover:bg-error hover:text-white"
               >
                 Refuser
-              </button>
+              </Button>
             ) : (
-              <button
+              <Button
+                variant="admin-ghost"
+                size="sm"
                 type="button"
                 onClick={() => setShowRefusForm(false)}
-                className="rounded-lg border border-phoebe-anthracite/15 px-3 py-1.5 text-xs text-phoebe-anthracite/50 hover:bg-phoebe-pearl"
               >
                 Annuler
-              </button>
+              </Button>
             )}
           </div>
           {showRefusForm && (
@@ -140,29 +144,33 @@ export function DemandeActions({
           {!showAchatForm ? (
             <div className="space-y-2">
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="admin-alert"
+                  size="sm"
                   type="button"
                   onClick={() => setShowAchatForm(true)}
-                  className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/90 hover:shadow-md"
                 >
                   Confirmer le prix
-                </button>
+                </Button>
                 {!showRefusForm ? (
-                  <button
+                  <Button
+                    variant="admin-ghost"
+                    size="sm"
                     type="button"
                     onClick={() => setShowRefusForm(true)}
-                    className="rounded-lg border border-error/20 bg-error/5 px-3 py-1.5 text-xs font-medium text-error hover:bg-error hover:text-white hover:shadow-md"
+                    className="border-error/20 bg-error/5 text-error hover:bg-error hover:text-white"
                   >
                     Refuser
-                  </button>
+                  </Button>
                 ) : (
-                  <button
+                  <Button
+                    variant="admin-ghost"
+                    size="sm"
                     type="button"
                     onClick={() => setShowRefusForm(false)}
-                    className="rounded-lg border border-phoebe-anthracite/15 px-3 py-1.5 text-xs text-phoebe-anthracite/50 hover:bg-phoebe-pearl"
                   >
                     Annuler
-                  </button>
+                  </Button>
                 )}
               </div>
               {showRefusForm && (
@@ -235,13 +243,14 @@ export function DemandeActions({
             </p>
           )}
           {!showPrixForm ? (
-            <button
+            <Button
+              variant="admin-alert"
+              size="sm"
               type="button"
               onClick={() => setShowPrixForm(true)}
-              className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/90 hover:shadow-md"
             >
               Proposer un prix
-            </button>
+            </Button>
           ) : (
             <form action={negoAction} className="flex items-end gap-2">
               <input type="hidden" name="demande_id" value={demandeId} />
@@ -277,13 +286,15 @@ export function DemandeActions({
       {statut === "retour_en_inspection" && !inspState.success && (
         <div className="space-y-2">
           {!showInspForm ? (
-            <button
+            <Button
+              variant="admin"
+              size="sm"
               type="button"
               onClick={() => setShowInspForm(true)}
-              className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-purple-700 hover:shadow-md"
+              className="bg-purple-600 hover:bg-purple-700"
             >
               Finaliser l&apos;inspection
-            </button>
+            </Button>
           ) : (
             <form action={inspAction} className="flex items-end gap-2">
               <input type="hidden" name="demande_id" value={demandeId} />

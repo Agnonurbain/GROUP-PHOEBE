@@ -1,12 +1,51 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { logAudit } from "@/lib/audit";
+import { revalidateTarifsCache } from "@/lib/tarifs-cache";
 
-async function requireProprietaire() {
+// Local types for new table not yet in generated types
+interface PropositionsTarifsRow {
+  id: string;
+  zone_id: string;
+  operateur_id: string;
+  type: "coefficients" | "geojson" | "intervalles" | "prix_base";
+  champ: string | null;
+  valeur_actuelle: Record<string, unknown> | null;
+  valeur_proposee: Record<string, unknown>;
+  statut: "en_attente" | "acceptee" | "refusee";
+  commentaire: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface PropositionsTarifsInsert {
+  zone_id: string;
+  operateur_id: string;
+  type: "coefficients" | "geojson" | "intervalles" | "prix_base";
+  champ?: string | null;
+  valeur_actuelle?: Record<string, unknown> | null;
+  valeur_proposee: Record<string, unknown>;
+  statut?: "en_attente" | "acceptee" | "refusee";
+  commentaire?: string | null;
+}
+
+interface PropositionsTarifsUpdate {
+  zone_id?: string;
+  operateur_id?: string;
+  type?: "coefficients" | "geojson" | "intervalles" | "prix_base";
+  champ?: string | null;
+  valeur_actuelle?: Record<string, unknown> | null;
+  valeur_proposee?: Record<string, unknown>;
+  statut?: "en_attente" | "acceptee" | "refusee";
+  commentaire?: string | null;
+  updated_at?: string;
+}
+
+async function requireStaff() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
@@ -17,8 +56,23 @@ async function requireProprietaire() {
     .select("role")
     .eq("id", user.sub)
     .single();
-  if (profile?.role !== "proprietaire") throw new Error("Accès refusé");
+  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+    throw new Error("Accès refusé");
+  }
+  return { supabase, userId: user.sub as string, role: profile.role };
+}
+
+async function requireProprietaire() {
+  const { supabase, role } = await requireStaff();
+  if (role !== "proprietaire") throw new Error("Accès refusé : propriétaire requis");
   return supabase;
+}
+
+function getAdmin() {
+  return createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 }
 
 export type TarifState = { error?: string; success?: boolean };
@@ -43,6 +97,7 @@ export async function ajouterCommune(
   }
 
   revalidatePath("/admin/tarifs");
+  await revalidateTarifsCache();
   return { success: true };
 }
 
@@ -51,6 +106,7 @@ export async function supprimerCommune(id: string): Promise<TarifState> {
   const { error } = await supabase.from("communes").delete().eq("id", id);
   if (error) return { error: error.message };
   revalidatePath("/admin/tarifs");
+  await revalidateTarifsCache();
   return { success: true };
 }
 
@@ -77,6 +133,7 @@ export async function modifierIntervalle(
 
   if (error) return { error: error.message };
   revalidatePath("/admin/tarifs");
+  await revalidateTarifsCache();
   return { success: true };
 }
 
@@ -112,6 +169,7 @@ export async function ajouterIntervalle(
   }
 
   revalidatePath("/admin/tarifs");
+  await revalidateTarifsCache();
   return { success: true };
 }
 
@@ -124,6 +182,12 @@ export async function modifierCoefficients(
   const userId = claimsData?.claims?.sub as string;
 
   const zoneId = formData.get("zone_id") as string;
+  const commentaire = (formData.get("commentaire") as string)?.trim();
+
+  if (!commentaire) {
+    return { error: "Un commentaire est obligatoire pour modifier les coefficients." };
+  }
+
   const newValues = {
     coefficient_majoration: Number(formData.get("coefficient_majoration")),
     caution_multiplicateur: Number(formData.get("caution_multiplicateur")),
@@ -142,12 +206,14 @@ export async function modifierCoefficients(
 
   const admin = getAdmin();
 
-  const { data: oldZone } = await (admin.from as Function)("zones_tarifaires")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: oldZone } = await (admin.from as any)("zones_tarifaires")
     .select("coefficient_majoration, caution_multiplicateur, km_inclus_par_jour, supplement_km_fcfa, chauffeur_statut, tarif_chauffeur_journalier")
     .eq("id", zoneId)
     .single();
 
-  const { error } = await (admin.from as Function)("zones_tarifaires")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from as any)("zones_tarifaires")
     .update(newValues)
     .eq("id", zoneId);
 
@@ -159,18 +225,12 @@ export async function modifierCoefficients(
     tableName: "zones_tarifaires",
     recordId: zoneId,
     oldValues: oldZone ?? undefined,
-    newValues,
+    newValues: { ...newValues, commentaire },
   });
 
   revalidatePath("/admin/tarifs");
+  await revalidateTarifsCache();
   return { success: true };
-}
-
-function getAdmin() {
-  return createAdminClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
 }
 
 export async function sauvegarderGeojson(
@@ -186,7 +246,8 @@ export async function sauvegarderGeojson(
   }
 
   const admin = getAdmin();
-  const { error } = await (admin.from as Function)("zones_tarifaires")
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from as any)("zones_tarifaires")
     .update({ geojson })
     .eq("id", zoneId);
 
@@ -201,5 +262,152 @@ export async function sauvegarderGeojson(
   });
 
   revalidatePath("/admin/tarifs");
+  await revalidateTarifsCache();
   return { success: true };
+}
+
+export async function proposerModificationTarifs(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  const { supabase, userId, role } = await requireStaff();
+  if (role === "proprietaire") {
+    return { error: "Le propriétaire modifie directement, pas de proposition nécessaire." };
+  }
+
+  const zoneId = formData.get("zone_id") as string;
+  const type = formData.get("type") as "coefficients" | "geojson" | "intervalles" | "prix_base";
+  const commentaire = (formData.get("commentaire") as string)?.trim();
+  const valeurProposeeRaw = formData.get("valeur_proposee") as string;
+
+  if (!zoneId || !type || !valeurProposeeRaw) {
+    return { error: "Zone, type et valeur proposée sont obligatoires." };
+  }
+
+  let valeurProposee: Record<string, unknown>;
+  try {
+    valeurProposee = JSON.parse(valeurProposeeRaw);
+  } catch {
+    return { error: "Valeur proposée invalide (JSON)." };
+  }
+
+  const admin = getAdmin();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: oldZone } = await (admin.from as any)("zones_tarifaires")
+    .select("coefficient_majoration, caution_multiplicateur, km_inclus_par_jour, supplement_km_fcfa, chauffeur_statut, tarif_chauffeur_journalier, geojson")
+    .eq("id", zoneId)
+    .single();
+
+  let valeurActuelle: Record<string, unknown> | null = null;
+  if (type === "coefficients" && oldZone) {
+    valeurActuelle = {
+      coefficient_majoration: oldZone.coefficient_majoration,
+      caution_multiplicateur: oldZone.caution_multiplicateur,
+      km_inclus_par_jour: oldZone.km_inclus_par_jour,
+      supplement_km_fcfa: oldZone.supplement_km_fcfa,
+      chauffeur_statut: oldZone.chauffeur_statut,
+      tarif_chauffeur_journalier: oldZone.tarif_chauffeur_journalier,
+    };
+  } else if (type === "geojson") {
+    valeurActuelle = oldZone?.geojson as Record<string, unknown> | null;
+  }
+
+  const { error } = await (admin.from as any)("propositions_tarifs").insert({
+    zone_id: zoneId,
+    operateur_id: userId,
+    type,
+    champ: type === "coefficients" ? "multiple" : type,
+    valeur_actuelle: valeurActuelle,
+    valeur_proposee: valeurProposee,
+    commentaire,
+  });
+
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: "proposer_tarifs",
+    tableName: "propositions_tarifs",
+    recordId: zoneId,
+    newValues: { type, valeur_proposee: valeurProposee, commentaire },
+  });
+
+  revalidatePath("/admin/tarifs");
+  await revalidateTarifsCache();
+  return { success: true };
+}
+
+export async function traiterPropositionTarifs(
+  propositionId: string,
+  action: "accepter" | "refuser",
+  commentaire?: string
+): Promise<TarifState> {
+  const { supabase, userId, role } = await requireStaff();
+  if (role !== "proprietaire") {
+    return { error: "Seul le propriétaire peut traiter les propositions." };
+  }
+
+  const { data: prop, error: propErr } = await (supabase.from as any)("propositions_tarifs")
+    .select("*")
+    .eq("id", propositionId)
+    .single();
+
+  if (propErr || !prop) return { error: "Proposition introuvable." };
+  if (prop.statut !== "en_attente") return { error: "Cette proposition a déjà été traitée." };
+
+  const admin = getAdmin();
+
+  if (action === "accepter") {
+    const updates: Record<string, unknown> = {};
+    if (prop.type === "coefficients") {
+      Object.assign(updates, prop.valeur_proposee);
+    } else if (prop.type === "geojson") {
+      updates.geojson = prop.valeur_proposee;
+    }
+
+    if (Object.keys(updates).length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (admin.from as any)("zones_tarifaires")
+        .update(updates)
+        .eq("id", prop.zone_id);
+      if (error) return { error: error.message };
+    }
+
+    await (supabase.from as any)("propositions_tarifs")
+      .update({ statut: "acceptee", updated_at: new Date().toISOString() })
+      .eq("id", propositionId);
+
+    await logAudit({
+      userId,
+      action: "accepter_proposition_tarifs",
+      tableName: "propositions_tarifs",
+      recordId: propositionId,
+      newValues: { statut: "acceptee", commentaire },
+    });
+  } else {
+    await (supabase.from as any)("propositions_tarifs")
+      .update({ statut: "refusee", updated_at: new Date().toISOString() })
+      .eq("id", propositionId);
+
+    await logAudit({
+      userId,
+      action: "refuser_proposition_tarifs",
+      tableName: "propositions_tarifs",
+      recordId: propositionId,
+      newValues: { statut: "refusee", commentaire },
+    });
+  }
+
+  revalidatePath("/admin/tarifs");
+  await revalidateTarifsCache();
+  return { success: true };
+}
+
+export async function getPropositionsTarifs(): Promise<{ data: any[] | null; error?: string }> {
+  const { supabase } = await requireStaff();
+  const { data, error } = await (supabase.from as any)("propositions_tarifs")
+    .select("*, users:operateur_id(nom), zones_tarifaires:zone_id(nom)")
+    .order("created_at", { ascending: false })
+    .limit(20);
+  return { data, error: error?.message };
 }

@@ -3,12 +3,12 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 const slides = [
-  { src: "/images/hero-car.jpg", alt: "Flotte premium — Porsche Panamera" },
-  { src: "/images/hero-chauffeur.jpg", alt: "Transport avec chauffeur — Rolls Royce" },
-  { src: "/images/hero-livraison.jpg", alt: "Service de livraison de colis" },
-  { src: "/images/hero-immobilier.jpg", alt: "Projets immobiliers premium" },
-  { src: "/images/hero-voyages.jpg", alt: "Assistance migration, visa et étude" },
-  { src: "/images/hero-luxe.jpg", alt: "Véhicules de luxe" },
+  { src: "/images/hero-car.webp", alt: "Flotte premium — Porsche Panamera" },
+  { src: "/images/hero-chauffeur.webp", alt: "Transport avec chauffeur — Rolls Royce" },
+  { src: "/images/hero-livraison.webp", alt: "Service de livraison de colis" },
+  { src: "/images/hero-immobilier.webp", alt: "Projets immobiliers premium" },
+  { src: "/images/hero-voyages.webp", alt: "Assistance migration, visa et étude" },
+  { src: "/images/hero-luxe.webp", alt: "Véhicules de luxe" },
 ];
 
 export function HeroSlideshow() {

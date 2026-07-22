@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { MobileNav } from "./mobile-nav";
 import { LogoutButton } from "./logout-button";
@@ -27,30 +26,23 @@ export async function Header() {
     ? isStaff
       ? [
           { href: "/admin", label: "Back-office" },
-          { href: "/profil", label: profile.nom },
+          { href: "/compte/profil", label: profile.nom },
         ]
       : [
-          { href: "/catalogue", label: "Catalogue" },
-          { href: "/profil/reservations", label: "Mes reservations" },
-          { href: "/profil", label: profile.nom },
+          { href: "/transport/catalogue", label: "Catalogue" },
+          { href: "/compte/reservations", label: "Mes réservations" },
+          { href: "/compte/profil", label: profile.nom },
         ]
     : [
-        { href: "/catalogue", label: "Catalogue" },
+        { href: "/transport/catalogue", label: "Catalogue" },
       ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-phoebe-pearl/80 bg-white/98 backdrop-blur-md shadow-sm shadow-phoebe-green/3">
       <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center gap-1">
-          <Image
-            src="/logo.png"
-            alt="Group PHOEBE"
-            width={220}
-            height={88}
-            className="h-[4.5rem] w-auto object-contain"
-            quality={95}
-            priority
-          />
+        <Link href="/" className="flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-phoebe-green text-sm font-bold text-white">GP</div>
+          <span className="text-sm font-semibold text-phoebe-anthracite">Back-office</span>
         </Link>
 
         <nav className="hidden items-center gap-1 text-sm md:flex">
@@ -72,7 +64,7 @@ export async function Header() {
           ) : (
             <>
               <Link
-                href="/catalogue"
+                href="/transport/catalogue"
                 className="rounded-lg px-3 py-2 text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-green"
               >
                 Catalogue

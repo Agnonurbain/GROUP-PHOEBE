@@ -245,6 +245,6 @@ export async function annulerParClient(
     );
   }
 
-  revalidatePath("/profil");
+  revalidatePath("/compte/profil");
   return { success: true };
 }

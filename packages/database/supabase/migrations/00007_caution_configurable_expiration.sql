@@ -46,7 +46,7 @@ begin
       dt.periode
     from demandes_transport dt
     where dt.statut = 'en_attente_paiement'
-      and dt.created_at < now() - interval '30 minutes'
+      and dt.created_at < now() - interval '15 minutes'
     for update skip locked
   loop
     if r.vehicule_id is not null and r.periode is not null then

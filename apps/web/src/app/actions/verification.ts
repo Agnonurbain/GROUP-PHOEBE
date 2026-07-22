@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { validateDocumentUpload } from "@/lib/upload-validation";
 
 export type VerificationState = {
   error?: string;
@@ -25,13 +26,13 @@ export async function soumettreDocuments(
     return { error: "Les deux documents sont obligatoires." };
   }
 
-  const maxSize = 10 * 1024 * 1024; // 10 Mo
-  if (pieceIdentite.size > maxSize || permisConduire.size > maxSize) {
-    return { error: "Chaque fichier ne doit pas dépasser 10 Mo." };
+  let ext1: string, ext2: string;
+  try {
+    ({ ext: ext1 } = validateDocumentUpload(pieceIdentite));
+    ({ ext: ext2 } = validateDocumentUpload(permisConduire));
+  } catch (e: unknown) {
+    return { error: e instanceof Error ? e.message : "Fichier invalide." };
   }
-
-  const ext1 = pieceIdentite.name.split(".").pop();
-  const ext2 = permisConduire.name.split(".").pop();
 
   const { error: err1 } = await supabase.storage
     .from("identity-documents")
@@ -59,6 +60,6 @@ export async function soumettreDocuments(
 
   if (updateError) return { error: `Erreur mise à jour : ${updateError.message}` };
 
-  revalidatePath("/profil");
+  revalidatePath("/compte/profil");
   return { success: true };
 }

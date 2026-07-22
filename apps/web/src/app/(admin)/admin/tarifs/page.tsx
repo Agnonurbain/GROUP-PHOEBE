@@ -1,13 +1,22 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getZonesTarifaires, getCommunes, getIntervallesPrix, getVehiculesPrixBase, revalidateTarifsCache } from "@/lib/tarifs-cache";
 import { ScrollReveal } from "@/components/effects";
 import { TarifsTabs } from "./tarifs-tabs";
 import { CoefficientsForm } from "./coefficients-form";
-import { GeojsonEditor } from "./geojson-editor";
+import { MapboxEditor } from "./mapbox-editor";
 import { PrixAutoGrid } from "./prix-auto-grid";
 import { CommunesList } from "./communes-list";
 import { AjouterCommuneForm } from "./ajouter-commune-form";
+import { IntervallesList } from "./intervalles-list";
+import { AjouterIntervalleForm } from "./ajouter-intervalle-form";
 import { CAT_LABELS } from "@/lib/constants";
+
+export const metadata: Metadata = {
+  title: "Tarifs — Administration",
+  description: "Configurez les tarifs par zone et catégorie de véhicule GROUP PHOEBE.",
+}
 
 export default async function TarifsPage() {
   const supabase = await createClient();
@@ -23,24 +32,23 @@ export default async function TarifsPage() {
     .single();
   if (profile?.role !== "proprietaire") redirect("/admin");
 
-  const [{ data: zones }, { data: communes }, { data: vehicules }] =
-    await Promise.all([
-      supabase
-        .from("zones_tarifaires")
-        .select("*")
-        .order("ordre", { ascending: true }),
-      supabase
-        .from("communes")
-        .select("*")
-        .order("nom", { ascending: true }),
-      supabase
-        .from("vehicules")
-        .select("categorie, prix_journalier")
-        .not("prix_journalier", "is", null)
-        .gt("prix_journalier", 0),
+  const [zones, communes, vehicules, intervalles] = await Promise.all([
+      getZonesTarifaires(),
+      getCommunes(),
+      getVehiculesPrixBase(),
+      getIntervallesPrix(),
     ]);
 
-  const zonesData = (zones ?? []).map((z) => ({
+  const intervallesList = (intervalles ?? []).map((ip: typeof intervalles[0]) => ({
+    id: ip.id,
+    zone_id: ip.zone_id,
+    categorie: CAT_LABELS[ip.categorie_vehicule as keyof typeof CAT_LABELS] ?? ip.categorie_vehicule,
+    type: ip.type === "location" ? "Location" : "Vente",
+    prix_min: Number(ip.prix_min),
+    prix_max: Number(ip.prix_max),
+  }));
+
+  const zonesData = (zones ?? []).map((z: typeof zones[0]) => ({
     id: z.id,
     nom: z.nom,
     description: z.description,
@@ -56,7 +64,7 @@ export default async function TarifsPage() {
   const categories = Object.keys(CAT_LABELS);
   const prixParCategorie = categories
     .map((cat) => {
-      const vCat = (vehicules ?? []).filter((v) => v.categorie === cat);
+      const vCat = (vehicules ?? []).filter((v: typeof vehicules[0]) => v.categorie === cat);
       if (vCat.length === 0) return null;
       const prices = vCat.map((v) => Number(v.prix_journalier));
       return {
@@ -195,7 +203,7 @@ export default async function TarifsPage() {
                         </span>
                       )}
                     </h3>
-                    <GeojsonEditor
+                    <MapboxEditor
                       zoneId={z.id}
                       zoneName={z.nom}
                       initialGeojson={z.geojson}
@@ -215,6 +223,33 @@ export default async function TarifsPage() {
                   }))}
                   prixParCategorie={prixParCategorie}
                 />
+
+                <div>
+                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+                    Intervalles de prix par zone
+                  </h3>
+                  <div className="space-y-4">
+                    {zonesData.map((z) => {
+                      const zoneIntervalles = intervallesList.filter(
+                        (ip) => ip.zone_id === z.id
+                      );
+                      return (
+                        <section
+                          key={z.id}
+                          className="rounded-xl border border-phoebe-pearl bg-white p-5 shadow-sm"
+                        >
+                          <h4 className="mb-2 text-sm font-semibold text-phoebe-anthracite">
+                            {z.nom}
+                          </h4>
+                          <IntervallesList intervalles={zoneIntervalles} />
+                          <div className="mt-3 border-t border-phoebe-pearl pt-3">
+                            <AjouterIntervalleForm zoneId={z.id} />
+                          </div>
+                        </section>
+                      );
+                    })}
+                  </div>
+                </div>
 
                 <div>
                   <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">

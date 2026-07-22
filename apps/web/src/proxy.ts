@@ -35,15 +35,15 @@ export async function proxy(request: NextRequest) {
 
   // OAuth code landed on wrong page — forward to callback handler
   const code = request.nextUrl.searchParams.get("code");
-  if (code && pathname !== "/auth/callback") {
+  if (code && pathname !== "/callback") {
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/callback";
+    url.pathname = "/callback";
     return NextResponse.redirect(url);
   }
 
   if (
     !user &&
-    (pathname.startsWith("/profil") || pathname.startsWith("/admin"))
+    (pathname.startsWith("/compte/profil") || pathname.startsWith("/admin"))
   ) {
     const url = request.nextUrl.clone();
     url.pathname = "/connexion";
@@ -55,7 +55,7 @@ export async function proxy(request: NextRequest) {
     (pathname === "/connexion" || pathname === "/inscription")
   ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/profil";
+    url.pathname = "/compte/profil";
     return NextResponse.redirect(url);
   }
 

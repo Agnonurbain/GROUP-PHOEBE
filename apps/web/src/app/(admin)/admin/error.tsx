@@ -1,5 +1,7 @@
 "use client";
 
+import { Button } from "@/components/ui";
+
 export default function AdminError({
   error,
   reset,
@@ -23,13 +25,9 @@ export default function AdminError({
       <p className="mt-2 text-sm text-phoebe-anthracite/55">
         Impossible de charger cette page. Veuillez réessayer.
       </p>
-      <button
-        type="button"
-        onClick={reset}
-        className="mt-6 rounded-xl bg-phoebe-green px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md"
-      >
+      <Button variant="admin" onClick={reset} className="mt-6">
         Réessayer
-      </button>
+      </Button>
     </div>
   );
 }

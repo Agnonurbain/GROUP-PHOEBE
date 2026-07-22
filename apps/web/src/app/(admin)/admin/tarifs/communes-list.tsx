@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { supprimerCommune } from "@/app/actions/tarifs";
+import { Button } from "@/components/ui";
 
 type Commune = {
   id: string;
@@ -29,19 +30,19 @@ export function CommunesList({ communes }: { communes: Commune[] }) {
           {c.ajoutee_par_client && (
             <span className="text-xs text-phoebe-gold" title="Ajoutée par un client">*</span>
           )}
-          <button
-            type="button"
+          <Button
+            variant="admin-icon"
             disabled={pending}
             onClick={() =>
               startTransition(() => {
                 supprimerCommune(c.id);
               })
             }
-            className="ml-0.5 text-phoebe-anthracite/30 transition-colors hover:text-error disabled:opacity-50"
+            className="ml-0.5 !p-0 text-phoebe-anthracite/30 hover:text-error disabled:opacity-50"
             title="Supprimer"
           >
             ×
-          </button>
+          </Button>
         </span>
       ))}
     </div>

@@ -9,6 +9,7 @@ import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
 import { notifierAdminNouvelleReservation } from "./notifications-admin";
+import { validateDocumentUpload } from "@/lib/upload-validation";
 
 const TAUX_CAUTION_DEFAUT = 0.3;
 
@@ -217,7 +218,8 @@ export async function creerReservation(
   const conducteurPermis = formData.get("conducteur_secondaire_permis") as File | null;
 
   if (conducteurNom && conducteurPermis && conducteurPermis.size > 0) {
-    const ext = conducteurPermis.name.split(".").pop() ?? "jpg";
+    let ext: string;
+    try { ({ ext } = validateDocumentUpload(conducteurPermis)); } catch { ext = "jpg"; }
     const path = `conducteurs/${demande.id}/${crypto.randomUUID()}.${ext}`;
 
     const { error: upErr } = await admin.storage

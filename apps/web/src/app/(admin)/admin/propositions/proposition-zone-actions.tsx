@@ -1,0 +1,33 @@
+"use client";
+
+import { useActionState } from "react";
+import { traiterPropositionZone, type PropositionZoneState } from "@/app/actions/propositions-zones";
+import { SubmitButton } from "@/components/submit-button";
+
+export function PropositionZoneActions({ propositionId }: { propositionId: string }) {
+  const [state, action] = useActionState<PropositionZoneState, FormData>(traiterPropositionZone, {});
+
+  if (state.success) {
+    return <span className="text-xs text-phoebe-green">Traité.</span>;
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      {state.error && <span className="text-xs text-error">{state.error}</span>}
+      <form action={action}>
+        <input type="hidden" name="proposition_id" value={propositionId} />
+        <input type="hidden" name="decision" value="acceptee" />
+        <SubmitButton className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md">
+          Accepter
+        </SubmitButton>
+      </form>
+      <form action={action}>
+        <input type="hidden" name="proposition_id" value={propositionId} />
+        <input type="hidden" name="decision" value="refusee" />
+        <SubmitButton className="rounded-lg border border-error/30 px-3 py-1.5 text-xs font-medium text-error hover:bg-error hover:text-white hover:shadow-md">
+          Refuser
+        </SubmitButton>
+      </form>
+    </div>
+  );
+}

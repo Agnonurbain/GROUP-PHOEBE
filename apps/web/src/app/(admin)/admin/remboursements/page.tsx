@@ -1,6 +1,21 @@
+import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
 import { MarquerRembourse } from "./marquer-rembourse";
+
+export const metadata: Metadata = {
+  title: "Remboursements — Administration",
+  description: "Gérez les demandes de remboursement et les cautions GROUP PHOEBE.",
+}
+
+const NOW = Date.now();
+const _72H_MS = 72 * 3600 * 1000;
+function estEnRetard(dateStr: string): boolean {
+  return (NOW - new Date(dateStr).getTime()) > _72H_MS;
+}
+function ageEnHeures(dateStr: string): number {
+  return (NOW - new Date(dateStr).getTime()) / (1000 * 60 * 60);
+}
 
 export default async function RemboursementsPage() {
   const supabase = await createClient();
@@ -18,6 +33,8 @@ export default async function RemboursementsPage() {
     .order("created_at", { ascending: false })
     .limit(20);
 
+  const nbRetard = paiements?.filter((p) => estEnRetard(p.created_at)).length ?? 0;
+
   return (
     <div className="space-y-8">
         <ScrollReveal variant="fade-up">
@@ -32,13 +49,13 @@ export default async function RemboursementsPage() {
           </div>
         </ScrollReveal>
 
-        {paiements && paiements.filter((p) => (Date.now() - new Date(p.created_at).getTime()) > 72 * 3600 * 1000).length > 0 && (
+        {nbRetard > 0 && (
           <div className="flex items-center gap-3 rounded-xl border border-error/20 bg-error/5 px-5 py-3">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0 text-error">
               <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
             </svg>
             <p className="text-sm font-medium text-error">
-              {paiements.filter((p) => (Date.now() - new Date(p.created_at).getTime()) > 72 * 3600 * 1000).length} remboursement(s) en attente depuis plus de 72h
+              {nbRetard} remboursement(s) en attente depuis plus de 72h
             </p>
           </div>
         )}
@@ -66,7 +83,7 @@ export default async function RemboursementsPage() {
               </thead>
               <tbody className="divide-y divide-phoebe-pearl/70">
                 {paiements.map((p) => {
-                  const ageH = (Date.now() - new Date(p.created_at).getTime()) / (1000 * 60 * 60);
+                  const ageH = ageEnHeures(p.created_at);
                   const isLate = ageH > 72;
                   return (
                   <tr key={p.id} className={`transition-colors hover:bg-phoebe-pearl/40 ${isLate ? "bg-error/5" : ""}`}>

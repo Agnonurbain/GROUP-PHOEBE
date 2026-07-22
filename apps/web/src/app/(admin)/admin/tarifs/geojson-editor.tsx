@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import { sauvegarderGeojson } from "@/app/actions/tarifs";
+import { Button } from "@/components/ui";
 
 type Coord = [number, number];
 
@@ -180,9 +181,10 @@ export function GeojsonEditor({
 
   return (
     <div>
-      <button
+      <Button
+        variant="admin-ghost"
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-1.5 text-xs font-medium text-phoebe-green transition-colors hover:text-phoebe-green-deep"
+        className="border-0 text-phoebe-green hover:text-phoebe-green-deep"
       >
         <svg
           width="14"
@@ -204,7 +206,7 @@ export function GeojsonEditor({
             défini
           </span>
         )}
-      </button>
+      </Button>
 
       {open && (
         <div className="mt-3 space-y-3 rounded-xl border border-phoebe-pearl bg-phoebe-pearl/10 p-4">
@@ -248,28 +250,28 @@ export function GeojsonEditor({
           )}
 
           <div className="flex gap-2">
-            <button
+            <Button
+              variant="admin"
+              size="sm"
               onClick={handleSave}
               disabled={saving || !!parseError || !text.trim()}
-              className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-colors hover:bg-phoebe-green-deep disabled:opacity-40"
             >
               {saving ? "Enregistrement…" : "Enregistrer"}
-            </button>
+            </Button>
             {hasGeojson && (
-              <button
+              <Button
+                variant="admin-ghost"
+                size="sm"
                 onClick={handleClear}
                 disabled={saving}
-                className="rounded-lg border border-error/30 px-3 py-1.5 text-xs font-medium text-error transition-colors hover:bg-error/10 disabled:opacity-40"
+                className="border-error/30 text-error hover:bg-error/10"
               >
                 Supprimer le polygone
-              </button>
+              </Button>
             )}
-            <button
-              onClick={() => setOpen(false)}
-              className="rounded-lg border border-phoebe-anthracite/15 px-3 py-1.5 text-xs text-phoebe-anthracite/60 transition-colors hover:bg-phoebe-pearl"
-            >
+            <Button variant="admin-ghost" size="sm" onClick={() => setOpen(false)}>
               Fermer
-            </button>
+            </Button>
           </div>
         </div>
       )}

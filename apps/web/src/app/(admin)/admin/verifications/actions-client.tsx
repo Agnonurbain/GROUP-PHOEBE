@@ -5,6 +5,7 @@ import {
   validerVerification,
   rejeterVerification,
 } from "@/app/actions/admin";
+import { Button } from "@/components/ui";
 
 export function VerificationActions({ userId, sousAge }: { userId: string; sousAge?: boolean }) {
   const [pending, startTransition] = useTransition();
@@ -30,24 +31,27 @@ export function VerificationActions({ userId, sousAge }: { userId: string; sousA
           </div>
         )}
         <div className="flex gap-2">
-          <button
+          <Button
+            variant="admin"
+            size="sm"
             disabled={pending || (sousAge && !derogation)}
             onClick={() =>
               startTransition(() => {
                 validerVerification(userId);
               })
             }
-            className="rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md disabled:opacity-50"
           >
             Valider
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="admin-ghost"
+            size="sm"
             disabled={pending}
             onClick={() => setShowRejet(true)}
-            className="rounded-lg border border-error/30 px-3 py-1.5 text-xs font-semibold text-error hover:bg-error hover:text-white hover:shadow-md disabled:opacity-50"
+            className="border-error/30 text-error hover:bg-error hover:text-white"
           >
             Rejeter
-          </button>
+          </Button>
         </div>
         {sousAge && !derogation && (
           <p className="text-[10px] text-error/70 text-right max-w-32 leading-tight">
@@ -79,17 +83,11 @@ export function VerificationActions({ userId, sousAge }: { userId: string; sousA
               className="mt-3 w-full rounded-lg border border-phoebe-pearl px-3 py-2 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-phoebe-green focus:outline-none focus:ring-1 focus:ring-phoebe-green"
             />
             <div className="mt-4 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowRejet(false);
-                  setMotif("");
-                }}
-                className="rounded-lg border border-phoebe-pearl px-4 py-2 text-sm text-phoebe-anthracite/70 hover:bg-phoebe-pearl hover:shadow-sm"
-              >
+              <Button variant="admin-ghost" onClick={() => { setShowRejet(false); setMotif(""); }}>
                 Annuler
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="admin-danger"
                 disabled={pending || !motif.trim()}
                 onClick={() =>
                   startTransition(async () => {
@@ -98,10 +96,9 @@ export function VerificationActions({ userId, sousAge }: { userId: string; sousA
                     setMotif("");
                   })
                 }
-                className="rounded-lg bg-error px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-error/90 hover:shadow-md disabled:opacity-50"
               >
                 Confirmer le rejet
-              </button>
+              </Button>
             </div>
           </div>
         </div>

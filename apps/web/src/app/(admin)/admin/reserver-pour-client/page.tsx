@@ -1,8 +1,16 @@
+import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
 import { ReservationPourClientForm } from "./reservation-pour-client-form";
 
-export const metadata = { title: "Réserver pour un client — Admin" };
+export const metadata: Metadata = {
+  title: "Réserver pour un client — GROUP PHOEBE",
+  description: "Créez une réservation au nom d'un client GROUP PHOEBE.",
+  openGraph: {
+    title: "Réserver pour un client — GROUP PHOEBE",
+    description: "Créez une réservation au nom d'un client GROUP PHOEBE.",
+  },
+}
 
 export default async function ReserverPourClientPage() {
   const supabase = await createClient();

@@ -1,9 +1,15 @@
+import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
 import { VerificationBadge } from "@/components/verification-badge";
 import { VerificationActions } from "./actions-client";
 import { getSignedDocUrl } from "@/lib/storage";
 import type { StatutVerification } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "Vérifications — Administration",
+  description: "Vérifiez les documents d'identité et permis des clients GROUP PHOEBE.",
+}
 
 export default async function VerificationsPage() {
   const supabase = await createClient();

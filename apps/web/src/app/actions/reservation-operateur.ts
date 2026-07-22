@@ -286,7 +286,7 @@ export async function creerReservationPourClient(
   await admin.from("lignes_demande").insert(lignesInsert);
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  const lienClient = `${baseUrl}/profil/reservations`;
+  const lienClient = `${baseUrl}/compte/reservations`;
 
   const nbVehicules = lignes.length;
   const vehiculeLabel =
@@ -333,7 +333,8 @@ export async function verifierDisponibilite(
   const result: Record<string, boolean> = {};
 
   for (const vid of vehiculeIds) {
-    const { data } = await (supabase.from as Function)("disponibilites_vehicule")
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase.from as any)("disponibilites_vehicule")
       .select("id")
       .eq("vehicule_id", vid)
       .overlaps("periode", periode)

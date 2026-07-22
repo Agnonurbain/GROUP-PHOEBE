@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { Button } from "@/components/ui";
 
 export type EvenementCalendrier = {
   id: string;
@@ -78,21 +79,15 @@ export function CalendrierMensuel({ evenements }: Props) {
   return (
     <div className="rounded-xl border border-phoebe-pearl bg-white p-4 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
-        <button
-          onClick={prevMonth}
-          className="rounded-lg px-3 py-1.5 text-sm text-phoebe-anthracite/60 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-anthracite"
-        >
+        <Button variant="admin-ghost" onClick={prevMonth} className="border-0">
           ←
-        </button>
+        </Button>
         <h3 className="text-base font-semibold text-phoebe-anthracite">
           {MOIS[mois]} {annee}
         </h3>
-        <button
-          onClick={nextMonth}
-          className="rounded-lg px-3 py-1.5 text-sm text-phoebe-anthracite/60 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-anthracite"
-        >
+        <Button variant="admin-ghost" onClick={nextMonth} className="border-0">
           →
-        </button>
+        </Button>
       </div>
 
       <div className="mb-1 grid grid-cols-7 text-center text-xs font-medium text-phoebe-anthracite/40">

@@ -61,7 +61,7 @@ export async function ajouterBlocageVehicule(
     periods.push({ debut: debutDate, fin: finDate });
   } else {
     const until = new Date(recurrenceFin);
-    let current = new Date(debutDate);
+    const current = new Date(debutDate);
     while (current <= until) {
       const pFin = new Date(current);
       pFin.setDate(pFin.getDate() + dureeJours);
@@ -124,6 +124,8 @@ export async function ajouterBlocageChauffeur(
   const chauffeurId = formData.get("chauffeur_id") as string;
   const debut = formData.get("debut") as string;
   const fin = formData.get("fin") as string;
+  const recurrence = formData.get("recurrence") as string;
+  const recurrenceFin = formData.get("recurrence_fin") as string;
 
   if (!chauffeurId || !debut || !fin) {
     return { error: "Chauffeur, date de début et date de fin sont obligatoires." };
@@ -133,12 +135,39 @@ export async function ajouterBlocageChauffeur(
     return { error: "La date de fin doit être postérieure à la date de début." };
   }
 
-  const periode = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
+  const periods: { debut: Date; fin: Date }[] = [];
+  const debutDate = new Date(debut);
+  const finDate = new Date(fin);
+  const dureeJours = Math.ceil((finDate.getTime() - debutDate.getTime()) / (1000 * 60 * 60 * 24));
 
-  const { error } = await supabase.from("disponibilites_chauffeur").insert({
+  if (recurrence === "aucune" || !recurrenceFin) {
+    periods.push({ debut: debutDate, fin: finDate });
+  } else {
+    const until = new Date(recurrenceFin);
+    const current = new Date(debutDate);
+    while (current <= until) {
+      const pFin = new Date(current);
+      pFin.setDate(pFin.getDate() + dureeJours);
+      periods.push({ debut: current, fin: pFin });
+
+      if (recurrence === "quotidienne") {
+        current.setDate(current.getDate() + 1);
+      } else if (recurrence === "hebdomadaire") {
+        current.setDate(current.getDate() + 7);
+      } else if (recurrence === "mensuelle") {
+        current.setMonth(current.getMonth() + 1);
+      } else {
+        break;
+      }
+    }
+  }
+
+  const rows = periods.map((p) => ({
     chauffeur_id: chauffeurId,
-    periode,
-  });
+    periode: `[${p.debut.toISOString()},${p.fin.toISOString()})`,
+  }));
+
+  const { error } = await supabase.from("disponibilites_chauffeur").insert(rows);
 
   if (error) {
     if (error.code === "23P01") {

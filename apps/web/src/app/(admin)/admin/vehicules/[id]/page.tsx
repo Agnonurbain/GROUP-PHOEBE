@@ -1,3 +1,4 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
@@ -5,10 +6,16 @@ import { ScrollReveal } from "@/components/effects";
 import VehiculeForm from "../vehicule-form";
 import PhotosManager from "./photos-manager";
 import { ProposerPrixForm } from "./proposer-prix-form";
+import { ProposerModificationZoneForm } from "@/components/proposer-modification-zone-form";
 import { MaintenanceSection } from "./maintenance-section";
 import { modifierVehicule, supprimerVehicule } from "@/app/actions/vehicules";
 import { GpsCapture } from "@/components/gps-capture";
 import { SubmitButton } from "@/components/submit-button";
+
+export const metadata: Metadata = {
+  title: "Modifier un véhicule — Administration",
+  description: "Modifiez les informations et tarifs d'un véhicule GROUP PHOEBE.",
+}
 
 function parsePeriode(raw: string | null): { debut: string; fin: string } {
   if (!raw) return { debut: "—", fin: "—" };
@@ -66,10 +73,19 @@ export default async function EditVehiculePage({
     .eq("vehicule_id", id);
   const chauffeurIds = vcLinks?.map((l) => l.chauffeur_id) ?? [];
 
-  const { data: zones } = await supabase.from("zones_tarifaires").select("*");
+  const { data: zones } = await supabase.from("zones_tarifaires").select("*").order("ordre");
   const zonesData = (zones ?? []).map((z) => ({
     id: z.id,
     coefficient_majoration: Number((z as Record<string, unknown>).coefficient_majoration) || 1,
+  }));
+  const zonesFormData = (zones ?? []).map((z) => ({
+    id: z.id,
+    nom: z.nom,
+    coefficient_majoration: Number((z as Record<string, unknown>).coefficient_majoration) || 1,
+    caution_multiplicateur: Number((z as Record<string, unknown>).caution_multiplicateur) || 1,
+    km_inclus_par_jour: Number((z as Record<string, unknown>).km_inclus_par_jour) || 150,
+    supplement_km_fcfa: Number((z as Record<string, unknown>).supplement_km_fcfa) || 200,
+    tarif_chauffeur_journalier: Number((z as Record<string, unknown>).tarif_chauffeur_journalier) || 10000,
   }));
   const { data: intervallesPrix } = await supabase
     .from("intervalles_prix")
@@ -151,16 +167,21 @@ export default async function EditVehiculePage({
       </ScrollReveal>
 
       {!isProprietaire && (
-        <ScrollReveal variant="fade-up" delay={0.25}>
-          <ProposerPrixForm
-            vehiculeId={id}
-            prixActuels={{
-              prix_journalier: vehicule.prix_journalier,
-              prix_mensuel: vehicule.prix_mensuel,
-              prix_vente: vehicule.prix_vente,
-            }}
-          />
-        </ScrollReveal>
+        <>
+          <ScrollReveal variant="fade-up" delay={0.25}>
+            <ProposerPrixForm
+              vehiculeId={id}
+              prixActuels={{
+                prix_journalier: vehicule.prix_journalier,
+                prix_mensuel: vehicule.prix_mensuel,
+                prix_vente: vehicule.prix_vente,
+              }}
+            />
+          </ScrollReveal>
+          <ScrollReveal variant="fade-up" delay={0.28}>
+            <ProposerModificationZoneForm zones={zonesFormData} />
+          </ScrollReveal>
+        </>
       )}
 
       {isProprietaire && (

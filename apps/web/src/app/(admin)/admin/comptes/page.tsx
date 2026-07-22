@@ -1,7 +1,13 @@
+import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server";
 import { ComptesForm } from "./comptes-form";
 import { DeleteAccountButton } from "./delete-button";
 import { ScrollReveal } from "@/components/effects";
+
+export const metadata: Metadata = {
+  title: "Comptes utilisateurs — Administration",
+  description: "Gérez les comptes clients, chauffeurs et opérateurs GROUP PHOEBE.",
+}
 
 export default async function ComptesPage() {
   const supabase = await createClient();
@@ -26,10 +32,11 @@ export default async function ComptesPage() {
     .order("role")
     .order("nom");
 
-  const { data: lastActivities } = await (supabase.from as Function)("audit_logs")
+  const { data: lastActivities } = await supabase
+    .from("audit_log" as const)
     .select("user_id, created_at")
     .in("user_id", (staff ?? []).map((s: { id: string }) => s.id))
-    .order("created_at", { ascending: false }) as { data: { user_id: string; created_at: string }[] | null };
+    .order("created_at", { ascending: false })
 
   const lastActivityMap = new Map<string, string>();
   for (const a of lastActivities ?? []) {

@@ -84,7 +84,7 @@ export async function creerDemandeAchat(
 
   if (demandeErr) return { error: demandeErr.message };
 
-  redirect(`/profil/reservations?achat=${demande.id}`);
+  redirect(`/compte/reservations?achat=${demande.id}`);
 }
 
 const TAUX_ACOMPTE_DEFAUT = 0.2;

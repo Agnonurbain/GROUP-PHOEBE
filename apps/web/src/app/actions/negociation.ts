@@ -210,7 +210,7 @@ export async function creerDemandeNegociation(
 
   await admin.from("lignes_demande").insert(lignesInsert);
 
-  revalidatePath("/profil/reservations");
+  revalidatePath("/compte/reservations");
   return { success: true, demandeId: demande.id };
 }
 

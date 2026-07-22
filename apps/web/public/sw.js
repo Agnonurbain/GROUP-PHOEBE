@@ -1,5 +1,5 @@
 const CACHE = "gp-v1";
-const PRECACHE_URLS = ["/", "/catalogue", "/offline"];
+const PRECACHE_URLS = ["/", "/transport/catalogue"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -53,7 +53,7 @@ self.addEventListener("fetch", (event) => {
           return res;
         })
         .catch(() =>
-          caches.match(request).then((cached) => cached || caches.match("/offline"))
+          caches.match(request)
         )
     );
     return;
@@ -76,8 +76,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: "/logo.png",
-      badge: "/logo.png",
+      icon: "/logo.webp",
+      badge: "/logo.webp",
       data: { url: data.url },
     })
   );

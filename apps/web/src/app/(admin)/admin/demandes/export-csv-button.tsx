@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui";
 
 type Demande = {
   id: string;
@@ -67,12 +68,13 @@ export function ExportCsvButton({ demandes }: { demandes: Demande[] }) {
   }
 
   return (
-    <button
+    <Button
+      variant="admin-ghost"
+      size="sm"
       onClick={handleExport}
       disabled={exporting || demandes.length === 0}
-      className="rounded-lg border border-phoebe-anthracite/15 px-3 py-1.5 text-xs font-medium text-phoebe-anthracite/60 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-anthracite disabled:opacity-40"
     >
       Exporter CSV
-    </button>
+    </Button>
   );
 }

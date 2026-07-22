@@ -6,6 +6,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { hasMinimumAge } from "@/lib/auth";
 import { validerTelephone } from "@/lib/telephone";
+import { checkRateLimit, getRemainingAttempts } from "@/lib/rate-limit";
 
 export type AuthState = {
   error?: string;
@@ -97,6 +98,10 @@ export async function connexion(
     return { error: "Tous les champs sont obligatoires." };
   }
 
+  if (!checkRateLimit(`login:${identifiant}`)) {
+    return { error: "Trop de tentatives. Réessayez dans une minute." };
+  }
+
   const supabase = await createClient();
   const isEmail = identifiant.includes("@");
 
@@ -122,7 +127,7 @@ export async function connexion(
   const next = formData.get("redirect") as string | null;
   const safeNext = next && next.startsWith("/") ? next : null;
 
-  redirect(safeNext ?? (isStaff ? "/admin" : "/profil"));
+  redirect(safeNext ?? (isStaff ? "/admin" : "/compte/profil"));
 }
 
 export async function verifierOtp(
@@ -137,6 +142,10 @@ export async function verifierOtp(
     return { error: "Le code de vérification est obligatoire." };
   }
 
+  if (!checkRateLimit(`otp:${phone}`)) {
+    return { error: "Trop de tentatives. Réessayez dans une minute." };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.auth.verifyOtp({
@@ -149,7 +158,7 @@ export async function verifierOtp(
     return { error: "Code invalide ou expiré. Veuillez réessayer." };
   }
 
-  const safeNext = next && next.startsWith("/") ? next : "/profil";
+  const safeNext = next && next.startsWith("/") ? next : "/compte/profil";
   redirect(safeNext);
 }
 
@@ -165,6 +174,10 @@ export async function envoyerCodeReset(
 
   const errTel = validerTelephone(telephone);
   if (errTel) return { error: errTel };
+
+  if (!checkRateLimit(`reset:sms:${telephone}`)) {
+    return { error: "Trop de tentatives. Réessayez dans une minute." };
+  }
 
   const supabase = await createClient();
 
@@ -187,6 +200,10 @@ export async function envoyerResetEmail(
 
   if (!email) {
     return { error: "L'adresse email est obligatoire." };
+  }
+
+  if (!checkRateLimit(`reset:email:${email}`)) {
+    return { error: "Trop de tentatives. Réessayez dans une minute." };
   }
 
   const supabase = await createClient();
@@ -236,7 +253,7 @@ export async function changerMotDePasse(
     return { error: error.message };
   }
 
-  redirect("/profil");
+  redirect("/compte/profil");
 }
 
 export async function updateProfile(
@@ -280,7 +297,7 @@ export async function updateProfile(
     return { error: "Impossible de mettre à jour le profil." };
   }
 
-  redirect("/profil");
+  redirect("/compte/profil");
 }
 
 export async function renvoyerCode(
@@ -295,6 +312,10 @@ export async function renvoyerCode(
 
   const errTel = validerTelephone(phone);
   if (errTel) return { error: errTel };
+
+  if (!checkRateLimit(`renvoyer:code:${phone}`)) {
+    return { error: "Trop de tentatives. Réessayez dans une minute." };
+  }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({ phone });

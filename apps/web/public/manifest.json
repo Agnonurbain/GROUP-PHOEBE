@@ -1,0 +1,16 @@
+{
+  "name": "GROUP PHOEBE",
+  "short_name": "GP",
+  "description": "Transport, livraison, immobilier et assistance migration en Côte d'Ivoire.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0A0A",
+  "theme_color": "#0A0A0A",
+  "icons": [
+    {
+      "src": "/logo.webp",
+      "sizes": "612x408",
+      "type": "image/webp"
+    }
+  ]
+}

@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
+async function embedImage(pdf: PDFDocument, url: string | null): Promise<{ img: Awaited<ReturnType<typeof pdf.embedPng>>; w: number; h: number } | null> {
+  if (!url) return null;
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(10000) });
+    if (!res.ok) return null;
+    const buf = await res.arrayBuffer();
+    const contentType = res.headers.get("content-type") ?? "";
+    if (contentType.includes("png") || url.match(/\.png/i)) {
+      const img = await pdf.embedPng(buf);
+      return { img, w: img.width, h: img.height };
+    }
+    const img = await pdf.embedJpg(buf);
+    return { img, w: img.width, h: img.height };
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const demandeId = request.nextUrl.searchParams.get("id");
   if (!demandeId) {
@@ -39,7 +57,7 @@ export async function GET(request: NextRequest) {
   const font = await pdf.embedFont(StandardFonts.Helvetica);
   const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
-  const page = pdf.addPage([595, 842]); // A4
+  let page = pdf.addPage([595, 842]);
   const { height } = page.getSize();
   let y = height - 50;
 
@@ -57,6 +75,13 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  function checkPage() {
+    if (y < 120) {
+      page = pdf.addPage([595, 842]);
+      y = height - 50;
+    }
+  }
+
   // Header
   drawText("GROUP PHOEBE", 50, { bold: true, size: 18, color: green });
   y -= 20;
@@ -65,7 +90,6 @@ export async function GET(request: NextRequest) {
   page.drawLine({ start: { x: 50, y }, end: { x: 545, y }, thickness: 1, color: green });
   y -= 25;
 
-  // Vehicle info
   const v = demande.vehicules as { marque: string; modele: string } | null;
   const client = demande.users as { nom: string; telephone: string | null } | null;
 
@@ -104,6 +128,7 @@ export async function GET(request: NextRequest) {
 
   // Départ
   if (demande.kilometrage_depart != null) {
+    checkPage();
     page.drawRectangle({ x: 50, y: y - 5, width: 495, height: 22, color: rgb(0.95, 0.98, 0.95) });
     drawText("DÉPART", 55, { bold: true, size: 12, color: green });
     y -= 25;
@@ -117,8 +142,23 @@ export async function GET(request: NextRequest) {
     y -= 18;
 
     if (demande.etat_lieux_depart_photos?.length) {
-      drawText(`Photos : ${demande.etat_lieux_depart_photos.length} fichier(s) joint(s)`, 70, { color: gray });
-      y -= 18;
+      const photoUrls = demande.etat_lieux_depart_photos as string[];
+      for (let i = 0; i < photoUrls.length; i++) {
+        checkPage();
+        const embedded = await embedImage(pdf, photoUrls[i]);
+        if (embedded) {
+          const maxW = 220;
+          const scale = Math.min(maxW / embedded.w, 120 / embedded.h, 1);
+          const iw = embedded.w * scale;
+          const ih = embedded.h * scale;
+          page.drawImage(embedded.img, { x: 70, y: y - ih, width: iw, height: ih });
+          drawText(`Photo départ ${i + 1}`, 70 + iw + 8, { color: gray });
+          y -= (ih + 12);
+        } else {
+          drawText(`Photo départ ${i + 1} : non disponible`, 70, { color: gray });
+          y -= 16;
+        }
+      }
     }
 
     y -= 10;
@@ -130,6 +170,7 @@ export async function GET(request: NextRequest) {
 
   // Retour
   if (demande.kilometrage_retour != null) {
+    checkPage();
     page.drawRectangle({ x: 50, y: y - 5, width: 495, height: 22, color: rgb(0.95, 0.95, 0.98) });
     drawText("RETOUR", 55, { bold: true, size: 12, color: rgb(0.3, 0.3, 0.7) });
     y -= 25;
@@ -138,9 +179,9 @@ export async function GET(request: NextRequest) {
     drawText(`${Number(demande.kilometrage_retour).toLocaleString("fr-FR")} km`, 180);
     y -= 18;
 
-    const kmDepart = Number(demande.kilometrage_depart ?? 0);
-    const kmRetour = Number(demande.kilometrage_retour);
-    const kmParcourus = kmRetour - kmDepart;
+    const kmDepartN = Number(demande.kilometrage_depart ?? 0);
+    const kmRetourN = Number(demande.kilometrage_retour);
+    const kmParcourus = kmRetourN - kmDepartN;
     if (kmParcourus > 0) {
       drawText("Km parcourus :", 70, { bold: true });
       drawText(`${kmParcourus.toLocaleString("fr-FR")} km`, 180);
@@ -152,8 +193,23 @@ export async function GET(request: NextRequest) {
     y -= 18;
 
     if (demande.etat_lieux_retour_photos?.length) {
-      drawText(`Photos : ${demande.etat_lieux_retour_photos.length} fichier(s) joint(s)`, 70, { color: gray });
-      y -= 18;
+      const photoUrls = demande.etat_lieux_retour_photos as string[];
+      for (let i = 0; i < photoUrls.length; i++) {
+        checkPage();
+        const embedded = await embedImage(pdf, photoUrls[i]);
+        if (embedded) {
+          const maxW = 220;
+          const scale = Math.min(maxW / embedded.w, 120 / embedded.h, 1);
+          const iw = embedded.w * scale;
+          const ih = embedded.h * scale;
+          page.drawImage(embedded.img, { x: 70, y: y - ih, width: iw, height: ih });
+          drawText(`Photo retour ${i + 1}`, 70 + iw + 8, { color: gray });
+          y -= (ih + 12);
+        } else {
+          drawText(`Photo retour ${i + 1} : non disponible`, 70, { color: gray });
+          y -= 16;
+        }
+      }
     }
 
     const cautionRetenue = Number(demande.caution_retenue ?? 0);
@@ -172,6 +228,7 @@ export async function GET(request: NextRequest) {
 
   // Financial summary
   y -= 10;
+  checkPage();
   page.drawLine({ start: { x: 50, y: y + 5 }, end: { x: 545, y: y + 5 }, thickness: 0.5, color: gray });
   y -= 10;
 

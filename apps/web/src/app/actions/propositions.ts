@@ -114,7 +114,7 @@ export async function proposerPrix(
 
   revalidatePath("/admin/vehicules");
   revalidatePath("/admin/propositions");
-  revalidatePath(`/catalogue/${vehiculeId}`);
+  revalidatePath(`/transport/catalogue/${vehiculeId}`);
   return { success: true };
 }
 
@@ -180,12 +180,13 @@ export async function traiterProposition(
       .update({
         [champ]: prop.valeur_proposee,
         updated_at: new Date().toISOString(),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any)
       .eq("id", prop.vehicule_id);
   }
 
   revalidatePath("/admin/propositions");
   revalidatePath("/admin/vehicules");
-  revalidatePath(`/catalogue/${prop.vehicule_id}`);
+  revalidatePath(`/transport/catalogue/${prop.vehicule_id}`);
   return { success: true };
 }

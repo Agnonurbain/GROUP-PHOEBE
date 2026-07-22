@@ -1,8 +1,14 @@
+import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
 import VehiculeForm from "../vehicule-form";
 import { creerVehicule } from "@/app/actions/vehicules";
 import { BackLink } from "@/components/back-link";
+
+export const metadata: Metadata = {
+  title: "Ajouter un véhicule — Administration",
+  description: "Ajoutez un nouveau véhicule à la flotte GROUP PHOEBE.",
+}
 
 export default async function NouveauVehiculePage() {
   const supabase = await createClient();

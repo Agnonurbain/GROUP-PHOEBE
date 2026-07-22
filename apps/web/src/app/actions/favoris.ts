@@ -24,7 +24,7 @@ export async function toggleFavori(vehiculeId: string) {
       .insert({ user_id: user.sub, vehicule_id: vehiculeId });
   }
 
-  revalidatePath("/catalogue");
-  revalidatePath(`/catalogue/${vehiculeId}`);
-  revalidatePath("/profil/favoris");
+  revalidatePath("/transport/catalogue");
+  revalidatePath(`/transport/catalogue/${vehiculeId}`);
+  revalidatePath("/compte/favoris");
 }

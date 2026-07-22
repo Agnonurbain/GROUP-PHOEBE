@@ -1,6 +1,12 @@
+import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
 import { BackLink } from "@/components/back-link";
+
+export const metadata: Metadata = {
+  title: "Historique des vérifications — Administration",
+  description: "Consultez l'historique des vérifications d'identité GROUP PHOEBE.",
+}
 
 export default async function HistoriqueVerificationsPage() {
   const supabase = await createClient();

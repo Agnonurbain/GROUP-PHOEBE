@@ -6,6 +6,7 @@ import {
   verifierDisponibilite,
   type ReservationOperateurState,
 } from "@/app/actions/reservation-operateur";
+import { Button } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
 
 const inputClass =
@@ -196,13 +197,9 @@ export function ReservationPourClientForm({
           <span className="flex-1 truncate text-sm text-phoebe-anthracite font-mono">
             {state.lienClient}
           </span>
-          <button
-            type="button"
-            onClick={handleCopyLink}
-            className="shrink-0 rounded-lg bg-phoebe-green px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-green-deep hover:shadow-md transition-all"
-          >
+          <Button variant="admin" size="sm" type="button" onClick={handleCopyLink}>
             {copied ? "Copié !" : "Copier"}
-          </button>
+          </Button>
         </div>
         <div className="flex justify-center gap-3">
           <a
@@ -252,16 +249,17 @@ export function ReservationPourClientForm({
                   {selectedClient.telephone || selectedClient.email || "—"}
                 </p>
               </div>
-              <button
-                type="button"
+              <Button
+                variant="admin-ghost"
+                size="sm"
                 onClick={() => {
                   setSelectedClient(null);
                   setClientSearch("");
                 }}
-                className="text-xs text-error hover:underline"
+                className="border-0 text-error hover:underline"
               >
                 Changer
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="relative">
@@ -350,13 +348,14 @@ export function ReservationPourClientForm({
                         Chauffeur
                       </label>
                     )}
-                    <button
-                      type="button"
+                    <Button
+                      variant="admin-ghost"
+                      size="sm"
                       onClick={() => removeVehicule(sv.vehicule.id)}
-                      className="text-xs text-error hover:underline"
+                      className="border-0 text-error hover:underline"
                     >
                       Retirer
-                    </button>
+                    </Button>
                   </div>
                 </div>
               ))}
