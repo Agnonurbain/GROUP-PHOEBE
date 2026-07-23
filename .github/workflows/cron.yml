@@ -1,0 +1,35 @@
+name: Cron Jobs
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+    - cron: '0 */2 * * 1-5'
+    - cron: '0 */4 * * *'
+    - cron: '*/30 * * * *'
+
+jobs:
+  identify:
+    runs-on: ubuntu-latest
+    outputs:
+      path: ${{ steps.route.outputs.path }}
+    steps:
+      - name: Identify route
+        id: route
+        run: |
+          case "${{ github.event.schedule }}" in
+            "*/15 * * * *")     echo "path=api/cron/expiration" >> $GITHUB_OUTPUT;;
+            "0 */2 * * 1-5")   echo "path=api/cron/expirer-demandes-sans-reponse" >> $GITHUB_OUTPUT;;
+            "0 */4 * * *")     echo "path=api/cron/expirer-non-presentations" >> $GITHUB_OUTPUT;;
+            "*/30 * * * *")    echo "path=api/cron/expirer-negociations" >> $GITHUB_OUTPUT;;
+          esac
+
+  call:
+    needs: identify
+    runs-on: ubuntu-latest
+    steps:
+      - name: Invoke cron endpoint
+        run: |
+          echo "Calling ${{ needs.identify.outputs.path }}..."
+          curl --fail --silent --show-error \
+            --header "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "https://group-phoebe.com/${{ needs.identify.outputs.path }}"
