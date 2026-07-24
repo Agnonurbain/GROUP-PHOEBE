@@ -295,8 +295,29 @@ export function createCourseSchema(params: {
   };
 }
 
+/**
+ * Serialise un schema pour injection dans un <script type="application/ld+json">.
+ *
+ * JSON.stringify n'echappe ni `<` ni `>`. Une valeur issue de la base contenant
+ * `</script>` refermerait donc le bloc, et le navigateur interpreterait la suite
+ * comme du HTML : XSS stocke sur une page publique.
+ *
+ * Les sequences < et > restent du JSON parfaitement valide et se
+ * reparsent en `<` et `>`, sans jamais apparaitre litteralement dans la page.
+ * U+2028 et U+2029 sont des sauts de ligne valides en JSON mais illegaux dans
+ * un litteral JavaScript, d'ou leur echappement.
+ */
+export function serializeJsonLd(schema: unknown): string {
+  return JSON.stringify(schema)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
 export function renderJsonLd(schema: JsonLdContext): string {
-  return `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
+  return `<script type="application/ld+json">${serializeJsonLd(schema)}</script>`;
 }
 
 export function combineJsonLd(...schemas: JsonLdContext[]): string {

@@ -7,6 +7,7 @@ import { VehicleGallery } from "@/components/public/vehicle-gallery"
 import { VehicleBooking } from "@/components/public/vehicle-booking"
 import { ViewItemTracker } from "@/components/analytics/view-item-tracker"
 import { BackLink } from "@/components/public/back-link"
+import { serializeJsonLd } from "@/lib/json-ld"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -144,7 +145,7 @@ export default async function VehicleDetail({ params }: { params: Promise<{ slug
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(productSchema) }}
       />
       <ViewItemTracker
         item={{
