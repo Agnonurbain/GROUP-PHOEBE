@@ -54,23 +54,13 @@ export default function HomePage() {
         <HeroSlideshow />
 
         {/* Panneau verre fumé : garantit la lisibilité quelle que soit l'image derrière */}
-        <div className="relative z-10 flex flex-col items-center gap-6 rounded-3xl bg-black/55 px-8 py-10 ring-1 ring-white/10 backdrop-blur-md sm:px-14">
+        <div className="relative z-10 flex max-w-3xl flex-col items-center gap-8 rounded-3xl bg-black/55 px-8 py-12 ring-1 ring-white/10 backdrop-blur-md sm:px-14">
           <ScrollReveal variant="fade-up">
-            <Image
-              src="/logos/logo_g-phoebe.png"
-              alt="GROUP PHOEBE"
-              width={334}
-              height={303}
-              priority
-              className="h-auto w-[240px] md:w-[300px] animate-glow-pulse"
-            />
+            <h1 className="text-balance text-3xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl [text-shadow:0_2px_16px_rgba(0,0,0,0.9)]">
+              L&apos;excellence à chaque étape de votre vie
+            </h1>
           </ScrollReveal>
           <ScrollReveal variant="fade-up" delay={0.2}>
-            <p className="text-lg font-medium text-white md:text-xl [text-shadow:0_2px_12px_rgba(0,0,0,0.9)]">
-              L&apos;excellence à chaque étape de votre vie
-            </p>
-          </ScrollReveal>
-          <ScrollReveal variant="fade-up" delay={0.35}>
             <div className="flex flex-col gap-4 sm:flex-row">
               <Link
                 href="#services"
