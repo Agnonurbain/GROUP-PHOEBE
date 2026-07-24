@@ -7,6 +7,7 @@ import { getSignedDocUrl } from "@/lib/storage"
 import type { StatutVerification } from "@/lib/auth"
 import { DeleteAccountButton } from "@/components/delete-account-button"
 import { Button, Card } from "@/components/ui"
+import { BackLink } from "@/components/public/back-link"
 
 export const metadata: Metadata = {
   title: "Mon Profil",
@@ -60,6 +61,9 @@ export default async function CompteProfilPage() {
 
   return (
     <div className="px-6 py-10">
+      <div className="mb-6">
+        <BackLink href="/" label="Retour à l'accueil" />
+      </div>
       <h1 className="text-4xl font-bold text-public-text">Mon Profil</h1>
       <p className="mt-1 text-sm text-public-text-muted">{profile.nom}</p>
 

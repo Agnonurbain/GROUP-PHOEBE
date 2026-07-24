@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { BackLink } from "@/components/public/back-link"
 import { Badge, Button, Card, Input } from "@/components/ui"
 import { MailIcon, PhoneIcon } from "@/components/icons"
 
@@ -20,6 +21,9 @@ export default function Contact() {
   return (
     <>
       <section className="px-6 py-16">
+        <div className="mb-6">
+          <BackLink href="/" label="Retour à l'accueil" />
+        </div>
         <Badge variant="gold">Contact</Badge>
         <h1 className="mt-4 text-4xl font-bold text-public-text md:text-5xl">Parlons de votre projet</h1>
         <p className="mt-3 text-base text-public-text-muted md:text-lg">Une question, un devis, une collaboration ? Nous sommes à votre écoute.</p>

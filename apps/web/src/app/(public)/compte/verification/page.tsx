@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { BackLink } from "@/components/public/back-link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { hasMinimumAge } from "@/lib/auth"
@@ -56,5 +57,12 @@ export default async function VerificationPage() {
     )
   }
 
-  return <VerificationForm statut={profile.statut_verification ?? undefined} motifRejet={profile.motif_rejet} />
+  return (
+    <>
+      <div className="px-6 pt-6">
+        <BackLink href="/compte/profil" label="Retour au profil" />
+      </div>
+      <VerificationForm statut={profile.statut_verification ?? undefined} motifRejet={profile.motif_rejet} />
+    </>
+  )
 }

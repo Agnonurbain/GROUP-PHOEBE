@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { BackLink } from "@/components/public/back-link"
 import Link from "next/link"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
@@ -145,6 +146,9 @@ export default async function CompteReservations({
 
   return (
     <div className="px-6 py-10">
+      <div className="mb-6">
+        <BackLink href="/compte/profil" label="Retour au profil" />
+      </div>
       <h1 className="text-4xl font-bold text-public-text">Mes Réservations</h1>
 
       <div className="mt-6 flex gap-4 border-b border-public-border pb-3">

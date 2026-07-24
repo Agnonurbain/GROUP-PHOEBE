@@ -3,12 +3,12 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 
 const slides = [
-  { src: "/images/hero-car.webp", alt: "Flotte premium — Porsche Panamera" },
-  { src: "/images/hero-chauffeur.webp", alt: "Transport avec chauffeur — Rolls Royce" },
-  { src: "/images/hero-livraison.webp", alt: "Service de livraison de colis" },
-  { src: "/images/hero-immobilier.webp", alt: "Projets immobiliers premium" },
-  { src: "/images/hero-voyages.webp", alt: "Assistance migration, visa et étude" },
-  { src: "/images/hero-luxe.webp", alt: "Véhicules de luxe" },
+  { src: "/images/hero-car.webp", alt: "Flotte premium — Porsche Panamera", label: "Location de véhicules premium" },
+  { src: "/images/hero-chauffeur.webp", alt: "Transport avec chauffeur — Rolls Royce", label: "Transport avec chauffeur" },
+  { src: "/images/hero-livraison.webp", alt: "Service de livraison de colis", label: "Livraison de colis express" },
+  { src: "/images/hero-immobilier.webp", alt: "Projets immobiliers premium", label: "Immobilier — achat, vente, location" },
+  { src: "/images/hero-voyages.webp", alt: "Assistance migration, visa et étude", label: "Visas, études & voyages" },
+  { src: "/images/hero-luxe.webp", alt: "Véhicules de luxe", label: "Véhicules de luxe" },
 ];
 
 export function HeroSlideshow() {
@@ -18,10 +18,11 @@ export function HeroSlideshow() {
     setCurrent((c) => (c + 1) % slides.length);
   }, []);
 
+  // Redémarre le minuteur après une sélection manuelle (dépendance sur current)
   useEffect(() => {
     const id = setInterval(advance, 6000);
     return () => clearInterval(id);
-  }, [advance]);
+  }, [advance, current]);
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -52,7 +53,38 @@ export function HeroSlideshow() {
         );
       })}
       {/* Dark overlay for text readability */}
-      <div className="absolute inset-0 z-[2] bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+      <div className="absolute inset-0 z-[2] bg-gradient-to-b from-black/70 via-black/50 to-black/75" />
+      {/* Vignette centrale : assombrit derrière le logo, la phrase et les boutons */}
+      <div className="absolute inset-0 z-[2] bg-[radial-gradient(ellipse_55%_60%_at_center,rgba(0,0,0,0.6)_0%,rgba(0,0,0,0.25)_55%,transparent_100%)]" />
+
+      {/* Légende du service affiché */}
+      <div className="absolute bottom-8 left-6 z-[3] hidden sm:block">
+        <p
+          key={current}
+          className="animate-fade-in flex items-center gap-2.5 text-sm font-medium text-white/90"
+        >
+          <span aria-hidden="true" className="h-px w-8 bg-accent-gold" />
+          {slides[current].label}
+        </p>
+      </div>
+
+      {/* Points de navigation */}
+      <div className="absolute bottom-8 right-6 z-[3] flex items-center gap-2">
+        {slides.map((slide, i) => (
+          <button
+            key={slide.src}
+            type="button"
+            aria-label={`Afficher : ${slide.label}`}
+            aria-current={i === current}
+            onClick={() => setCurrent(i)}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              i === current
+                ? "w-6 bg-accent-gold"
+                : "w-2 bg-white/40 hover:bg-white/70"
+            }`}
+          />
+        ))}
+      </div>
     </div>
   );
 }

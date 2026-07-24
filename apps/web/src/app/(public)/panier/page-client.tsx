@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useCart } from "@/lib/cart-context"
 import { PanierStepper } from "@/components/panier-stepper"
+import { BackLink } from "@/components/public/back-link"
 import { Badge, Button, Card } from "@/components/ui"
 import { trackEvent } from "@/lib/analytics"
 import { useEffect } from "react"
@@ -70,6 +71,10 @@ export default function Panier() {
   return (
     <>
       <PanierStepper current={0} />
+
+      <div className="px-6 pt-6">
+        <BackLink href="/transport/catalogue" label="Retour au catalogue" />
+      </div>
 
       <div className="flex items-center justify-between px-6 py-8">
         <h1 className="text-4xl font-bold text-public-text">Panier ({count} véhicule{count > 1 ? "s" : ""})</h1>

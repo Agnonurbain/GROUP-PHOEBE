@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation"
 import { useActionState, useCallback, useMemo, useRef, useEffect, useState } from "react"
 import { Badge, Button } from "@/components/ui"
+import { BackLink } from "@/components/public/back-link"
 import { CheckIcon } from "@/components/icons"
 import { creerDossierVoyage, type AssistanceState } from "@/app/actions/assistance"
 
@@ -104,7 +105,11 @@ export default function CountryDetail() {
 
   return (
     <>
-      <nav className="px-6 pt-6 text-sm text-public-text-faint">Accueil &gt; Assistance &gt; {data.name}</nav>
+      <nav className="flex items-center gap-3 px-6 pt-6 text-sm text-public-text-faint">
+        <BackLink href="/assistance" label="Retour à l'assistance" />
+        <span aria-hidden="true">·</span>
+        <span>Accueil &gt; Assistance &gt; {data.name}</span>
+      </nav>
 
       {state?.error && (
         <div className="mx-6 mt-4 rounded-xl border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.08)] px-5 py-3 text-sm text-[#EF4444]">

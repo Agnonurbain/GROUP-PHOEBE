@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui"
 import { VehicleGallery } from "@/components/public/vehicle-gallery"
 import { VehicleBooking } from "@/components/public/vehicle-booking"
 import { ViewItemTracker } from "@/components/analytics/view-item-tracker"
+import { BackLink } from "@/components/public/back-link"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -156,8 +157,10 @@ export default async function VehicleDetail({ params }: { params: Promise<{ slug
           item_variant: rep.modele,
         }}
       />
-      <nav className="px-6 pt-6 text-sm text-public-text-faint">
-        Accueil &gt; Transport &gt; {rep.marque} {rep.modele}
+      <nav className="flex items-center gap-3 px-6 pt-6 text-sm text-public-text-faint">
+        <BackLink href="/transport/catalogue" label="Retour au catalogue" />
+        <span aria-hidden="true">·</span>
+        <span>Accueil &gt; Transport &gt; {rep.marque} {rep.modele}</span>
       </nav>
 
       <div className="grid gap-12 px-6 py-8 lg:grid-cols-5">

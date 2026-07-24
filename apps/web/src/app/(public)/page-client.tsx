@@ -67,7 +67,7 @@ export default function HomePage() {
           </div>
         </ScrollReveal>
         <ScrollReveal variant="fade-up" delay={0.2}>
-          <p className="relative z-10 text-lg text-white/80 md:text-xl">
+          <p className="relative z-10 text-lg font-medium text-white md:text-xl [text-shadow:0_2px_12px_rgba(0,0,0,0.9)]">
             L&apos;excellence à chaque étape de votre vie
           </p>
         </ScrollReveal>
@@ -83,7 +83,7 @@ export default function HomePage() {
             </MagneticButton>
             <Link
               href="/contact"
-              className="block rounded-lg border border-white/30 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-white/10"
+              className="block rounded-lg border border-white/40 bg-black/40 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/60"
             >
               Contactez-nous
             </Link>
@@ -161,14 +161,24 @@ export default function HomePage() {
         <section className="flex flex-col items-center gap-6 border-t border-public-border bg-public-bg-card px-6 py-28 text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-public-text md:text-4xl">Prêt à commencer ?</h2>
           <p className="text-base text-public-text-muted md:text-lg">Rejoignez GROUP PHOEBE et bénéficiez de services d&apos;exception.</p>
-          <MagneticButton>
-            <Link
-              href="/contact"
-              className="mt-4 block rounded-lg bg-accent-gold px-8 py-3.5 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
-            >
-              Nous contacter
-            </Link>
-          </MagneticButton>
+          <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row">
+            <MagneticButton>
+              <Link
+                href="/inscription"
+                className="block rounded-lg bg-accent-gold px-8 py-3.5 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
+              >
+                S&apos;inscrire
+              </Link>
+            </MagneticButton>
+            <MagneticButton>
+              <Link
+                href="/contact"
+                className="block rounded-lg border border-public-border px-8 py-3.5 text-sm font-semibold text-public-text transition-colors hover:bg-public-bg-elevated"
+              >
+                Nous contacter
+              </Link>
+            </MagneticButton>
+          </div>
         </section>
       </ScrollReveal>
     </GoldTrail>

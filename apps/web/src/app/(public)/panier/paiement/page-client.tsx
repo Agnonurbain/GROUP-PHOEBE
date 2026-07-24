@@ -6,6 +6,7 @@ import { useActionState, useEffect, useState, useCallback, useRef, useMemo } fro
 import { useCart } from "@/lib/cart-context"
 import { createClient } from "@/lib/supabase/client"
 import { PanierStepper } from "@/components/panier-stepper"
+import { BackLink } from "@/components/public/back-link"
 import { Button, Card, Badge } from "@/components/ui"
 import { checkoutCart, type CheckoutState } from "@/app/actions/checkout"
 import { trackBeginCheckout } from "@/lib/analytics"
@@ -188,6 +189,10 @@ export default function PaiementPage() {
   return (
     <>
       <PanierStepper current={1} />
+
+      <div className="px-6 pt-6">
+        <BackLink href="/panier" label="Retour au panier" />
+      </div>
 
       <div className="px-6 py-8">
         <h1 className="text-4xl font-bold text-public-text">Paiement</h1>

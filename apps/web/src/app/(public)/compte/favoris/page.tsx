@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { BackLink } from "@/components/public/back-link"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { FavoriButton } from "@/components/favori-button"
@@ -51,6 +52,9 @@ export default async function FavorisPage() {
 
   return (
     <div className="px-6 py-16">
+      <div className="mb-6">
+        <BackLink href="/compte/profil" label="Retour au profil" />
+      </div>
       <h1 className="text-4xl font-bold text-public-text">Mes favoris</h1>
 
       {vehicules && vehicules.length > 0 ? (
