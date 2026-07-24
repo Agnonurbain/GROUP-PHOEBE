@@ -4,6 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { Badge, Card } from "@/components/ui"
+import { BackLink } from "@/components/public/back-link"
 
 const destinations = [
   { name: "Chine", type: "Études", price: "150 000 FCFA", slug: "chine", flag: "🇨🇳" },
@@ -71,6 +72,9 @@ function InteractiveCard({
 export default function Assistance() {
   return (
     <>
+      <div className="px-6 pt-6">
+        <BackLink href="/" label="Retour à l'accueil" />
+      </div>
       <section className="flex flex-col items-center gap-6 px-6 py-16 text-center">
         <Image
           src="/logos/logo-assi-etud.png"

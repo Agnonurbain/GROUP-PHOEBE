@@ -5,6 +5,7 @@ import { Suspense } from "react"
 import { createClient } from "@/lib/supabase/server"
 import { groupVehicles } from "@/lib/vehicle-group"
 import Filtres from "./filtres"
+import { BackLink } from "@/components/public/back-link"
 import { Badge, Card } from "@/components/ui"
 import { SearchIcon, ChevronRightIcon } from "@/components/icons"
 import { getZonesTarifaires } from "@/lib/public-cache"
@@ -265,6 +266,9 @@ export default async function TransportCatalogue({
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(catalogueSchema) }}
       />
       <section className="px-6 py-16">
+        <div className="mb-6">
+          <BackLink href="/" label="Retour à l'accueil" />
+        </div>
         <h1 className="text-4xl font-bold text-public-text md:text-5xl">Notre Flotte</h1>
         <p className="mt-3 text-base text-public-text-muted md:text-lg">Découvrez nos véhicules d&apos;exception pour vos déplacements</p>
       </section>
