@@ -1,0 +1,89 @@
+name: Derive migrations DB
+
+# Detecte le cas ou la base distante porte des migrations absentes du depot,
+# c'est-a-dire du SQL applique a la main (SQL Editor du dashboard, autre poste)
+# sans etre versionne.
+#
+# Pourquoi ce garde-fou : une migration appliquee hors depot occupe un numero
+# de version. Si un fichier local prend ensuite ce meme numero, `supabase db
+# push` le considere comme deja applique et le saute SANS ERREUR. Un correctif
+# peut ainsi ne jamais s'executer alors que le push affiche un succes.
+
+on:
+  schedule:
+    # Tous les jours a 06:00 UTC
+    - cron: '0 6 * * *'
+  pull_request:
+    paths:
+      - 'supabase/migrations/**'
+  workflow_dispatch:
+
+jobs:
+  drift:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Comparer l'historique local et distant
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+        run: |
+          set -euo pipefail
+
+          supabase link --project-ref "$PROJECT_ID"
+
+          # --output-format json emet du JSON pur, mais les lignes de statut
+          # ("Connecting to remote database...") peuvent precéder la charge
+          # utile selon la version du CLI : on extrait l'objet explicitement.
+          supabase migration list --output-format json > brut.txt 2>&1 || true
+          grep -o '{"migrations".*}' brut.txt > migrations.json || true
+
+          # Sans donnees exploitables, echouer bruyamment : un job de
+          # surveillance qui passe en silence est pire que pas de job du tout.
+          if ! jq -e '.migrations' migrations.json >/dev/null 2>&1; then
+            echo "::error::Impossible de lire l'historique distant. Sortie brute :"
+            cat brut.txt
+            exit 1
+          fi
+
+          # Migrations presentes sur la base distante mais absentes du depot.
+          # C'est le symptome de SQL applique hors versionnement.
+          orphelines=$(jq -r '.migrations[] | select(.local == "") | .remote' migrations.json)
+
+          # Doublons de numero de version cote local : deux fichiers ne doivent
+          # jamais partager un prefixe, sinon l'un des deux sera ignore.
+          doublons=$(ls supabase/migrations/*.sql \
+            | xargs -n1 basename \
+            | cut -d_ -f1 \
+            | sort | uniq -d)
+
+          echec=0
+
+          if [ -n "$orphelines" ]; then
+            echo "::error::Migrations presentes sur la base distante mais absentes du depot :"
+            echo "$orphelines" | sed 's/^/  - /'
+            echo ""
+            echo "Du SQL a ete applique sans passer par le depot. Recuperer son"
+            echo "contenu exact puis le committer AVANT toute nouvelle migration :"
+            echo "  supabase db dump --schema supabase_migrations --data-only"
+            echo "La colonne 'statements' contient le SQL applique, version par version."
+            echec=1
+          fi
+
+          if [ -n "$doublons" ]; then
+            echo "::error::Numeros de version en double dans supabase/migrations :"
+            echo "$doublons" | sed 's/^/  - /'
+            echec=1
+          fi
+
+          if [ "$echec" -eq 0 ]; then
+            echo "Historique aligne : aucune migration orpheline, aucun doublon."
+          fi
+
+          exit "$echec"
