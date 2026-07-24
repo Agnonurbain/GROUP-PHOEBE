@@ -6,7 +6,7 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui"
 
-type Vertical = "transport" | "immobilier" | "assistance" | "default"
+type Vertical = "transport" | "livraison" | "immobilier" | "assistance" | "default"
 
 interface SmartHeaderProps {
   vertical?: Vertical
@@ -17,18 +17,21 @@ interface SmartHeaderProps {
 const logos: Record<Vertical, { src: string; alt: string; w: number; h: number }> = {
   default: { src: "/logos/logo_g-phoebe.png", alt: "GROUP PHOEBE", w: 334, h: 303 },
   transport: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 407, h: 345 },
+  livraison: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 407, h: 345 },
   immobilier: { src: "/logos/logo-imm.png", alt: "Immobilier", w: 308, h: 278 },
   assistance: { src: "/logos/logo-assi-etud.png", alt: "Assistance Voyages & Études", w: 429, h: 346 },
 }
 
 const verticales = [
   { id: "transport" as const, label: "Transport", href: "/transport/catalogue" },
+  { id: "livraison" as const, label: "Livraison", href: "/livraison" },
   { id: "immobilier" as const, label: "Immobilier", href: "/immobilier" },
   { id: "assistance" as const, label: "Assistance", href: "/assistance" },
 ]
 
 function detectVertical(pathname: string): Vertical {
   if (pathname.startsWith("/transport")) return "transport"
+  if (pathname.startsWith("/livraison")) return "livraison"
   if (pathname.startsWith("/immobilier")) return "immobilier"
   if (pathname.startsWith("/assistance")) return "assistance"
   return "default"
