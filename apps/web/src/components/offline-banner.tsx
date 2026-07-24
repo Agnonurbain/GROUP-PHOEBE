@@ -3,26 +3,27 @@
 import { useState, useEffect } from "react";
 
 export function OfflineBanner() {
-  const [offline, setOffline] = useState(
-    typeof navigator !== "undefined" ? !navigator.onLine : false
-  );
+  // Toujours false au rendu serveur : sur Node 24, `navigator` est defini
+  // globalement mais `navigator.onLine` vaut undefined, donc `!navigator.onLine`
+  // etait `true` et la banniere s'affichait cote serveur (barre parasite en haut
+  // de page jusqu'a l'hydratation). L'etat reel est etabli au montage client.
+  const [offline, setOffline] = useState(false);
 
   useEffect(() => {
-    function onOnline() { setOffline(false); }
-    function onOffline() { setOffline(true); }
-
-    window.addEventListener("online", onOnline);
-    window.addEventListener("offline", onOffline);
+    const update = () => setOffline(!navigator.onLine);
+    update();
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
     return () => {
-      window.removeEventListener("online", onOnline);
-      window.removeEventListener("offline", onOffline);
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
     };
   }, []);
 
   if (!offline) return null;
 
   return (
-    <div role="status" className="w-full bg-error/90 text-white text-center text-xs font-medium py-2 px-4">
+    <div role="status" className="w-full bg-[#DC2626] text-white text-center text-xs font-medium py-2 px-4">
       <span className="inline-flex items-center gap-2">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="1" y1="1" x2="23" y2="23" />
