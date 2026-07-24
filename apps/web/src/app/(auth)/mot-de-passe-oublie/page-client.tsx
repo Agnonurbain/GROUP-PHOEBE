@@ -38,12 +38,12 @@ export default function MotDePasseOubliePage() {
   return (
     <ScrollReveal variant="scale-in">
       <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">
-        Mot de passe oublie
+        Mot de passe oublié
       </h1>
       <p className="mt-2 mb-8 text-sm leading-relaxed text-phoebe-anthracite/70">
         {mode === "phone"
-          ? "Saisissez votre numero de telephone pour recevoir un code de reinitialisation par SMS."
-          : "Saisissez votre adresse email pour recevoir un lien de reinitialisation."}
+          ? "Saisissez votre numéro de téléphone pour recevoir un code de réinitialisation par SMS."
+          : "Saisissez votre adresse email pour recevoir un lien de réinitialisation."}
       </p>
 
       {state.error && (
@@ -57,7 +57,7 @@ export default function MotDePasseOubliePage() {
 
       {emailState.phone === "sent" && mode === "email" && (
         <div className="animate-fade-in mb-6 rounded-xl border border-phoebe-green/20 bg-phoebe-green/5 px-4 py-3.5 text-sm text-phoebe-green-deep">
-          Un email de reinitialisation a ete envoye. Verifiez votre boite de reception.
+          Un email de réinitialisation a été envoyé. Vérifiez votre boîte de réception.
         </div>
       )}
 
@@ -93,7 +93,7 @@ export default function MotDePasseOubliePage() {
               htmlFor="telephone"
               className="mb-1.5 block text-sm font-medium text-phoebe-anthracite"
             >
-              Telephone
+              Téléphone
             </label>
             <input
               id="telephone"
@@ -159,7 +159,7 @@ export default function MotDePasseOubliePage() {
           )}
           {resendState.phone === "resent" && (
             <p className="mt-2 text-xs text-phoebe-green-deep">
-              Nouveau code envoye !
+              Nouveau code envoyé !
             </p>
           )}
         </div>
@@ -175,7 +175,7 @@ export default function MotDePasseOubliePage() {
           href="/connexion"
           className="font-semibold text-phoebe-green transition-colors duration-200 hover:text-phoebe-green-deep"
         >
-          Retour a la connexion
+          Retour à la connexion
         </Link>
       </p>
     </ScrollReveal>

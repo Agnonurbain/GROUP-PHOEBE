@@ -38,10 +38,10 @@ export default function VerifierOtpForm() {
       </div>
 
       <h1 className="text-2xl font-bold tracking-tight text-public-text sm:text-3xl text-center">
-        Verification du telephone
+        Vérification du téléphone
       </h1>
       <p className="mt-2 mb-8 text-center text-sm text-public-text-muted">
-        Saisissez le code recu par SMS au{" "}
+        Saisissez le code reçu par SMS au{" "}
         <span className="font-semibold text-public-text">{phone}</span>
       </p>
 
@@ -59,7 +59,7 @@ export default function VerifierOtpForm() {
         {next && <input type="hidden" name="next" value={next} />}
         <div>
           <label htmlFor="token" className="mb-1.5 block text-sm font-medium text-public-text">
-            Code de verification
+            Code de vérification
           </label>
           <input
             id="token"
@@ -74,7 +74,7 @@ export default function VerifierOtpForm() {
             placeholder="000000"
           />
         </div>
-        <SubmitButton>Verifier</SubmitButton>
+        <SubmitButton>Vérifier</SubmitButton>
       </form>
 
       <div className="mt-6 text-center">
@@ -97,7 +97,7 @@ export default function VerifierOtpForm() {
           <p className="mt-2 text-xs text-accent-red">{resendState.error}</p>
         )}
         {resendState.phone === "resent" && (
-          <p className="mt-2 text-xs text-accent-green">Nouveau code envoye !</p>
+          <p className="mt-2 text-xs text-accent-green">Nouveau code envoyé !</p>
         )}
       </div>
     </ScrollReveal>

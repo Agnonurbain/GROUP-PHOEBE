@@ -19,7 +19,7 @@ export default function ConnexionForm() {
     <ScrollReveal variant="scale-in">
       <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">Connexion</h1>
       <p className="mt-2 mb-8 text-sm text-phoebe-anthracite/70">
-        Accedez a votre espace pour gerer vos reservations et favoris
+        Accédez à votre espace pour gérer vos réservations et favoris
       </p>
 
       {state.error && (
@@ -52,7 +52,7 @@ export default function ConnexionForm() {
                 : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
             }`}
           >
-            Telephone
+            Téléphone
           </button>
           <button
             type="button"
@@ -76,7 +76,7 @@ export default function ConnexionForm() {
         {loginMode === "phone" && (
           <div>
             <label htmlFor="telephone" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-              Telephone
+              Téléphone
             </label>
             <input
               id="telephone"
@@ -118,17 +118,14 @@ export default function ConnexionForm() {
 
         <div className="text-right">
           <Link href="/mot-de-passe-oublie" className="text-sm font-medium text-phoebe-green transition-colors duration-200 hover:text-phoebe-green-deep hover:underline">
-            Mot de passe oublie ?
+            Mot de passe oublié ?
           </Link>
         </div>
 
         <SubmitButton>Se connecter</SubmitButton>
       </form>
 
-      <div className="mt-8 flex items-center gap-3">
-        <div className="h-px flex-1 bg-phoebe-anthracite/10" />
-        <div className="h-px flex-1 bg-phoebe-anthracite/10" />
-      </div>
+      <div className="mt-8 h-px bg-phoebe-anthracite/10" />
 
       <p className="mt-6 text-center text-sm text-phoebe-anthracite/70">
         Pas encore de compte ?{" "}
