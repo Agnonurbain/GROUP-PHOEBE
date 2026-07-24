@@ -1,9 +1,9 @@
 import { unstable_cache } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 export const getZonesTarifaires = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("zones_tarifaires")
       .select("*")
@@ -16,7 +16,7 @@ export const getZonesTarifaires = unstable_cache(
 
 export const getCommunes = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("communes")
       .select("*")
@@ -29,7 +29,7 @@ export const getCommunes = unstable_cache(
 
 export const getIntervallesPrix = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("intervalles_prix")
       .select("*")
@@ -42,7 +42,7 @@ export const getIntervallesPrix = unstable_cache(
 
 export const getVehiculesPrixBase = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("vehicules")
       .select("categorie, prix_journalier")
@@ -56,7 +56,7 @@ export const getVehiculesPrixBase = unstable_cache(
 
 export const getCategoriesVehicules = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("vehicules")
       .select("categorie")
@@ -70,7 +70,7 @@ export const getCategoriesVehicules = unstable_cache(
 
 export const getZonesWithCommunes = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const [{ data: zones }, { data: communes }] = await Promise.all([
       supabase.from("zones_tarifaires").select("*").order("ordre", { ascending: true }),
       supabase.from("communes").select("id, nom, zone_id").order("nom"),

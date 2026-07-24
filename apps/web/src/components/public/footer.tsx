@@ -36,7 +36,7 @@ export function Footer() {
         <div className="flex flex-wrap gap-16">
           <div className="flex w-64 flex-col gap-4">
             <Link href="/">
-              <Image src="/logos/logo_g-phoebe.png" alt="GROUP PHOEBE" width={150} height={50} className="h-10 w-auto" />
+              <Image src="/logos/logo_g-phoebe.png" alt="GROUP PHOEBE" width={90} height={60} className="h-10 w-auto" />
             </Link>
             <p className="text-sm text-[#6B7280]">Leader Excellence Brilliant.</p>
             <p className="text-xs text-public-text-faint">

@@ -60,7 +60,7 @@ export default function HomePage() {
               src="/logos/logo_g-phoebe.png"
               alt="GROUP PHOEBE"
               width={320}
-              height={106}
+              height={213}
               priority
               className="h-auto w-[260px] md:w-[320px] animate-glow-pulse"
             />
@@ -139,8 +139,8 @@ export default function HomePage() {
                     <Image
                       src={s.logo}
                       alt={s.logoAlt}
-                      width={140}
-                      height={46}
+                      width={96}
+                      height={64}
                       className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-110"
                     />
                   </div>

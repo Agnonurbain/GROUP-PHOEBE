@@ -13,11 +13,12 @@ interface SmartHeaderProps {
   session?: { nom?: string; role?: string } | null
 }
 
+// Fichiers sources 612x408 (ratio 3:2)
 const logos: Record<Vertical, { src: string; alt: string; w: number; h: number }> = {
-  default: { src: "/logos/logo_g-phoebe.png", alt: "GROUP PHOEBE", w: 200, h: 60 },
-  transport: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 200, h: 60 },
-  immobilier: { src: "/logos/logo-imm.png", alt: "Immobilier", w: 200, h: 60 },
-  assistance: { src: "/logos/logo-assi-etud.png", alt: "Assistance Voyages & Études", w: 200, h: 60 },
+  default: { src: "/logos/logo_g-phoebe.png", alt: "GROUP PHOEBE", w: 90, h: 60 },
+  transport: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 90, h: 60 },
+  immobilier: { src: "/logos/logo-imm.png", alt: "Immobilier", w: 90, h: 60 },
+  assistance: { src: "/logos/logo-assi-etud.png", alt: "Assistance Voyages & Études", w: 90, h: 60 },
 }
 
 const verticales = [

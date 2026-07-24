@@ -22,7 +22,7 @@ export function OfflineBanner() {
   if (!offline) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[60] bg-error/90 text-white text-center text-xs font-medium py-2 px-4 backdrop-blur-sm">
+    <div role="status" className="w-full bg-error/90 text-white text-center text-xs font-medium py-2 px-4">
       <span className="inline-flex items-center gap-2">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="1" y1="1" x2="23" y2="23" />

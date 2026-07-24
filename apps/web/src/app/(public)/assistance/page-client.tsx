@@ -75,7 +75,7 @@ export default function Assistance() {
         <Image
           src="/logos/logo-assi-etud.png"
           alt="Assistance Voyages & Études"
-          width={220}
+          width={99}
           height={66}
           className="h-14 w-auto animate-glow-pulse"
           priority

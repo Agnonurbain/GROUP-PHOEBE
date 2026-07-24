@@ -1,10 +1,10 @@
 import { unstable_cache } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 
 // Transport catalogue
 export const getVehiculesCatalogue = unstable_cache(
   async (filters: Record<string, string | undefined> = {}) => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
 
     let query = supabase
       .from("vehicules")
@@ -31,7 +31,6 @@ export const getVehiculesCatalogue = unstable_cache(
     if (filters.prix_max) query = query.lte("prix_journalier", Number(filters.prix_max));
     if (filters.etat) query = query.eq("etat", filters.etat);
     if (filters.zone) {
-      const supabase = await createClient();
       const { data: zoneCategories } = await supabase
         .from("intervalles_prix")
         .select("categorie_vehicule")
@@ -57,7 +56,7 @@ export const getVehiculesWithPhotos = unstable_cache(
 
     if (ids.length === 0) return { vehicules: [], photoMap: new Map() };
 
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data: allPhotos } = await supabase
       .from("vehicule_photos")
       .select("vehicule_id, url")
@@ -78,7 +77,7 @@ export const getVehiculesWithPhotos = unstable_cache(
 // Zones tarifaires
 export const getZonesTarifaires = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("zones_tarifaires")
       .select("*")
@@ -91,7 +90,7 @@ export const getZonesTarifaires = unstable_cache(
 
 export const getIntervallesPrix = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("intervalles_prix")
       .select("*")
@@ -104,7 +103,7 @@ export const getIntervallesPrix = unstable_cache(
 
 export const getCommunes = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data } = await supabase
       .from("communes")
       .select("id, nom, zone_id")
@@ -118,7 +117,7 @@ export const getCommunes = unstable_cache(
 // Immobilier
 export const getBiensImmobiliers = unstable_cache(
   async (filters: Record<string, string | undefined> = {}) => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
 
     let query = supabase
       .from("biens")
@@ -149,7 +148,7 @@ export const getBiensWithPhotos = unstable_cache(
 
     if (ids.length === 0) return { biens: [], photoMap: new Map() };
 
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data: allPhotos } = await supabase
       .from("bien_medias")
       .select("bien_id, url")
@@ -171,7 +170,7 @@ export const getBiensWithPhotos = unstable_cache(
 // Assistance
 export const getPaysAssistance = unstable_cache(
   async () => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase.from as any)("pays_assistance")
       .select("*")
@@ -184,7 +183,7 @@ export const getPaysAssistance = unstable_cache(
 
 export const getPaysAssistanceBySlug = unstable_cache(
   async (slug: string) => {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase.from as any)("pays_assistance")
       .select("*")
