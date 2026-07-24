@@ -131,7 +131,7 @@ export default function HomePage() {
         <StaggerContainer className="mt-8 grid w-full max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {services.map((s, i) => (
             <ServiceCard key={s.title} index={i}>
-              <Link href={s.href} className="group flex h-full flex-col justify-between rounded-2xl border border-public-border bg-public-bg-card p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-black/20 hover:border-accent-gold/30 hover:bg-public-bg-elevated">
+              <Link href={s.href} className="btn-premium [--btn-glow:rgba(201,168,76,0.3)] group flex h-full flex-col justify-between rounded-2xl border border-public-border bg-public-bg-card p-8 hover:border-accent-gold/30 hover:bg-public-bg-elevated">
                 <div>
                   <div className="relative mb-6 flex h-28 w-full items-center justify-center">
                     <Image
