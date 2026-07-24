@@ -13,12 +13,12 @@ interface SmartHeaderProps {
   session?: { nom?: string; role?: string } | null
 }
 
-// Fichiers sources 612x408 (ratio 3:2)
+// Dimensions intrinsèques des PNG (marges transparentes rognées)
 const logos: Record<Vertical, { src: string; alt: string; w: number; h: number }> = {
-  default: { src: "/logos/logo_g-phoebe.png", alt: "GROUP PHOEBE", w: 90, h: 60 },
-  transport: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 90, h: 60 },
-  immobilier: { src: "/logos/logo-imm.png", alt: "Immobilier", w: 90, h: 60 },
-  assistance: { src: "/logos/logo-assi-etud.png", alt: "Assistance Voyages & Études", w: 90, h: 60 },
+  default: { src: "/logos/logo_g-phoebe.png", alt: "GROUP PHOEBE", w: 334, h: 303 },
+  transport: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 407, h: 345 },
+  immobilier: { src: "/logos/logo-imm.png", alt: "Immobilier", w: 308, h: 278 },
+  assistance: { src: "/logos/logo-assi-etud.png", alt: "Assistance Voyages & Études", w: 429, h: 346 },
 }
 
 const verticales = [
@@ -78,7 +78,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="shrink-0">
-          <Image src={logo.src} alt={logo.alt} width={logo.w} height={logo.h} className="h-10 w-auto" priority />
+          <Image src={logo.src} alt={logo.alt} width={logo.w} height={logo.h} className="h-14 w-auto" priority />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
@@ -111,11 +111,18 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
               </Link>
             </span>
           ) : (
-            <Link href="/connexion">
-              <Button variant="default" className="text-xs">
-                Connexion
-              </Button>
-            </Link>
+            <span className="flex items-center gap-3">
+              <Link href="/connexion">
+                <Button variant="ghost" className="text-xs">
+                  Connexion
+                </Button>
+              </Link>
+              <Link href="/inscription">
+                <Button variant="default" className="text-xs">
+                  S&apos;inscrire
+                </Button>
+              </Link>
+            </span>
           )}
         </nav>
 
@@ -168,6 +175,15 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
             >
               {session ? "Mon compte" : "Connexion"}
             </Link>
+            {!session && (
+              <Link
+                href="/inscription"
+                className="block rounded-lg bg-accent-gold px-3 py-2.5 text-center text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
+                onClick={() => setMenuOpen(false)}
+              >
+                S&apos;inscrire
+              </Link>
+            )}
           </nav>
         </div>
       )}

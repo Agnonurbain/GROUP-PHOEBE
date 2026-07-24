@@ -97,9 +97,9 @@ export default async function Immobilier({
         <Image
           src="/logos/logo-imm.png"
           alt="Immobilier"
-          width={90}
-          height={60}
-          className="h-12 w-auto animate-glow-pulse"
+          width={308}
+          height={278}
+          className="h-28 w-auto animate-glow-pulse"
           priority
         />
         <h1 className="text-4xl font-bold text-public-text md:text-5xl">Trouvez le bien de vos rêves</h1>

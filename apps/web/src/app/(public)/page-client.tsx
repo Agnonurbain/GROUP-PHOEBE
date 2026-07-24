@@ -59,8 +59,8 @@ export default function HomePage() {
             <Image
               src="/logos/logo_g-phoebe.png"
               alt="GROUP PHOEBE"
-              width={320}
-              height={213}
+              width={334}
+              height={303}
               priority
               className="h-auto w-[260px] md:w-[320px] animate-glow-pulse"
             />
@@ -135,13 +135,13 @@ export default function HomePage() {
             <ServiceCard key={s.title} index={i}>
               <Link href={s.href} className="group flex h-full flex-col justify-between rounded-2xl border border-public-border bg-public-bg-card p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-black/20 hover:border-accent-gold/30 hover:bg-public-bg-elevated">
                 <div>
-                  <div className="relative mb-6 flex h-16 w-full items-center justify-center">
+                  <div className="relative mb-6 flex h-28 w-full items-center justify-center">
                     <Image
                       src={s.logo}
                       alt={s.logoAlt}
-                      width={96}
-                      height={64}
-                      className="h-10 w-auto object-contain transition-transform duration-300 group-hover:scale-110"
+                      width={429}
+                      height={346}
+                      className="h-24 w-auto object-contain transition-transform duration-300 group-hover:scale-110"
                     />
                   </div>
                   <h3 className="text-xl font-semibold text-public-text">{s.title}</h3>
