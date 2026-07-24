@@ -8,7 +8,6 @@ import {
   ServiceCard,
   AnimatedCounter,
   GoldTrail,
-  MagneticButton,
   HeroSlideshow,
 } from "@/components/effects"
 
@@ -73,17 +72,15 @@ export default function HomePage() {
           </ScrollReveal>
           <ScrollReveal variant="fade-up" delay={0.35}>
             <div className="flex flex-col gap-4 sm:flex-row">
-              <MagneticButton>
-                <Link
-                  href="#services"
-                  className="block rounded-lg bg-accent-gold px-6 py-3 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
-                >
-                  Découvrir nos services
-                </Link>
-              </MagneticButton>
+              <Link
+                href="#services"
+                className="btn-premium [--btn-glow:rgba(201,168,76,0.45)] block rounded-lg bg-accent-gold px-6 py-3 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover"
+              >
+                Découvrir nos services
+              </Link>
               <Link
                 href="/contact"
-                className="block rounded-lg border border-white/40 bg-black/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-black/60"
+                className="btn-premium [--btn-glow:rgba(255,255,255,0.15)] block rounded-lg border border-white/40 bg-black/40 px-6 py-3 text-sm font-semibold text-white hover:bg-black/60"
               >
                 Contactez-nous
               </Link>
@@ -163,22 +160,18 @@ export default function HomePage() {
           <h2 className="text-3xl font-semibold tracking-tight text-public-text md:text-4xl">Prêt à commencer ?</h2>
           <p className="text-base text-public-text-muted md:text-lg">Rejoignez GROUP PHOEBE et bénéficiez de services d&apos;exception.</p>
           <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row">
-            <MagneticButton>
-              <Link
-                href="/inscription"
-                className="block rounded-lg bg-accent-gold px-8 py-3.5 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
-              >
-                S&apos;inscrire
-              </Link>
-            </MagneticButton>
-            <MagneticButton>
-              <Link
-                href="/contact"
-                className="block rounded-lg border border-public-border px-8 py-3.5 text-sm font-semibold text-public-text transition-colors hover:bg-public-bg-elevated"
-              >
-                Nous contacter
-              </Link>
-            </MagneticButton>
+            <Link
+              href="/inscription"
+              className="btn-premium [--btn-glow:rgba(201,168,76,0.45)] block rounded-lg bg-accent-gold px-8 py-3.5 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover"
+            >
+              S&apos;inscrire
+            </Link>
+            <Link
+              href="/contact"
+              className="btn-premium [--btn-glow:rgba(201,168,76,0.25)] block rounded-lg border border-public-border px-8 py-3.5 text-sm font-semibold text-public-text hover:bg-public-bg-elevated"
+            >
+              Nous contacter
+            </Link>
           </div>
         </section>
       </ScrollReveal>
