@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import AssistanceClient from "./page-client"
+import { serializeJsonLd } from "@/lib/json-ld"
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
@@ -73,7 +74,7 @@ export default function AssistancePage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
       <AssistanceClient />
     </>

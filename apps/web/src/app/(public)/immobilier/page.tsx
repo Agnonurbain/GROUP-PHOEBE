@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Badge, Button, Card } from "@/components/ui"
 import ImmobilierFiltres from "./immobilier-filtres"
 import { getBiensWithPhotos } from "@/lib/public-cache"
+import { serializeJsonLd } from "@/lib/json-ld"
 
 export const metadata: Metadata = {
   title: "Immobilier — Achat, Vente & Location",
@@ -91,7 +92,7 @@ export default async function Immobilier({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(listingSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(listingSchema) }}
       />
       <section className="flex flex-col items-center gap-6 px-6 py-16 text-center">
         <Image
