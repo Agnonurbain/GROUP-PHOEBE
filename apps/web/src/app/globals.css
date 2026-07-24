@@ -20,6 +20,30 @@
   /* Variante lisible du bleu en texte sur fond sombre (#2563EB = 3.8:1, insuffisant) */
   --color-accent-blue-on-dark: #60A5FA;
 
+  /* Couleurs de marque (vert/or PHOEBE) + semantiques. Definies ici, au niveau
+     global, et non plus seulement dans admin.css : les pages auth les utilisent
+     mais ne chargent pas admin.css, d'ou des boutons et liens sans couleur
+     (bg-phoebe-green blanc, text-phoebe-green noir, bg-error transparent). */
+  --color-phoebe-green: #39A044;
+  --color-phoebe-green-deep: #23632A;
+  --color-phoebe-green-darker: #143D1A;
+  --color-phoebe-green-darkest: #0A1F0D;
+  --color-phoebe-green-light: #4FBF5A;
+  --color-phoebe-green-pale: #E8F5E9;
+  --color-phoebe-gold: #D38C37;
+  --color-phoebe-gold-light: #E5A84A;
+  --color-phoebe-gold-dark: #8F5A1E;
+  --color-phoebe-gold-shimmer: #F4D06F;
+  --color-phoebe-white: #FFFFFF;
+  --color-phoebe-anthracite: #22282B;
+  --color-phoebe-anthracite-light: #2D3438;
+  --color-phoebe-pearl: #F3F9F3;
+  --color-phoebe-pearl-warm: #FAF6EE;
+  --color-error: #DC2626;
+  --color-success: #39A044;
+  --color-warning: #D38C37;
+  --color-info: #2563EB;
+
   --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
 }
 
