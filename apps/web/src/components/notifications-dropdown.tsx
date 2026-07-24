@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { marquerNotificationLue, marquerToutesLues, type NotifAdmin } from "@/app/actions/notifications-admin";
 
 type Props = {
@@ -15,7 +14,6 @@ export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props
   const [nonLues, setNonLues] = useState(initialNonLues);
   const [recentes, setRecentes] = useState(initialRecentes);
   const ref = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {

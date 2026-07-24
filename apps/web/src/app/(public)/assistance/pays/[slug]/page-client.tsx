@@ -1,8 +1,8 @@
 "use client"
 
 import { useParams } from "next/navigation"
-import { useActionState, useCallback, useRef, useEffect, useState } from "react"
-import { Badge, Button, Card } from "@/components/ui"
+import { useActionState, useCallback, useMemo, useRef, useEffect, useState } from "react"
+import { Badge, Button } from "@/components/ui"
 import { CheckIcon } from "@/components/icons"
 import { creerDossierVoyage, type AssistanceState } from "@/app/actions/assistance"
 
@@ -87,7 +87,10 @@ export default function CountryDetail() {
   const slug = params.slug as string
   const [state, formAction, pending] = useActionState<AssistanceState, FormData>(creerDossierVoyage, {})
 
-  const data = countryData[slug] || { name: slug, flag: "🌍", visa: "Visa", delay: "30 jours", price: "150 000 FCFA", success: "85%" }
+  const data = useMemo(
+    () => countryData[slug] || { name: slug, flag: "🌍", visa: "Visa", delay: "30 jours", price: "150 000 FCFA", success: "85%" },
+    [slug],
+  )
 
   const type = data.visa.toLowerCase().includes("étudiant") ? "etudes" : "tourisme_visa"
 

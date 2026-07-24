@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import * as Sentry from "@sentry/nextjs";
 import { Button } from "@/components/ui";
 
 export default function AdminError({
@@ -9,6 +11,10 @@ export default function AdminError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    Sentry.captureException(error);
+  }, [error]);
+
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center text-center animate-fade-in">
       <div className="relative">

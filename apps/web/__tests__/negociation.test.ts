@@ -60,6 +60,8 @@ function getDisplayLabel(statut: DemandeStatut): string {
 describe("Négociation — flux de statuts", () => {
   it("en_negociation est un statut valide", () => {
     expect(getDisplayLabel("en_negociation")).toBe("En négociation");
+    expect(canNegotiate("en_negociation")).toBe(true);
+    expect(canNegotiate("en_attente_validation")).toBe(false);
   });
 
   it("une demande en négociation peut recevoir un prix", () => {

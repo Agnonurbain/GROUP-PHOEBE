@@ -2,7 +2,6 @@
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback } from "react"
-import { Input, Button } from "@/components/ui"
 
 export default function ImmobilierFiltres() {
   const router = useRouter()

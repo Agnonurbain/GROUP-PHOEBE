@@ -2,8 +2,8 @@
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useRef, useState } from "react"
-import { Button, Chip, Input } from "@/components/ui"
-import { SearchIcon, UserIcon } from "@/components/icons"
+import { Chip, Input } from "@/components/ui"
+import { UserIcon } from "@/components/icons"
 
 const inputClass =
   "w-full rounded-xl border border-[#2A2A2A] bg-[#0A0A0A] px-4 py-2.5 text-sm text-[#F5F5F5] transition-all duration-200 focus:border-[#F97316] focus:bg-[#141414] focus:outline-none focus:ring-2 focus:ring-[#F97316]/15"

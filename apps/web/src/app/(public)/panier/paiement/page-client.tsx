@@ -3,7 +3,6 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useActionState, useEffect, useState, useCallback, useRef, useMemo } from "react"
-import { useRouter } from "next/navigation"
 import { useCart } from "@/lib/cart-context"
 import { createClient } from "@/lib/supabase/client"
 import { PanierStepper } from "@/components/panier-stepper"
@@ -58,13 +57,11 @@ function MobileMoneyLogo({ name }: { name: string }) {
 
 export default function PaiementPage() {
   const { items, count } = useCart()
-  const router = useRouter()
   const [state, formAction, pending] = useActionState<CheckoutState, FormData>(checkoutCart, {})
 
   const [communes, setCommunes] = useState<Commune[]>([])
   const [zones, setZones] = useState<Zone[]>([])
   const [destination, setDestination] = useState("")
-  const [suggestions, setSuggestions] = useState<Commune[]>([])
   const [selectedCommune, setSelectedCommune] = useState<Commune | null>(null)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [showManual, setShowManual] = useState(false)
@@ -95,17 +92,10 @@ export default function PaiementPage() {
       })
   }, [supabase])
 
-  useEffect(() => {
-    if (!destination.trim() || selectedCommune) {
-      setSuggestions([])
-      return
-    }
+  const suggestions = useMemo(() => {
+    if (!destination.trim() || selectedCommune) return []
     const q = destination.toLowerCase()
-    const matches = communes
-      .filter((c) => c.nom.toLowerCase().includes(q))
-      .slice(0, 8)
-    setSuggestions(matches)
-    setShowSuggestions(matches.length > 0)
+    return communes.filter((c) => c.nom.toLowerCase().includes(q)).slice(0, 8)
   }, [destination, communes, selectedCommune])
 
   useEffect(() => {
@@ -137,7 +127,7 @@ export default function PaiementPage() {
   const handleDestinationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setDestination(e.target.value)
     setSelectedCommune(null)
-    setShowSuggestions(false)
+    setShowSuggestions(true)
     setShowManual(false)
   }, [])
 
@@ -308,7 +298,7 @@ export default function PaiementPage() {
                 autoComplete="off"
                 className="w-full rounded-xl border border-public-border bg-[#0A0A0A] px-4 py-2.5 text-sm text-public-text placeholder:text-[#6B7280] focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30"
               />
-              {showSuggestions && (
+              {showSuggestions && suggestions.length > 0 && (
                 <div
                   ref={suggestionsRef}
                   className="absolute z-20 mt-1 w-full rounded-xl border border-public-border bg-public-bg-card shadow-xl"

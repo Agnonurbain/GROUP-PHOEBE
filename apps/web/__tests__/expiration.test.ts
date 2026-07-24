@@ -210,7 +210,7 @@ describe("Expiration — cohérence remboursement lors de l'expiration", () => {
       })),
     };
 
-    await rembourserPaiement(admin as any, "exp-001", 0);
+    await rembourserPaiement(admin as unknown as Parameters<typeof rembourserPaiement>[0], "exp-001", 0);
 
     expect(mockRefundsCreate).toHaveBeenCalledWith({
       payment_intent: "pi_exp",

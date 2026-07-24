@@ -23,12 +23,6 @@ const PRICES: Record<string, { base: number; premium: number; express: number }>
   schengen: { base: 120000, premium: 145000, express: 165000 },
 };
 
-const OFFER_MAP: Record<string, { offerName: string; price: number }> = {
-  "Service seul": { offerName: "Service seul", price: 0 },
-  "Service + Accompagnement": { offerName: "Service + Accompagnement", price: 0 },
-  "Service + Rendez-vous Express": { offerName: "Service + Rendez-vous Express", price: 0 },
-};
-
 function getAdmin() {
   return createAdminClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

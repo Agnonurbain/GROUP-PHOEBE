@@ -4,14 +4,10 @@ import Image from "next/image"
 import { Suspense } from "react"
 import { createClient } from "@/lib/supabase/server"
 import { groupVehicles } from "@/lib/vehicle-group"
-import type { VehicleGroup } from "@/lib/vehicle-group"
 import Filtres from "./filtres"
 import { Badge, Card } from "@/components/ui"
 import { SearchIcon, ChevronRightIcon } from "@/components/icons"
-import { getZonesTarifaires, getIntervallesPrix, getCommunes } from "@/lib/public-cache"
-import { renderJsonLd } from "@/lib/json-ld"
-
-const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+import { getZonesTarifaires } from "@/lib/public-cache"
 
 const PAGE_SIZE = 12
 

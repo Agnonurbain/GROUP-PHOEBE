@@ -246,7 +246,7 @@ describe("Matrice de permissions — proposerPrix vs traiterProposition", () => 
 
 describe("Matrice de permissions — sidebar admin conditionnelle", () => {
   it("un opérateur ne voit pas les liens Remboursements, Propositions, Comptes, Tarifs, Dashboard", () => {
-    const role: Role = "operateur";
+    const role = "operateur" as Role;
     const isProprietaire = role === "proprietaire";
 
     const sidebarLinks = {

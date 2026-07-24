@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -270,7 +270,7 @@ export async function proposerModificationTarifs(
   _prev: TarifState,
   formData: FormData
 ): Promise<TarifState> {
-  const { supabase, userId, role } = await requireStaff();
+  const { userId, role } = await requireStaff();
   if (role === "proprietaire") {
     return { error: "Le propriétaire modifie directement, pas de proposition nécessaire." };
   }
@@ -312,7 +312,7 @@ export async function proposerModificationTarifs(
     valeurActuelle = oldZone?.geojson as Record<string, unknown> | null;
   }
 
-  const { error } = await (admin.from as any)("propositions_tarifs").insert({
+  const insertPayload: PropositionsTarifsInsert = {
     zone_id: zoneId,
     operateur_id: userId,
     type,
@@ -320,7 +320,10 @@ export async function proposerModificationTarifs(
     valeur_actuelle: valeurActuelle,
     valeur_proposee: valeurProposee,
     commentaire,
-  });
+  };
+  const { error } = await admin
+    .from("propositions_tarifs" as never)
+    .insert(insertPayload as never);
 
   if (error) return { error: error.message };
 
@@ -347,10 +350,12 @@ export async function traiterPropositionTarifs(
     return { error: "Seul le propriétaire peut traiter les propositions." };
   }
 
-  const { data: prop, error: propErr } = await (supabase.from as any)("propositions_tarifs")
+  const { data, error: propErr } = await supabase
+    .from("propositions_tarifs" as never)
     .select("*")
     .eq("id", propositionId)
     .single();
+  const prop = data as PropositionsTarifsRow | null;
 
   if (propErr || !prop) return { error: "Proposition introuvable." };
   if (prop.statut !== "en_attente") return { error: "Cette proposition a déjà été traitée." };
@@ -373,8 +378,10 @@ export async function traiterPropositionTarifs(
       if (error) return { error: error.message };
     }
 
-    await (supabase.from as any)("propositions_tarifs")
-      .update({ statut: "acceptee", updated_at: new Date().toISOString() })
+    const patch: PropositionsTarifsUpdate = { statut: "acceptee", updated_at: new Date().toISOString() };
+    await supabase
+      .from("propositions_tarifs" as never)
+      .update(patch as never)
       .eq("id", propositionId);
 
     await logAudit({
@@ -385,8 +392,10 @@ export async function traiterPropositionTarifs(
       newValues: { statut: "acceptee", commentaire },
     });
   } else {
-    await (supabase.from as any)("propositions_tarifs")
-      .update({ statut: "refusee", updated_at: new Date().toISOString() })
+    const patch: PropositionsTarifsUpdate = { statut: "refusee", updated_at: new Date().toISOString() };
+    await supabase
+      .from("propositions_tarifs" as never)
+      .update(patch as never)
       .eq("id", propositionId);
 
     await logAudit({
@@ -403,11 +412,20 @@ export async function traiterPropositionTarifs(
   return { success: true };
 }
 
-export async function getPropositionsTarifs(): Promise<{ data: any[] | null; error?: string }> {
+export type PropositionTarifsAvecRelations = PropositionsTarifsRow & {
+  users: { nom: string } | null;
+  zones_tarifaires: { nom: string } | null;
+};
+
+export async function getPropositionsTarifs(): Promise<{
+  data: PropositionTarifsAvecRelations[] | null;
+  error?: string;
+}> {
   const { supabase } = await requireStaff();
-  const { data, error } = await (supabase.from as any)("propositions_tarifs")
+  const { data, error } = await supabase
+    .from("propositions_tarifs" as never)
     .select("*, users:operateur_id(nom), zones_tarifaires:zone_id(nom)")
     .order("created_at", { ascending: false })
     .limit(20);
-  return { data, error: error?.message };
+  return { data: data as PropositionTarifsAvecRelations[] | null, error: error?.message };
 }

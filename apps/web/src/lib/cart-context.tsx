@@ -65,7 +65,7 @@ function saveLocal(items: CartItem[]) {
 
 async function saveServer(items: CartItem[]) {
   try {
-    const { loadServerCart, saveServerCart, clearServerCart } = await import("@/app/actions/cart");
+    const { saveServerCart, clearServerCart } = await import("@/app/actions/cart");
     if (items.length === 0) {
       await clearServerCart();
     } else {

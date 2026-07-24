@@ -9,6 +9,7 @@ export type NotificationParams = {
   userId: string;
   evenement: string | NotificationEvent;
   contenu: string;
+  sujet?: string;
   telephone?: string;
   email?: string;
 };
@@ -130,6 +131,7 @@ async function logNotification(
 
 export async function notifier(params: NotificationParams): Promise<void> {
   const { userId, evenement, contenu, telephone, email } = params;
+  const sujetEmail = params.sujet ?? `GROUP PHOEBE — ${evenement}`;
 
   if (telephone) {
     const whatsappOk = await envoyerWhatsApp(telephone, contenu);
@@ -142,8 +144,7 @@ export async function notifier(params: NotificationParams): Promise<void> {
   }
 
   if (email) {
-    const sujet = `GROUP PHOEBE — ${evenement}`;
-    const emailOk = await envoyerEmail(email, sujet, contenu);
+    const emailOk = await envoyerEmail(email, sujetEmail, contenu);
     await logNotification(userId, "email", evenement, contenu, emailOk);
   }
 }
@@ -198,6 +199,7 @@ export async function notifierClientWithTemplate(
     userId: clientId,
     evenement,
     contenu,
+    sujet,
     telephone: user.telephone ?? undefined,
     email: user.email ?? undefined,
   });

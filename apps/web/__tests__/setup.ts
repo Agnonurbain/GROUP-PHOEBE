@@ -8,4 +8,4 @@ process.env.CINETPAY_SITE_ID = "test-cinetpay-site-id";
 process.env.CINETPAY_SECRET_KEY = "test-cinetpay-secret-key";
 process.env.CINETPAY_WEBHOOK_SECRET = "test-cinetpay-webhook-secret";
 process.env.NEXT_PUBLIC_SITE_URL = "http://localhost:3000";
-process.env.NODE_ENV = "test";
+Object.assign(process.env, { NODE_ENV: "test" });

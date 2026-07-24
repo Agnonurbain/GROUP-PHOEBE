@@ -89,6 +89,7 @@ describe("Contrainte d'exclusion — véhicules et chauffeurs différents", () =
     const vehicule2 = "vehicule-002";
     const samePeriode = "[2026-07-15T00:00:00Z,2026-07-20T00:00:00Z)";
 
+    expect(periodesOverlap(samePeriode, samePeriode)).toBe(true);
     expect(vehicule1).not.toBe(vehicule2);
     // Same period, different vehicles → allowed by constraint
   });
@@ -98,6 +99,7 @@ describe("Contrainte d'exclusion — véhicules et chauffeurs différents", () =
     const chauffeur2 = "chauffeur-002";
     const samePeriode = "[2026-07-15T00:00:00Z,2026-07-20T00:00:00Z)";
 
+    expect(periodesOverlap(samePeriode, samePeriode)).toBe(true);
     expect(chauffeur1).not.toBe(chauffeur2);
     // Same period, different chauffeurs → allowed by constraint
   });

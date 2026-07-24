@@ -1,7 +1,7 @@
 export interface JsonLdContext {
   "@context": string;
   "@type": string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export function createOrganizationSchema(): JsonLdContext {

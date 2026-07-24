@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
+import { AuditFilters } from "./audit-filters";
 
 export const metadata: Metadata = {
   title: "Audit — Administration",
@@ -111,7 +112,7 @@ export default async function AuditPage({
             {tables.map((t) => (
               <FilterChip
                 key={t}
-                href={`/admin/audit?table=${t}${buildQuery({ action: filterAction, user: filterUser, dateFrom, dateTo })}`}
+                href={`/admin/audit?${buildQuery({ ...currentQuery, table: t })}`}
                 active={filterTable === t}
                 label={t.replace(/_/g, " ")}
               />
@@ -119,80 +120,7 @@ export default async function AuditPage({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-4 pt-2 border-t border-phoebe-pearl">
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-phoebe-anthracite/60">Action :</label>
-            <select
-              value={filterAction || ""}
-              onChange={(e) => {
-                const val = e.target.value || undefined;
-                window.location.href = `/admin/audit?${buildQuery({ ...currentQuery, action: val })}`;
-              }}
-              className="rounded-lg border border-phoebe-pearl px-3 py-1.5 text-sm text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-1 focus:ring-phoebe-green"
-            >
-              <option value="">Toutes</option>
-              {allActions.map((a) => (
-                <option key={a} value={a}>
-                  {ACTION_LABELS[a]?.label ?? a}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-phoebe-anthracite/60">Utilisateur :</label>
-            <select
-              value={filterUser || ""}
-              onChange={(e) => {
-                const val = e.target.value || undefined;
-                window.location.href = `/admin/audit?${buildQuery({ ...currentQuery, user: val })}`;
-              }}
-              className="rounded-lg border border-phoebe-pearl px-3 py-1.5 text-sm text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-1 focus:ring-phoebe-green"
-            >
-              <option value="">Tous</option>
-              {allUsers.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-phoebe-anthracite/60">Du :</label>
-            <input
-              type="date"
-              value={dateFrom || ""}
-              onChange={(e) => {
-                const val = e.target.value || undefined;
-                window.location.href = `/admin/audit?${buildQuery({ ...currentQuery, dateFrom: val })}`;
-              }}
-              className="rounded-lg border border-phoebe-pearl px-3 py-1.5 text-sm text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-1 focus:ring-phoebe-green"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <label className="text-xs text-phoebe-anthracite/60">Au :</label>
-            <input
-              type="date"
-              value={dateTo || ""}
-              onChange={(e) => {
-                const val = e.target.value || undefined;
-                window.location.href = `/admin/audit?${buildQuery({ ...currentQuery, dateTo: val })}`;
-              }}
-              className="rounded-lg border border-phoebe-pearl px-3 py-1.5 text-sm text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-1 focus:ring-phoebe-green"
-            />
-          </div>
-
-          {(filterTable || filterAction || filterUser || dateFrom || dateTo) && (
-            <a
-              href="/admin/audit"
-              className="rounded-full border border-phoebe-pearl px-3 py-1.5 text-xs font-medium text-phoebe-anthracite/60 hover:bg-phoebe-green/10 hover:text-phoebe-green-deep"
-            >
-              Réinitialiser
-            </a>
-          )}
-        </div>
+        <AuditFilters filters={currentQuery} allActions={allActions} allUsers={allUsers} />
       </div>
 
       {!logs || logs.length === 0 ? (
@@ -236,7 +164,7 @@ export default async function AuditPage({
                     )}
                   </div>
 
-                  {(log.details || (log as any).old_values || (log as any).new_values) && (
+                  {(log.details || log.old_values || log.new_values) && (
                     <details className="mt-2">
                       <summary className="cursor-pointer text-[11px] font-medium text-phoebe-green hover:underline">
                         Détails
@@ -258,19 +186,19 @@ export default async function AuditPage({
                             </pre>
                           </div>
                         )}
-                        {(log as any).old_values && (
+                        {log.old_values && (
                           <div className="overflow-x-auto rounded-lg bg-error/5 p-2">
                             <p className="mb-1 text-[10px] font-semibold text-error">Avant (legacy)</p>
                             <pre className="text-[10px] text-phoebe-anthracite/60 whitespace-pre-wrap">
-                              {JSON.stringify((log as any).old_values, null, 2)}
+                              {JSON.stringify(log.old_values, null, 2)}
                             </pre>
                           </div>
                         )}
-                        {(log as any).new_values && (
+                        {log.new_values && (
                           <div className="overflow-x-auto rounded-lg bg-phoebe-green/5 p-2">
                             <p className="mb-1 text-[10px] font-semibold text-phoebe-green-deep">Après (legacy)</p>
                             <pre className="text-[10px] text-phoebe-anthracite/60 whitespace-pre-wrap">
-                              {JSON.stringify((log as any).new_values, null, 2)}
+                              {JSON.stringify(log.new_values, null, 2)}
                             </pre>
                           </div>
                         )}
@@ -288,8 +216,8 @@ export default async function AuditPage({
         <div className="flex items-center justify-center gap-2 pt-4">
           {page > 1 && (
             <PaginationLink
-              href={`/admin/audit?page=${page - 1}${filterTable ? `&table=${filterTable}` : ""}`}
-              label="&larr; Précédent"
+              href={`/admin/audit?${buildQuery({ ...currentQuery, page: String(page - 1) })}`}
+              label="← Précédent"
             />
           )}
           <span className="text-xs text-phoebe-anthracite/50">
@@ -297,8 +225,8 @@ export default async function AuditPage({
           </span>
           {page < totalPages && (
             <PaginationLink
-              href={`/admin/audit?page=${page + 1}${filterTable ? `&table=${filterTable}` : ""}`}
-              label="Suivant &rarr;"
+              href={`/admin/audit?${buildQuery({ ...currentQuery, page: String(page + 1) })}`}
+              label="Suivant →"
             />
           )}
         </div>
@@ -314,6 +242,8 @@ type AuditRow = {
   cible_table: string | null;
   cible_id: string | null;
   details: { old?: Record<string, unknown>; new?: Record<string, unknown>; ip?: string } | null;
+  old_values?: Record<string, unknown> | null;
+  new_values?: Record<string, unknown> | null;
   created_at: string;
   users: { nom: string; role: string } | null;
 };
@@ -338,7 +268,8 @@ function PaginationLink({ href, label }: { href: string; label: string }) {
     <a
       href={href}
       className="rounded-lg border border-phoebe-pearl bg-white px-3 py-1.5 text-xs font-medium text-phoebe-anthracite transition-colors hover:bg-phoebe-green/10"
-      dangerouslySetInnerHTML={{ __html: label }}
-    />
+    >
+      {label}
+    </a>
   );
 }

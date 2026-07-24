@@ -15,7 +15,7 @@ export async function GET() {
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
-    const { data, error } = await admin.from("vehicules").select("id").limit(1);
+    const { error } = await admin.from("vehicules").select("id").limit(1);
     checks["database"] = error ? `error: ${error.message}` : "ok";
   } catch (e) {
     checks["database"] = `error: ${(e as Error).message}`;

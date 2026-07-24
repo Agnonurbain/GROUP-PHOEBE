@@ -5,8 +5,7 @@ import { parseGroupKey } from "@/lib/vehicle-group"
 import { Badge } from "@/components/ui"
 import { VehicleGallery } from "@/components/public/vehicle-gallery"
 import { VehicleBooking } from "@/components/public/vehicle-booking"
-import { renderJsonLd, createVehicleSchema } from "@/lib/json-ld"
-import { trackViewItem } from "@/lib/analytics"
+import { ViewItemTracker } from "@/components/analytics/view-item-tracker"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -115,6 +114,8 @@ export default async function VehicleDetail({ params }: { params: Promise<{ slug
       url: currentUrl,
       priceCurrency: "XOF",
       price: rep.prix_journalier ?? 0,
+      // Server Component : évalué à chaque requête, jamais re-rendu côté client
+      // eslint-disable-next-line react-hooks/purity
       priceValidUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       availability: rep.statut === "disponible"
         ? "https://schema.org/InStock"
@@ -144,26 +145,16 @@ export default async function VehicleDetail({ params }: { params: Promise<{ slug
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
       />
-      <script
-        type="application/javascript"
-        dangerouslySetInnerHTML={{
-          __html: `
-            if (typeof window !== 'undefined' && window.gtag) {
-              window.gtag('event', 'view_item', {
-                currency: 'XOF',
-                value: ${rep.prix_journalier ?? 0},
-                items: [{
-                  item_id: '${rep.id}',
-                  item_name: '${rep.marque} ${rep.modele}',
-                  item_category: '${rep.categorie ?? "vehicle"}',
-                  price: ${rep.prix_journalier ?? 0},
-                  currency: 'XOF',
-                  item_brand: '${rep.marque}',
-                  item_variant: '${rep.modele}'
-                }]
-              });
-            }
-          `}}
+      <ViewItemTracker
+        item={{
+          item_id: rep.id,
+          item_name: `${rep.marque} ${rep.modele}`,
+          item_category: rep.categorie ?? "vehicle",
+          price: rep.prix_journalier ?? 0,
+          currency: "XOF",
+          item_brand: rep.marque,
+          item_variant: rep.modele,
+        }}
       />
       <nav className="px-6 pt-6 text-sm text-public-text-faint">
         Accueil &gt; Transport &gt; {rep.marque} {rep.modele}

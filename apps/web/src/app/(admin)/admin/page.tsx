@@ -35,7 +35,6 @@ export default async function DashboardPage({
   const [
     { count: totalDemandes30j },
     { count: acceptees30j },
-    { count: refusees30j },
     { count: annulees30j },
     { count: terminees30j },
     { count: totalClients },
@@ -54,11 +53,6 @@ export default async function DashboardPage({
       .from("demandes_transport")
       .select("id", { count: "exact", head: true })
       .eq("statut", "acceptee")
-      .gte("created_at", ilXj),
-    supabase
-      .from("demandes_transport")
-      .select("id", { count: "exact", head: true })
-      .eq("statut", "refusee")
       .gte("created_at", ilXj),
     supabase
       .from("demandes_transport")

@@ -174,7 +174,7 @@ describe("Garde-fous de rôle — creerCompteInterne (propriétaire only)", () =
   });
 
   it("un opérateur reçoit une erreur explicite", () => {
-    const role: Role = "operateur";
+    const role = "operateur" as Role;
     const error =
       role !== "proprietaire"
         ? "Seul le propriétaire peut créer des comptes internes."

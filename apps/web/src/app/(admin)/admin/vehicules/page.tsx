@@ -21,15 +21,6 @@ const STATUT_LABELS: Record<string, { label: string; color: string }> = {
 
 export default async function VehiculesListPage() {
   const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const user = claimsData?.claims;
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user!.sub)
-    .single();
-  const isProprietaire = profile?.role === "proprietaire";
-
   const { data: vehicules } = await supabase
     .from("vehicules")
     .select("*")

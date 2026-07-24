@@ -35,15 +35,6 @@ export function createMockAdminClient(paiement: MockPaiement | null) {
   let lastUpdateStatut: string | null = null;
   let updateCalledOnId: string | null = null;
 
-  const mockUpdate = vi.fn().mockReturnValue({
-    eq: vi.fn().mockResolvedValue({ error: null }),
-  });
-
-  const wrappedUpdate = (vals: Record<string, unknown>) => {
-    lastUpdateStatut = vals.statut as string;
-    return mockUpdate(vals);
-  };
-
   const adminClient = {
     from: vi.fn().mockReturnValue({
       select: vi.fn().mockReturnValue({

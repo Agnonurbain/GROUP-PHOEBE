@@ -6,7 +6,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { hasMinimumAge } from "@/lib/auth";
 import { validerTelephone } from "@/lib/telephone";
-import { checkRateLimit, getRemainingAttempts } from "@/lib/rate-limit";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export type AuthState = {
   error?: string;

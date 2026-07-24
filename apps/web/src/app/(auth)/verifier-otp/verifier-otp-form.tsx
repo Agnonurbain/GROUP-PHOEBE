@@ -1,7 +1,6 @@
 "use client";
 import { useActionState, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { verifierOtp, renvoyerCode, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { ScrollReveal } from "@/components/effects";

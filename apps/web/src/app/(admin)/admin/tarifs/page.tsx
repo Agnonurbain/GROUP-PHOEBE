@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getZonesTarifaires, getCommunes, getIntervallesPrix, getVehiculesPrixBase, revalidateTarifsCache } from "@/lib/tarifs-cache";
+import { getZonesTarifaires, getCommunes, getIntervallesPrix, getVehiculesPrixBase } from "@/lib/tarifs-cache";
 import { ScrollReveal } from "@/components/effects";
 import { TarifsTabs } from "./tarifs-tabs";
 import { CoefficientsForm } from "./coefficients-form";

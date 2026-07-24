@@ -133,7 +133,7 @@ export default function ConnexionForm() {
       <p className="mt-6 text-center text-sm text-phoebe-anthracite/60">
         Pas encore de compte ?{" "}
         <Link href={redirectTo ? `/inscription?redirect=${encodeURIComponent(redirectTo)}` : "/inscription"} className="font-semibold text-phoebe-green transition-colors duration-200 hover:text-phoebe-green-deep">
-          S'inscrire
+          S&apos;inscrire
         </Link>
       </p>
     </ScrollReveal>

@@ -25,6 +25,8 @@ const { rembourserPaiement } = await import(
   "@/lib/payments/expiration-demandes"
 );
 
+type AdminClient = Parameters<typeof rembourserPaiement>[0];
+
 // ─── Helper: build a mock admin client ──────────────────────────────
 function buildAdmin(paiementMontant: number, methode: "stripe" | "cinetpay" = "stripe") {
   const updates: Array<{ statut: string }> = [];
@@ -95,7 +97,7 @@ describe("Remboursement — 8 cas avec montants exacts en FCFA", () => {
   it("Cas 1 — Refus propriétaire : remboursement intégral de 70 000 FCFA", async () => {
     const admin = buildAdmin(TOTAL_PAIEMENT);
 
-    await rembourserPaiement(admin as any, "demande-001", 0);
+    await rembourserPaiement(admin as unknown as AdminClient, "demande-001", 0);
 
     expect(mockRefundsCreate).toHaveBeenCalledOnce();
     expect(mockRefundsCreate).toHaveBeenCalledWith({
@@ -113,7 +115,7 @@ describe("Remboursement — 8 cas avec montants exacts en FCFA", () => {
   it("Cas 2 — Sans réponse 24h : remboursement intégral de 70 000 FCFA", async () => {
     const admin = buildAdmin(TOTAL_PAIEMENT);
 
-    await rembourserPaiement(admin as any, "demande-002", 0);
+    await rembourserPaiement(admin as unknown as AdminClient, "demande-002", 0);
 
     expect(mockRefundsCreate).toHaveBeenCalledOnce();
     expect(mockRefundsCreate).toHaveBeenCalledWith({
@@ -131,7 +133,7 @@ describe("Remboursement — 8 cas avec montants exacts en FCFA", () => {
   it("Cas 3 — Annulation ≥ 48h avant départ : remboursement intégral de 70 000 FCFA", async () => {
     const admin = buildAdmin(TOTAL_PAIEMENT);
 
-    await rembourserPaiement(admin as any, "demande-003", 0);
+    await rembourserPaiement(admin as unknown as AdminClient, "demande-003", 0);
 
     expect(mockRefundsCreate).toHaveBeenCalledOnce();
     expect(mockRefundsCreate).toHaveBeenCalledWith({
@@ -150,7 +152,7 @@ describe("Remboursement — 8 cas avec montants exacts en FCFA", () => {
   it("Cas 4 — Annulation < 48h : caution retenue, remboursement de 50 000 FCFA", async () => {
     const admin = buildAdmin(TOTAL_PAIEMENT);
 
-    await rembourserPaiement(admin as any, "demande-004", MONTANT_CAUTION);
+    await rembourserPaiement(admin as unknown as AdminClient, "demande-004", MONTANT_CAUTION);
 
     expect(mockRefundsCreate).toHaveBeenCalledOnce();
     expect(mockRefundsCreate).toHaveBeenCalledWith({
@@ -169,7 +171,7 @@ describe("Remboursement — 8 cas avec montants exacts en FCFA", () => {
   it("Cas 5 — Non-présentation : caution retenue, remboursement de 50 000 FCFA", async () => {
     const admin = buildAdmin(TOTAL_PAIEMENT);
 
-    await rembourserPaiement(admin as any, "demande-005", MONTANT_CAUTION);
+    await rembourserPaiement(admin as unknown as AdminClient, "demande-005", MONTANT_CAUTION);
 
     expect(mockRefundsCreate).toHaveBeenCalledOnce();
     expect(mockRefundsCreate).toHaveBeenCalledWith({
@@ -190,7 +192,7 @@ describe("Remboursement — 8 cas avec montants exacts en FCFA", () => {
     const cautionRetenue = 0;
 
     await rembourserPaiement(
-      admin as any,
+      admin as unknown as AdminClient,
       "demande-006",
       MONTANT_LOCATION + cautionRetenue
     );
@@ -214,7 +216,7 @@ describe("Remboursement — 8 cas avec montants exacts en FCFA", () => {
     const admin = buildAdmin(TOTAL_PAIEMENT);
 
     await rembourserPaiement(
-      admin as any,
+      admin as unknown as AdminClient,
       "demande-007",
       MONTANT_LOCATION + DOMMAGE_PARTIEL
     );
@@ -238,7 +240,7 @@ describe("Remboursement — 8 cas avec montants exacts en FCFA", () => {
     const admin = buildAdmin(TOTAL_PAIEMENT);
 
     await rembourserPaiement(
-      admin as any,
+      admin as unknown as AdminClient,
       "demande-008",
       MONTANT_LOCATION + MONTANT_CAUTION
     );
@@ -260,7 +262,7 @@ describe("Remboursement — cas limites et CinetPay", () => {
   it("CinetPay : passe en remboursement_requis (remboursement manuel)", async () => {
     const admin = buildAdmin(TOTAL_PAIEMENT, "cinetpay");
 
-    await rembourserPaiement(admin as any, "demande-cp", 0);
+    await rembourserPaiement(admin as unknown as AdminClient, "demande-cp", 0);
 
     expect(mockRefundsCreate).not.toHaveBeenCalled();
     expect(admin._updates[0].statut).toBe("remboursement_requis");
@@ -270,7 +272,7 @@ describe("Remboursement — cas limites et CinetPay", () => {
     mockRefundsCreate.mockRejectedValueOnce(new Error("Stripe error"));
     const admin = buildAdmin(TOTAL_PAIEMENT);
 
-    await rembourserPaiement(admin as any, "demande-err", 0);
+    await rembourserPaiement(admin as unknown as AdminClient, "demande-err", 0);
 
     expect(mockRefundsCreate).toHaveBeenCalledOnce();
     expect(admin._updates[0].statut).toBe("remboursement_requis");
@@ -279,7 +281,7 @@ describe("Remboursement — cas limites et CinetPay", () => {
   it("Pas de paiement capturé : ne fait rien", async () => {
     const admin = buildAdminNoPaiement();
 
-    await rembourserPaiement(admin as any, "demande-none", 0);
+    await rembourserPaiement(admin as unknown as AdminClient, "demande-none", 0);
 
     expect(mockRefundsCreate).not.toHaveBeenCalled();
     expect(admin._updates).toHaveLength(0);

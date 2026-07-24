@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
   const fontBold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
   const page = pdf.addPage([595, 842]);
-  const { height, width } = page.getSize();
+  const { height } = page.getSize();
   let y = height - 50;
 
   const green = rgb(57 / 255, 160 / 255, 68 / 255);

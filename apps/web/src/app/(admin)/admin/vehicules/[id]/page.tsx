@@ -17,16 +17,6 @@ export const metadata: Metadata = {
   description: "Modifiez les informations et tarifs d'un véhicule GROUP PHOEBE.",
 }
 
-function parsePeriode(raw: string | null): { debut: string; fin: string } {
-  if (!raw) return { debut: "—", fin: "—" };
-  const cleaned = raw.replace(/[\[\]()]/g, "");
-  const [debut, fin] = cleaned.split(",");
-  return {
-    debut: new Date(debut.trim()).toLocaleDateString("fr-FR"),
-    fin: new Date(fin.trim()).toLocaleDateString("fr-FR"),
-  };
-}
-
 export default async function EditVehiculePage({
   params,
 }: {

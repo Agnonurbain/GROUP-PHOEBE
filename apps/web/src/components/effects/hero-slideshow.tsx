@@ -13,10 +13,8 @@ const slides = [
 
 export function HeroSlideshow() {
   const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(1);
 
   const advance = useCallback(() => {
-    setDirection((d) => -d);
     setCurrent((c) => (c + 1) % slides.length);
   }, []);
 

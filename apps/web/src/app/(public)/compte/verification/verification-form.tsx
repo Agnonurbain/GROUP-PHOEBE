@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useTransition, useRef, type FormEvent } from "react"
-import Link from "next/link"
 import Compressor from "compressorjs"
 import { Card } from "@/components/ui"
 import { soumettreDocuments, type VerificationState } from "@/app/actions/verification"
@@ -175,7 +174,11 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
                   <span>{pieceFile.name}</span>
                 </div>
               ) : (
-                <img src={previewPiece} alt="Aperçu pièce d'identité" className="max-h-48 w-full object-contain" />
+                <>
+                  {/* Aperçu local (blob URL) : next/image ne peut pas optimiser ces URLs */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={previewPiece} alt="Aperçu pièce d'identité" className="max-h-48 w-full object-contain" />
+                </>
               )}
             </div>
           )}
@@ -202,7 +205,10 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
                   <span>{permisFile.name}</span>
                 </div>
               ) : (
-                <img src={previewPermis} alt="Aperçu permis de conduire" className="max-h-48 w-full object-contain" />
+                <>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={previewPermis} alt="Aperçu permis de conduire" className="max-h-48 w-full object-contain" />
+                </>
               )}
             </div>
           )}

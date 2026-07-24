@@ -52,7 +52,6 @@ export default async function Immobilier({
   const { biens, photoMap } = await getBiensWithPhotos(filters)
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-  const currentUrl = `${baseUrl}/immobilier`
 
   const listingSchema = {
     "@context": "https://schema.org",

@@ -1,6 +1,5 @@
 // Validation phone — Côte d'Ivoire (+225) + international
 const PHONE_REGEX = /^\+[1-9]\d{6,14}$/;
-const CI_REGEX = /^\+225\s?0[1-9]\s?\d{2}\s?\d{2}\s?\d{2}\s?\d{2}$/;
 
 export function nettoyerTelephone(value: string): string {
   return value.replace(/[\s.\-()]/g, "");

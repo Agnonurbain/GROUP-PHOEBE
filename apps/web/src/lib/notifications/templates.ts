@@ -1,7 +1,3 @@
-import type { Database } from "@group-phoebe/database/types";
-
-type TemplateVars = Record<string, string | number | boolean | Date | undefined>;
-
 export type NotificationEvent =
   | "nouvelle_reservation"
   | "reservation_confirmee"

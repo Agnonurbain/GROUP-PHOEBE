@@ -15,7 +15,6 @@ async function run() {
   console.log("Body:", await resp.json());
 
   // Check response headers
-  const headers = resp.headers();
   console.log("\nSet-Cookie headers:");
   const setCookies = resp.headersArray().filter(h => h.name.toLowerCase() === "set-cookie");
   setCookies.forEach((h, i) => {

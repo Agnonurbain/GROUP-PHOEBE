@@ -39,15 +39,19 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
+  // Ferme le menu mobile à chaque navigation (ajustement d'état pendant le rendu,
+  // cf. https://react.dev/learn/you-might-not-need-an-effect)
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname)
+    setMenuOpen(false)
+  }
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
     window.addEventListener("scroll", onScroll)
     return () => window.removeEventListener("scroll", onScroll)
   }, [])
-
-  useEffect(() => {
-    setMenuOpen(false)
-  }, [pathname])
 
   const logo = logos[vertical]
   const isStaff = session?.role === "operateur" || session?.role === "proprietaire"

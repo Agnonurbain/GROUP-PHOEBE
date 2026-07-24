@@ -6,8 +6,7 @@ import { ProfileEditForm } from "@/components/profile-edit-form"
 import { getSignedDocUrl } from "@/lib/storage"
 import type { StatutVerification } from "@/lib/auth"
 import { DeleteAccountButton } from "@/components/delete-account-button"
-import { Badge, Button, Card } from "@/components/ui"
-import { SearchIcon } from "@/components/icons"
+import { Button, Card } from "@/components/ui"
 
 export const metadata: Metadata = {
   title: "Mon Profil",

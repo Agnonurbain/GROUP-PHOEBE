@@ -3,8 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Badge, Button, Card } from "@/components/ui"
-import { AssistanceIcon } from "@/components/icons"
+import { Badge, Card } from "@/components/ui"
 
 const destinations = [
   { name: "Chine", type: "Études", price: "150 000 FCFA", slug: "chine", flag: "🇨🇳" },
