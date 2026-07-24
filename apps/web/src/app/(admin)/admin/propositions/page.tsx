@@ -110,7 +110,7 @@ export default async function PropositionsPage() {
           <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
             Propositions
           </h1>
-          <p className="mt-2 text-sm text-phoebe-anthracite/55">
+          <p className="mt-2 text-sm text-phoebe-anthracite/70">
             Modifications proposées par les opérateurs, en attente de votre validation.
           </p>
         </div>
@@ -120,7 +120,7 @@ export default async function PropositionsPage() {
       {enAttente.length > 0 && (
         <ScrollReveal variant="fade-up" delay={0.1}>
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-phoebe-gold">Prix — En attente ({enAttente.length})</h2>
+            <h2 className="mb-3 text-lg font-semibold text-phoebe-gold-dark">Prix — En attente ({enAttente.length})</h2>
             <div className="space-y-4">
               {enAttente.map((p) => {
                 const v = p.vehicules;
@@ -136,9 +136,9 @@ export default async function PropositionsPage() {
                         <h3 className="font-semibold text-phoebe-anthracite">
                           {v ? `${v.marque} ${v.modele}` : "—"}
                         </h3>
-                        <p className="text-sm text-phoebe-anthracite/60">
+                        <p className="text-sm text-phoebe-anthracite/70">
                           {CHAMP_LABELS[p.champ] ?? p.champ} :{" "}
-                          <span className="line-through text-phoebe-anthracite/40">
+                          <span className="line-through text-phoebe-anthracite/70">
                             {p.valeur_actuelle
                               ? `${Number(p.valeur_actuelle).toLocaleString("fr-FR")} FCFA`
                               : "non défini"}
@@ -148,11 +148,11 @@ export default async function PropositionsPage() {
                             {Number(p.valeur_proposee).toLocaleString("fr-FR")} FCFA
                           </span>
                         </p>
-                        <p className="text-xs text-phoebe-anthracite/40">
+                        <p className="text-xs text-phoebe-anthracite/70">
                           Par {op?.nom ?? "—"} · {new Date(p.created_at).toLocaleDateString("fr-FR")}
                         </p>
                         {p.commentaire && (
-                          <p className="text-xs text-phoebe-anthracite/60 italic">
+                          <p className="text-xs text-phoebe-anthracite/70 italic">
                             « {p.commentaire} »
                           </p>
                         )}
@@ -171,7 +171,7 @@ export default async function PropositionsPage() {
       {enAttenteZoneList.length > 0 && (
         <ScrollReveal variant="fade-up" delay={0.12}>
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-phoebe-gold">Zones — En attente ({enAttenteZoneList.length})</h2>
+            <h2 className="mb-3 text-lg font-semibold text-phoebe-gold-dark">Zones — En attente ({enAttenteZoneList.length})</h2>
             <div className="space-y-4">
               {enAttenteZoneList.map((p) => (
                 <div
@@ -184,9 +184,9 @@ export default async function PropositionsPage() {
                       <h3 className="font-semibold text-phoebe-anthracite">
                         {p.zoneNom}
                       </h3>
-                      <p className="text-sm text-phoebe-anthracite/60">
+                      <p className="text-sm text-phoebe-anthracite/70">
                         {ZONE_CHAMP_LABELS[p.champ] ?? p.champ} :{" "}
-                        <span className="line-through text-phoebe-anthracite/40">
+                        <span className="line-through text-phoebe-anthracite/70">
                           {p.valeur_actuelle ?? "non défini"}
                         </span>
                         {" → "}
@@ -194,11 +194,11 @@ export default async function PropositionsPage() {
                           {p.valeur_proposee}
                         </span>
                       </p>
-                      <p className="text-xs text-phoebe-anthracite/40">
+                      <p className="text-xs text-phoebe-anthracite/70">
                         Par {p.operateurNom} · {new Date(p.created_at).toLocaleDateString("fr-FR")}
                       </p>
                       {p.commentaire && (
-                        <p className="text-xs text-phoebe-anthracite/60 italic">
+                        <p className="text-xs text-phoebe-anthracite/70 italic">
                           « {p.commentaire} »
                         </p>
                       )}
@@ -215,7 +215,7 @@ export default async function PropositionsPage() {
       {enAttente.length === 0 && enAttenteZoneList.length === 0 && (
         <ScrollReveal variant="fade-up" delay={0.1}>
           <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
-            <p className="text-phoebe-anthracite/45">Aucune proposition en attente.</p>
+            <p className="text-phoebe-anthracite/70">Aucune proposition en attente.</p>
           </div>
         </ScrollReveal>
       )}

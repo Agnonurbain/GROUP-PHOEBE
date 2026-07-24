@@ -127,9 +127,11 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
         </nav>
 
         <button
-          className="flex h-10 w-10 items-center justify-center rounded-lg text-public-text-muted hover:bg-white/5 md:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-public-text-muted transition-colors hover:bg-white/5 hover:text-public-text md:hidden"
           onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Menu"
+          aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
+          aria-expanded={menuOpen}
+          aria-controls="menu-mobile"
         >
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             {menuOpen ? (
@@ -149,7 +151,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
       </div>
 
       {menuOpen && (
-        <div className="animate-fade-in border-t border-white/10 bg-public-bg/98 backdrop-blur-md md:hidden">
+        <div id="menu-mobile" className="animate-fade-in border-t border-white/10 bg-public-bg/98 backdrop-blur-md md:hidden">
           <nav className="space-y-1 px-6 py-4">
             {navLinks.map((link) =>
               "isName" in link && link.isName ? (
@@ -160,7 +162,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="block rounded-lg px-3 py-2.5 text-sm text-public-text-muted transition-colors hover:bg-white/5 hover:text-public-text"
+                  className="flex min-h-11 items-center rounded-lg px-3 py-2.5 text-sm text-public-text-muted transition-colors hover:bg-white/5 hover:text-public-text"
                   onClick={() => setMenuOpen(false)}
                 >
                   {link.label}
@@ -170,7 +172,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
             <hr className="border-white/10" />
             <Link
               href={session ? "/compte/profil" : "/connexion"}
-              className="block rounded-lg px-3 py-2.5 text-sm font-medium text-accent-gold transition-colors hover:bg-accent-gold/5"
+              className="flex min-h-11 items-center rounded-lg px-3 py-2.5 text-sm font-medium text-accent-gold transition-colors hover:bg-accent-gold/5"
               onClick={() => setMenuOpen(false)}
             >
               {session ? "Mon compte" : "Connexion"}
@@ -178,7 +180,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
             {!session && (
               <Link
                 href="/inscription"
-                className="block rounded-lg bg-accent-gold px-3 py-2.5 text-center text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
+                className="flex min-h-11 items-center justify-center rounded-lg bg-accent-gold px-3 py-2.5 text-center text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
                 onClick={() => setMenuOpen(false)}
               >
                 S&apos;inscrire

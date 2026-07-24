@@ -16,10 +16,10 @@ export function PrixAutoGrid({
   if (prixParCategorie.length === 0) {
     return (
       <div className="rounded-xl bg-phoebe-pearl/30 p-6 text-center">
-        <p className="text-sm text-phoebe-anthracite/50">
+        <p className="text-sm text-phoebe-anthracite/70">
           Aucun véhicule avec un prix journalier défini.
         </p>
-        <p className="mt-1 text-xs text-phoebe-anthracite/30">
+        <p className="mt-1 text-xs text-phoebe-anthracite/70">
           Ajoutez des véhicules avec un prix de base pour voir les tarifs calculés automatiquement.
         </p>
       </div>
@@ -48,15 +48,15 @@ export function PrixAutoGrid({
               {baseZone && (
                 <th className="px-4 py-3 text-right font-semibold text-phoebe-green-deep">
                   {baseZone.nom}
-                  <span className="ml-1 text-[10px] font-normal text-phoebe-anthracite/40">
+                  <span className="ml-1 text-[10px] font-normal text-phoebe-anthracite/70">
                     (base)
                   </span>
                 </th>
               )}
               {otherZones.map((z) => (
-                <th key={z.id} className="px-4 py-3 text-right font-medium text-phoebe-anthracite/60">
+                <th key={z.id} className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">
                   {z.nom}
-                  <span className="ml-1 text-[10px] font-normal text-phoebe-anthracite/40">
+                  <span className="ml-1 text-[10px] font-normal text-phoebe-anthracite/70">
                     x{z.coefficient_majoration}
                   </span>
                 </th>
@@ -69,7 +69,7 @@ export function PrixAutoGrid({
                 <td className="px-4 py-3 font-medium text-phoebe-anthracite">
                   {pc.catLabel}
                 </td>
-                <td className="px-4 py-3 text-center text-phoebe-anthracite/50">
+                <td className="px-4 py-3 text-center text-phoebe-anthracite/70">
                   {pc.count}
                 </td>
                 {baseZone && (
@@ -78,7 +78,7 @@ export function PrixAutoGrid({
                   </td>
                 )}
                 {otherZones.map((z) => (
-                  <td key={z.id} className="px-4 py-3 text-right text-phoebe-anthracite/50 tabular-nums">
+                  <td key={z.id} className="px-4 py-3 text-right text-phoebe-anthracite/70 tabular-nums">
                     {formatRange(
                       Math.round(pc.min * z.coefficient_majoration),
                       Math.round(pc.max * z.coefficient_majoration)

@@ -29,30 +29,30 @@ export function ProfileEditForm({
           </h2>
           <button
             onClick={() => setEditing(true)}
-            className="rounded-xl border border-phoebe-anthracite/12 px-4 py-2 text-sm font-medium text-phoebe-anthracite/60 transition-all hover:border-phoebe-green hover:text-phoebe-green hover:shadow-sm"
+            className="rounded-xl border border-phoebe-anthracite/12 px-4 py-2 text-sm font-medium text-phoebe-anthracite/70 transition-all hover:border-phoebe-green hover:text-phoebe-green hover:shadow-sm"
           >
             Modifier
           </button>
         </div>
         <dl className="grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/40">Nom</dt>
+            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">Nom</dt>
             <dd className="mt-1 font-medium text-phoebe-anthracite">{nom}</dd>
           </div>
           {email && (
             <div>
-              <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/40">Email</dt>
+              <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">Email</dt>
               <dd className="mt-1 font-medium text-phoebe-anthracite">{email}</dd>
             </div>
           )}
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/40">Telephone</dt>
+            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">Telephone</dt>
             <dd className="mt-1 font-medium text-phoebe-anthracite">
               {telephone || "—"}
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/40">
+            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">
               Date de naissance
             </dt>
             <dd className="mt-1 font-medium text-phoebe-anthracite">
@@ -62,7 +62,7 @@ export function ProfileEditForm({
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/40">Role</dt>
+            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">Role</dt>
             <dd className="font-medium capitalize text-phoebe-anthracite">
               {role}
             </dd>
@@ -84,7 +84,7 @@ export function ProfileEditForm({
         <button
           type="button"
           onClick={() => setEditing(false)}
-          className="rounded-xl border border-phoebe-anthracite/12 px-4 py-2 text-sm font-medium text-phoebe-anthracite/60 transition-all hover:border-error/40 hover:text-error hover:shadow-sm"
+          className="rounded-xl border border-phoebe-anthracite/12 px-4 py-2 text-sm font-medium text-phoebe-anthracite/70 transition-all hover:border-error/40 hover:text-error hover:shadow-sm"
         >
           Annuler
         </button>
@@ -118,7 +118,7 @@ export function ProfileEditForm({
             <span className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
               Email
             </span>
-            <p className="rounded-xl border border-phoebe-pearl bg-phoebe-pearl/40 px-4 py-2.5 text-sm text-phoebe-anthracite/60">
+            <p className="rounded-xl border border-phoebe-pearl bg-phoebe-pearl/40 px-4 py-2.5 text-sm text-phoebe-anthracite/70">
               {email}
             </p>
           </div>

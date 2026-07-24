@@ -188,7 +188,7 @@ export function ReservationPourClientForm({
         <h2 className="text-xl font-bold text-phoebe-anthracite">
           Réservation créée
         </h2>
-        <p className="text-sm text-phoebe-anthracite/60">
+        <p className="text-sm text-phoebe-anthracite/70">
           La réservation a été créée et le client a été notifié.
           Partagez ce lien avec le client pour qu&apos;il consulte sa
           réservation :
@@ -245,7 +245,7 @@ export function ReservationPourClientForm({
                 <p className="font-medium text-phoebe-anthracite">
                   {selectedClient.nom}
                 </p>
-                <p className="text-xs text-phoebe-anthracite/50">
+                <p className="text-xs text-phoebe-anthracite/70">
                   {selectedClient.telephone || selectedClient.email || "—"}
                 </p>
               </div>
@@ -286,7 +286,7 @@ export function ReservationPourClientForm({
                         <span className="font-medium text-phoebe-anthracite">
                           {c.nom}
                         </span>
-                        <span className="text-xs text-phoebe-anthracite/40">
+                        <span className="text-xs text-phoebe-anthracite/70">
                           {c.telephone || c.email || ""}
                         </span>
                       </button>
@@ -295,7 +295,7 @@ export function ReservationPourClientForm({
                 </ul>
               )}
               {clientSearch.length >= 2 && filteredClients.length === 0 && (
-                <p className="mt-1 text-xs text-phoebe-anthracite/40">
+                <p className="mt-1 text-xs text-phoebe-anthracite/70">
                   Aucun client trouvé. Le client doit d&apos;abord créer un compte.
                 </p>
               )}
@@ -320,7 +320,7 @@ export function ReservationPourClientForm({
                     <p className="text-sm font-medium text-phoebe-anthracite">
                       {sv.vehicule.marque} {sv.vehicule.modele}
                     </p>
-                    <p className="text-xs text-phoebe-anthracite/50">
+                    <p className="text-xs text-phoebe-anthracite/70">
                       {sv.vehicule.categorie} ·{" "}
                       {sv.vehicule.prix_journalier
                         ? `${Number(sv.vehicule.prix_journalier).toLocaleString("fr-FR")} FCFA/j`
@@ -383,7 +383,7 @@ export function ReservationPourClientForm({
                       <span className="font-medium text-phoebe-anthracite">
                         {v.marque} {v.modele}
                       </span>
-                      <span className="text-xs text-phoebe-anthracite/40">
+                      <span className="text-xs text-phoebe-anthracite/70">
                         {v.categorie} ·{" "}
                         {v.prix_journalier
                           ? `${Number(v.prix_journalier).toLocaleString("fr-FR")} FCFA/j`
@@ -524,18 +524,18 @@ export function ReservationPourClientForm({
 
           {destZone && communeDest !== "autre" && (
             <div className="space-y-2 rounded-lg bg-phoebe-green/5 px-4 py-3">
-              <p className="text-sm text-phoebe-anthracite/60">
+              <p className="text-sm text-phoebe-anthracite/70">
                 Zone tarifaire proposée :{" "}
                 <span className="font-medium text-phoebe-green-deep">
                   {destZone.nom}
                 </span>
                 {destZone.coefficient_majoration > 1 && (
-                  <span className="ml-2 text-xs text-phoebe-gold">
+                  <span className="ml-2 text-xs text-phoebe-gold-dark">
                     (coefficient ×{Number(destZone.coefficient_majoration).toFixed(2)})
                   </span>
                 )}
               </p>
-              <p className="text-xs text-phoebe-anthracite/50">
+              <p className="text-xs text-phoebe-anthracite/70">
                 {destZone.km_inclus_par_jour} km inclus/jour · Supplément {destZone.supplement_km_fcfa} FCFA/km au-delà
               </p>
               {destZone.chauffeur_statut === "obligatoire" && (
@@ -544,7 +544,7 @@ export function ReservationPourClientForm({
                 </p>
               )}
               {destZone.chauffeur_statut === "recommande" && (
-                <p className="text-xs font-medium text-phoebe-gold">
+                <p className="text-xs font-medium text-phoebe-gold-dark">
                   Chauffeur recommandé pour cette zone ({Number(destZone.tarif_chauffeur_journalier).toLocaleString("fr-FR")} FCFA/jour)
                 </p>
               )}
@@ -556,13 +556,13 @@ export function ReservationPourClientForm({
         {selectedVehicules.length > 0 && nbJours > 0 && (
           <div className="space-y-4">
             <div className="rounded-xl bg-phoebe-pearl p-4">
-              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+              <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
                 Récapitulatif
               </h3>
               <dl className="space-y-1 text-sm">
                 {lignesCalc.map((l) => (
                   <div key={l.vehicule.id} className="flex justify-between">
-                    <dt className="text-phoebe-anthracite/60">
+                    <dt className="text-phoebe-anthracite/70">
                       {l.vehicule.marque} {l.vehicule.modele} ({nbJours}j)
                       {l.avecChauffeur && " + chauffeur"}
                     </dt>
@@ -572,13 +572,13 @@ export function ReservationPourClientForm({
                   </div>
                 ))}
                 <div className="flex justify-between border-t border-phoebe-anthracite/10 pt-1">
-                  <dt className="text-phoebe-anthracite/60">Sous-total location</dt>
+                  <dt className="text-phoebe-anthracite/70">Sous-total location</dt>
                   <dd className="font-medium text-phoebe-anthracite">
                     {totalMontant.toLocaleString("fr-FR")} FCFA
                   </dd>
                 </div>
                 <div className="flex justify-between">
-                  <dt className="text-phoebe-anthracite/60">Caution</dt>
+                  <dt className="text-phoebe-anthracite/70">Caution</dt>
                   <dd className="font-medium text-phoebe-anthracite">
                     {totalCaution.toLocaleString("fr-FR")} FCFA
                   </dd>
@@ -593,7 +593,7 @@ export function ReservationPourClientForm({
               >
                 Prix personnalisé (optionnel)
               </label>
-              <p className="mb-2 text-xs text-phoebe-anthracite/50">
+              <p className="mb-2 text-xs text-phoebe-anthracite/70">
                 Laissez vide pour utiliser le prix calculé ({totalMontant.toLocaleString("fr-FR")} FCFA).
               </p>
               <input
@@ -624,7 +624,7 @@ export function ReservationPourClientForm({
 
         {/* Submit */}
         {!selectedClient || selectedVehicules.length === 0 ? (
-          <p className="rounded-xl bg-phoebe-pearl px-4 py-3 text-center text-sm text-phoebe-anthracite/40">
+          <p className="rounded-xl bg-phoebe-pearl px-4 py-3 text-center text-sm text-phoebe-anthracite/70">
             Sélectionnez un client et au moins un véhicule pour continuer.
           </p>
         ) : (

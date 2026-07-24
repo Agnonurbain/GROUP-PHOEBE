@@ -84,7 +84,7 @@ export default function Contact() {
                     </svg>
                   )}
                   <div>
-                    <p className="text-sm text-[#6B7280]">{c.label}</p>
+                    <p className="text-sm text-public-text-muted">{c.label}</p>
                     <p className="text-sm text-public-text group-hover:text-accent-gold transition-colors">{c.value}</p>
                   </div>
                 </a>
@@ -105,7 +105,7 @@ export default function Contact() {
               </div>
               <div className="flex justify-between">
                 <span className="text-public-text-muted">Dim</span>
-                <span className="text-[#6B7280]">Fermé</span>
+                <span className="text-public-text-muted">Fermé</span>
               </div>
             </div>
           </Card>

@@ -101,7 +101,7 @@ export default async function FavorisPage() {
                   <div className="flex items-end justify-between">
                     <span className="text-3xl font-bold text-accent-gold">
                       {formatPrice(v.prix_journalier) ?? "—"}
-                      <span className="font-normal text-[#6B7280]">/jour</span>
+                      <span className="font-normal text-public-text-muted">/jour</span>
                     </span>
                     <FavoriButton vehiculeId={v.id} isFavori={true} />
                   </div>

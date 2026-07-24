@@ -26,8 +26,13 @@ export default async function AdminLayout({
 
   return (
     <>
+      <a href="#contenu" className="skip-link">
+        Aller au contenu principal
+      </a>
       <AdminHeader />
-      {children}
+      <main id="contenu" tabIndex={-1}>
+        {children}
+      </main>
     </>
   );
 }

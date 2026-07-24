@@ -37,7 +37,7 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
       <h2 className="mb-3 text-sm font-semibold text-phoebe-anthracite">
         Proposer une modification de coefficient zone
       </h2>
-      <p className="mb-3 text-xs text-phoebe-anthracite/60">
+      <p className="mb-3 text-xs text-phoebe-anthracite/70">
         La proposition sera soumise au propriétaire pour validation.
         Les modifications de ±15 % ou moins sont approuvées automatiquement.
       </p>
@@ -86,7 +86,7 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
         </div>
 
         {zone && (
-          <div className="text-xs text-phoebe-anthracite/60 bg-phoebe-pearl/30 rounded-lg px-3 py-2">
+          <div className="text-xs text-phoebe-anthracite/70 bg-phoebe-pearl/30 rounded-lg px-3 py-2">
             Valeur actuelle de <strong>{CHAMP_LABELS[selectedChamp]}</strong> pour <strong>{zone.nom}</strong> :{" "}
             {String((zone as Record<string, unknown>)[selectedChamp] ?? "—")}
           </div>

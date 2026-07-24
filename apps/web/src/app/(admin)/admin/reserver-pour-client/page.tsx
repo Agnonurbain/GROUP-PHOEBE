@@ -47,7 +47,7 @@ export default async function ReserverPourClientPage() {
           <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
             Réserver pour un client
           </h1>
-          <p className="mt-2 text-sm text-phoebe-anthracite/55">
+          <p className="mt-2 text-sm text-phoebe-anthracite/70">
             Créez une réservation au nom d&apos;un client (ex : appel
             téléphonique). Le client recevra une notification et pourra voir sa
             réservation.

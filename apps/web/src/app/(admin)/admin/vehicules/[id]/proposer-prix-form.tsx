@@ -31,12 +31,12 @@ export function ProposerPrixForm({
       <h2 className="mb-3 text-sm font-semibold text-phoebe-anthracite">
         Proposer une modification de prix
       </h2>
-      <p className="mb-3 text-xs text-phoebe-anthracite/60">
+      <p className="mb-3 text-xs text-phoebe-anthracite/70">
         La proposition sera soumise au propriétaire pour validation.
         Les modifications de ±15 % ou moins sont approuvées automatiquement.
       </p>
 
-      <div className="mb-3 text-xs text-phoebe-anthracite/50 space-y-0.5">
+      <div className="mb-3 text-xs text-phoebe-anthracite/70 space-y-0.5">
         <p>Journalier : {prixActuels.prix_journalier ? `${Number(prixActuels.prix_journalier).toLocaleString("fr-FR")} FCFA` : "—"}</p>
         <p>Mensuel : {prixActuels.prix_mensuel ? `${Number(prixActuels.prix_mensuel).toLocaleString("fr-FR")} FCFA` : "—"}</p>
         <p>Vente : {prixActuels.prix_vente ? `${Number(prixActuels.prix_vente).toLocaleString("fr-FR")} FCFA` : "—"}</p>

@@ -4,7 +4,7 @@ export function BackLink({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="inline-flex items-center gap-1 text-sm text-phoebe-anthracite/60 transition-colors hover:text-phoebe-green"
+      className="inline-flex items-center gap-1 text-sm text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

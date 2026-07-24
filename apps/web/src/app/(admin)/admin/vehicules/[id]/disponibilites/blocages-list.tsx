@@ -25,7 +25,7 @@ function parsePeriode(raw: string | null): { debut: string; fin: string } {
 
 const TYPE_LABELS: Record<string, { label: string; color: string }> = {
   reservation: { label: "Réservation", color: "bg-blue-50 text-blue-700" },
-  maintenance: { label: "Maintenance", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+  maintenance: { label: "Maintenance", color: "bg-phoebe-gold/10 text-phoebe-gold-dark" },
   bloque: { label: "Bloqué", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite" },
 };
 
@@ -40,7 +40,7 @@ export function BlocagesVehiculeList({
 
   if (blocages.length === 0) {
     return (
-      <p className="text-sm text-phoebe-anthracite/50">
+      <p className="text-sm text-phoebe-anthracite/70">
         Aucune période bloquée.
       </p>
     );
@@ -100,7 +100,7 @@ export function BlocagesChauffeurList({
 
   if (blocages.length === 0) {
     return (
-      <p className="text-sm text-phoebe-anthracite/50">
+      <p className="text-sm text-phoebe-anthracite/70">
         Aucune période bloquée pour le chauffeur.
       </p>
     );

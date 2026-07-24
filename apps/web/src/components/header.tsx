@@ -59,7 +59,7 @@ export async function Header() {
               ))}
               {!isStaff && <CartBadge />}
               <div className="ml-2 h-5 w-px bg-phoebe-anthracite/10" />
-              <LogoutButton className="ml-2 rounded-lg px-3 py-1.5 text-phoebe-anthracite/50 transition-colors hover:bg-error/5 hover:text-error" />
+              <LogoutButton className="ml-2 rounded-lg px-3 py-1.5 text-phoebe-anthracite/70 transition-colors hover:bg-error/5 hover:text-error" />
             </>
           ) : (
             <>

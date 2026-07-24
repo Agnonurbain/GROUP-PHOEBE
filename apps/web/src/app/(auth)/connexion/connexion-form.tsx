@@ -18,7 +18,7 @@ export default function ConnexionForm() {
   return (
     <ScrollReveal variant="scale-in">
       <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">Connexion</h1>
-      <p className="mt-2 mb-8 text-sm text-phoebe-anthracite/60">
+      <p className="mt-2 mb-8 text-sm text-phoebe-anthracite/70">
         Accedez a votre espace pour gerer vos reservations et favoris
       </p>
 
@@ -35,7 +35,7 @@ export default function ConnexionForm() {
 
       <div className="my-6 flex items-center gap-4">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-phoebe-gold/30 to-transparent" />
-        <span className="text-xs font-medium uppercase tracking-wider text-phoebe-gold/70">ou</span>
+        <span className="text-xs font-medium uppercase tracking-wider text-phoebe-gold-dark">ou</span>
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-phoebe-gold/30 to-transparent" />
       </div>
 
@@ -49,7 +49,7 @@ export default function ConnexionForm() {
             className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
               loginMode === "phone"
                 ? "bg-white text-phoebe-anthracite shadow-sm"
-                : "text-phoebe-anthracite/50 hover:text-phoebe-anthracite/70"
+                : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
             }`}
           >
             Telephone
@@ -62,7 +62,7 @@ export default function ConnexionForm() {
             className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
               loginMode === "email"
                 ? "bg-white text-phoebe-anthracite shadow-sm"
-                : "text-phoebe-anthracite/50 hover:text-phoebe-anthracite/70"
+                : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
             }`}
           >
             Email
@@ -85,10 +85,10 @@ export default function ConnexionForm() {
               required
               inputMode="numeric"
               pattern="[+][0-9]{7,15}"
-              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/35 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
+              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
               placeholder="+225 XX XX XX XX XX"
             />
-            <p className="mt-1 text-xs text-phoebe-anthracite/40">Format international : +225 XX XX XX XX XX</p>
+            <p className="mt-1 text-xs text-phoebe-anthracite/70">Format international : +225 XX XX XX XX XX</p>
           </div>
         )}
 
@@ -103,7 +103,7 @@ export default function ConnexionForm() {
               type="email"
               required
               autoComplete="email"
-              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/35 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
+              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
               placeholder="vous@exemple.ci"
             />
           </div>
@@ -130,7 +130,7 @@ export default function ConnexionForm() {
         <div className="h-px flex-1 bg-phoebe-anthracite/10" />
       </div>
 
-      <p className="mt-6 text-center text-sm text-phoebe-anthracite/60">
+      <p className="mt-6 text-center text-sm text-phoebe-anthracite/70">
         Pas encore de compte ?{" "}
         <Link href={redirectTo ? `/inscription?redirect=${encodeURIComponent(redirectTo)}` : "/inscription"} className="font-semibold text-phoebe-green transition-colors duration-200 hover:text-phoebe-green-deep">
           S&apos;inscrire

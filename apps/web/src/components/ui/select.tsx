@@ -14,7 +14,7 @@ const VARIANTS: Record<Variant, string> = {
 export function Select({ variant = "default", className = "", children, ...props }: SelectProps) {
   return (
     <select
-      className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors ${VARIANTS[variant]} ${className}`}
+      className={`w-full rounded-lg border px-4 py-2.5 text-sm outline-none transition-colors max-sm:min-h-11 ${VARIANTS[variant]} ${className}`}
       {...props}
     >
       {children}

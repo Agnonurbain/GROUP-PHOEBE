@@ -13,8 +13,8 @@ export const metadata: Metadata = {
 }
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
-  en_attente_validation: { label: "En attente", color: "bg-phoebe-gold/10 text-phoebe-gold" },
-  en_negociation: { label: "En négociation", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+  en_attente_validation: { label: "En attente", color: "bg-phoebe-gold/10 text-phoebe-gold-dark" },
+  en_negociation: { label: "En négociation", color: "bg-phoebe-gold/10 text-phoebe-gold-dark" },
   en_attente_paiement: { label: "Att. paiement", color: "bg-blue-50 text-blue-700" },
   acceptee: { label: "Acceptée", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
   en_cours: { label: "En cours", color: "bg-blue-50 text-blue-700" },
@@ -132,7 +132,7 @@ export default async function DemandesPage({
 
       <form method="GET" action="/admin/demandes" className="flex flex-wrap items-end gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/50">Statut</label>
+          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Statut</label>
           <select name="statut" defaultValue={filtreStatut}
             className="rounded-lg border border-phoebe-pearl bg-white px-3 py-2 text-sm text-phoebe-anthracite">
             <option value="actives">Actives</option>
@@ -145,7 +145,7 @@ export default async function DemandesPage({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/50">Type</label>
+          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Type</label>
           <select name="type" defaultValue={filtreType}
             className="rounded-lg border border-phoebe-pearl bg-white px-3 py-2 text-sm text-phoebe-anthracite">
             <option value="all">Tous</option>
@@ -156,13 +156,13 @@ export default async function DemandesPage({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/50">Du</label>
+          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Du</label>
           <input type="date" name="date_debut" defaultValue={filtreDateDebut}
             className="rounded-lg border border-phoebe-pearl bg-white px-3 py-2 text-sm text-phoebe-anthracite" />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/50">Au</label>
+          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Au</label>
           <input type="date" name="date_fin" defaultValue={filtreDateFin}
             className="rounded-lg border border-phoebe-pearl bg-white px-3 py-2 text-sm text-phoebe-anthracite" />
         </div>
@@ -174,16 +174,16 @@ export default async function DemandesPage({
 
         {(filtreStatut !== "actives" || filtreType !== "all" || filtreDateDebut || filtreDateFin) && (
           <a href="/admin/demandes"
-            className="rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-xs text-phoebe-anthracite/60 hover:bg-phoebe-pearl transition-colors">
+            className="rounded-lg border border-phoebe-anthracite/20 px-3 py-2 text-xs text-phoebe-anthracite/70 hover:bg-phoebe-pearl transition-colors">
             Réinitialiser
           </a>
         )}
       </form>
 
-      <p className="text-sm text-phoebe-anthracite/50">{filteredCount} résultat{filteredCount > 1 ? "s" : ""}</p>
+      <p className="text-sm text-phoebe-anthracite/70">{filteredCount} résultat{filteredCount > 1 ? "s" : ""}</p>
 
       {(!demandes || demandes.length === 0) && (!historique || historique.length === 0) ? (
-        <p className="text-sm text-phoebe-anthracite/50">
+        <p className="text-sm text-phoebe-anthracite/70">
           Aucune demande trouvée.
         </p>
       ) : (
@@ -220,16 +220,16 @@ export default async function DemandesPage({
                             <NegotiationTimer updatedAt={d.updated_at} delaiMinutes={DELAI_NEGOCIATION_MINUTES} />
                           )}
                           {d.type === "achat" && (
-                            <span className="rounded-full bg-phoebe-gold/10 px-2.5 py-0.5 text-xs font-semibold text-phoebe-gold">Achat</span>
+                            <span className="rounded-full bg-phoebe-gold/10 px-2.5 py-0.5 text-xs font-semibold text-phoebe-gold-dark">Achat</span>
                           )}
                           {d.avec_chauffeur && (
                             <span className="rounded-full bg-phoebe-green/10 px-2.5 py-0.5 text-xs font-semibold text-phoebe-green-deep">Avec chauffeur</span>
                           )}
                         </div>
-                        <p className="text-sm text-phoebe-anthracite/60">
+                        <p className="text-sm text-phoebe-anthracite/70">
                           Client : {u?.nom ?? "—"} · {u?.telephone ?? "—"}
                         </p>
-                        <p className="text-sm text-phoebe-anthracite/60">
+                        <p className="text-sm text-phoebe-anthracite/70">
                           {d.type === "achat"
                             ? "Demande d'achat"
                             : debut && fin
@@ -243,17 +243,17 @@ export default async function DemandesPage({
                             communeZoneMap.get(d.destination)!.toLowerCase().includes("intérieur") || communeZoneMap.get(d.destination)!.toLowerCase().includes("interieur")
                               ? "bg-error/10 text-error"
                               : communeZoneMap.get(d.destination)!.toLowerCase().includes("grand")
-                                ? "bg-phoebe-gold/10 text-phoebe-gold"
+                                ? "bg-phoebe-gold/10 text-phoebe-gold-dark"
                                 : "bg-phoebe-green/10 text-phoebe-green-deep"
                           }`}>Zone : {communeZoneMap.get(d.destination)}</span>
                         )}
                         {d.type === "achat" && (
-                          <p className="text-xs text-phoebe-anthracite/40">Négociation via WhatsApp</p>
+                          <p className="text-xs text-phoebe-anthracite/70">Négociation via WhatsApp</p>
                         )}
                         {lignes && lignes.length > 1 && (
                           <ul className="space-y-0.5 pt-1">
                             {lignes.map((l) => (
-                              <li key={l.id} className="text-xs text-phoebe-anthracite/50">
+                              <li key={l.id} className="text-xs text-phoebe-anthracite/70">
                                 {l.vehicules?.marque} {l.vehicules?.modele}{l.avec_chauffeur && " · chauffeur"}
                               </li>
                             ))}

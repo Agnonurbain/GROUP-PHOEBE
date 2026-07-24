@@ -46,10 +46,10 @@ export function AdminMobileNav({
           {/* Header with close button */}
           <div className="flex items-center justify-between border-b border-phoebe-pearl px-5 py-4">
             <div>
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold-dark">
                 Back-office
               </span>
-              <span className="ml-2 text-[10px] uppercase tracking-wider text-phoebe-anthracite/30">
+              <span className="ml-2 text-[10px] uppercase tracking-wider text-phoebe-anthracite/70">
                 Menu
               </span>
             </div>
@@ -85,7 +85,7 @@ export function AdminMobileNav({
             )}
 
             <div>
-              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
                 Transport
               </h2>
               <div className="space-y-0.5">
@@ -123,7 +123,7 @@ export function AdminMobileNav({
 
             {isProprietaire && (
               <div>
-                <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+                <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
                   Administration
                 </h2>
                 <div className="space-y-0.5">

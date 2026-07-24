@@ -33,15 +33,16 @@ const VARIANTS: Record<Variant, string> = {
   orange: "bg-accent-orange text-white hover:bg-accent-orange-hover",
   blue: "bg-accent-blue text-white hover:bg-accent-blue-hover",
   green: "bg-accent-green text-white hover:bg-accent-green-hover",
-  icon: "text-[#6B7280] hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] p-1.5 rounded-lg",
-  "text-link": "text-[#6B7280] hover:text-[#F5F5F5] underline-offset-2 hover:underline",
+  icon: "text-public-text-muted hover:text-[#EF4444] hover:bg-[rgba(239,68,68,0.1)] p-1.5 rounded-lg inline-flex items-center justify-center min-h-11 min-w-11",
+  "text-link": "text-public-text-muted hover:text-[#F5F5F5] underline-offset-2 hover:underline",
   "admin-tab": "bg-transparent text-phoebe-anthracite/70 hover:text-phoebe-anthracite px-4 py-2 border-b-2 border-transparent hover:border-phoebe-anthracite/20 data-[active=true]:border-phoebe-gold data-[active=true]:text-phoebe-anthracite",
-  "admin-icon": "bg-transparent text-phoebe-anthracite/60 hover:text-phoebe-anthracite hover:bg-phoebe-pearl p-2 rounded-lg",
+  "admin-icon": "bg-transparent text-phoebe-anthracite/70 hover:text-phoebe-anthracite hover:bg-phoebe-pearl p-2 rounded-lg inline-flex items-center justify-center min-h-11 min-w-11",
   "admin-alert": "bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 border border-amber-500/20",
 }
 
+// Sur écran tactile, toutes les tailles atteignent la cible de 44px (WCAG 2.5.5)
 const SIZES: Record<Size, string> = {
-  sm: "px-3 py-1.5 text-xs font-medium",
+  sm: "px-3 py-1.5 text-xs font-medium max-sm:min-h-11",
   md: "px-5 py-2.5 text-sm font-semibold max-sm:min-h-12",
   lg: "px-6 py-3 text-base font-semibold max-sm:min-h-12",
 }

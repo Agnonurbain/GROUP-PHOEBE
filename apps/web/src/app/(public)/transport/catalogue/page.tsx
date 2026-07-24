@@ -8,6 +8,7 @@ import Filtres from "./filtres"
 import { Badge, Card } from "@/components/ui"
 import { SearchIcon, ChevronRightIcon } from "@/components/icons"
 import { getZonesTarifaires } from "@/lib/public-cache"
+import { serializeJsonLd } from "@/lib/json-ld"
 
 const PAGE_SIZE = 12
 
@@ -122,7 +123,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
           <SearchIcon size={32} className="text-public-text-faint" />
         </div>
         <p className="text-lg font-semibold text-public-text">Aucun résultat pour ces filtres</p>
-        <p className="text-sm text-[#6B7280]">Essayez d&apos;élargir vos critères ou de réinitialiser les filtres.</p>
+        <p className="text-sm text-public-text-muted">Essayez d&apos;élargir vos critères ou de réinitialiser les filtres.</p>
       </div>
     )
   }
@@ -261,7 +262,7 @@ export default async function TransportCatalogue({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(catalogueSchema) }}
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(catalogueSchema) }}
       />
       <section className="px-6 py-16">
         <h1 className="text-4xl font-bold text-public-text md:text-5xl">Notre Flotte</h1>

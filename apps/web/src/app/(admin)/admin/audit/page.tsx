@@ -13,11 +13,11 @@ const ACTION_LABELS: Record<string, { label: string; color: string }> = {
   refuser: { label: "Refus", color: "bg-error/10 text-error" },
   annuler: { label: "Annulation", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite" },
   modifier: { label: "Modification", color: "bg-blue-50 text-blue-700" },
-  creer: { label: "Création", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+  creer: { label: "Création", color: "bg-phoebe-gold/10 text-phoebe-gold-dark" },
   rembourser: { label: "Remboursement", color: "bg-purple-50 text-purple-700" },
   verifier: { label: "Vérification", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
   auto_accepter: { label: "Auto-acceptation", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
-  auto_approuver: { label: "Auto-approbation", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+  auto_approuver: { label: "Auto-approbation", color: "bg-phoebe-gold/10 text-phoebe-gold-dark" },
 };
 
 function formatDate(d: string) {
@@ -124,7 +124,7 @@ export default async function AuditPage({
       </div>
 
       {!logs || logs.length === 0 ? (
-        <p className="text-sm text-phoebe-anthracite/50">
+        <p className="text-sm text-phoebe-anthracite/70">
           Aucune entrée d&apos;audit.
         </p>
       ) : (
@@ -142,23 +142,23 @@ export default async function AuditPage({
                     <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${a.color}`}>
                       {a.label}
                     </span>
-                    <span className="rounded-full bg-phoebe-pearl px-2.5 py-0.5 text-[11px] font-medium text-phoebe-anthracite/60">
+                    <span className="rounded-full bg-phoebe-pearl px-2.5 py-0.5 text-[11px] font-medium text-phoebe-anthracite/70">
                       {log.cible_table}
                     </span>
-                    <span className="ml-auto text-[11px] text-phoebe-anthracite/40">
+                    <span className="ml-auto text-[11px] text-phoebe-anthracite/70">
                       {formatDate(log.created_at)}
                     </span>
                   </div>
 
-                  <div className="mt-2 flex flex-wrap items-baseline gap-x-3 text-xs text-phoebe-anthracite/60">
+                  <div className="mt-2 flex flex-wrap items-baseline gap-x-3 text-xs text-phoebe-anthracite/70">
                     {user && (
                       <span>
                         par <span className="font-medium text-phoebe-anthracite">{user.nom}</span>
-                        <span className="ml-1 text-[10px] text-phoebe-anthracite/40">({user.role})</span>
+                        <span className="ml-1 text-[10px] text-phoebe-anthracite/70">({user.role})</span>
                       </span>
                     )}
                     {log.cible_id && (
-                      <span className="font-mono text-[10px] text-phoebe-anthracite/30">
+                      <span className="font-mono text-[10px] text-phoebe-anthracite/70">
                         {log.cible_id.slice(0, 8)}…
                       </span>
                     )}
@@ -173,7 +173,7 @@ export default async function AuditPage({
                         {log.details?.old && (
                           <div className="overflow-x-auto rounded-lg bg-error/5 p-2">
                             <p className="mb-1 text-[10px] font-semibold text-error">Avant</p>
-                            <pre className="text-[10px] text-phoebe-anthracite/60 whitespace-pre-wrap">
+                            <pre className="text-[10px] text-phoebe-anthracite/70 whitespace-pre-wrap">
                               {JSON.stringify(log.details.old as Record<string, unknown>, null, 2)}
                             </pre>
                           </div>
@@ -181,7 +181,7 @@ export default async function AuditPage({
                         {log.details?.new && (
                           <div className="overflow-x-auto rounded-lg bg-phoebe-green/5 p-2">
                             <p className="mb-1 text-[10px] font-semibold text-phoebe-green-deep">Après</p>
-                            <pre className="text-[10px] text-phoebe-anthracite/60 whitespace-pre-wrap">
+                            <pre className="text-[10px] text-phoebe-anthracite/70 whitespace-pre-wrap">
                               {JSON.stringify(log.details.new as Record<string, unknown>, null, 2)}
                             </pre>
                           </div>
@@ -189,7 +189,7 @@ export default async function AuditPage({
                         {log.old_values && (
                           <div className="overflow-x-auto rounded-lg bg-error/5 p-2">
                             <p className="mb-1 text-[10px] font-semibold text-error">Avant (legacy)</p>
-                            <pre className="text-[10px] text-phoebe-anthracite/60 whitespace-pre-wrap">
+                            <pre className="text-[10px] text-phoebe-anthracite/70 whitespace-pre-wrap">
                               {JSON.stringify(log.old_values, null, 2)}
                             </pre>
                           </div>
@@ -197,7 +197,7 @@ export default async function AuditPage({
                         {log.new_values && (
                           <div className="overflow-x-auto rounded-lg bg-phoebe-green/5 p-2">
                             <p className="mb-1 text-[10px] font-semibold text-phoebe-green-deep">Après (legacy)</p>
-                            <pre className="text-[10px] text-phoebe-anthracite/60 whitespace-pre-wrap">
+                            <pre className="text-[10px] text-phoebe-anthracite/70 whitespace-pre-wrap">
                               {JSON.stringify(log.new_values, null, 2)}
                             </pre>
                           </div>
@@ -220,7 +220,7 @@ export default async function AuditPage({
               label="← Précédent"
             />
           )}
-          <span className="text-xs text-phoebe-anthracite/50">
+          <span className="text-xs text-phoebe-anthracite/70">
             Page {page} / {totalPages}
           </span>
           {page < totalPages && (
@@ -255,7 +255,7 @@ function FilterChip({ href, active, label }: { href: string; active: boolean; la
       className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
         active
           ? "bg-phoebe-green text-white"
-          : "bg-phoebe-pearl text-phoebe-anthracite/60 hover:bg-phoebe-green/10 hover:text-phoebe-green-deep"
+          : "bg-phoebe-pearl text-phoebe-anthracite/70 hover:bg-phoebe-green/10 hover:text-phoebe-green-deep"
       }`}
     >
       {label}

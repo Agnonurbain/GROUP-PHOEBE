@@ -22,7 +22,7 @@ function IntervalleRow({ ip }: { ip: Intervalle }) {
     <form action={formAction} className="grid grid-cols-[1fr_1fr_auto_auto_auto] items-center gap-2">
       <input type="hidden" name="id" value={ip.id} />
       <span className="text-sm text-phoebe-anthracite">{ip.categorie}</span>
-      <span className="text-xs text-phoebe-anthracite/50">{ip.type}</span>
+      <span className="text-xs text-phoebe-anthracite/70">{ip.type}</span>
       <input
         name="prix_min"
         type="number"
@@ -54,7 +54,7 @@ export function IntervallesList({
 }) {
   if (intervalles.length === 0) {
     return (
-      <p className="text-sm text-phoebe-anthracite/40">
+      <p className="text-sm text-phoebe-anthracite/70">
         Aucun intervalle de prix.
       </p>
     );
@@ -62,7 +62,7 @@ export function IntervallesList({
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-2 text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/40">
+      <div className="grid grid-cols-[1fr_1fr_auto_auto_auto] gap-2 text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">
         <span>Catégorie</span>
         <span>Type</span>
         <span className="w-28 text-right">Min (FCFA)</span>

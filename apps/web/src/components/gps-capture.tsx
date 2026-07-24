@@ -64,11 +64,11 @@ export function GpsCapture({ vehiculeId, latitude, longitude }: Props) {
             Position GPS
           </p>
           {lat != null && lng != null ? (
-            <p className="mt-0.5 text-xs text-phoebe-anthracite/50 font-mono">
+            <p className="mt-0.5 text-xs text-phoebe-anthracite/70 font-mono">
               {lat.toFixed(6)}, {lng.toFixed(6)}
             </p>
           ) : (
-            <p className="mt-0.5 text-xs text-phoebe-anthracite/40">
+            <p className="mt-0.5 text-xs text-phoebe-anthracite/70">
               Aucune position enregistrée
             </p>
           )}

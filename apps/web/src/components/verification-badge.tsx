@@ -10,7 +10,7 @@ const config: Record<
   },
   documents_soumis: {
     label: "En attente de vérification",
-    className: "bg-phoebe-gold/20 text-phoebe-gold",
+    className: "bg-phoebe-gold/20 text-phoebe-gold-dark",
   },
   verifie: {
     label: "Vérifié",

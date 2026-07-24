@@ -107,7 +107,7 @@ export default async function EditVehiculePage({
           </h1>
           <Link
             href="/admin/vehicules"
-            className="text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
+            className="text-sm text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
           >
             ← Retour à la liste
           </Link>

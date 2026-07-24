@@ -19,7 +19,7 @@ const VARIANTS: Record<ChipVariant, { active: string; inactive: string }> = {
     inactive: "border-[#2A2A2A] text-[#8A8A8A] hover:border-accent-orange/30 hover:text-[#F5F5F5]",
   },
   blue: {
-    active: "border-accent-blue bg-[rgba(37,99,235,0.1)] text-accent-blue",
+    active: "border-accent-blue-on-dark bg-[rgba(37,99,235,0.15)] text-accent-blue-on-dark",
     inactive: "border-[#2A2A2A] text-[#8A8A8A] hover:border-accent-blue/30 hover:text-[#F5F5F5]",
   },
   green: {
@@ -37,7 +37,8 @@ export function Chip({ label, startIcon, active = false, chipVariant = "orange",
   return (
     <button
       type="button"
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer select-none ${active ? v.active : v.inactive} ${className}`}
+      aria-pressed={active}
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer select-none max-sm:min-h-11 ${active ? v.active : v.inactive} ${className}`}
       {...props}
     >
       {startIcon && <span className="shrink-0">{startIcon}</span>}

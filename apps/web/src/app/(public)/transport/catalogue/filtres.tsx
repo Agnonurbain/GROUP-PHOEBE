@@ -57,7 +57,7 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
           <label htmlFor="f-recherche" className="sr-only">Recherche</label>
           <div className="relative">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#4A4A4A]">
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-public-text-faint">
               <circle cx="11" cy="11" r="8" />
               <line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
@@ -103,7 +103,7 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
           <Chip key={z.id} label={z.nom} chipVariant="gold" active={get("zone") === z.id} onClick={() => toggle("zone", z.id)} />
         ))}
         <button type="button" onClick={() => setShowMore((s) => !s)}
-          className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer select-none border-dashed ${showMore ? "border-[#F97316] text-[#F97316]" : "border-[#2A2A2A] text-[#4A4A4A]"}`}>
+          className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer select-none border-dashed ${showMore ? "border-[#F97316] text-[#F97316]" : "border-[#2A2A2A] text-public-text-faint"}`}>
           {showMore ? "Moins de filtres" : "Plus de filtres"}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
             className={`ml-1 inline-block transition-transform ${showMore ? "rotate-180" : ""}`}>
@@ -116,7 +116,7 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
       {showMore && (
         <div className="grid gap-4 rounded-xl border border-[#2A2A2A] bg-[#0A0A0A] p-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <label htmlFor="f-carburant" className="mb-1 block text-xs font-medium text-[#6B7280]">Carburant</label>
+            <label htmlFor="f-carburant" className="mb-1 block text-xs font-medium text-public-text-muted">Carburant</label>
             <select id="f-carburant" value={get("carburant")} onChange={(e) => update("carburant", e.target.value)} className={inputClass}>
               <option value="">Tous</option>
               <option value="essence">Essence</option>
@@ -126,7 +126,7 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
             </select>
           </div>
           <div>
-            <label htmlFor="f-boite" className="mb-1 block text-xs font-medium text-[#6B7280]">Transmission</label>
+            <label htmlFor="f-boite" className="mb-1 block text-xs font-medium text-public-text-muted">Transmission</label>
             <select id="f-boite" value={get("boite")} onChange={(e) => update("boite", e.target.value)} className={inputClass}>
               <option value="">Toutes</option>
               <option value="automatique">Automatique</option>
@@ -134,7 +134,7 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
             </select>
           </div>
           <div>
-            <label htmlFor="f-places" className="mb-1 block text-xs font-medium text-[#6B7280]">Places minimum</label>
+            <label htmlFor="f-places" className="mb-1 block text-xs font-medium text-public-text-muted">Places minimum</label>
             <select id="f-places" value={get("places_min")} onChange={(e) => update("places_min", e.target.value)} className={inputClass}>
               <option value="">Toutes</option>
               <option value="2">2+</option>
@@ -146,12 +146,12 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
             </select>
           </div>
           <div>
-            <label htmlFor="f-annee" className="mb-1 block text-xs font-medium text-[#6B7280]">Année minimum</label>
+            <label htmlFor="f-annee" className="mb-1 block text-xs font-medium text-public-text-muted">Année minimum</label>
             <input id="f-annee" type="number" inputMode="numeric" placeholder="Ex : 2020" defaultValue={get("annee_min")}
               onChange={(e) => debouncedUpdate("annee_min", e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label htmlFor="f-etat" className="mb-1 block text-xs font-medium text-[#6B7280]">État</label>
+            <label htmlFor="f-etat" className="mb-1 block text-xs font-medium text-public-text-muted">État</label>
             <select id="f-etat" value={get("etat")} onChange={(e) => update("etat", e.target.value)} className={inputClass}>
               <option value="">Tous</option>
               <option value="neuf">Neuf</option>
@@ -159,12 +159,12 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
             </select>
           </div>
           <div>
-            <label htmlFor="f-prix-min" className="mb-1 block text-xs font-medium text-[#6B7280]">Prix min (FCFA/j)</label>
+            <label htmlFor="f-prix-min" className="mb-1 block text-xs font-medium text-public-text-muted">Prix min (FCFA/j)</label>
             <input id="f-prix-min" type="number" inputMode="numeric" placeholder="Ex : 50000" defaultValue={get("prix_min")}
               onChange={(e) => debouncedUpdate("prix_min", e.target.value)} className={inputClass} />
           </div>
           <div>
-            <label htmlFor="f-prix-max" className="mb-1 block text-xs font-medium text-[#6B7280]">Prix max (FCFA/j)</label>
+            <label htmlFor="f-prix-max" className="mb-1 block text-xs font-medium text-public-text-muted">Prix max (FCFA/j)</label>
             <input id="f-prix-max" type="number" inputMode="numeric" placeholder="Ex : 200000" defaultValue={get("prix_max")}
               onChange={(e) => debouncedUpdate("prix_max", e.target.value)} className={inputClass} />
           </div>
@@ -181,7 +181,7 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
             filtre{activeCount > 1 ? "s" : ""} actif{activeCount > 1 ? "s" : ""}
           </span>
           <button type="button" onClick={() => router.push("/transport/catalogue")}
-            className="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-medium text-[#6B7280] transition-all hover:bg-[rgba(239,68,68,0.1)] hover:text-[#EF4444]">
+            className="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-medium text-public-text-muted transition-all hover:bg-[rgba(239,68,68,0.1)] hover:text-[#EF4444]">
             Réinitialiser
           </button>
         </div>

@@ -28,8 +28,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Invoke cron endpoint
+        env:
+          # group-phoebe.com n'a jamais existe (NXDOMAIN) : aucun domaine
+          # personnalise n'est attache au projet Vercel. Definir la variable
+          # de depot CRON_BASE_URL le jour ou un domaine sera configure.
+          BASE_URL: ${{ vars.CRON_BASE_URL || 'https://group-phoebe-web.vercel.app' }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          PATH_SEGMENT: ${{ needs.identify.outputs.path }}
         run: |
-          echo "Calling ${{ needs.identify.outputs.path }}..."
-          curl --fail --silent --show-error \
-            --header "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "https://group-phoebe.com/${{ needs.identify.outputs.path }}"
+          set -euo pipefail
+
+          if [ -z "$PATH_SEGMENT" ]; then
+            echo "::error::Aucune route associee au schedule '${{ github.event.schedule }}'."
+            exit 1
+          fi
+
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::error::Secret CRON_SECRET absent du depot. La meme valeur"
+            echo "doit etre definie dans les variables d'environnement Vercel."
+            exit 1
+          fi
+
+          # Volontairement SANS repli silencieux : ces routes liberent les
+          # vehicules et expirent les reservations abandonnees. Un echec
+          # masque laisserait des vehicules bloques sans que personne ne le
+          # sache. L'echec doit rester visible.
+          echo "Appel de $BASE_URL/$PATH_SEGMENT"
+          curl --fail --silent --show-error --max-time 60 \
+            --header "Authorization: Bearer $CRON_SECRET" \
+            "$BASE_URL/$PATH_SEGMENT"

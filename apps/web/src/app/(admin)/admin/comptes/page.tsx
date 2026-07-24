@@ -58,7 +58,7 @@ export default async function ComptesPage() {
         <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
           Comptes internes
         </h1>
-        <p className="mt-1.5 text-sm text-phoebe-anthracite/60">
+        <p className="mt-1.5 text-sm text-phoebe-anthracite/70">
           Gerez les operateurs et livreurs de la plateforme.
         </p>
       </div>
@@ -73,23 +73,23 @@ export default async function ComptesPage() {
             <table className="w-full min-w-[500px] text-sm">
               <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
                 <tr>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Nom
                   </th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Contact
                   </th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Role
                   </th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Ajouté le
                   </th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Dernière activité
                   </th>
                   {isProprietaire && (
-                    <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                    <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                       Actions
                     </th>
                   )}
@@ -108,21 +108,21 @@ export default async function ComptesPage() {
                       <span
                         className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                           member.role === "proprietaire"
-                            ? "bg-phoebe-gold/20 text-phoebe-gold"
+                            ? "bg-phoebe-gold/20 text-phoebe-gold-dark"
                             : member.role === "operateur"
                               ? "bg-phoebe-green/10 text-phoebe-green-deep"
                               : member.role === "desactive"
                                 ? "bg-error/10 text-error line-through"
-                                : "bg-phoebe-pearl text-phoebe-anthracite/60"
+                                : "bg-phoebe-pearl text-phoebe-anthracite/70"
                         }`}
                       >
                         {roleLabels[member.role] ?? member.role}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-phoebe-anthracite/50">
+                    <td className="px-5 py-3.5 text-phoebe-anthracite/70">
                       {new Date(member.created_at).toLocaleDateString("fr-FR")}
                     </td>
-                    <td className="px-5 py-3.5 text-phoebe-anthracite/50">
+                    <td className="px-5 py-3.5 text-phoebe-anthracite/70">
                       {lastActivityMap.get(member.id)
                         ? new Date(lastActivityMap.get(member.id)!).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })
                         : "—"}
@@ -152,7 +152,7 @@ export default async function ComptesPage() {
           <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
             Creer un compte
           </h2>
-          <p className="mb-5 text-sm text-phoebe-anthracite/60">
+          <p className="mb-5 text-sm text-phoebe-anthracite/70">
             Ces comptes ne passent pas par l&apos;inscription publique. Le
             telephone/email et le mot de passe temporaire sont definis par le
             proprietaire.

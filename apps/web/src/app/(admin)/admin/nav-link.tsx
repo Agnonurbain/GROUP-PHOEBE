@@ -27,7 +27,7 @@ export function NavLink({
       className={`flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm transition-all duration-200 ${
         isActive
           ? "bg-phoebe-green/10 font-semibold text-phoebe-green-deep shadow-sm shadow-phoebe-green/8 border border-phoebe-green/15"
-          : "text-phoebe-anthracite/65 hover:bg-phoebe-green/5 hover:text-phoebe-green-deep"
+          : "text-phoebe-anthracite/70 hover:bg-phoebe-green/5 hover:text-phoebe-green-deep"
       }`}
     >
       {children}
