@@ -108,23 +108,6 @@ create trigger users_lock_role
   for each row
   execute function public.lock_role_column();
 
--- ============================================================
--- 5. Autoriser le role 'desactive'
--- ============================================================
--- desactiverCompteInterne (app/actions/admin.ts) ecrit role = 'desactive',
--- valeur absente du CHECK d'origine (migration 00001). L'UPDATE violait donc
--- la contrainte et la fonction retournait l'erreur AVANT d'atteindre le
--- bannissement auth : desactiver un operateur ne revoquait rien, le compte
--- gardait son role et son acces au back-office.
-
-alter table public.users drop constraint if exists users_role_check;
-
-alter table public.users add constraint users_role_check
-  check (role in (
-    'client',
-    'operateur',
-    'proprietaire',
-    'livreur',
-    'agent_immobilier',
-    'desactive'
-  ));
+-- Note : le role 'desactive' manquait au CHECK de users.role, ce qui faisait
+-- echouer desactiverCompteInterne. Corrige par la migration 00033, appliquee
+-- directement en production puis rapatriee dans le depot.
