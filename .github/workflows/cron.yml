@@ -6,6 +6,14 @@ on:
     - cron: '0 */2 * * 1-5'
     - cron: '0 */4 * * *'
     - cron: '*/30 * * * *'
+  # Permet de tester la chaine complete sans attendre le prochain creneau.
+  # Sans route associee, l'execution manuelle echoue explicitement.
+  workflow_dispatch:
+    inputs:
+      route:
+        description: 'Route cron a appeler (ex: api/cron/expiration)'
+        required: true
+        default: 'api/cron/expiration'
 
 jobs:
   identify:
@@ -16,6 +24,11 @@ jobs:
       - name: Identify route
         id: route
         run: |
+          if [ -n "${{ github.event.inputs.route }}" ]; then
+            echo "path=${{ github.event.inputs.route }}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
           case "${{ github.event.schedule }}" in
             "*/15 * * * *")     echo "path=api/cron/expiration" >> $GITHUB_OUTPUT;;
             "0 */2 * * 1-5")   echo "path=api/cron/expirer-demandes-sans-reponse" >> $GITHUB_OUTPUT;;
