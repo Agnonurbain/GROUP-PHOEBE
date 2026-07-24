@@ -54,41 +54,42 @@ export default function HomePage() {
       <section className="relative flex min-h-[90vh] flex-col items-center justify-center gap-6 overflow-hidden px-6 py-32 text-center md:py-40">
         <HeroSlideshow />
 
-        <ScrollReveal variant="fade-up">
-          <div className="relative z-10">
+        {/* Panneau verre fumé : garantit la lisibilité quelle que soit l'image derrière */}
+        <div className="relative z-10 flex flex-col items-center gap-6 rounded-3xl bg-black/55 px-8 py-10 ring-1 ring-white/10 backdrop-blur-md sm:px-14">
+          <ScrollReveal variant="fade-up">
             <Image
               src="/logos/logo_g-phoebe.png"
               alt="GROUP PHOEBE"
               width={334}
               height={303}
               priority
-              className="h-auto w-[260px] md:w-[320px] animate-glow-pulse"
+              className="h-auto w-[240px] md:w-[300px] animate-glow-pulse"
             />
-          </div>
-        </ScrollReveal>
-        <ScrollReveal variant="fade-up" delay={0.2}>
-          <p className="relative z-10 text-lg font-medium text-white md:text-xl [text-shadow:0_2px_12px_rgba(0,0,0,0.9)]">
-            L&apos;excellence à chaque étape de votre vie
-          </p>
-        </ScrollReveal>
-        <ScrollReveal variant="fade-up" delay={0.35}>
-          <div className="relative z-10 flex flex-col gap-4 sm:flex-row">
-            <MagneticButton>
+          </ScrollReveal>
+          <ScrollReveal variant="fade-up" delay={0.2}>
+            <p className="text-lg font-medium text-white md:text-xl [text-shadow:0_2px_12px_rgba(0,0,0,0.9)]">
+              L&apos;excellence à chaque étape de votre vie
+            </p>
+          </ScrollReveal>
+          <ScrollReveal variant="fade-up" delay={0.35}>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <MagneticButton>
+                <Link
+                  href="#services"
+                  className="block rounded-lg bg-accent-gold px-6 py-3 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
+                >
+                  Découvrir nos services
+                </Link>
+              </MagneticButton>
               <Link
-                href="#services"
-                className="block rounded-lg bg-accent-gold px-6 py-3 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
+                href="/contact"
+                className="block rounded-lg border border-white/40 bg-black/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-black/60"
               >
-                Découvrir nos services
+                Contactez-nous
               </Link>
-            </MagneticButton>
-            <Link
-              href="/contact"
-              className="block rounded-lg border border-white/40 bg-black/40 px-6 py-3 text-sm font-semibold text-white backdrop-blur-sm transition-colors hover:bg-black/60"
-            >
-              Contactez-nous
-            </Link>
-          </div>
-        </ScrollReveal>
+            </div>
+          </ScrollReveal>
+        </div>
 
         {/* Scroll indicator */}
         <ScrollReveal variant="fade-up" delay={0.6}>

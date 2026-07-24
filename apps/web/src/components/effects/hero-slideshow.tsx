@@ -42,7 +42,7 @@ export function HeroSlideshow() {
               sizes="100vw"
               quality={80}
               priority={i === 0}
-              className="object-cover"
+              className="object-cover brightness-[0.6]"
               style={{
                 animation: isActive
                   ? `ken-burns-${dir > 0 ? "in" : "out"} 8s ease-in-out forwards`
