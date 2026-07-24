@@ -39,7 +39,7 @@ export function DeleteAccountButton({
             <h3 className="text-lg font-semibold text-phoebe-anthracite">
               Desactiver le compte
             </h3>
-            <p className="mt-1 text-sm text-phoebe-anthracite/60">
+            <p className="mt-1 text-sm text-phoebe-anthracite/70">
               Le compte de <strong>{nom}</strong> sera desactive.
               L&apos;utilisateur ne pourra plus se connecter, mais son historique
               d&apos;actions sera conserve dans le journal d&apos;audit.
@@ -49,7 +49,7 @@ export function DeleteAccountButton({
               onChange={(e) => setMotif(e.target.value)}
               placeholder="Motif de la desactivation..."
               rows={3}
-              className="mt-3 w-full rounded-lg border border-phoebe-pearl px-3 py-2 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-error focus:outline-none focus:ring-1 focus:ring-error"
+              className="mt-3 w-full rounded-lg border border-phoebe-pearl px-3 py-2 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 focus:border-error focus:outline-none focus:ring-1 focus:ring-error"
             />
             <div className="mt-4 flex justify-end gap-3">
               <Button variant="admin-ghost" onClick={() => { setShowModal(false); setMotif(""); }}>

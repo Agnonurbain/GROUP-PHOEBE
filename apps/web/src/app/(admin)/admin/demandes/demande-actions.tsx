@@ -118,7 +118,7 @@ export function DemandeActions({
                 required
                 rows={2}
                 placeholder="Motif du refus (obligatoire)…"
-                className="w-full rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-error focus:outline-none focus:ring-1 focus:ring-error/30"
+                className="w-full rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 focus:border-error focus:outline-none focus:ring-1 focus:ring-error/30"
               />
               <SubmitButton className="rounded-lg bg-error px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-error/90 hover:shadow-md">
                 Confirmer le refus
@@ -181,7 +181,7 @@ export function DemandeActions({
                     required
                     rows={2}
                     placeholder="Motif du refus (obligatoire)…"
-                    className="w-full rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-error focus:outline-none focus:ring-1 focus:ring-error/30"
+                    className="w-full rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 focus:border-error focus:outline-none focus:ring-1 focus:ring-error/30"
                   />
                   <SubmitButton className="rounded-lg bg-error px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-error/90 hover:shadow-md">
                     Confirmer le refus
@@ -194,7 +194,7 @@ export function DemandeActions({
               <input type="hidden" name="demande_id" value={demandeId} />
               <div className="flex items-end gap-2">
                 <div>
-                  <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/50">
+                  <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
                     Prix convenu (FCFA)
                   </label>
                   <input
@@ -208,7 +208,7 @@ export function DemandeActions({
                   />
                 </div>
                 <div>
-                  <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/50">
+                  <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
                     Acompte (FCFA)
                   </label>
                   <input
@@ -233,12 +233,12 @@ export function DemandeActions({
       {statut === "en_negociation" && !isAchat && !negoState.success && (
         <div className="space-y-2">
           {negociationNote && (
-            <p className="max-w-xs text-right text-xs text-phoebe-anthracite/50 italic">
+            <p className="max-w-xs text-right text-xs text-phoebe-anthracite/70 italic">
               &laquo; {negociationNote} &raquo;
             </p>
           )}
           {montantEstime && (
-            <p className="text-right text-xs text-phoebe-anthracite/50">
+            <p className="text-right text-xs text-phoebe-anthracite/70">
               Estimation : {Number(montantEstime).toLocaleString("fr-FR")} FCFA
             </p>
           )}
@@ -255,7 +255,7 @@ export function DemandeActions({
             <form action={negoAction} className="flex items-end gap-2">
               <input type="hidden" name="demande_id" value={demandeId} />
               <div>
-                <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/50">Prix (FCFA)</label>
+                <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">Prix (FCFA)</label>
                 <input
                   name="prix_negocie"
                   type="number"
@@ -299,7 +299,7 @@ export function DemandeActions({
             <form action={inspAction} className="flex items-end gap-2">
               <input type="hidden" name="demande_id" value={demandeId} />
               <div>
-                <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/50">
+                <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
                   Caution retenue (FCFA)
                 </label>
                 <input
@@ -311,7 +311,7 @@ export function DemandeActions({
                   className="w-32 rounded-lg border border-phoebe-anthracite/20 px-2 py-1.5 text-sm"
                 />
                 {cautionMax != null && (
-                  <p className="mt-0.5 text-[10px] text-phoebe-anthracite/40">
+                  <p className="mt-0.5 text-[10px] text-phoebe-anthracite/70">
                     Max : {Number(cautionMax).toLocaleString("fr-FR")} FCFA
                   </p>
                 )}

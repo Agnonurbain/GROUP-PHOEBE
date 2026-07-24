@@ -33,7 +33,7 @@ export function NegotiationTimer({
     <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
       remaining === "Expirée"
         ? "bg-error/10 text-error"
-        : "bg-phoebe-gold/20 text-phoebe-gold"
+        : "bg-phoebe-gold/20 text-phoebe-gold-dark"
     }`}>
       {remaining === "Expirée" ? "Expirée" : `${remaining} restant`}
     </span>

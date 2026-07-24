@@ -214,7 +214,7 @@ export default function VehiculeForm({
                 defaultValue={vehicule ? 0 : 1}
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-phoebe-anthracite/50">
+              <p className="mt-1 text-xs text-phoebe-anthracite/70">
                 {vehicule
                   ? "Exemplaires supplémentaires à ajouter (0 = aucun)"
                   : "Nombre d’exemplaires identiques à créer"}
@@ -260,7 +260,7 @@ export default function VehiculeForm({
                 className={inputClass}
                 placeholder="Ex: Corolla-"
               />
-              <p className="mt-1 text-xs text-phoebe-anthracite/50">
+              <p className="mt-1 text-xs text-phoebe-anthracite/70">
                 Utile pour différencier les exemplaires (ex: Corolla-001, Corolla-002)
               </p>
             </div>
@@ -421,7 +421,7 @@ export default function VehiculeForm({
                 className={inputClass}
               />
               {intervalLocation && (
-                <p className="mt-1 text-xs text-phoebe-anthracite/50">
+                <p className="mt-1 text-xs text-phoebe-anthracite/70">
                   Fourchette {selectedCategorie} : {formatPrix(intervalLocation.prix_min)} — {formatPrix(intervalLocation.prix_max)} FCFA/j
                 </p>
               )}
@@ -455,7 +455,7 @@ export default function VehiculeForm({
                 className={inputClass}
               />
               {intervalVente && (
-                <p className="mt-1 text-xs text-phoebe-anthracite/50">
+                <p className="mt-1 text-xs text-phoebe-anthracite/70">
                   Fourchette {selectedCategorie} : {formatPrix(intervalVente.prix_min)} — {formatPrix(intervalVente.prix_max)} FCFA
                 </p>
               )}
@@ -476,7 +476,7 @@ export default function VehiculeForm({
                 placeholder="50000"
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-phoebe-anthracite/50">
+              <p className="mt-1 text-xs text-phoebe-anthracite/70">
                 Montant fixe multiplié par le coefficient de zone (×1.0 / ×1.5 / ×2.0)
               </p>
             </div>
@@ -495,7 +495,7 @@ export default function VehiculeForm({
                 placeholder="30"
                 className={inputClass}
               />
-              <p className="mt-1 text-xs text-phoebe-anthracite/50">
+              <p className="mt-1 text-xs text-phoebe-anthracite/70">
                 Fallback si la caution de base n&apos;est pas définie
               </p>
             </div>

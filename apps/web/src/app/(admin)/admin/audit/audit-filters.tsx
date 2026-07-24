@@ -51,7 +51,7 @@ export function AuditFilters({
   return (
     <div className="flex flex-wrap gap-4 pt-2 border-t border-phoebe-pearl">
       <div className="flex items-center gap-2">
-        <label className="text-xs text-phoebe-anthracite/60">Action :</label>
+        <label className="text-xs text-phoebe-anthracite/70">Action :</label>
         <select
           value={filters.action || ""}
           onChange={(e) => apply({ action: e.target.value || undefined })}
@@ -67,7 +67,7 @@ export function AuditFilters({
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="text-xs text-phoebe-anthracite/60">Utilisateur :</label>
+        <label className="text-xs text-phoebe-anthracite/70">Utilisateur :</label>
         <select
           value={filters.user || ""}
           onChange={(e) => apply({ user: e.target.value || undefined })}
@@ -83,7 +83,7 @@ export function AuditFilters({
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="text-xs text-phoebe-anthracite/60">Du :</label>
+        <label className="text-xs text-phoebe-anthracite/70">Du :</label>
         <input
           type="date"
           value={filters.dateFrom || ""}
@@ -93,7 +93,7 @@ export function AuditFilters({
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="text-xs text-phoebe-anthracite/60">Au :</label>
+        <label className="text-xs text-phoebe-anthracite/70">Au :</label>
         <input
           type="date"
           value={filters.dateTo || ""}
@@ -105,7 +105,7 @@ export function AuditFilters({
       {(filters.table || filters.action || filters.user || filters.dateFrom || filters.dateTo) && (
         <a
           href="/admin/audit"
-          className="rounded-full border border-phoebe-pearl px-3 py-1.5 text-xs font-medium text-phoebe-anthracite/60 hover:bg-phoebe-green/10 hover:text-phoebe-green-deep"
+          className="rounded-full border border-phoebe-pearl px-3 py-1.5 text-xs font-medium text-phoebe-anthracite/70 hover:bg-phoebe-green/10 hover:text-phoebe-green-deep"
         >
           Réinitialiser
         </a>

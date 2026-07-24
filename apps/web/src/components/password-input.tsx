@@ -28,13 +28,13 @@ export function PasswordInput({
         required={required}
         minLength={minLength}
         autoFocus={autoFocus}
-        className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 pr-11 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/35 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
+        className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 pr-11 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
         placeholder={placeholder}
       />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-phoebe-anthracite/40 transition-colors hover:text-phoebe-anthracite/70"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-phoebe-anthracite/70 transition-colors hover:text-phoebe-anthracite"
         aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
       >
         {visible ? (

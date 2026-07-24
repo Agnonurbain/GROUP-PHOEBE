@@ -77,7 +77,7 @@ export default async function VerificationsPage() {
 
       <ScrollReveal variant="fade-up" delay={0.1}>
       <section>
-        <h2 className="mb-3 text-lg font-semibold text-phoebe-gold">
+        <h2 className="mb-3 text-lg font-semibold text-phoebe-gold-dark">
           En attente ({pending?.length ?? 0})
         </h2>
         {pending && pending.length > 0 ? (
@@ -95,13 +95,13 @@ export default async function VerificationsPage() {
                     <p className="font-medium text-phoebe-anthracite">
                       {user.nom}
                     </p>
-                    <p className="text-sm text-phoebe-anthracite/60">
+                    <p className="text-sm text-phoebe-anthracite/70">
                       {user.telephone || user.email}
                       {user.date_naissance &&
                         ` · Né(e) le ${new Date(user.date_naissance).toLocaleDateString("fr-FR")}`}
                     </p>
                     {age !== null && (
-                      <p className={`text-sm font-semibold ${sousAge ? "text-error" : "text-phoebe-anthracite/60"}`}>
+                      <p className={`text-sm font-semibold ${sousAge ? "text-error" : "text-phoebe-anthracite/70"}`}>
                         Âge : {age} ans
                         {sousAge && " — NON ÉLIGIBLE (min. 21 ans)"}
                       </p>
@@ -134,7 +134,7 @@ export default async function VerificationsPage() {
               )})}
           </div>
         ) : (
-          <p className="text-sm text-phoebe-anthracite/50">
+          <p className="text-sm text-phoebe-anthracite/70">
             Aucune vérification en attente.
           </p>
         )}
@@ -151,19 +151,19 @@ export default async function VerificationsPage() {
             <table className="w-full min-w-[500px] text-sm">
               <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
                 <tr>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Nom
                   </th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Contact
                   </th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Statut
                   </th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Traité par
                   </th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     Motif
                   </th>
                 </tr>

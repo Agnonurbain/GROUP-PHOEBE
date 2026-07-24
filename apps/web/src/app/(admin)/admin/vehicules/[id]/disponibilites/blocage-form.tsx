@@ -38,7 +38,7 @@ export function BlocageVehiculeForm({
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
-          <label htmlFor="bloc-v-debut" className="mb-1 block text-sm text-phoebe-anthracite/60">
+          <label htmlFor="bloc-v-debut" className="mb-1 block text-sm text-phoebe-anthracite/70">
             Début
           </label>
           <input
@@ -50,7 +50,7 @@ export function BlocageVehiculeForm({
           />
         </div>
         <div>
-          <label htmlFor="bloc-v-fin" className="mb-1 block text-sm text-phoebe-anthracite/60">
+          <label htmlFor="bloc-v-fin" className="mb-1 block text-sm text-phoebe-anthracite/70">
             Fin
           </label>
           <input
@@ -62,7 +62,7 @@ export function BlocageVehiculeForm({
           />
         </div>
         <div>
-          <label htmlFor="bloc-v-type" className="mb-1 block text-sm text-phoebe-anthracite/60">
+          <label htmlFor="bloc-v-type" className="mb-1 block text-sm text-phoebe-anthracite/70">
             Type
           </label>
           <select
@@ -79,7 +79,7 @@ export function BlocageVehiculeForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="bloc-v-recurrence" className="mb-1 block text-sm text-phoebe-anthracite/60">
+          <label htmlFor="bloc-v-recurrence" className="mb-1 block text-sm text-phoebe-anthracite/70">
             Récurrence
           </label>
           <select
@@ -95,7 +95,7 @@ export function BlocageVehiculeForm({
           </select>
         </div>
         <div>
-          <label htmlFor="bloc-v-recurrence-fin" className="mb-1 block text-sm text-phoebe-anthracite/60">
+          <label htmlFor="bloc-v-recurrence-fin" className="mb-1 block text-sm text-phoebe-anthracite/70">
             Jusqu&apos;au (récurrence)
           </label>
           <input
@@ -142,7 +142,7 @@ export function BlocageChauffeurForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="bloc-c-debut" className="mb-1 block text-sm text-phoebe-anthracite/60">
+          <label htmlFor="bloc-c-debut" className="mb-1 block text-sm text-phoebe-anthracite/70">
             Début
           </label>
           <input
@@ -154,7 +154,7 @@ export function BlocageChauffeurForm({
           />
         </div>
         <div>
-          <label htmlFor="bloc-c-fin" className="mb-1 block text-sm text-phoebe-anthracite/60">
+          <label htmlFor="bloc-c-fin" className="mb-1 block text-sm text-phoebe-anthracite/70">
             Fin
           </label>
           <input
@@ -169,7 +169,7 @@ export function BlocageChauffeurForm({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="bloc-c-recurrence" className="mb-1 block text-sm text-phoebe-anthracite/60">
+          <label htmlFor="bloc-c-recurrence" className="mb-1 block text-sm text-phoebe-anthracite/70">
             Récurrence
           </label>
           <select
@@ -185,7 +185,7 @@ export function BlocageChauffeurForm({
           </select>
         </div>
         <div>
-          <label htmlFor="bloc-c-recurrence-fin" className="mb-1 block text-sm text-phoebe-anthracite/60">
+          <label htmlFor="bloc-c-recurrence-fin" className="mb-1 block text-sm text-phoebe-anthracite/70">
             Jusqu&apos;au (récurrence)
           </label>
           <input

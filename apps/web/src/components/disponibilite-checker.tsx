@@ -36,14 +36,14 @@ export function DisponibiliteChecker({
 
   return (
     <div className="rounded-xl bg-phoebe-pearl p-4">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+      <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
         Vérifier la disponibilité
       </h2>
 
       <form action={handleSubmit} className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label htmlFor="dispo-debut" className="mb-1 block text-sm text-phoebe-anthracite/60">
+            <label htmlFor="dispo-debut" className="mb-1 block text-sm text-phoebe-anthracite/70">
               Du
             </label>
             <input
@@ -56,7 +56,7 @@ export function DisponibiliteChecker({
             />
           </div>
           <div>
-            <label htmlFor="dispo-fin" className="mb-1 block text-sm text-phoebe-anthracite/60">
+            <label htmlFor="dispo-fin" className="mb-1 block text-sm text-phoebe-anthracite/70">
               Au
             </label>
             <input

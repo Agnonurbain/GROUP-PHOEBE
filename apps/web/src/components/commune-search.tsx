@@ -88,7 +88,7 @@ export function CommuneSearch({
         <div className="absolute z-20 mt-1 max-h-60 w-full overflow-y-auto rounded-xl border border-phoebe-pearl bg-white shadow-lg">
           {[...grouped.entries()].map(([zone, items]) => (
             <div key={zone}>
-              <div className="sticky top-0 bg-phoebe-pearl/60 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-phoebe-anthracite/40">
+              <div className="sticky top-0 bg-phoebe-pearl/60 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-phoebe-anthracite/70">
                 {zone}
               </div>
               {items.map((c) => (
@@ -106,7 +106,7 @@ export function CommuneSearch({
           <button
             type="button"
             onClick={() => handleSelect("autre")}
-            className="w-full border-t border-phoebe-pearl px-3 py-2 text-left text-sm text-phoebe-anthracite/50 transition-colors hover:bg-phoebe-pearl"
+            className="w-full border-t border-phoebe-pearl px-3 py-2 text-left text-sm text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl"
           >
             Autre commune…
           </button>
@@ -115,7 +115,7 @@ export function CommuneSearch({
 
       {open && filtered.length === 0 && localQuery.length > 0 && (
         <div className="absolute z-20 mt-1 w-full rounded-xl border border-phoebe-pearl bg-white p-3 shadow-lg">
-          <p className="text-xs text-phoebe-anthracite/50">Aucune commune trouvée.</p>
+          <p className="text-xs text-phoebe-anthracite/70">Aucune commune trouvée.</p>
           <button
             type="button"
             onClick={() => handleSelect("autre")}

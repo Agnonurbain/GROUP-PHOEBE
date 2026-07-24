@@ -12,10 +12,10 @@ export const metadata: Metadata = {
 
 const STATUT_LABELS: Record<string, { label: string; color: string }> = {
   disponible: { label: "Disponible", color: "bg-phoebe-green/10 text-phoebe-green-deep" },
-  reserve: { label: "Réservé", color: "bg-phoebe-gold/10 text-phoebe-gold" },
+  reserve: { label: "Réservé", color: "bg-phoebe-gold/10 text-phoebe-gold-dark" },
   loue: { label: "Loué", color: "bg-blue-50 text-blue-700" },
   vendu: { label: "Vendu", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite" },
-  indisponible: { label: "Indisponible", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite/50" },
+  indisponible: { label: "Indisponible", color: "bg-phoebe-anthracite/10 text-phoebe-anthracite/70" },
 };
 
 
@@ -61,22 +61,22 @@ export default async function VehiculesListPage() {
           <table className="w-full min-w-[700px] text-sm">
             <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
               <tr>
-                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Photo
                 </th>
-                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Vehicule
                 </th>
-                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Categorie
                 </th>
-                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Prix/jour
                 </th>
-                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Localisation
                 </th>
-                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Statut
                 </th>
                 <th className="px-5 py-4" />
@@ -99,7 +99,7 @@ export default async function VehiculesListPage() {
                           />
                         </div>
                       ) : (
-                        <div className="flex h-10 w-14 items-center justify-center rounded-lg bg-phoebe-pearl text-xs text-phoebe-anthracite/30">
+                        <div className="flex h-10 w-14 items-center justify-center rounded-lg bg-phoebe-pearl text-xs text-phoebe-anthracite/70">
                           —
                         </div>
                       )}
@@ -109,7 +109,7 @@ export default async function VehiculesListPage() {
                         {v.marque} {v.modele}
                         {v.annee ? ` (${v.annee})` : ""}
                       </span>
-                      <span className="block text-xs text-phoebe-anthracite/40">
+                      <span className="block text-xs text-phoebe-anthracite/70">
                         {[
                           v.etat === "neuf" ? "Neuf" : "Occasion",
                           v.carburant,
@@ -126,7 +126,7 @@ export default async function VehiculesListPage() {
                         ? `${Number(v.prix_journalier).toLocaleString("fr-FR")} FCFA`
                         : "—"}
                     </td>
-                    <td className="px-5 py-3.5 text-xs text-phoebe-anthracite/50">
+                    <td className="px-5 py-3.5 text-xs text-phoebe-anthracite/70">
                       {v.localisation ?? "—"}
                     </td>
                     <td className="px-5 py-3.5">
@@ -152,7 +152,7 @@ export default async function VehiculesListPage() {
         </div>
         </ScrollReveal>
       ) : (
-        <p className="text-sm text-phoebe-anthracite/50">
+        <p className="text-sm text-phoebe-anthracite/70">
           Aucun vehicule enregistre.
         </p>
       )}

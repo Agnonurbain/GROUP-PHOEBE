@@ -27,7 +27,7 @@ export function TarifsTabs({
             className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-all ${
               active === tab.key
                 ? "bg-white text-phoebe-anthracite shadow-sm"
-                : "text-phoebe-anthracite/50 hover:text-phoebe-anthracite/70"
+                : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
             }`}
           >
             {tab.label}

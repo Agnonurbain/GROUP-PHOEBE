@@ -210,7 +210,7 @@ export function GeojsonEditor({
 
       {open && (
         <div className="mt-3 space-y-3 rounded-xl border border-phoebe-pearl bg-phoebe-pearl/10 p-4">
-          <p className="text-[11px] text-phoebe-anthracite/50">
+          <p className="text-[11px] text-phoebe-anthracite/70">
             Collez un GeoJSON de type Polygon ou MultiPolygon pour la zone «{" "}
             {zoneName} ». Coordonnées en [longitude, latitude].
           </p>
@@ -229,7 +229,7 @@ export function GeojsonEditor({
             />
 
             <div className="flex flex-col items-center gap-2">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-phoebe-anthracite/40">
+              <p className="text-[10px] font-medium uppercase tracking-wider text-phoebe-anthracite/70">
                 Aperçu
               </p>
               <CanvasPreview geojson={parsed} />

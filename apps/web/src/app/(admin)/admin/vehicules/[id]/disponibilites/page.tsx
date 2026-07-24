@@ -131,7 +131,7 @@ export default async function DisponibilitesPage({
           </h1>
           <Link
             href={`/admin/vehicules/${id}`}
-            className="text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
+            className="text-sm text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
           >
             ← Retour au véhicule
           </Link>
@@ -142,7 +142,7 @@ export default async function DisponibilitesPage({
         <CalendrierMensuel evenements={evenements} />
       </ScrollReveal>
 
-      <div className="flex flex-wrap gap-4 text-xs text-phoebe-anthracite/50">
+      <div className="flex flex-wrap gap-4 text-xs text-phoebe-anthracite/70">
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
           Réservation
@@ -169,7 +169,7 @@ export default async function DisponibilitesPage({
         />
 
         <div className="border-t border-phoebe-pearl pt-4">
-          <h3 className="mb-3 text-sm font-medium text-phoebe-anthracite/60">
+          <h3 className="mb-3 text-sm font-medium text-phoebe-anthracite/70">
             Ajouter un blocage
           </h3>
           <BlocageVehiculeForm vehiculeId={id} />
@@ -200,7 +200,7 @@ export default async function DisponibilitesPage({
               </div>
             ))
           ) : (
-            <p className="text-sm text-phoebe-anthracite/50">
+            <p className="text-sm text-phoebe-anthracite/70">
               L&apos;option chauffeur est activée mais aucun chauffeur n&apos;est affecté
               à ce véhicule. Affectez un ou plusieurs chauffeurs via le
               formulaire de modification pour gérer leurs disponibilités.

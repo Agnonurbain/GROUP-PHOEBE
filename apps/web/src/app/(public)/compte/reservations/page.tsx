@@ -139,7 +139,7 @@ export default async function CompteReservations({
         : allReservations.filter((r) => isActive(r.status))
 
   const statusStyle = (status: string) => {
-    if (["terminee", "termine", "finalise"].includes(status)) return { color: "text-[#6B7280]", label: "Terminé" }
+    if (["terminee", "termine", "finalise"].includes(status)) return { color: "text-public-text-muted", label: "Terminé" }
     if (["annulee", "annule", "refusee", "refuse"].includes(status)) return { color: "text-[#EF4444]", label: "Annulé" }
     return { color: "text-accent-orange", label: "En attente" }
   }
@@ -199,7 +199,7 @@ export default async function CompteReservations({
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <h3 className="text-base font-semibold text-public-text truncate">{r.title}</h3>
-                  <span className="shrink-0 text-sm text-[#6B7280]">{r.category}</span>
+                  <span className="shrink-0 text-sm text-public-text-muted">{r.category}</span>
                 </div>
                 <div className="mt-1 flex items-center gap-4 text-sm text-public-text-muted">
                   <span>{r.period}</span>

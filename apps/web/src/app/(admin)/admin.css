@@ -7,7 +7,9 @@
   --color-phoebe-green-pale: #E8F5E9;
   --color-phoebe-gold: #D38C37;
   --color-phoebe-gold-light: #E5A84A;
-  --color-phoebe-gold-dark: #A86B24;
+  /* Seule nuance d'or lisible en texte sur blanc/pearl : 5.7:1.
+     #D38C37 ne donne que 2.8:1, l'ancien #A86B24 que 4.4:1. */
+  --color-phoebe-gold-dark: #8F5A1E;
   --color-phoebe-gold-shimmer: #F4D06F;
   --color-phoebe-white: #FFFFFF;
   --color-phoebe-anthracite: #22282B;

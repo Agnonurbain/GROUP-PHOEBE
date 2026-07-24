@@ -222,7 +222,7 @@ export function MapboxEditor({
             </div>
           ) : (
             <>
-              <p className="text-[11px] text-phoebe-anthracite/50">
+              <p className="text-[11px] text-phoebe-anthracite/70">
                 Dessinez un polygone sur la carte pour définir la zone « {zoneName} ».
                 Utilisez les outils en haut à gauche pour tracer ou supprimer.
               </p>

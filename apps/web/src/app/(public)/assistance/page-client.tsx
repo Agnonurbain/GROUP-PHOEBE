@@ -39,7 +39,7 @@ function InteractiveCard({
       <div className={`transition-opacity duration-300 ${hovered ? "opacity-0" : "opacity-100"}`}>
         <h3 className="text-lg font-semibold text-public-text">{title}</h3>
         <p className="mt-2 text-sm text-public-text-muted">{desc}</p>
-        <span className="mt-3 inline-block text-sm font-medium text-accent-blue">
+        <span className="mt-3 inline-block text-sm font-medium text-accent-blue-on-dark">
           {countries.map((c) => c.name).join(" · ")}
         </span>
       </div>
@@ -55,7 +55,7 @@ function InteractiveCard({
             <Link
               key={c.slug}
               href={`/assistance/pays/${c.slug}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-accent-blue/30 bg-accent-blue/10 px-3 py-2 text-sm font-medium text-accent-blue transition-all hover:bg-accent-blue/20"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-accent-blue/30 bg-accent-blue/10 px-3 py-2 text-sm font-medium text-accent-blue-on-dark transition-all hover:bg-accent-blue/20"
             >
               <span className="text-lg">{c.flag}</span>
               <span>{c.name}</span>
@@ -111,8 +111,8 @@ export default function Assistance() {
                   <Badge variant="blue">{d.type}</Badge>
                 </div>
                 <h3 className="mt-3 text-lg font-semibold text-public-text">{d.name}</h3>
-                <p className="mt-1 text-3xl font-bold text-accent-blue">À partir de {d.price}</p>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-blue transition-all group-hover:gap-2">Voir l&apos;offre →</span>
+                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">À partir de {d.price}</p>
+                <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-blue-on-dark transition-all group-hover:gap-2">Voir l&apos;offre →</span>
               </Card>
             </Link>
           ))}

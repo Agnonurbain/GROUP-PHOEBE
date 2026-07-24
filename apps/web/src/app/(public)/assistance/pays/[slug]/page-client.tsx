@@ -122,7 +122,9 @@ export default function CountryDetail() {
         <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/40 via-accent-blue/20 to-black/90" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.3),transparent_60%)]" />
         <div className="relative z-10 flex flex-col items-center gap-4 px-6">
-          <span className="text-6xl md:text-7xl">{data.flag}</span>
+          <span role="img" aria-label={`Drapeau — ${data.name}`} className="text-6xl md:text-7xl">
+            {data.flag}
+          </span>
           <h1 className="text-4xl font-bold text-white md:text-5xl">Étudier en {data.name}</h1>
           <p className="text-base text-white/80 md:text-lg">{data.visa} — Délai estimé : {data.delay}</p>
         </div>
@@ -133,13 +135,13 @@ export default function CountryDetail() {
 
           <div className="mt-8 grid grid-cols-4 gap-4">
             {[
-              { label: "Délai", value: data.delay, color: "text-accent-blue" },
+              { label: "Délai", value: data.delay, color: "text-accent-blue-on-dark" },
               { label: "Prix", value: data.price, color: "text-accent-gold" },
-              { label: "Type", value: data.visa, color: "text-accent-blue" },
+              { label: "Type", value: data.visa, color: "text-accent-blue-on-dark" },
               { label: "Taux", value: `${data.success} succès`, color: "text-accent-green" },
             ].map((s) => (
               <div key={s.label} className="rounded-xl border border-public-border bg-public-bg-card p-4 text-center">
-                <p className="text-sm text-[#6B7280]">{s.label}</p>
+                <p className="text-sm text-public-text-muted">{s.label}</p>
                 <p className={`mt-1 text-sm font-bold md:text-base ${s.color}`}>{s.value}</p>
               </div>
             ))}
@@ -150,12 +152,12 @@ export default function CountryDetail() {
             <div className="mt-6 space-y-3">
               {["Passeport valide", "Photos d'identité", "Attestation d'inscription", "Justificatifs financiers", "Assurance médicale", "Lettre de motivation"].map((doc) => (
                 <div key={doc} className="flex items-center gap-3 text-sm text-public-text">
-                  <CheckIcon size={16} className="text-accent-blue" />
+                  <CheckIcon size={16} className="text-accent-blue-on-dark" />
                   {doc}
                 </div>
               ))}
             </div>
-            <Button variant="text-link" className="mt-4 text-accent-blue" onClick={downloadCb}>
+            <Button variant="text-link" className="mt-4 text-accent-blue-on-dark" onClick={downloadCb}>
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -187,7 +189,7 @@ export default function CountryDetail() {
                   <Badge variant="gold" className="absolute -top-2.5 right-4">Recommandé</Badge>
                 )}
                 <h3 className="text-base font-semibold text-public-text">{offer.name}</h3>
-                <p className="mt-1 text-3xl font-bold text-accent-blue">{offer.price}</p>
+                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">{offer.price}</p>
                 <ul className="mt-4 space-y-2">
                   {offer.features.map((f) => (
                       <li key={f} className="flex items-center gap-2 text-sm text-public-text-muted">
@@ -206,7 +208,7 @@ export default function CountryDetail() {
                       {pending ? "Traitement..." : "Choisir cette offre"}
                     </Button>
                   ) : (
-                    <Button type="submit" variant="default" size="sm" disabled={pending} className="mt-4 w-full border border-accent-blue text-accent-blue hover:bg-accent-blue/10">
+                    <Button type="submit" variant="ghost" size="sm" disabled={pending} className="mt-4 w-full border-accent-blue/60 text-accent-blue-on-dark hover:bg-accent-blue/10">
                       {pending ? "Traitement..." : "Choisir cette offre"}
                     </Button>
                   )}

@@ -19,7 +19,7 @@ export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
     <form ref={formRef} action={formAction} className="flex flex-wrap items-end gap-2">
       <input type="hidden" name="zone_id" value={zoneId} />
       <div>
-        <label className="mb-1 block text-xs text-phoebe-anthracite/60">Catégorie</label>
+        <label className="mb-1 block text-xs text-phoebe-anthracite/70">Catégorie</label>
         <select
           name="categorie_vehicule"
           required
@@ -31,7 +31,7 @@ export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
         </select>
       </div>
       <div>
-        <label className="mb-1 block text-xs text-phoebe-anthracite/60">Type</label>
+        <label className="mb-1 block text-xs text-phoebe-anthracite/70">Type</label>
         <select
           name="type"
           required
@@ -42,7 +42,7 @@ export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
         </select>
       </div>
       <div>
-        <label className="mb-1 block text-xs text-phoebe-anthracite/60">Min (FCFA)</label>
+        <label className="mb-1 block text-xs text-phoebe-anthracite/70">Min (FCFA)</label>
         <input
           name="prix_min"
           type="number"
@@ -54,7 +54,7 @@ export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
         />
       </div>
       <div>
-        <label className="mb-1 block text-xs text-phoebe-anthracite/60">Max (FCFA)</label>
+        <label className="mb-1 block text-xs text-phoebe-anthracite/70">Max (FCFA)</label>
         <input
           name="prix_max"
           type="number"

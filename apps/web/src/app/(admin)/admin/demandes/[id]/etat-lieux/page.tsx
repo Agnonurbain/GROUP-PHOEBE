@@ -38,7 +38,7 @@ export default async function EtatLieuxPage({
         <ScrollReveal variant="fade-up">
           <Link
             href="/admin/demandes"
-            className="inline-flex items-center gap-1.5 text-sm text-phoebe-anthracite/50 transition-colors hover:text-phoebe-green"
+            className="inline-flex items-center gap-1.5 text-sm text-phoebe-anthracite/70 transition-colors hover:text-phoebe-green"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
               <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -54,7 +54,7 @@ export default async function EtatLieuxPage({
         {demande.etat_lieux_depart_photos && (
           <ScrollReveal variant="fade-up" delay={0.1}>
           <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
-            <h3 className="mb-2 text-sm font-semibold text-phoebe-anthracite/60">
+            <h3 className="mb-2 text-sm font-semibold text-phoebe-anthracite/70">
               Départ enregistré
             </h3>
             <p className="text-sm text-phoebe-anthracite">
@@ -81,7 +81,7 @@ export default async function EtatLieuxPage({
         {demande.etat_lieux_retour_photos && (
           <ScrollReveal variant="fade-up" delay={0.15}>
           <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
-            <h3 className="mb-2 text-sm font-semibold text-phoebe-anthracite/60">
+            <h3 className="mb-2 text-sm font-semibold text-phoebe-anthracite/70">
               Retour enregistré
             </h3>
             <p className="text-sm text-phoebe-anthracite">

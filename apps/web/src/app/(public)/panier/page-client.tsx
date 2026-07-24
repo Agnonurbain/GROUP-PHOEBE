@@ -105,7 +105,7 @@ export default function Panier() {
                 <Button
                   variant="icon"
                   onClick={() => removeItem(item.groupKey)}
-                  className="text-[#6B7280] hover:bg-[rgba(239,68,68,0.1)] hover:text-[#EF4444]"
+                  className="text-public-text-muted hover:bg-[rgba(239,68,68,0.1)] hover:text-[#EF4444]"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -168,7 +168,7 @@ export default function Panier() {
                 <span className="text-public-text-muted">Caution totale</span>
                 <span className="text-3xl font-bold text-public-text">{cautionTotale.toLocaleString()} FCFA</span>
               </div>
-              <p className="text-sm text-[#6B7280]">(Caution remboursable sous 72h après restitution)</p>
+              <p className="text-sm text-public-text-muted">(Caution remboursable sous 72h après restitution)</p>
               <hr className="border-[#2A2A2A]" />
               <div className="flex justify-between">
                 <span className="text-sm font-bold text-public-text">Total à payer</span>
@@ -176,7 +176,7 @@ export default function Panier() {
               </div>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-3 text-sm text-[#6B7280]">
+            <div className="mt-4 flex flex-wrap gap-3 text-sm text-public-text-muted">
               <span className="flex items-center gap-1">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 Paiement sécurisé

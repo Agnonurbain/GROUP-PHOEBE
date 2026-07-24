@@ -38,7 +38,7 @@ export function Footer() {
             <Link href="/">
               <Image src="/logos/logo_g-phoebe.png" alt="GROUP PHOEBE" width={334} height={303} className="h-20 w-auto" />
             </Link>
-            <p className="text-sm text-[#6B7280]">Leader Excellence Brilliant.</p>
+            <p className="text-sm text-public-text-muted">Leader Excellence Brilliant.</p>
             <p className="text-xs text-public-text-faint">
               &copy; {new Date().getFullYear()} GROUP PHOEBE. Tous droits réservés.
             </p>
@@ -50,7 +50,7 @@ export function Footer() {
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="text-sm text-[#6B7280] transition-colors hover:text-public-text"
+                  className="text-sm text-public-text-muted transition-colors hover:text-public-text"
                 >
                   {link.label}
                 </Link>

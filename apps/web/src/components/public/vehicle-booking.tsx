@@ -80,7 +80,7 @@ export function VehicleBooking({
                         : defaultPrice.toLocaleString()}
                     </span>
                   </div>
-                  <div className="mt-2 flex items-center justify-between text-sm text-[#6B7280]">
+                  <div className="mt-2 flex items-center justify-between text-sm text-public-text-muted">
                     <span>FCFA / jour</span>
                     <span>{chauffeurDisponible ? "Chauffeur: Inclus" : "Sans chauffeur"}</span>
                   </div>
@@ -107,7 +107,7 @@ export function VehicleBooking({
             <h3 className="text-sm font-semibold text-public-text">Sélectionnez vos dates</h3>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="booking-start" className="text-xs text-[#6B7280]">Début</label>
+                <label htmlFor="booking-start" className="text-xs text-public-text-muted">Début</label>
                 <input
                   id="booking-start"
                   type="date"
@@ -118,7 +118,7 @@ export function VehicleBooking({
                 />
               </div>
               <div>
-                <label htmlFor="booking-end" className="text-xs text-[#6B7280]">Fin</label>
+                <label htmlFor="booking-end" className="text-xs text-public-text-muted">Fin</label>
                 <input
                   id="booking-end"
                   type="date"
@@ -135,7 +135,7 @@ export function VehicleBooking({
             Je réserve ce véhicule
           </Button>
 
-          <p className="mt-3 text-center text-3xl font-bold text-[#6B7280]">
+          <p className="mt-3 text-center text-3xl font-bold text-public-text-muted">
             {defaultPrice > 0 ? `À partir de ${defaultPrice.toLocaleString()} FCFA/jour` : "Contactez-nous pour un devis"}
           </p>
         </Card>

@@ -114,7 +114,7 @@ export default async function HistoriqueVerificationsPage() {
           <h1 className="mt-2 text-2xl font-bold text-phoebe-anthracite">
             Historique des vérifications
           </h1>
-          <p className="mt-1 text-sm text-phoebe-anthracite/60">
+          <p className="mt-1 text-sm text-phoebe-anthracite/70">
             {isProprietaire
               ? "Vue d'ensemble de toutes les vérifications traitées par l'équipe."
               : "Historique de vos vérifications traitées."}
@@ -126,18 +126,18 @@ export default async function HistoriqueVerificationsPage() {
       <ScrollReveal variant="fade-up" delay={0.1}>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm border-l-4 border-l-phoebe-anthracite/30">
-          <p className="text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/50">Total traitées</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/70">Total traitées</p>
           <p className="mt-2 text-3xl font-bold text-phoebe-anthracite">{total}</p>
         </div>
         <div className="rounded-2xl border border-phoebe-green/20 bg-phoebe-green/5 p-5 shadow-sm border-l-4 border-l-phoebe-green">
           <p className="text-xs font-semibold uppercase tracking-wider text-phoebe-green-deep">Validées</p>
           <p className="mt-2 text-3xl font-bold text-phoebe-green">{totalVerified}</p>
-          <p className="mt-1 text-xs text-phoebe-anthracite/50">{verifiedPct}%</p>
+          <p className="mt-1 text-xs text-phoebe-anthracite/70">{verifiedPct}%</p>
         </div>
         <div className="rounded-2xl border border-error/20 bg-error/5 p-5 shadow-sm border-l-4 border-l-error">
           <p className="text-xs font-semibold uppercase tracking-wider text-error">Rejetées</p>
           <p className="mt-2 text-3xl font-bold text-error">{totalRejected}</p>
-          <p className="mt-1 text-xs text-phoebe-anthracite/50">{rejectedPct}%</p>
+          <p className="mt-1 text-xs text-phoebe-anthracite/70">{rejectedPct}%</p>
         </div>
       </div>
       </ScrollReveal>
@@ -195,7 +195,7 @@ export default async function HistoriqueVerificationsPage() {
             const rejH = barH - verH;
             return (
               <div key={i} className="flex flex-1 flex-col items-center gap-1">
-                <span className="text-xs font-medium text-phoebe-anthracite/60">
+                <span className="text-xs font-medium text-phoebe-anthracite/70">
                   {m.verified + m.rejected || ""}
                 </span>
                 <div className="flex w-full flex-col items-center">
@@ -215,12 +215,12 @@ export default async function HistoriqueVerificationsPage() {
                     <div className="w-full max-w-8 rounded bg-phoebe-pearl" style={{ height: 4 }} />
                   )}
                 </div>
-                <span className="text-xs text-phoebe-anthracite/50">{m.label}</span>
+                <span className="text-xs text-phoebe-anthracite/70">{m.label}</span>
               </div>
             );
           })}
         </div>
-        <div className="mt-3 flex gap-4 text-xs text-phoebe-anthracite/60">
+        <div className="mt-3 flex gap-4 text-xs text-phoebe-anthracite/70">
           <span className="flex items-center gap-1">
             <span className="inline-block h-2 w-2 rounded-full bg-phoebe-green" /> Validées
           </span>
@@ -251,11 +251,11 @@ export default async function HistoriqueVerificationsPage() {
                       <span className="text-sm font-medium text-phoebe-anthracite">
                         {s.nom}
                       </span>
-                      <span className="rounded-full bg-phoebe-pearl px-2 py-0.5 text-xs text-phoebe-anthracite/60">
+                      <span className="rounded-full bg-phoebe-pearl px-2 py-0.5 text-xs text-phoebe-anthracite/70">
                         {roleLabel}
                       </span>
                     </div>
-                    <span className="text-sm text-phoebe-anthracite/60">
+                    <span className="text-sm text-phoebe-anthracite/70">
                       {staffTotal} ({s.verified}V / {s.rejected}R)
                     </span>
                   </div>
@@ -294,12 +294,12 @@ export default async function HistoriqueVerificationsPage() {
             <table className="w-full min-w-[600px] text-sm">
               <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
                 <tr>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Client</th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Contact</th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Statut</th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Traité par</th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Date</th>
-                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">Motif</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">Client</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">Contact</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">Statut</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">Traité par</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">Date</th>
+                  <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">Motif</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-phoebe-pearl/70">
@@ -357,7 +357,7 @@ export default async function HistoriqueVerificationsPage() {
       {items.length === 0 && (
         <ScrollReveal variant="fade-up" delay={0.15}>
           <div className="rounded-xl border border-phoebe-pearl bg-white p-8 text-center">
-            <p className="text-phoebe-anthracite/50">Aucune vérification traitée pour le moment.</p>
+            <p className="text-phoebe-anthracite/70">Aucune vérification traitée pour le moment.</p>
           </div>
         </ScrollReveal>
       )}

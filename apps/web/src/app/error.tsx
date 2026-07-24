@@ -24,7 +24,7 @@ export default function GlobalError({
       <h1 className="mt-4 text-xl font-bold text-phoebe-anthracite">
         Une erreur est survenue
       </h1>
-      <p className="mt-2 max-w-md text-sm text-phoebe-anthracite/60">
+      <p className="mt-2 max-w-md text-sm text-phoebe-anthracite/70">
         Quelque chose s&apos;est mal passé. Veuillez réessayer ou revenir à la page précédente.
       </p>
       <button

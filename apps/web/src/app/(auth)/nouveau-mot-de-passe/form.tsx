@@ -26,7 +26,7 @@ export default function NouveauMotDePasseForm() {
       <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl text-center">
         Nouveau mot de passe
       </h1>
-      <p className="mt-2 mb-8 text-center text-sm text-phoebe-anthracite/60">
+      <p className="mt-2 mb-8 text-center text-sm text-phoebe-anthracite/70">
         Choisissez votre nouveau mot de passe.
       </p>
 

@@ -70,7 +70,7 @@ export default async function AdminShellLayout({
             className="h-14 w-auto object-contain"
             quality={85}
           />
-          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold">
+          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold-dark">
             Back-office · {isProprietaire ? "Propriétaire" : "Opérateur"}
           </p>
         </div>
@@ -122,7 +122,7 @@ export default async function AdminShellLayout({
 
         {/* Bottom branding */}
         <div className="border-t border-phoebe-pearl px-5 py-3">
-          <p className="text-[9px] font-medium tracking-[0.12em] text-phoebe-anthracite/30">
+          <p className="text-[9px] font-medium tracking-[0.12em] text-phoebe-anthracite/70">
             GROUP PHOEBE &copy; {new Date().getFullYear()}
           </p>
         </div>
@@ -142,7 +142,7 @@ export default async function AdminShellLayout({
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-phoebe-anthracite/35">
+    <h2 className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-phoebe-anthracite/70">
       {children}
     </h2>
   );

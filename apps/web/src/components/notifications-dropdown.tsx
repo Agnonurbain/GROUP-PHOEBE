@@ -46,7 +46,7 @@ export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-xl text-phoebe-anthracite/60 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-anthracite"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-anthracite"
         aria-label="Notifications"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -78,7 +78,7 @@ export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props
 
           <div className="max-h-80 overflow-y-auto">
             {recentes.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-phoebe-anthracite/40">
+              <div className="px-4 py-8 text-center text-sm text-phoebe-anthracite/70">
                 Aucune notification
               </div>
             ) : (
@@ -92,13 +92,13 @@ export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props
                   >
                     <div className={`mt-1 h-2 w-2 shrink-0 rounded-full ${!n.lue ? "bg-phoebe-green" : "bg-transparent"}`} />
                     <div className="min-w-0 flex-1">
-                      <p className={`truncate text-sm ${!n.lue ? "font-medium text-phoebe-anthracite" : "text-phoebe-anthracite/60"}`}>
+                      <p className={`truncate text-sm ${!n.lue ? "font-medium text-phoebe-anthracite" : "text-phoebe-anthracite/70"}`}>
                         {n.titre}
                       </p>
-                      <p className="mt-0.5 truncate text-xs text-phoebe-anthracite/40">
+                      <p className="mt-0.5 truncate text-xs text-phoebe-anthracite/70">
                         {n.message}
                       </p>
-                      <p className="mt-0.5 text-[10px] text-phoebe-anthracite/30">
+                      <p className="mt-0.5 text-[10px] text-phoebe-anthracite/70">
                         {formatRelativeTime(n.created_at)}
                       </p>
                     </div>

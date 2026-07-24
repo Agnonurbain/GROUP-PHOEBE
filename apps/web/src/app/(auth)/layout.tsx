@@ -26,7 +26,7 @@ export default function AuthLayout({
           <div className="w-full max-w-md">
             <Link
               href="/"
-              className="mb-8 inline-flex items-center gap-1.5 text-sm text-phoebe-anthracite/50 transition-colors duration-200 hover:text-phoebe-green"
+              className="mb-8 inline-flex items-center gap-1.5 text-sm text-phoebe-anthracite/70 transition-colors duration-200 hover:text-phoebe-green"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="shrink-0">
                 <path d="M10 12L6 8L10 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
