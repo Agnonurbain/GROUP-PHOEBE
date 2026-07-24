@@ -36,6 +36,22 @@ jobs:
         run: |
           set -euo pipefail
 
+          # Message explicite plutot que l'erreur brute du CLI : sans ces
+          # secrets le job echoue a `supabase link` sur un « Access token not
+          # provided » qui n'indique pas quoi faire.
+          manquants=""
+          [ -z "${SUPABASE_ACCESS_TOKEN:-}" ] && manquants="$manquants SUPABASE_ACCESS_TOKEN"
+          [ -z "${PROJECT_ID:-}" ]            && manquants="$manquants SUPABASE_PROJECT_ID"
+          [ -z "${SUPABASE_DB_PASSWORD:-}" ]  && manquants="$manquants SUPABASE_DB_PASSWORD"
+
+          if [ -n "$manquants" ]; then
+            echo "::error::Secrets de depot manquants :$manquants"
+            echo ""
+            echo "Settings > Secrets and variables > Actions. Sans eux, la"
+            echo "derive entre le depot et la base distante n'est pas surveillee."
+            exit 1
+          fi
+
           supabase link --project-ref "$PROJECT_ID"
 
           # --output-format json emet du JSON pur, mais les lignes de statut
