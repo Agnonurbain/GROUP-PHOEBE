@@ -25,14 +25,14 @@ export function MaintenanceSection({
         </h2>
         <Link
           href={`/admin/vehicules/${vehiculeId}/disponibilites`}
-          className="rounded-lg bg-phoebe-gold/10 px-3 py-1.5 text-xs font-semibold text-phoebe-gold hover:bg-phoebe-gold/20 transition-colors"
+          className="rounded-lg bg-phoebe-gold/10 px-3 py-1.5 text-xs font-semibold text-phoebe-gold-dark hover:bg-phoebe-gold/20 transition-colors"
         >
           Planifier une maintenance
         </Link>
       </div>
 
       {maintenances.length === 0 ? (
-        <p className="text-sm text-phoebe-anthracite/50">
+        <p className="text-sm text-phoebe-anthracite/70">
           Aucune maintenance enregistrée.
         </p>
       ) : (
@@ -45,7 +45,7 @@ export function MaintenanceSection({
                 className="flex items-center justify-between rounded-lg border border-phoebe-pearl px-4 py-3"
               >
                 <div className="flex items-center gap-3">
-                  <span className="rounded-full bg-phoebe-gold/10 px-2.5 py-0.5 text-xs font-medium text-phoebe-gold">
+                  <span className="rounded-full bg-phoebe-gold/10 px-2.5 py-0.5 text-xs font-medium text-phoebe-gold-dark">
                     Maintenance
                   </span>
                   <span className="text-sm text-phoebe-anthracite">

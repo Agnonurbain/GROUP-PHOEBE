@@ -136,10 +136,10 @@ export function EtatLieuxForm({
 
         {type === "retour" && coutCarburant > 0 && (
           <div className="rounded-lg border border-phoebe-gold/20 bg-phoebe-gold/5 px-4 py-3">
-            <p className="text-sm font-medium text-phoebe-gold">
+            <p className="text-sm font-medium text-phoebe-gold-dark">
               Carburant manquant : {litresManquants.toFixed(1)} L — {coutCarburant.toLocaleString("fr-FR")} FCFA
             </p>
-            <p className="mt-0.5 text-xs text-phoebe-anthracite/50">
+            <p className="mt-0.5 text-xs text-phoebe-anthracite/70">
               Départ {CARBURANT_OPTIONS.find((o) => o.value === carburantDepart)?.label ?? carburantDepart} → Retour {CARBURANT_OPTIONS.find((o) => o.value === carburantRetour)?.label ?? carburantRetour} · {PRIX_LITRE_FCFA} FCFA/L · réservoir {CAPACITE_RESERVOIR_L} L
             </p>
           </div>
@@ -171,7 +171,7 @@ export function EtatLieuxForm({
               defaultValue={0}
               className={inputClass}
             />
-            <p className="mt-1 text-xs text-phoebe-anthracite/50">
+            <p className="mt-1 text-xs text-phoebe-anthracite/70">
               Caution totale : {cautionMax.toLocaleString("fr-FR")} FCFA — saisissez 0 pour libération intégrale
             </p>
           </div>

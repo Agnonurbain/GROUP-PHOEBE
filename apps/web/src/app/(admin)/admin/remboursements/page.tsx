@@ -42,7 +42,7 @@ export default async function RemboursementsPage() {
             <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
               Remboursements à traiter
             </h1>
-            <p className="mt-2 text-sm text-phoebe-anthracite/55">
+            <p className="mt-2 text-sm text-phoebe-anthracite/70">
               Remboursements en attente : paiements tardifs, refus, annulations,
               ou libération de caution (CinetPay). À traiter manuellement.
             </p>
@@ -63,7 +63,7 @@ export default async function RemboursementsPage() {
         {!paiements || paiements.length === 0 ? (
           <ScrollReveal variant="fade-up" delay={0.1}>
             <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
-              <p className="text-phoebe-anthracite/45">Aucun remboursement en attente.</p>
+              <p className="text-phoebe-anthracite/70">Aucun remboursement en attente.</p>
             </div>
           </ScrollReveal>
         ) : (
@@ -71,7 +71,7 @@ export default async function RemboursementsPage() {
           <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
             <table className="w-full min-w-[700px] text-sm">
               <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
-                <tr className="text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <tr className="text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   <th scope="col" className="px-5 py-4">Date</th>
                   <th scope="col" className="px-5 py-4">Module</th>
                   <th scope="col" className="px-5 py-4">Méthode</th>
@@ -112,10 +112,10 @@ export default async function RemboursementsPage() {
                     <td className="px-5 py-3.5 font-semibold text-phoebe-anthracite">
                       {Number(p.montant).toLocaleString("fr-FR")} FCFA
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-xs text-phoebe-anthracite/50">
+                    <td className="px-5 py-3.5 font-mono text-xs text-phoebe-anthracite/70">
                       {p.id.slice(0, 8)}
                     </td>
-                    <td className="px-5 py-3.5 font-mono text-xs text-phoebe-anthracite/50">
+                    <td className="px-5 py-3.5 font-mono text-xs text-phoebe-anthracite/70">
                       {p.reference_id.slice(0, 8)}
                     </td>
                     <td className="py-3">
@@ -139,7 +139,7 @@ export default async function RemboursementsPage() {
             <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
               <table className="w-full text-sm">
                 <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
-                  <tr className="text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                  <tr className="text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                     <th scope="col" className="px-5 py-4">Date</th>
                     <th scope="col" className="px-5 py-4">Méthode</th>
                     <th scope="col" className="px-5 py-4">Montant</th>
@@ -148,7 +148,7 @@ export default async function RemboursementsPage() {
                 </thead>
                 <tbody className="divide-y divide-phoebe-pearl/70">
                   {traites.map((p) => (
-                    <tr key={p.id} className="text-phoebe-anthracite/50 transition-colors hover:bg-phoebe-pearl/40">
+                    <tr key={p.id} className="text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl/40">
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         {new Date(p.created_at).toLocaleDateString("fr-FR", {
                           day: "2-digit",

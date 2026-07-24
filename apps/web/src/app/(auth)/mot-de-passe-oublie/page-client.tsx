@@ -40,7 +40,7 @@ export default function MotDePasseOubliePage() {
       <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">
         Mot de passe oublie
       </h1>
-      <p className="mt-2 mb-8 text-sm leading-relaxed text-phoebe-anthracite/60">
+      <p className="mt-2 mb-8 text-sm leading-relaxed text-phoebe-anthracite/70">
         {mode === "phone"
           ? "Saisissez votre numero de telephone pour recevoir un code de reinitialisation par SMS."
           : "Saisissez votre adresse email pour recevoir un lien de reinitialisation."}
@@ -68,7 +68,7 @@ export default function MotDePasseOubliePage() {
           className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
             mode === "phone"
               ? "bg-phoebe-green text-white shadow-md shadow-phoebe-green/25"
-              : "text-phoebe-anthracite/60 hover:text-phoebe-anthracite"
+              : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
           }`}
         >
           Par SMS
@@ -79,7 +79,7 @@ export default function MotDePasseOubliePage() {
           className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
             mode === "email"
               ? "bg-phoebe-green text-white shadow-md shadow-phoebe-green/25"
-              : "text-phoebe-anthracite/60 hover:text-phoebe-anthracite"
+              : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
           }`}
         >
           Par email
@@ -105,7 +105,7 @@ export default function MotDePasseOubliePage() {
               pattern="[+][0-9]{7,15}"
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
-              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/35 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
+              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
               placeholder="+225 XX XX XX XX XX"
             />
           </div>
@@ -123,7 +123,7 @@ export default function MotDePasseOubliePage() {
               type="email"
               required
               autoFocus
-              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/35 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
+              className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
               placeholder="votre@email.com"
             />
           </div>
@@ -137,7 +137,7 @@ export default function MotDePasseOubliePage() {
       {mode === "phone" && (
         <div className="mt-6 text-center">
           {cooldown > 0 ? (
-            <p className="text-xs text-phoebe-anthracite/40">
+            <p className="text-xs text-phoebe-anthracite/70">
               Renvoyer le code dans {cooldown}s
             </p>
           ) : (
@@ -170,7 +170,7 @@ export default function MotDePasseOubliePage() {
         <div className="h-px flex-1 bg-phoebe-anthracite/10" />
       </div>
 
-      <p className="mt-6 text-center text-sm text-phoebe-anthracite/60">
+      <p className="mt-6 text-center text-sm text-phoebe-anthracite/70">
         <Link
           href="/connexion"
           className="font-semibold text-phoebe-green transition-colors duration-200 hover:text-phoebe-green-deep"

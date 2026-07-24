@@ -7,7 +7,8 @@
   --color-public-border: #2A2A2A;
   --color-public-text: #F5F5F5;
   --color-public-text-muted: #8A8A8A;
-  --color-public-text-faint: #4A4A4A;
+  /* #4A4A4A ne donnait que 2.2:1 sur #0A0A0A : illisible. 5.1:1 ici. */
+  --color-public-text-faint: #818181;
   --color-accent-gold: #C9A84C;
   --color-accent-gold-hover: #B8943A;
   --color-accent-orange: #F97316;
@@ -16,6 +17,8 @@
   --color-accent-green-hover: #047857;
   --color-accent-blue: #2563EB;
   --color-accent-blue-hover: #1D4ED8;
+  /* Variante lisible du bleu en texte sur fond sombre (#2563EB = 3.8:1, insuffisant) */
+  --color-accent-blue-on-dark: #60A5FA;
 
   --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
 }
@@ -31,7 +34,7 @@
   --public-border: #2A2A2A;
   --public-text: #F5F5F5;
   --public-text-muted: #8A8A8A;
-  --public-text-faint: #4A4A4A;
+  --public-text-faint: #818181;
 
   --accent-gold: #C9A84C;
   --accent-gold-hover: #B8943A;
@@ -69,16 +72,40 @@ table {
   font-variant-numeric: tabular-nums;
 }
 
+/* --- Cibles d'ancre : ne pas passer sous le header sticky (h-16) --- */
+[data-vertical] [id] {
+  scroll-margin-top: 5.5rem;
+}
+
+/* --- Focus clavier : un seul anneau, aux couleurs de la verticale active --- */
+:where(a, button, [role="button"], input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary, #C9A84C);
+  outline-offset: 2px;
+}
+
+/* Les champs gardent en plus leur halo (l'outline seul se perd sur une bordure) */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  border-color: var(--color-primary, #C9A84C);
+  box-shadow: 0 0 0 3px var(--color-primary-glow, rgba(201, 168, 76, 0.3));
+}
+
 button,
 [role="button"] {
   cursor: pointer;
   transition: transform 150ms ease, opacity 150ms ease;
-  will-change: transform;
 }
 
 button:not(:disabled):active,
 [role="button"]:not(:disabled):active {
   transform: scale(0.97);
+}
+
+button:disabled,
+[role="button"][aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 a {
@@ -91,16 +118,28 @@ textarea {
   transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: none;
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+/* --- Lien d'évitement : visible uniquement au clavier --- */
+.skip-link {
+  position: fixed;
+  left: 0.75rem;
+  top: -100%;
+  z-index: 100;
+  border-radius: 0.5rem;
+  background: var(--color-primary, #C9A84C);
+  color: #0A0A0A;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition: top 150ms ease;
+}
+
+.skip-link:focus-visible {
+  top: 0.75rem;
 }
 
 ::selection {
-  background: rgba(99, 102, 241, 0.15);
+  background: var(--color-primary-glow, rgba(201, 168, 76, 0.3));
+  color: inherit;
 }
 
 [data-in-view] > * {
@@ -135,6 +174,12 @@ textarea:focus-visible {
 
 .animate-fade-in {
   animation: fade-in 400ms ease-out;
+}
+
+/* Le public est entièrement sombre : scrollbars, autofill et contrôles natifs
+   doivent suivre, sinon ils s'affichent en clair sur #0A0A0A. */
+[data-vertical] {
+  color-scheme: dark;
 }
 
 /* Vertical theme overrides */

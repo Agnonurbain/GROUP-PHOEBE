@@ -301,7 +301,7 @@ export default function PaiementPage() {
                 onChange={handleDestinationChange}
                 onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
                 autoComplete="off"
-                className="w-full rounded-xl border border-public-border bg-[#0A0A0A] px-4 py-2.5 text-sm text-public-text placeholder:text-[#6B7280] focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30"
+                className="w-full rounded-xl border border-public-border bg-[#0A0A0A] px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-muted focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30"
               />
               {showSuggestions && suggestions.length > 0 && (
                 <div

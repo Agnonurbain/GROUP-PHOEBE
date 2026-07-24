@@ -73,7 +73,7 @@ export default async function PlanningPage() {
             <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
               Planning
             </h1>
-            <p className="mt-1 text-sm text-phoebe-anthracite/55">
+            <p className="mt-1 text-sm text-phoebe-anthracite/70">
               Vue calendaire globale — réservations, maintenances et blocages
             </p>
           </div>
@@ -84,7 +84,7 @@ export default async function PlanningPage() {
         <CalendrierMensuel evenements={allEvenements} />
       </ScrollReveal>
 
-      <div className="flex flex-wrap gap-4 text-xs text-phoebe-anthracite/50">
+      <div className="flex flex-wrap gap-4 text-xs text-phoebe-anthracite/70">
         <span className="flex items-center gap-1.5">
           <span className="inline-block h-2.5 w-2.5 rounded-full bg-blue-500" />
           Réservation
@@ -104,13 +104,13 @@ export default async function PlanningPage() {
           <table className="w-full min-w-[600px] text-sm">
             <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
               <tr>
-                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Véhicule
                 </th>
-                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Catégorie
                 </th>
-                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/50">
+                <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Événements
                 </th>
               </tr>
@@ -152,13 +152,13 @@ export default async function PlanningPage() {
                             );
                           })}
                           {evts.length > 5 && (
-                            <span className="text-[10px] text-phoebe-anthracite/40">
+                            <span className="text-[10px] text-phoebe-anthracite/70">
                               +{evts.length - 5}
                             </span>
                           )}
                         </div>
                       ) : (
-                        <span className="text-sm text-phoebe-anthracite/40">—</span>
+                        <span className="text-sm text-phoebe-anthracite/70">—</span>
                       )}
                     </td>
                   </tr>

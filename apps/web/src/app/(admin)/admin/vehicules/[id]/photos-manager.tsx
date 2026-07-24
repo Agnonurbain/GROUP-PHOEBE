@@ -118,7 +118,7 @@ export default function PhotosManager({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-phoebe-anthracite/50">
+        <p className="text-sm text-phoebe-anthracite/70">
           Aucune photo pour ce véhicule.
         </p>
       )}

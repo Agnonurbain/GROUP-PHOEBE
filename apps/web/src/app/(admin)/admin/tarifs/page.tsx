@@ -83,7 +83,7 @@ export default async function TarifsPage() {
         <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
           Zones &amp; Tarifs
         </h1>
-        <p className="mt-1 text-sm text-phoebe-anthracite/50">
+        <p className="mt-1 text-sm text-phoebe-anthracite/70">
           Pilotez vos marges en ajustant les coefficients par zone. Les prix finaux sont
           calcules automatiquement depuis le prix de base de chaque vehicule.
         </p>
@@ -99,12 +99,12 @@ export default async function TarifsPage() {
                     <thead>
                       <tr className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
                         <th className="px-4 py-3 text-left font-semibold text-phoebe-anthracite">Zone</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/60">Coeff. prix</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/60">Caution x</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/60">KM/jour</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/60">Supp. km</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/60">Chauffeur</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/60">Tarif chauf.</th>
+                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Coeff. prix</th>
+                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Caution x</th>
+                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">KM/jour</th>
+                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Supp. km</th>
+                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Chauffeur</th>
+                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Tarif chauf.</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -113,19 +113,19 @@ export default async function TarifsPage() {
                           <td className="px-4 py-3">
                             <span className="font-medium text-phoebe-anthracite">{z.nom}</span>
                             {z.description && (
-                              <span className="ml-2 text-xs text-phoebe-anthracite/40">{z.description}</span>
+                              <span className="ml-2 text-xs text-phoebe-anthracite/70">{z.description}</span>
                             )}
                           </td>
                           <td className="px-4 py-3 text-right font-semibold text-phoebe-green tabular-nums">
                             x{z.coefficient_majoration.toFixed(2)}
                           </td>
-                          <td className="px-4 py-3 text-right tabular-nums text-phoebe-anthracite/60">
+                          <td className="px-4 py-3 text-right tabular-nums text-phoebe-anthracite/70">
                             x{z.caution_multiplicateur.toFixed(1)}
                           </td>
-                          <td className="px-4 py-3 text-right tabular-nums text-phoebe-anthracite/60">
+                          <td className="px-4 py-3 text-right tabular-nums text-phoebe-anthracite/70">
                             {z.km_inclus_par_jour}
                           </td>
-                          <td className="px-4 py-3 text-right tabular-nums text-phoebe-anthracite/60">
+                          <td className="px-4 py-3 text-right tabular-nums text-phoebe-anthracite/70">
                             {z.supplement_km_fcfa.toLocaleString("fr-FR")} F
                           </td>
                           <td className="px-4 py-3 text-right">
@@ -133,13 +133,13 @@ export default async function TarifsPage() {
                               z.chauffeur_statut === "obligatoire"
                                 ? "bg-error/10 text-error"
                                 : z.chauffeur_statut === "recommande"
-                                  ? "bg-phoebe-gold/10 text-phoebe-gold"
-                                  : "bg-phoebe-pearl text-phoebe-anthracite/50"
+                                  ? "bg-phoebe-gold/10 text-phoebe-gold-dark"
+                                  : "bg-phoebe-pearl text-phoebe-anthracite/70"
                             }`}>
                               {z.chauffeur_statut}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-right tabular-nums text-phoebe-anthracite/60">
+                          <td className="px-4 py-3 text-right tabular-nums text-phoebe-anthracite/70">
                             {z.tarif_chauffeur_journalier.toLocaleString("fr-FR")} F/j
                           </td>
                         </tr>
@@ -171,7 +171,7 @@ export default async function TarifsPage() {
                 ))}
 
                 <div className="rounded-xl border border-phoebe-pearl/60 bg-phoebe-pearl/20 px-4 py-3">
-                  <p className="text-xs text-phoebe-anthracite/40">
+                  <p className="text-xs text-phoebe-anthracite/70">
                     Seul le proprietaire peut modifier ces parametres. Chaque modification est enregistree dans le journal d&apos;audit.
                   </p>
                 </div>
@@ -225,7 +225,7 @@ export default async function TarifsPage() {
                 />
 
                 <div>
-                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
                     Intervalles de prix par zone
                   </h3>
                   <div className="space-y-4">
@@ -252,7 +252,7 @@ export default async function TarifsPage() {
                 </div>
 
                 <div>
-                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/40">
+                  <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
                     Communes par zone
                   </h3>
                   <div className="space-y-4">
@@ -267,7 +267,7 @@ export default async function TarifsPage() {
                         >
                           <h4 className="mb-2 text-sm font-semibold text-phoebe-anthracite">
                             {z.nom}
-                            <span className="ml-2 text-xs font-normal text-phoebe-anthracite/40">
+                            <span className="ml-2 text-xs font-normal text-phoebe-anthracite/70">
                               ({zoneCommunes.length} commune{zoneCommunes.length > 1 ? "s" : ""})
                             </span>
                           </h4>

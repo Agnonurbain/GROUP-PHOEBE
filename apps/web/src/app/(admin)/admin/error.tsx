@@ -28,7 +28,7 @@ export default function AdminError({
       <h2 className="mt-5 text-xl font-bold text-phoebe-anthracite">
         Erreur dans le back-office
       </h2>
-      <p className="mt-2 text-sm text-phoebe-anthracite/55">
+      <p className="mt-2 text-sm text-phoebe-anthracite/70">
         Impossible de charger cette page. Veuillez réessayer.
       </p>
       <Button variant="admin" onClick={reset} className="mt-6">

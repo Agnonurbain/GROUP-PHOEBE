@@ -36,14 +36,14 @@ export function PublicFooter() {
         <div className="flex flex-wrap gap-16">
           <div className="flex w-64 flex-col gap-4">
             <PhoebeLogo className="h-8 w-auto" />
-            <p className="text-sm text-[#6B7280]">Leader Excellence Brilliant.</p>
+            <p className="text-sm text-public-text-muted">Leader Excellence Brilliant.</p>
             <p className="text-xs text-public-text-faint">© 2024 GROUP PHOEBE. Tous droits réservés.</p>
           </div>
           {columns.map((col) => (
             <div key={col.title} className="flex flex-col gap-3">
               <span className="text-sm font-semibold text-public-text">{col.title}</span>
               {col.links.map((link) => (
-                <Link key={link.label} href={link.href} className="text-sm text-[#6B7280] transition-colors hover:text-public-text">
+                <Link key={link.label} href={link.href} className="text-sm text-public-text-muted transition-colors hover:text-public-text">
                   {link.label}
                 </Link>
               ))}

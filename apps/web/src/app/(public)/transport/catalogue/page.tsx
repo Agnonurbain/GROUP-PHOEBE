@@ -123,7 +123,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
           <SearchIcon size={32} className="text-public-text-faint" />
         </div>
         <p className="text-lg font-semibold text-public-text">Aucun résultat pour ces filtres</p>
-        <p className="text-sm text-[#6B7280]">Essayez d&apos;élargir vos critères ou de réinitialiser les filtres.</p>
+        <p className="text-sm text-public-text-muted">Essayez d&apos;élargir vos critères ou de réinitialiser les filtres.</p>
       </div>
     )
   }

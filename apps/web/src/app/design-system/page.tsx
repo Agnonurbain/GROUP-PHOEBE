@@ -13,7 +13,7 @@ export default function DesignSystem() {
           <p className="text-3xl font-semibold text-[#F5F5F5]">H2 — Inter SemiBold 36px — Notre Flotte de Véhicules</p>
           <p className="text-2xl font-semibold text-[#F5F5F5]">H3 — Inter SemiBold 24px — Toyota Prado V6</p>
           <p className="text-base text-[#8A8A8A]">Body — Inter Regular 16px — Découvrez nos véhicules d&apos;exception.</p>
-          <p className="text-xs font-medium text-[#4A4A4A]">Caption — Inter Medium 12px — Métadonnées et labels</p>
+          <p className="text-xs font-medium text-public-text-faint">Caption — Inter Medium 12px — Métadonnées et labels</p>
         </div>
       </section>
     </div>

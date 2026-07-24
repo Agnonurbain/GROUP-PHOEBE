@@ -90,7 +90,7 @@ export function CalendrierMensuel({ evenements }: Props) {
         </Button>
       </div>
 
-      <div className="mb-1 grid grid-cols-7 text-center text-xs font-medium text-phoebe-anthracite/40">
+      <div className="mb-1 grid grid-cols-7 text-center text-xs font-medium text-phoebe-anthracite/70">
         {JOURS.map((j) => (
           <div key={j} className="py-1">{j}</div>
         ))}
@@ -129,7 +129,7 @@ export function CalendrierMensuel({ evenements }: Props) {
                   </div>
                 ))}
                 {dayEvents.length > 3 && (
-                  <div className="text-[10px] text-phoebe-anthracite/40">
+                  <div className="text-[10px] text-phoebe-anthracite/70">
                     +{dayEvents.length - 3}
                   </div>
                 )}

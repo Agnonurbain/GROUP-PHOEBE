@@ -23,7 +23,7 @@ export function VerificationActions({ userId, sousAge }: { userId: string; sousA
               type="checkbox"
               checked={derogation}
               onChange={(e) => setDerogation(e.target.checked)}
-              className="rounded border-error/30 text-phoebe-gold focus:ring-phoebe-gold"
+              className="rounded border-error/30 text-phoebe-gold-dark focus:ring-phoebe-gold"
             />
             <label htmlFor={`derog-${userId}`} className="text-[10px] font-medium text-error">
               Dérogation exceptionnelle
@@ -72,7 +72,7 @@ export function VerificationActions({ userId, sousAge }: { userId: string; sousA
             <h3 className="text-lg font-semibold text-phoebe-anthracite">
               Motif du rejet
             </h3>
-            <p className="mt-1 text-sm text-phoebe-anthracite/60">
+            <p className="mt-1 text-sm text-phoebe-anthracite/70">
               Le client verra cette raison sur son profil.
             </p>
             <textarea
@@ -80,7 +80,7 @@ export function VerificationActions({ userId, sousAge }: { userId: string; sousA
               onChange={(e) => setMotif(e.target.value)}
               placeholder="Ex : Photo de la pièce d'identité illisible..."
               rows={3}
-              className="mt-3 w-full rounded-lg border border-phoebe-pearl px-3 py-2 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/40 focus:border-phoebe-green focus:outline-none focus:ring-1 focus:ring-phoebe-green"
+              className="mt-3 w-full rounded-lg border border-phoebe-pearl px-3 py-2 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 focus:border-phoebe-green focus:outline-none focus:ring-1 focus:ring-phoebe-green"
             />
             <div className="mt-4 flex justify-end gap-3">
               <Button variant="admin-ghost" onClick={() => { setShowRejet(false); setMotif(""); }}>

@@ -16,8 +16,13 @@ export default async function PublicLayout({ children }: { children: React.React
 
   return (
     <VerticalLayout>
+      <a href="#contenu" className="skip-link">
+        Aller au contenu principal
+      </a>
       <SmartHeader session={session} />
-      <main className="flex-1">{children}</main>
+      <main id="contenu" tabIndex={-1} className="flex-1">
+        {children}
+      </main>
       <Footer />
     </VerticalLayout>
   )

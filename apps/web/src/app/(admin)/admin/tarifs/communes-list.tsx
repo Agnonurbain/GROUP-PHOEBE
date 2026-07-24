@@ -15,7 +15,7 @@ export function CommunesList({ communes }: { communes: Commune[] }) {
 
   if (communes.length === 0) {
     return (
-      <p className="text-sm text-phoebe-anthracite/40">Aucune commune.</p>
+      <p className="text-sm text-phoebe-anthracite/70">Aucune commune.</p>
     );
   }
 
@@ -28,7 +28,7 @@ export function CommunesList({ communes }: { communes: Commune[] }) {
         >
           {c.nom}
           {c.ajoutee_par_client && (
-            <span className="text-xs text-phoebe-gold" title="Ajoutée par un client">*</span>
+            <span className="text-xs text-phoebe-gold-dark" title="Ajoutée par un client">*</span>
           )}
           <Button
             variant="admin-icon"
@@ -38,7 +38,7 @@ export function CommunesList({ communes }: { communes: Commune[] }) {
                 supprimerCommune(c.id);
               })
             }
-            className="ml-0.5 !p-0 text-phoebe-anthracite/30 hover:text-error disabled:opacity-50"
+            className="ml-0.5 !p-0 text-phoebe-anthracite/70 hover:text-error disabled:opacity-50"
             title="Supprimer"
           >
             ×
