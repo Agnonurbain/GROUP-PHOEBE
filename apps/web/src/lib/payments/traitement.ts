@@ -2,46 +2,102 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { getStripe } from "./stripe";
 
-function getAdminClient() {
+type AdminClient = ReturnType<typeof createClient<Database>>;
+type Paiement = Database["public"]["Tables"]["paiements"]["Row"];
+
+function getAdminClient(): AdminClient {
   return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
+// ─── Entrees webhook (creent le client, deleguent au coeur testable) ─────────
+
 export async function traiterPaiementConfirme(
   paiementId: string,
   stripePaymentIntent?: string
 ): Promise<{ ok: boolean; raison?: string }> {
-  const admin = getAdminClient();
+  return confirmerCommande(getAdminClient(), paiementId, stripePaymentIntent);
+}
 
-  const { data: paiement } = await admin
+export async function traiterPaiementEchoue(
+  paiementId: string
+): Promise<{ ok: boolean }> {
+  return annulerCommande(getAdminClient(), paiementId);
+}
+
+// ─── Groupe : tous les paiements partageant le commande_id ───────────────────
+// Le prestataire ne renvoie qu'un identifiant de transaction (le 1er paiement).
+// On confirme/annule TOUTE la commande, sinon les autres vehicules d'un panier
+// multi restent impayes et sont annules a tort par le cron d'expiration.
+
+async function chargerGroupe(
+  admin: AdminClient,
+  primary: Paiement
+): Promise<Paiement[]> {
+  if (!primary.commande_id) return [primary];
+  const { data } = await admin
+    .from("paiements")
+    .select("*")
+    .eq("commande_id", primary.commande_id);
+  return data && data.length > 0 ? data : [primary];
+}
+
+// ─── Confirmation ────────────────────────────────────────────────────────────
+
+export async function confirmerCommande(
+  admin: AdminClient,
+  paiementId: string,
+  stripePaymentIntent?: string
+): Promise<{ ok: boolean; raison?: string }> {
+  const { data: primary } = await admin
     .from("paiements")
     .select("*")
     .eq("id", paiementId)
     .single();
 
-  if (!paiement) return { ok: false, raison: "Paiement introuvable" };
+  if (!primary) return { ok: false, raison: "Paiement introuvable" };
 
-  if (paiement.statut === "capture") {
+  if (primary.statut === "capture") {
     return { ok: true, raison: "Déjà traité" };
   }
 
-  if (paiement.statut === "echoue") {
-    return await traiterPaiementTardif(admin, paiement, stripePaymentIntent);
+  const group = await chargerGroupe(admin, primary);
+
+  if (primary.statut === "echoue") {
+    return traiterPaiementTardifGroupe(admin, group, stripePaymentIntent);
   }
 
-  if (paiement.statut !== "en_attente") {
-    return { ok: false, raison: `Statut inattendu: ${paiement.statut}` };
+  if (primary.statut !== "en_attente") {
+    return { ok: false, raison: `Statut inattendu: ${primary.statut}` };
   }
 
+  for (const p of group) {
+    if (p.statut !== "en_attente") continue;
+    const r = await confirmerUnPaiement(
+      admin,
+      p,
+      p.id === paiementId ? stripePaymentIntent : undefined
+    );
+    if (!r.ok) return r;
+  }
+
+  return { ok: true };
+}
+
+async function confirmerUnPaiement(
+  admin: AdminClient,
+  paiement: Paiement,
+  stripePaymentIntent?: string
+): Promise<{ ok: boolean; raison?: string }> {
   const { error: updateErr, count } = await admin
     .from("paiements")
     .update({
       statut: "capture",
       ...(stripePaymentIntent ? { webhook_reference: stripePaymentIntent } : {}),
     })
-    .eq("id", paiementId)
+    .eq("id", paiement.id)
     .eq("statut", "en_attente");
 
   if (updateErr) return { ok: false, raison: updateErr.message };
@@ -59,10 +115,7 @@ export async function traiterPaiementConfirme(
     if (demande?.type === "achat") {
       await admin
         .from("demandes_transport")
-        .update({
-          statut: "acceptee",
-          updated_at: new Date().toISOString(),
-        })
+        .update({ statut: "acceptee", updated_at: new Date().toISOString() })
         .eq("id", paiement.reference_id)
         .eq("statut", "en_attente_paiement");
 
@@ -92,97 +145,110 @@ export async function traiterPaiementConfirme(
   return { ok: true };
 }
 
-async function traiterPaiementTardif(
-  admin: ReturnType<typeof getAdminClient>,
-  paiement: Database["public"]["Tables"]["paiements"]["Row"],
+// Paiement tardif : la commande avait ete marquee echoue (expiree) puis un
+// paiement arrive. Le prestataire n'a debite qu'une transaction pour tout le
+// panier -> un seul remboursement, applique a tout le groupe.
+async function traiterPaiementTardifGroupe(
+  admin: AdminClient,
+  group: Paiement[],
   stripePaymentIntent?: string
 ): Promise<{ ok: boolean; raison?: string }> {
   console.error(
-    `Paiement tardif détecté: ${paiement.id} (méthode: ${paiement.methode}, montant: ${paiement.montant}). ` +
-    `Demande ${paiement.reference_id} déjà expirée — remboursement nécessaire.`
+    `Paiement tardif détecté (commande de ${group.length} paiement(s), ` +
+    `méthode: ${group[0].methode}). Demande(s) déjà expirée(s) — remboursement nécessaire.`
   );
 
-  if (paiement.methode === "stripe" && stripePaymentIntent) {
+  if (group[0].methode === "stripe" && stripePaymentIntent) {
     try {
       const stripe = getStripe();
       await stripe.refunds.create({ payment_intent: stripePaymentIntent });
-
-      await admin
-        .from("paiements")
-        .update({ statut: "rembourse", webhook_reference: stripePaymentIntent })
-        .eq("id", paiement.id);
-
-      console.error(`Remboursement Stripe automatique effectué pour ${paiement.id}`);
+      for (const p of group) {
+        await admin
+          .from("paiements")
+          .update({ statut: "rembourse", webhook_reference: stripePaymentIntent })
+          .eq("id", p.id);
+      }
+      console.error(`Remboursement Stripe automatique effectué pour la commande.`);
       return { ok: true, raison: "Paiement tardif — remboursement Stripe automatique effectué" };
     } catch (err) {
-      console.error(`Échec remboursement Stripe pour ${paiement.id}:`, err);
-      await admin
-        .from("paiements")
-        .update({ statut: "remboursement_requis", webhook_reference: stripePaymentIntent })
-        .eq("id", paiement.id);
+      console.error(`Échec remboursement Stripe:`, err);
+      for (const p of group) {
+        await admin
+          .from("paiements")
+          .update({ statut: "remboursement_requis", webhook_reference: stripePaymentIntent })
+          .eq("id", p.id);
+      }
       return { ok: false, raison: "Paiement tardif — remboursement Stripe échoué, intervention manuelle requise" };
     }
   }
 
-  await admin
-    .from("paiements")
-    .update({
-      statut: "remboursement_requis",
-      ...(stripePaymentIntent ? { webhook_reference: stripePaymentIntent } : {}),
-    })
-    .eq("id", paiement.id);
-
+  for (const p of group) {
+    await admin
+      .from("paiements")
+      .update({
+        statut: "remboursement_requis",
+        ...(stripePaymentIntent ? { webhook_reference: stripePaymentIntent } : {}),
+      })
+      .eq("id", p.id);
+  }
   return { ok: true, raison: "Paiement tardif — remboursement manuel requis" };
 }
 
-export async function traiterPaiementEchoue(
+// ─── Echec / annulation ──────────────────────────────────────────────────────
+
+export async function annulerCommande(
+  admin: AdminClient,
   paiementId: string
 ): Promise<{ ok: boolean }> {
-  const admin = getAdminClient();
-
-  const { data: paiement } = await admin
+  const { data: primary } = await admin
     .from("paiements")
     .select("*")
     .eq("id", paiementId)
     .single();
 
-  if (!paiement || paiement.statut !== "en_attente") return { ok: true };
+  if (!primary) return { ok: true };
 
-  await admin
-    .from("paiements")
-    .update({ statut: "echoue" })
-    .eq("id", paiementId);
+  const group = await chargerGroupe(admin, primary);
 
-  if (paiement.reference_table === "demandes_transport") {
-    const { data: demande } = await admin
-      .from("demandes_transport")
-      .select("vehicule_id, chauffeur_id, periode")
-      .eq("id", paiement.reference_id)
-      .single();
-
-    if (demande) {
-      if (demande.periode) {
-        await admin
-          .from("disponibilites_vehicule")
-          .delete()
-          .eq("vehicule_id", demande.vehicule_id!)
-          .eq("type", "reservation")
-          .eq("periode", demande.periode);
-      }
-      if (demande.chauffeur_id && demande.periode) {
-        await admin
-          .from("disponibilites_chauffeur")
-          .delete()
-          .eq("chauffeur_id", demande.chauffeur_id)
-          .eq("periode", demande.periode);
-      }
-    }
+  for (const paiement of group) {
+    if (paiement.statut !== "en_attente") continue;
 
     await admin
-      .from("demandes_transport")
-      .update({ statut: "annulee", updated_at: new Date().toISOString() })
-      .eq("id", paiement.reference_id)
-      .eq("statut", "en_attente_paiement");
+      .from("paiements")
+      .update({ statut: "echoue" })
+      .eq("id", paiement.id);
+
+    if (paiement.reference_table === "demandes_transport") {
+      const { data: demande } = await admin
+        .from("demandes_transport")
+        .select("vehicule_id, chauffeur_id, periode")
+        .eq("id", paiement.reference_id)
+        .single();
+
+      if (demande) {
+        if (demande.periode) {
+          await admin
+            .from("disponibilites_vehicule")
+            .delete()
+            .eq("vehicule_id", demande.vehicule_id!)
+            .eq("type", "reservation")
+            .eq("periode", demande.periode);
+        }
+        if (demande.chauffeur_id && demande.periode) {
+          await admin
+            .from("disponibilites_chauffeur")
+            .delete()
+            .eq("chauffeur_id", demande.chauffeur_id)
+            .eq("periode", demande.periode);
+        }
+      }
+
+      await admin
+        .from("demandes_transport")
+        .update({ statut: "annulee", updated_at: new Date().toISOString() })
+        .eq("id", paiement.reference_id)
+        .eq("statut", "en_attente_paiement");
+    }
   }
 
   return { ok: true };
