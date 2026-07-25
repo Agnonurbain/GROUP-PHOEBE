@@ -6,6 +6,7 @@ import ImmobilierFiltres from "./immobilier-filtres"
 import { BackLink } from "@/components/public/back-link"
 import { getBiensWithPhotos } from "@/lib/public-cache"
 import { serializeJsonLd } from "@/lib/json-ld"
+import { statutBienLabel, statutBienBadgeVariant, typeBienLabel } from "@/lib/immobilier"
 
 export const metadata: Metadata = {
   title: "Immobilier — Achat, Vente & Location",
@@ -19,19 +20,6 @@ export const metadata: Metadata = {
     title: "Immobilier — Achat, Vente & Location",
     description: "Trouvez le bien immobilier de vos rêves en Côte d'Ivoire : appartements, villas, terrains. Vente, location et estimation gratuite avec GROUP PHOEBE.",
   },
-}
-
-function statutBadgeVariant(statut: string): "green" | "gold" | "blue" {
-  if (statut === "disponible") return "green"
-  if (statut === "vendu") return "gold"
-  return "blue"
-}
-
-function statutLabel(statut: string): string {
-  if (statut === "disponible") return "Disponible"
-  if (statut === "vendu") return "Vendu"
-  if (statut === "loué") return "Loué"
-  return statut
 }
 
 export default async function Immobilier({
@@ -124,7 +112,8 @@ export default async function Immobilier({
           {biens && biens.length > 0 ? biens.map((b) => {
             const photo = b.id ? photoMap.get(b.id) : null
             return (
-              <Card key={b.id} className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-accent-green/30 hover:bg-public-bg-elevated hover:shadow-xl hover:shadow-black/20">
+              <Link key={b.id} href={`/immobilier/${b.id}`} className="group block">
+              <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-accent-green/30 hover:bg-public-bg-elevated hover:shadow-xl hover:shadow-black/20">
                 {photo ? (
                   <div className="relative mb-4 h-48 w-full overflow-hidden rounded-xl bg-public-bg-elevated">
                     <Image
@@ -145,18 +134,19 @@ export default async function Immobilier({
                   </div>
                 )}
                 <div className="mb-3 flex flex-wrap gap-2">
-                  <Badge variant={statutBadgeVariant(b.statut)}>{statutLabel(b.statut)}</Badge>
-                  <Badge variant="green">{b.type}</Badge>
+                  <Badge variant={statutBienBadgeVariant(b.statut)}>{statutBienLabel(b.statut)}</Badge>
+                  <Badge variant="green">{typeBienLabel(b.type)}</Badge>
                 </div>
-                <h3 className="text-lg font-semibold text-public-text">{b.type} – {b.localisation}</h3>
+                <h3 className="text-lg font-semibold text-public-text">{typeBienLabel(b.type)} – {b.localisation}</h3>
                 <p className="mt-1 text-3xl font-bold text-accent-green">{b.prix.toLocaleString()} FCFA</p>
                 <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-public-text-muted">
                   {b.surface_m2 && <span>{b.surface_m2} m²</span>}
-                  {b.nb_chambres && <span>{b.nb_chambres} {b.nb_chambres > 1 ? "pièces" : "pièce"}</span>}
+                  {b.nb_chambres && <span>{b.nb_chambres} {b.nb_chambres > 1 ? "chambres" : "chambre"}</span>}
                   <span>{b.localisation}</span>
                 </div>
                 <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-accent-green transition-all group-hover:gap-2">Voir le détail →</span>
               </Card>
+              </Link>
             )
           }) : (
             <div className="col-span-2 flex flex-col items-center gap-4 rounded-2xl border border-public-border bg-public-bg-card py-16 text-center">
