@@ -73,6 +73,37 @@ export async function notifierAdminNouveauDossierVoyage(
   await supabase.from("notifications_log").insert(rows as never[]);
 }
 
+export async function notifierAdminNouvelleDemandeImmobilier(
+  _demandeId: string,
+  clientNom: string,
+  bien: string,
+  typeLabel: string,
+  detail: string
+) {
+  const supabase = await createClient();
+
+  const { data: admins } = await supabase
+    .from("users")
+    .select("id")
+    .in("role", ["operateur", "proprietaire"]);
+
+  if (!admins || admins.length === 0) return;
+
+  const rows = admins.map((a) => ({
+    user_id: a.id,
+    canal: "push" as const,
+    evenement: "nouvelle_demande_immobilier",
+    contenu: JSON.stringify({
+      titre: "Nouvelle demande immobilier",
+      message: `${clientNom} · ${typeLabel} · ${bien}${detail ? ` · ${detail}` : ""}`,
+      lien: `/admin/demandes-immobilier`,
+    }),
+    statut_envoi: "envoye" as const,
+  }));
+
+  await supabase.from("notifications_log").insert(rows as never[]);
+}
+
 export async function getNotificationsAdmin(): Promise<{
   nonLues: number;
   recentes: NotifAdmin[];
