@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { createClient } from "@/lib/supabase/server"
 import HomePageClient from "./page-client"
 
 export const metadata: Metadata = {
@@ -18,6 +19,9 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
-  return <HomePageClient />
+export default async function HomePage() {
+  const supabase = await createClient()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const isAuthenticated = Boolean(claimsData?.claims)
+  return <HomePageClient isAuthenticated={isAuthenticated} />
 }

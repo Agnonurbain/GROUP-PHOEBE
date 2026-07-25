@@ -46,7 +46,7 @@ const services = [
   },
 ]
 
-export default function HomePage() {
+export default function HomePage({ isAuthenticated = false }: { isAuthenticated?: boolean }) {
   return (
     <GoldTrail>
       {/* Hero */}
@@ -148,13 +148,17 @@ export default function HomePage() {
       <ScrollReveal variant="scale-in">
         <section className="flex flex-col items-center gap-6 border-t border-public-border bg-public-bg-card px-6 py-28 text-center">
           <h2 className="text-3xl font-semibold tracking-tight text-public-text md:text-4xl">Prêt à commencer ?</h2>
-          <p className="text-base text-public-text-muted md:text-lg">Rejoignez GROUP PHOEBE et bénéficiez de services d&apos;exception.</p>
+          <p className="text-base text-public-text-muted md:text-lg">
+            {isAuthenticated
+              ? "Explorez nos services et réservez en quelques clics."
+              : "Rejoignez GROUP PHOEBE et bénéficiez de services d'exception."}
+          </p>
           <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row">
             <Link
-              href="/inscription"
+              href={isAuthenticated ? "/transport/catalogue" : "/inscription"}
               className="btn-premium [--btn-glow:rgba(201,168,76,0.45)] block rounded-lg bg-accent-gold px-8 py-3.5 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover"
             >
-              S&apos;inscrire
+              {isAuthenticated ? "Explorer le catalogue" : "S'inscrire"}
             </Link>
             <Link
               href="/contact"
