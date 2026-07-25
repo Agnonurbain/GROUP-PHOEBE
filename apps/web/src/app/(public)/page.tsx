@@ -22,6 +22,13 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
-  const isAuthenticated = Boolean(claimsData?.claims)
-  return <HomePageClient isAuthenticated={isAuthenticated} />
+  const user = claimsData?.claims
+
+  let role: string | null = null
+  if (user) {
+    const { data } = await supabase.from("users").select("role").eq("id", user.sub).single()
+    role = data?.role ?? null
+  }
+
+  return <HomePageClient role={role} />
 }
