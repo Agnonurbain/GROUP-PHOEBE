@@ -56,7 +56,7 @@ export default function HomePage({ role = null }: { role?: string | null }) {
         <HeroSlideshow />
 
         {/* Panneau verre fumé : garantit la lisibilité quelle que soit l'image derrière */}
-        <div className="relative z-10 flex max-w-3xl flex-col items-center gap-8 rounded-3xl bg-black/55 px-8 py-12 ring-1 ring-white/10 backdrop-blur-md sm:px-14">
+        <div className="relative z-10 flex max-w-3xl flex-col items-center gap-8 rounded-3xl bg-black/40 px-8 py-12 ring-1 ring-white/10 backdrop-blur-md sm:px-14">
           <ScrollReveal variant="fade-up">
             <h1 className="text-balance text-3xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl [text-shadow:0_2px_16px_rgba(0,0,0,0.9)]">
               L&apos;excellence à chaque étape de votre vie
