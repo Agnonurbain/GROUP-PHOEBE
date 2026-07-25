@@ -19,6 +19,8 @@ import {
   type CommuneMatch,
 } from "@/lib/livraison";
 import { getCommunes } from "@/lib/public-cache";
+import { compressImage } from "@/lib/compress-image";
+import { validateImageUpload } from "@/lib/upload-validation";
 import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouvelleReservation } from "./notifications-admin";
 
@@ -157,6 +159,31 @@ export async function creerExpedition(
 
   if (expErr || !expedition) {
     return { error: "Impossible de créer l'expédition. Veuillez réessayer." };
+  }
+
+  // Photos du colis (optionnelles) : upload en service-role vers le bucket
+  // public colis-photos. Une photo invalide est ignorée sans bloquer la commande.
+  const files = formData.getAll("photos") as File[];
+  const photoUrls: string[] = [];
+  for (const file of files) {
+    if (!file || typeof file === "string" || !file.size) continue;
+    let ext: string;
+    try {
+      ({ ext } = validateImageUpload(file));
+    } catch {
+      continue;
+    }
+    const compressed = await compressImage(file);
+    const path = `${expedition.id}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await admin.storage
+      .from("colis-photos")
+      .upload(path, await compressed.arrayBuffer(), { contentType: compressed.type });
+    if (upErr) continue;
+    const { data: { publicUrl } } = admin.storage.from("colis-photos").getPublicUrl(path);
+    photoUrls.push(publicUrl);
+  }
+  if (photoUrls.length > 0) {
+    await admin.from("expeditions").update({ photos: photoUrls } as never).eq("id", expedition.id);
   }
 
   const { data: paiement, error: paiementErr } = await admin

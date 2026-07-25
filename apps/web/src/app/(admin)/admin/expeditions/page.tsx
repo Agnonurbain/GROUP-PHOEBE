@@ -129,6 +129,19 @@ export default async function ExpeditionsAdminPage() {
                     </p>
                   </div>
                 )}
+                {(((e as unknown as { photos?: string[] }).photos) ?? []).length > 0 && (
+                  <div className="sm:col-span-2">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-phoebe-anthracite/70">Photos</p>
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {((e as unknown as { photos?: string[] }).photos ?? []).map((url, i) => (
+                        <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt={`Colis ${i + 1}`} className="h-16 w-16 rounded-lg border border-phoebe-pearl object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <ExpeditionActions

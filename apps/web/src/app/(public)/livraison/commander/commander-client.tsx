@@ -196,6 +196,18 @@ export default function CommanderClient({
                 <label htmlFor="valeur_declaree" className={labelClass}>Valeur déclarée (FCFA)</label>
                 <input id="valeur_declaree" name="valeur_declaree" type="number" inputMode="numeric" min="0" placeholder="Optionnel" className={inputClass} />
               </div>
+              <div className="sm:col-span-2">
+                <label htmlFor="photos" className={labelClass}>Photos du colis (optionnel)</label>
+                <input
+                  id="photos"
+                  name="photos"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="block w-full text-sm text-public-text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-accent-orange/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-accent-orange hover:file:bg-accent-orange/20"
+                />
+                <p className="mt-1 text-xs text-public-text-faint">Ajoutez une ou plusieurs photos pour faciliter la prise en charge.</p>
+              </div>
             </div>
           </Card>
 
