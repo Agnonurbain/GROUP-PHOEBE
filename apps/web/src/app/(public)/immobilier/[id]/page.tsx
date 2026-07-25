@@ -1,10 +1,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
 import { getBienById } from "@/lib/public-cache"
 import { VehicleGallery } from "@/components/public/vehicle-gallery"
+import { BienInteractionForm } from "@/components/public/bien-interaction-form"
 import { BackLink } from "@/components/public/back-link"
-import { Badge, Button } from "@/components/ui"
+import { Badge } from "@/components/ui"
 import { serializeJsonLd } from "@/lib/json-ld"
 import {
   statutBienLabel,
@@ -36,6 +38,10 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
 
   const { bien, photos } = result
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+
+  const supabase = await createClient()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const isLoggedIn = !!claimsData?.claims
 
   const specs: { label: string; value: string }[] = [
     { label: "Type", value: typeBienLabel(bien.type) },
@@ -119,17 +125,12 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
         </div>
 
         <div className="lg:col-span-2">
-          <div className="sticky top-24 rounded-2xl border border-public-border bg-public-bg-card p-6">
-            <p className="text-sm text-public-text-muted">Ce bien vous intéresse ?</p>
-            <p className="mt-1 text-2xl font-bold text-accent-green">{Number(bien.prix).toLocaleString()} FCFA</p>
-            <p className="mt-4 text-sm text-public-text-muted">
-              Contactez notre équipe pour une visite, une information ou faire une offre.
-            </p>
-            <Link href={`/contact?sujet=${encodeURIComponent(`Bien ${typeBienLabel(bien.type)} — ${bien.localisation}`)}`} className="mt-5 block">
-              <Button variant="default" className="w-full bg-accent-green text-white hover:bg-accent-green-hover">
-                Nous contacter
-              </Button>
-            </Link>
+          <div className="sticky top-24 space-y-4">
+            <div className="rounded-2xl border border-public-border bg-public-bg-card p-6">
+              <p className="text-sm text-public-text-muted">Prix</p>
+              <p className="mt-1 text-2xl font-bold text-accent-green">{Number(bien.prix).toLocaleString()} FCFA</p>
+            </div>
+            <BienInteractionForm bienId={bien.id} isLoggedIn={isLoggedIn} />
           </div>
         </div>
       </div>

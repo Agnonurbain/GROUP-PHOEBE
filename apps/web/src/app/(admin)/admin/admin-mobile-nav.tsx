@@ -162,6 +162,15 @@ export function AdminMobileNav({
 
             <div>
               <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
+                Immobilier
+              </h2>
+              <div className="space-y-0.5">
+                <NavLink href="/admin/demandes-immobilier">Demandes immobilier</NavLink>
+              </div>
+            </div>
+
+            <div>
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
                 Assistance
               </h2>
               <div className="space-y-0.5">
