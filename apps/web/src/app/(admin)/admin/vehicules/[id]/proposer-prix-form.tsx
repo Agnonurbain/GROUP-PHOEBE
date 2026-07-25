@@ -43,12 +43,12 @@ export function ProposerPrixForm({
       </div>
 
       {state.error && (
-        <div className="mb-3 rounded-lg bg-error/10 px-3 py-2 text-xs text-error">
+        <div role="alert" className="mb-3 rounded-lg bg-error/10 px-3 py-2 text-xs text-error">
           {state.error}
         </div>
       )}
       {state.success && (
-        <div className="mb-3 rounded-lg bg-phoebe-green/10 px-3 py-2 text-xs text-phoebe-green-deep">
+        <div role="status" className="mb-3 rounded-lg bg-phoebe-green/10 px-3 py-2 text-xs text-phoebe-green-deep">
           Proposition envoyée.
         </div>
       )}

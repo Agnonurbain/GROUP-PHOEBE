@@ -71,12 +71,12 @@ export function EtatLieuxForm({
       </h2>
 
       {state.error && (
-        <div className="mb-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div role="alert" className="mb-4 rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
       {state.success && (
-        <div className="mb-4 rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
+        <div role="status" className="mb-4 rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
           État des lieux enregistré.
         </div>
       )}

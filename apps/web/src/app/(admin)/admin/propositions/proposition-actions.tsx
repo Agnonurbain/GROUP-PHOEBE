@@ -12,8 +12,8 @@ export function PropositionActions({ propositionId }: { propositionId: string })
   }
 
   return (
-    <div className="flex items-center gap-2">
-      {state.error && <span className="text-xs text-error">{state.error}</span>}
+    <div className="flex items-center gap-2" role="alert">
+      {state.error && <span className="text-xs text-error" role="alert">{state.error}</span>}
       <form action={action}>
         <input type="hidden" name="proposition_id" value={propositionId} />
         <input type="hidden" name="decision" value="acceptee" />

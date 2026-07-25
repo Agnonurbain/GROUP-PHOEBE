@@ -67,7 +67,7 @@ export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
       </div>
       <SubmitButton>Ajouter</SubmitButton>
       {state.error && (
-        <span className="w-full text-xs text-error">{state.error}</span>
+        <span className="w-full text-xs text-error" role="alert">{state.error}</span>
       )}
     </form>
   );

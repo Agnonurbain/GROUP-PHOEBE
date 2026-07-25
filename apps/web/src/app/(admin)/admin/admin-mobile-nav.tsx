@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { NavLink } from "./nav-link";
 import { Button } from "@/components/ui";
 
@@ -16,13 +16,36 @@ export function AdminMobileNav({
   nbPropositions: number | null;
 }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Modale : Echap pour fermer, focus deplace dans le menu a l'ouverture et
+  // restaure sur le declencheur a la fermeture, scroll du fond verrouille.
+  useEffect(() => {
+    if (!open) return;
+    const trigger = triggerRef.current; // stable : le hamburger reste monte
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+      trigger?.focus();
+    };
+  }, [open]);
 
   return (
     <div className="md:hidden">
       {/* Hamburger button */}
       <button
+        ref={triggerRef}
         onClick={() => setOpen(true)}
         aria-label="Ouvrir le menu"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-controls="admin-mobile-menu"
         className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-phoebe-green shadow-lg shadow-phoebe-green/30 transition-transform active:scale-95"
       >
         <svg
@@ -42,7 +65,13 @@ export function AdminMobileNav({
 
       {/* Full-screen overlay */}
       {open && (
-        <div className="animate-fade-in fixed inset-0 z-50 flex flex-col bg-white">
+        <div
+          id="admin-mobile-menu"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu du back-office"
+          className="animate-fade-in fixed inset-0 z-50 flex flex-col bg-white"
+        >
           {/* Header with close button */}
           <div className="flex items-center justify-between border-b border-phoebe-pearl px-5 py-4">
             <div>
@@ -55,6 +84,7 @@ export function AdminMobileNav({
             </div>
             <Button
               variant="admin-icon"
+              autoFocus
               onClick={() => setOpen(false)}
               aria-label="Fermer le menu"
             >

@@ -66,12 +66,12 @@ export default function VehiculeForm({
   return (
     <>
       {state.error && (
-        <div className="mb-5 animate-fade-in rounded-xl border border-error/20 bg-error/5 px-5 py-3.5 text-sm text-error">
+        <div role="alert" className="mb-5 animate-fade-in rounded-xl border border-error/20 bg-error/5 px-5 py-3.5 text-sm text-error">
           {state.error}
         </div>
       )}
       {state.success && (
-        <div className="mb-5 animate-fade-in rounded-xl border border-phoebe-green/20 bg-phoebe-green/5 px-5 py-3.5 text-sm font-medium text-phoebe-green-deep">
+        <div role="status" className="mb-5 animate-fade-in rounded-xl border border-phoebe-green/20 bg-phoebe-green/5 px-5 py-3.5 text-sm font-medium text-phoebe-green-deep">
           Véhicule enregistré.
         </div>
       )}

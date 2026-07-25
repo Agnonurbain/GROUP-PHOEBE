@@ -53,10 +53,10 @@ export function CoefficientsForm({
           <input type="hidden" name="zone_id" value={zoneId} />
 
           {state.error && (
-            <p className="text-xs text-error">{state.error}</p>
+            <p role="alert" className="text-xs text-error">{state.error}</p>
           )}
           {state.success && (
-            <p className="text-xs text-phoebe-green-deep">Paramètres mis à jour.</p>
+            <p role="status" className="text-xs text-phoebe-green-deep">Paramètres mis à jour.</p>
           )}
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
