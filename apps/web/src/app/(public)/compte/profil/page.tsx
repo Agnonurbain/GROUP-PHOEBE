@@ -6,6 +6,7 @@ import { ProfileEditForm } from "@/components/profile-edit-form"
 import { getSignedDocUrl } from "@/lib/storage"
 import type { StatutVerification } from "@/lib/auth"
 import { DeleteAccountButton } from "@/components/delete-account-button"
+import { LogoutButton } from "@/components/logout-button"
 import { Button, Card } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
 
@@ -64,8 +65,16 @@ export default async function CompteProfilPage() {
       <div className="mb-6">
         <BackLink href="/" label="Retour à l'accueil" />
       </div>
-      <h1 className="text-4xl font-bold text-public-text">Mon Profil</h1>
-      <p className="mt-1 text-sm text-public-text-muted">{profile.nom}</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold text-public-text">Mon Profil</h1>
+          <p className="mt-1 text-sm text-public-text-muted">{profile.nom}</p>
+        </div>
+        <LogoutButton
+          label="Se déconnecter"
+          className="inline-flex items-center gap-2 rounded-lg border border-public-border px-4 py-2 text-sm font-medium text-public-text-muted transition-colors hover:bg-public-bg-elevated hover:text-public-text max-sm:min-h-11"
+        />
+      </div>
 
       <div className="mt-8 space-y-6">
         <ProfileEditForm
