@@ -9,6 +9,7 @@ export function PasswordInput({
   required,
   minLength,
   autoFocus,
+  autoComplete,
 }: {
   id: string;
   name: string;
@@ -16,6 +17,7 @@ export function PasswordInput({
   required?: boolean;
   minLength?: number;
   autoFocus?: boolean;
+  autoComplete?: string;
 }) {
   const [visible, setVisible] = useState(false);
 
@@ -28,6 +30,7 @@ export function PasswordInput({
         required={required}
         minLength={minLength}
         autoFocus={autoFocus}
+        autoComplete={autoComplete}
         className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 pr-11 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
         placeholder={placeholder}
       />
