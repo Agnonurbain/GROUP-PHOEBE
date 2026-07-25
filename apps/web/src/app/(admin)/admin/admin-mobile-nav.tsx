@@ -92,10 +92,10 @@ export function AdminMobileNav({
                 <NavLink href="/admin/demandes" badge={nbDemandesEnAttente}>
                   Demandes
                 </NavLink>
-                <NavLink href="/admin/vehicules">Vehicules</NavLink>
+                <NavLink href="/admin/vehicules">Véhicules</NavLink>
                 <NavLink href="/admin/reserver-pour-client">Réserver pour client</NavLink>
                 <NavLink href="/admin/verifications" exact>
-                  Verifications
+                  Vérifications
                 </NavLink>
                 <NavLink href="/admin/verifications/historique">
                   Historique verif.

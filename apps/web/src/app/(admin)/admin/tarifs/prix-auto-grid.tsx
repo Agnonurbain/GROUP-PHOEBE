@@ -39,14 +39,14 @@ export function PrixAutoGrid({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
-              <th className="px-4 py-3 text-left font-semibold text-phoebe-anthracite">
+              <th scope="col" className="px-4 py-3 text-left font-semibold text-phoebe-anthracite">
                 Catégorie
               </th>
-              <th className="px-4 py-3 text-center font-semibold text-phoebe-anthracite">
+              <th scope="col" className="px-4 py-3 text-center font-semibold text-phoebe-anthracite">
                 Nb véhicules
               </th>
               {baseZone && (
-                <th className="px-4 py-3 text-right font-semibold text-phoebe-green-deep">
+                <th scope="col" className="px-4 py-3 text-right font-semibold text-phoebe-green-deep">
                   {baseZone.nom}
                   <span className="ml-1 text-[10px] font-normal text-phoebe-anthracite/70">
                     (base)
@@ -54,7 +54,7 @@ export function PrixAutoGrid({
                 </th>
               )}
               {otherZones.map((z) => (
-                <th key={z.id} className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">
+                <th scope="col" key={z.id} className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">
                   {z.nom}
                   <span className="ml-1 text-[10px] font-normal text-phoebe-anthracite/70">
                     x{z.coefficient_majoration}
@@ -96,8 +96,8 @@ export function PrixAutoGrid({
           Modification des tarifs
         </p>
         <p className="mt-0.5 text-xs text-amber-700">
-          Les reservations deja confirmees ne sont pas affectees.
-          La nouvelle tarification s&apos;applique aux nouvelles reservations a partir de maintenant.
+          Les réservations déjà confirmees ne sont pas affectees.
+          La nouvelle tarification s&apos;applique aux nouvelles réservations a partir de maintenant.
         </p>
       </div>
     </div>

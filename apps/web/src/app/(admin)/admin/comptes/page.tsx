@@ -59,7 +59,7 @@ export default async function ComptesPage() {
           Comptes internes
         </h1>
         <p className="mt-1.5 text-sm text-phoebe-anthracite/70">
-          Gerez les operateurs et livreurs de la plateforme.
+          Gérez les opérateurs et livreurs de la plateforme.
         </p>
       </div>
 
@@ -150,12 +150,12 @@ export default async function ComptesPage() {
         <ScrollReveal delay={0.15}>
         <section>
           <h2 className="mb-4 text-xl font-semibold tracking-tight text-phoebe-anthracite">
-            Creer un compte
+            Créer un compte
           </h2>
           <p className="mb-5 text-sm text-phoebe-anthracite/70">
             Ces comptes ne passent pas par l&apos;inscription publique. Le
             telephone/email et le mot de passe temporaire sont definis par le
-            proprietaire.
+            propriétaire.
           </p>
           <ComptesForm />
         </section>
