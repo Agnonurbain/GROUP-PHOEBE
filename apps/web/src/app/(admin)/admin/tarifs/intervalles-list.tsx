@@ -41,7 +41,7 @@ function IntervalleRow({ ip }: { ip: Intervalle }) {
       />
       <SubmitButton>OK</SubmitButton>
       {state.error && (
-        <span className="col-span-5 text-xs text-error">{state.error}</span>
+        <span className="col-span-5 text-xs text-error" role="alert">{state.error}</span>
       )}
     </form>
   );

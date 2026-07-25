@@ -34,7 +34,7 @@ export function AjouterCommuneForm({ zoneId }: { zoneId: string }) {
         </SubmitButton>
       </div>
       {state.error && (
-        <p className="text-xs text-error">{state.error}</p>
+        <p role="alert" className="text-xs text-error">{state.error}</p>
       )}
     </form>
   );

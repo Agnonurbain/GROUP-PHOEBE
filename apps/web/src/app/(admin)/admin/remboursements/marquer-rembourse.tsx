@@ -11,7 +11,7 @@ export function MarquerRembourse({ paiementId }: { paiementId: string }) {
     <form action={formAction}>
       <input type="hidden" name="paiement_id" value={paiementId} />
       {state.error && (
-        <p className="mb-1 text-xs text-error">{state.error}</p>
+        <p role="alert" className="mb-1 text-xs text-error">{state.error}</p>
       )}
       {state.success ? (
         <span className="text-xs font-medium text-phoebe-green">Fait</span>

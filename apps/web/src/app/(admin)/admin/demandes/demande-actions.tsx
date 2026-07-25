@@ -114,7 +114,7 @@ export function DemandeActions({
             <form action={refusAction} className="space-y-2">
               <input type="hidden" name="demande_id" value={demandeId} />
               <textarea
-                name="motif_refus"
+                name="motif_refus" aria-label="Motif du refus"
                 required
                 rows={2}
                 placeholder="Motif du refus (obligatoire)…"
@@ -177,7 +177,7 @@ export function DemandeActions({
                 <form action={refusAction} className="space-y-2">
                   <input type="hidden" name="demande_id" value={demandeId} />
                   <textarea
-                    name="motif_refus"
+                    name="motif_refus" aria-label="Motif du refus"
                     required
                     rows={2}
                     placeholder="Motif du refus (obligatoire)…"
@@ -194,10 +194,10 @@ export function DemandeActions({
               <input type="hidden" name="demande_id" value={demandeId} />
               <div className="flex items-end gap-2">
                 <div>
-                  <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
+                  <label htmlFor={`da-${demandeId}-prix_final`} className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
                     Prix convenu (FCFA)
                   </label>
-                  <input
+                  <input id={`da-${demandeId}-prix_final`}
                     name="prix_final"
                     type="number"
                     min={1}
@@ -208,10 +208,10 @@ export function DemandeActions({
                   />
                 </div>
                 <div>
-                  <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
+                  <label htmlFor={`da-${demandeId}-acompte`} className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
                     Acompte (FCFA)
                   </label>
-                  <input
+                  <input id={`da-${demandeId}-acompte`}
                     name="acompte"
                     type="number"
                     min={1}
@@ -255,8 +255,8 @@ export function DemandeActions({
             <form action={negoAction} className="flex items-end gap-2">
               <input type="hidden" name="demande_id" value={demandeId} />
               <div>
-                <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">Prix (FCFA)</label>
-                <input
+                <label htmlFor={`da-${demandeId}-prix_negocie`} className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">Prix (FCFA)</label>
+                <input id={`da-${demandeId}-prix_negocie`}
                   name="prix_negocie"
                   type="number"
                   min={1}
@@ -299,10 +299,10 @@ export function DemandeActions({
             <form action={inspAction} className="flex items-end gap-2">
               <input type="hidden" name="demande_id" value={demandeId} />
               <div>
-                <label className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
+                <label htmlFor={`da-${demandeId}-caution_retenue`} className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
                   Caution retenue (FCFA)
                 </label>
-                <input
+                <input id={`da-${demandeId}-caution_retenue`}
                   name="caution_retenue"
                   type="number"
                   min={0}

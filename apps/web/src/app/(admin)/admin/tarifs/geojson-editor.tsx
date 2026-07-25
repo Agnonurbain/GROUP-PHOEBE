@@ -167,6 +167,7 @@ export function GeojsonEditor({
   };
 
   const handleClear = async () => {
+    if (!window.confirm("Supprimer le polygone de cette zone ? La zone n'aura plus de délimitation géographique.")) return;
     setSaving(true);
     setResult(null);
     setText("");
@@ -241,7 +242,7 @@ export function GeojsonEditor({
           )}
 
           {result?.error && (
-            <p className="text-xs text-error">{result.error}</p>
+            <p role="alert" className="text-xs text-error">{result.error}</p>
           )}
           {result?.success && (
             <p className="text-xs text-phoebe-green-deep">

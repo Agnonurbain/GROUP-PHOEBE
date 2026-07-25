@@ -33,11 +33,12 @@ export function CommunesList({ communes }: { communes: Commune[] }) {
           <Button
             variant="admin-icon"
             disabled={pending}
-            onClick={() =>
+            onClick={() => {
+              if (!window.confirm(`Supprimer la commune « ${c.nom} » ?`)) return;
               startTransition(() => {
                 supprimerCommune(c.id);
-              })
-            }
+              });
+            }}
             className="ml-0.5 !p-0 text-phoebe-anthracite/70 hover:text-error disabled:opacity-50"
             title="Supprimer"
           >

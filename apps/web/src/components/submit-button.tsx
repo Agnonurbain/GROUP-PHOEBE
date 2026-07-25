@@ -41,11 +41,15 @@ export function SubmitButton({
   className,
   variant = "default",
   disabled,
+  confirm,
 }: {
   children: React.ReactNode;
   className?: string;
   variant?: keyof typeof VARIANTS;
   disabled?: boolean;
+  /** Si defini, une confirmation native est demandee avant la soumission
+   *  (empeche la soumission si l'utilisateur annule). */
+  confirm?: string;
 }) {
   const { pending } = useFormStatus();
 
@@ -53,6 +57,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={disabled || pending}
+      onClick={confirm ? (e) => { if (!window.confirm(confirm)) e.preventDefault(); } : undefined}
       className={className ?? VARIANTS[variant]}
     >
       {pending ? (

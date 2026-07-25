@@ -235,10 +235,10 @@ export default async function DashboardPage({
           <StatCard label="Demandes (30j)" value={<AnimatedCounter target={total} />} accent="green" />
         </ScrollReveal>
         <ScrollReveal delay={0.1}>
-          <StatCard label="Taux de conversion" value={<AnimatedCounter target={tauxConversion} suffix="%" />} sub="demandes acceptees ou terminees" accent="green" />
+          <StatCard label="Taux de conversion" value={<AnimatedCounter target={tauxConversion} suffix="%" />} sub="demandes acceptées ou terminées" accent="green" />
         </ScrollReveal>
         <ScrollReveal delay={0.2}>
-          <StatCard label="Delai moyen traitement" value={`${delaiMoyenH}h`} sub="creation a premiere action" accent="gold" />
+          <StatCard label="Délai moyen traitement" value={`${delaiMoyenH}h`} sub="création à première action" accent="gold" />
         </ScrollReveal>
         <ScrollReveal delay={0.3}>
           <StatCard label="Taux d'acceptation" value={<AnimatedCounter target={tauxAcceptation} suffix="%" />} accent="green" />
@@ -247,7 +247,7 @@ export default async function DashboardPage({
           <StatCard label="Taux d'annulation" value={<AnimatedCounter target={tauxAnnulation} suffix="%" />} accent="gold" />
         </ScrollReveal>
         <ScrollReveal delay={0.5}>
-          <StatCard label="Verification d'identite" value={<AnimatedCounter target={tauxVerification} suffix="%" />} sub={`${clientsVerifies ?? 0} / ${totalClients ?? 0} clients`} accent="gold" />
+          <StatCard label="Vérification d'identité" value={<AnimatedCounter target={tauxVerification} suffix="%" />} sub={`${clientsVerifies ?? 0} / ${totalClients ?? 0} clients`} accent="gold" />
         </ScrollReveal>
       </div>
 
@@ -260,7 +260,7 @@ export default async function DashboardPage({
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-phoebe-pearl text-left text-xs uppercase tracking-widest text-phoebe-anthracite/70">
-                  <th scope="col" className="px-5 py-3.5">Vehicule</th>
+                  <th scope="col" className="px-5 py-3.5">Véhicule</th>
                   <th scope="col" className="px-5 py-3.5">Demandes</th>
                 </tr>
               </thead>

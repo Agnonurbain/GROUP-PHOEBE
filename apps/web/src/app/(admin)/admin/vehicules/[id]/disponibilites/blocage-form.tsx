@@ -26,12 +26,12 @@ export function BlocageVehiculeForm({
       <input type="hidden" name="vehicule_id" value={vehiculeId} />
 
       {state.error && (
-        <div className="animate-fade-in rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div role="alert" className="animate-fade-in rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
       {state.success && (
-        <div className="animate-fade-in rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
+        <div role="status" className="animate-fade-in rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
           Période(s) bloquée(s) ajoutée(s).
         </div>
       )}
@@ -130,12 +130,12 @@ export function BlocageChauffeurForm({
       <input type="hidden" name="vehicule_id" value={vehiculeId} />
 
       {state.error && (
-        <div className="animate-fade-in rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
+        <div role="alert" className="animate-fade-in rounded-lg bg-error/10 px-4 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
       {state.success && (
-        <div className="animate-fade-in rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
+        <div role="status" className="animate-fade-in rounded-lg bg-phoebe-green/10 px-4 py-3 text-sm text-phoebe-green-deep">
           Période(s) bloquée(s) ajoutée(s) pour le chauffeur.
         </div>
       )}

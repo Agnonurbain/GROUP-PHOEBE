@@ -45,13 +45,13 @@ export default async function VehiculesListPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">
-          Vehicules
+          Véhicules
         </h1>
         <Link
           href="/admin/vehicules/nouveau"
           className="rounded-xl bg-phoebe-green px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-phoebe-green-deep hover:shadow-md"
         >
-          + Nouveau vehicule
+          + Nouveau véhicule
         </Link>
       </div>
 
@@ -65,10 +65,10 @@ export default async function VehiculesListPage() {
                   Photo
                 </th>
                 <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
-                  Vehicule
+                  Véhicule
                 </th>
                 <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
-                  Categorie
+                  Catégorie
                 </th>
                 <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Prix/jour
@@ -79,7 +79,7 @@ export default async function VehiculesListPage() {
                 <th scope="col" className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-widest text-phoebe-anthracite/70">
                   Statut
                 </th>
-                <th className="px-5 py-4" />
+                <th scope="col" className="px-5 py-4" />
               </tr>
             </thead>
             <tbody className="divide-y divide-phoebe-pearl/70">
@@ -153,7 +153,7 @@ export default async function VehiculesListPage() {
         </ScrollReveal>
       ) : (
         <p className="text-sm text-phoebe-anthracite/70">
-          Aucun vehicule enregistre.
+          Aucun véhicule enregistré.
         </p>
       )}
     </div>

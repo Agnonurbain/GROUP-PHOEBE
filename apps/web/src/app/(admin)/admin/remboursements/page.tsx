@@ -78,7 +78,7 @@ export default async function RemboursementsPage() {
                   <th scope="col" className="px-5 py-4">Montant</th>
                   <th scope="col" className="px-5 py-4">Réf. paiement</th>
                   <th scope="col" className="px-5 py-4">Réf. demande</th>
-                  <th className="px-5 py-4" />
+                  <th scope="col" className="px-5 py-4" />
                 </tr>
               </thead>
               <tbody className="divide-y divide-phoebe-pearl/70">

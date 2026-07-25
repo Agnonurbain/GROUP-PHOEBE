@@ -85,7 +85,7 @@ export default async function TarifsPage() {
         </h1>
         <p className="mt-1 text-sm text-phoebe-anthracite/70">
           Pilotez vos marges en ajustant les coefficients par zone. Les prix finaux sont
-          calcules automatiquement depuis le prix de base de chaque vehicule.
+          calculés automatiquement depuis le prix de base de chaque véhicule.
         </p>
       </ScrollReveal>
 
@@ -98,13 +98,13 @@ export default async function TarifsPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
-                        <th className="px-4 py-3 text-left font-semibold text-phoebe-anthracite">Zone</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Coeff. prix</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Caution x</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">KM/jour</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Supp. km</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Chauffeur</th>
-                        <th className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Tarif chauf.</th>
+                        <th scope="col" className="px-4 py-3 text-left font-semibold text-phoebe-anthracite">Zone</th>
+                        <th scope="col" className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Coeff. prix</th>
+                        <th scope="col" className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Caution x</th>
+                        <th scope="col" className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">KM/jour</th>
+                        <th scope="col" className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Supp. km</th>
+                        <th scope="col" className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Chauffeur</th>
+                        <th scope="col" className="px-4 py-3 text-right font-medium text-phoebe-anthracite/70">Tarif chauf.</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -172,7 +172,7 @@ export default async function TarifsPage() {
 
                 <div className="rounded-xl border border-phoebe-pearl/60 bg-phoebe-pearl/20 px-4 py-3">
                   <p className="text-xs text-phoebe-anthracite/70">
-                    Seul le proprietaire peut modifier ces parametres. Chaque modification est enregistree dans le journal d&apos;audit.
+                    Seul le propriétaire peut modifier ces paramètres. Chaque modification est enregistrée dans le journal d&apos;audit.
                   </p>
                 </div>
               </div>
