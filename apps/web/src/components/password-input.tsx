@@ -10,6 +10,7 @@ export function PasswordInput({
   minLength,
   autoFocus,
   autoComplete,
+  variant = "light",
 }: {
   id: string;
   name: string;
@@ -18,8 +19,20 @@ export function PasswordInput({
   minLength?: number;
   autoFocus?: boolean;
   autoComplete?: string;
+  /** "light" pour les pages auth (fond clair), "dark" pour le profil (fond sombre). */
+  variant?: "light" | "dark";
 }) {
   const [visible, setVisible] = useState(false);
+
+  const inputClass =
+    variant === "dark"
+      ? "w-full rounded-xl border border-public-border bg-public-bg px-4 py-3 pr-11 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-gold focus:outline-none focus:ring-2 focus:ring-accent-gold/20"
+      : "w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 pr-11 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20";
+
+  const toggleClass =
+    variant === "dark"
+      ? "absolute right-3 top-1/2 -translate-y-1/2 text-public-text-muted transition-colors hover:text-public-text"
+      : "absolute right-3 top-1/2 -translate-y-1/2 text-phoebe-anthracite/70 transition-colors hover:text-phoebe-anthracite";
 
   return (
     <div className="relative">
@@ -31,13 +44,13 @@ export function PasswordInput({
         minLength={minLength}
         autoFocus={autoFocus}
         autoComplete={autoComplete}
-        className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 pr-11 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
+        className={inputClass}
         placeholder={placeholder}
       />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-phoebe-anthracite/70 transition-colors hover:text-phoebe-anthracite"
+        className={toggleClass}
         aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
       >
         {visible ? (

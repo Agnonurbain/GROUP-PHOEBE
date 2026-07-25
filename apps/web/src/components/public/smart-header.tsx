@@ -116,7 +116,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
               </Link>
               <LogoutButton
                 label="Déconnexion"
-                className="text-sm text-public-text-muted transition-colors hover:text-public-text"
+                className="rounded-lg border border-error/30 px-3 py-1.5 text-sm font-medium text-error transition-all hover:bg-error hover:text-white"
               />
             </span>
           ) : (
@@ -189,7 +189,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
             {session && (
               <LogoutButton
                 label="Déconnexion"
-                className="flex min-h-11 w-full items-center rounded-lg px-3 py-2.5 text-left text-sm text-public-text-muted transition-colors hover:bg-white/5 hover:text-public-text"
+                className="flex min-h-11 w-full items-center rounded-lg border border-error/30 px-3 py-2.5 text-left text-sm font-medium text-error transition-all hover:bg-error hover:text-white"
               />
             )}
             {!session && (

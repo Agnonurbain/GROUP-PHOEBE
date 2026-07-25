@@ -83,7 +83,7 @@ export default async function CompteProfilPage({
         </div>
         <LogoutButton
           label="Se déconnecter"
-          className="inline-flex items-center gap-2 rounded-lg border border-public-border px-4 py-2 text-sm font-medium text-public-text-muted transition-colors hover:bg-public-bg-elevated hover:text-public-text max-sm:min-h-11"
+          className="inline-flex items-center gap-2 rounded-lg border border-error/40 px-4 py-2 text-sm font-medium text-error transition-all hover:bg-error hover:text-white hover:shadow-md active:scale-[0.98] max-sm:min-h-11"
         />
       </div>
 
