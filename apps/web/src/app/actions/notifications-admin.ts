@@ -42,6 +42,37 @@ export async function notifierAdminNouvelleReservation(
   await supabase.from("notifications_log").insert(rows as never[]);
 }
 
+export async function notifierAdminNouveauDossierVoyage(
+  _dossierId: string,
+  clientNom: string,
+  pays: string,
+  offre: string,
+  montantEstime: number
+) {
+  const supabase = await createClient();
+
+  const { data: admins } = await supabase
+    .from("users")
+    .select("id")
+    .in("role", ["operateur", "proprietaire"]);
+
+  if (!admins || admins.length === 0) return;
+
+  const rows = admins.map((a) => ({
+    user_id: a.id,
+    canal: "push" as const,
+    evenement: "nouveau_dossier_voyage",
+    contenu: JSON.stringify({
+      titre: "Nouveau dossier visa",
+      message: `${clientNom} · Visa ${pays} · ${offre} · ~${montantEstime.toLocaleString("fr-FR")} FCFA`,
+      lien: `/admin`,
+    }),
+    statut_envoi: "envoye" as const,
+  }));
+
+  await supabase.from("notifications_log").insert(rows as never[]);
+}
+
 export async function getNotificationsAdmin(): Promise<{
   nonLues: number;
   recentes: NotifAdmin[];
