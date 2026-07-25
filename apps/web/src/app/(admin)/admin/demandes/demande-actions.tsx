@@ -114,7 +114,7 @@ export function DemandeActions({
             <form action={refusAction} className="space-y-2">
               <input type="hidden" name="demande_id" value={demandeId} />
               <textarea
-                name="motif_refus"
+                name="motif_refus" aria-label="Motif du refus"
                 required
                 rows={2}
                 placeholder="Motif du refus (obligatoire)…"
@@ -177,7 +177,7 @@ export function DemandeActions({
                 <form action={refusAction} className="space-y-2">
                   <input type="hidden" name="demande_id" value={demandeId} />
                   <textarea
-                    name="motif_refus"
+                    name="motif_refus" aria-label="Motif du refus"
                     required
                     rows={2}
                     placeholder="Motif du refus (obligatoire)…"
