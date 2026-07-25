@@ -1,20 +1,13 @@
 "use client"
 
+import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useActionState, useCallback, useMemo, useRef, useEffect, useState } from "react"
 import { Badge, Button } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
 import { CheckIcon } from "@/components/icons"
 import { creerDossierVoyage, type AssistanceState } from "@/app/actions/assistance"
-
-const countryData: Record<string, { name: string; flag: string; visa: string; delay: string; price: string; success: string }> = {
-  italie: { name: "Italie", flag: "🇮🇹", visa: "Visa étudiant", delay: "30 jours", price: "150 000 FCFA", success: "92%" },
-  chine: { name: "Chine", flag: "🇨🇳", visa: "Visa étudiant", delay: "45 jours", price: "150 000 FCFA", success: "88%" },
-  grece: { name: "Grèce", flag: "🇬🇷", visa: "Visa tourisme", delay: "20 jours", price: "85 000 FCFA", success: "90%" },
-  pologne: { name: "Pologne", flag: "🇵🇱", visa: "Visa tourisme", delay: "25 jours", price: "75 000 FCFA", success: "87%" },
-  portugal: { name: "Portugal", flag: "🇵🇹", visa: "Visa tourisme", delay: "25 jours", price: "95 000 FCFA", success: "89%" },
-  schengen: { name: "Schengen", flag: "🇪🇺", visa: "Visa tourisme", delay: "30 jours", price: "120 000 FCFA", success: "85%" },
-}
+import { getPays, OFFRES } from "@/lib/assistance"
 
 function downloadChecklist(data: { name: string; visa: string; delay: string }) {
   const checklist = [
@@ -88,31 +81,41 @@ export default function CountryDetail() {
   const slug = params.slug as string
   const [state, formAction, pending] = useActionState<AssistanceState, FormData>(creerDossierVoyage, {})
 
-  const data = useMemo(
-    () => countryData[slug] || { name: slug, flag: "🌍", visa: "Visa", delay: "30 jours", price: "150 000 FCFA", success: "85%" },
-    [slug],
+  const pays = useMemo(() => getPays(slug), [slug])
+
+  const downloadCb = useCallback(
+    () => pays && downloadChecklist({ name: pays.name, visa: pays.visa, delay: pays.delay }),
+    [pays],
   )
 
-  const type = data.visa.toLowerCase().includes("étudiant") ? "etudes" : "tourisme_visa"
-
-  const offers = [
-    { name: "Service seul", price: "150 000 FCFA", features: ["Dossier complet", "Suivi standard", "Checklist PDF"], recommended: false },
-    { name: "Service + Accompagnement", price: "175 000 FCFA", features: ["Dossier complet", "Suivi prioritaire", "Accompagnement personnel", "Préparation entretien"], recommended: true },
-    { name: "Service + Rendez-vous Express", price: "200 000 FCFA", features: ["Dossier complet", "Rendez-vous express", "Accompagnement VIP", "Traduction documents"], recommended: false },
-  ]
-
-  const downloadCb = useCallback(() => downloadChecklist(data), [data])
+  if (!pays) {
+    return (
+      <div className="px-6 py-20 text-center">
+        <h1 className="text-3xl font-bold text-public-text">Destination non disponible</h1>
+        <p className="mt-3 text-sm text-public-text-muted">Cette destination n&apos;est pas encore proposée.</p>
+        <Link href="/assistance" className="mt-6 inline-block text-sm font-semibold text-accent-blue-on-dark hover:underline">
+          Retour à l&apos;assistance
+        </Link>
+      </div>
+    )
+  }
 
   return (
     <>
-      <nav className="flex items-center gap-3 px-6 pt-6 text-sm text-public-text-faint">
+      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-3 px-6 pt-6 text-sm text-public-text-faint">
         <BackLink href="/assistance" label="Retour à l'assistance" />
         <span aria-hidden="true">·</span>
-        <span>Accueil &gt; Assistance &gt; {data.name}</span>
+        <ol className="flex flex-wrap items-center gap-1.5">
+          <li><Link href="/" className="transition-colors hover:text-accent-blue-on-dark">Accueil</Link></li>
+          <li aria-hidden="true">›</li>
+          <li><Link href="/assistance" className="transition-colors hover:text-accent-blue-on-dark">Assistance</Link></li>
+          <li aria-hidden="true">›</li>
+          <li aria-current="page" className="text-public-text-muted">{pays.name}</li>
+        </ol>
       </nav>
 
       {state?.error && (
-        <div className="mx-6 mt-4 rounded-xl border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.08)] px-5 py-3 text-sm text-[#EF4444]">
+        <div role="alert" className="mx-6 mt-4 rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
@@ -122,23 +125,22 @@ export default function CountryDetail() {
         <div className="absolute inset-0 bg-gradient-to-br from-accent-blue/40 via-accent-blue/20 to-black/90" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(37,99,235,0.3),transparent_60%)]" />
         <div className="relative z-10 flex flex-col items-center gap-4 px-6">
-          <span role="img" aria-label={`Drapeau — ${data.name}`} className="text-6xl md:text-7xl">
-            {data.flag}
+          <span role="img" aria-label={`Drapeau — ${pays.name}`} className="text-6xl md:text-7xl">
+            {pays.flag}
           </span>
-          <h1 className="text-4xl font-bold text-white md:text-5xl">Étudier en {data.name}</h1>
-          <p className="text-base text-white/80 md:text-lg">{data.visa} — Délai estimé : {data.delay}</p>
+          <h1 className="text-4xl font-bold text-white md:text-5xl">Destination {pays.name}</h1>
+          <p className="text-base text-white/80 md:text-lg">{pays.visa} — Délai estimé : {pays.delay}</p>
         </div>
       </section>
 
       <div className="grid gap-12 px-6 py-10 lg:grid-cols-5">
         <div className="lg:col-span-3">
-
           <div className="mt-8 grid grid-cols-4 gap-4">
             {[
-              { label: "Délai", value: data.delay, color: "text-accent-blue-on-dark" },
-              { label: "Prix", value: data.price, color: "text-accent-gold" },
-              { label: "Type", value: data.visa, color: "text-accent-blue-on-dark" },
-              { label: "Taux", value: `${data.success} succès`, color: "text-accent-green" },
+              { label: "Délai", value: pays.delay, color: "text-accent-blue-on-dark" },
+              { label: "À partir de", value: `${pays.prix.base.toLocaleString()} FCFA`, color: "text-accent-gold" },
+              { label: "Type", value: pays.visa, color: "text-accent-blue-on-dark" },
+              { label: "Taux", value: `${pays.success} succès`, color: "text-accent-green" },
             ].map((s) => (
               <div key={s.label} className="rounded-xl border border-public-border bg-public-bg-card p-4 text-center">
                 <p className="text-sm text-public-text-muted">{s.label}</p>
@@ -169,8 +171,8 @@ export default function CountryDetail() {
             <h2 className="text-3xl font-semibold text-public-text">Processus</h2>
             <div className="mt-6 space-y-6">
               {[
-                { num: "1", title: "Remplir le formulaire", desc: "Soumettez votre demande en ligne avec les documents requis." },
-                { num: "2", title: "Rendez-vous à l'ambassade", desc: "Présentez-vous à l'ambassade pour l'entretien." },
+                { num: "1", title: "Soumettez votre demande", desc: "Choisissez une offre et envoyez votre demande en ligne." },
+                { num: "2", title: "Notre équipe vous contacte", desc: "Nous étudions votre dossier et convenons des modalités et du paiement." },
                 { num: "3", title: "Suivi du dossier", desc: "Nous assurons le suivi de votre dossier auprès des autorités." },
                 { num: "4", title: "Obtention du visa", desc: "Récupérez votre visa et préparez votre départ !" },
               ].map((s, i) => (
@@ -182,49 +184,39 @@ export default function CountryDetail() {
 
         <div className="lg:col-span-2">
           <h2 className="text-3xl font-semibold text-public-text">Nos offres</h2>
+          <p className="mt-1 text-sm text-public-text-muted">Sans engagement — l&apos;équipe vous recontacte après votre demande.</p>
           <div className="mt-6 space-y-4">
-            {offers.map((offer) => (
-              <div key={offer.name} className={`relative rounded-2xl border p-6 transition-all ${offer.recommended ? "border-accent-gold bg-accent-gold/5" : "border-public-border bg-public-bg-card"}`}>
-                {offer.recommended && (
+            {OFFRES.map((offre) => (
+              <div key={offre.key} className={`relative rounded-2xl border p-6 transition-all ${offre.recommended ? "border-accent-gold bg-accent-gold/5" : "border-public-border bg-public-bg-card"}`}>
+                {offre.recommended && (
                   <Badge variant="gold" className="absolute -top-2.5 right-4">Recommandé</Badge>
                 )}
-                <h3 className="text-base font-semibold text-public-text">{offer.name}</h3>
-                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">{offer.price}</p>
+                <h3 className="text-base font-semibold text-public-text">{offre.name}</h3>
+                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">{pays.prix[offre.key].toLocaleString()} FCFA</p>
                 <ul className="mt-4 space-y-2">
-                  {offer.features.map((f) => (
-                      <li key={f} className="flex items-center gap-2 text-sm text-public-text-muted">
+                  {offre.features.map((f) => (
+                    <li key={f} className="flex items-center gap-2 text-sm text-public-text-muted">
                       <CheckIcon size={14} className="text-accent-green" />
                       {f}
                     </li>
                   ))}
                 </ul>
                 <form action={formAction}>
-                  <input type="hidden" name="pays" value={data.name} />
-                  <input type="hidden" name="type" value={type} />
-                  <input type="hidden" name="offre" value={offer.name} />
-                  <input type="hidden" name="methode_paiement" value="cinetpay" />
-                  {offer.recommended ? (
+                  <input type="hidden" name="pays_slug" value={pays.slug} />
+                  <input type="hidden" name="offre" value={offre.key} />
+                  {offre.recommended ? (
                     <Button type="submit" variant="blue" size="sm" disabled={pending} className="mt-4 w-full">
-                      {pending ? "Traitement..." : "Choisir cette offre"}
+                      {pending ? "Envoi..." : "Soumettre ma demande"}
                     </Button>
                   ) : (
                     <Button type="submit" variant="ghost" size="sm" disabled={pending} className="mt-4 w-full border-accent-blue/60 text-accent-blue-on-dark hover:bg-accent-blue/10">
-                      {pending ? "Traitement..." : "Choisir cette offre"}
+                      {pending ? "Envoi..." : "Soumettre ma demande"}
                     </Button>
                   )}
                 </form>
               </div>
             ))}
           </div>
-          <form action={formAction}>
-            <input type="hidden" name="pays" value={data.name} />
-            <input type="hidden" name="type" value={type} />
-            <input type="hidden" name="offre" value="Service + Accompagnement" />
-            <input type="hidden" name="methode_paiement" value="cinetpay" />
-            <Button type="submit" variant="default" disabled={pending} className="mt-6 w-full bg-accent-blue text-white hover:bg-accent-blue-hover">
-              {pending ? "Traitement..." : "Démarrer mon dossier"}
-            </Button>
-          </form>
         </div>
       </div>
     </>
