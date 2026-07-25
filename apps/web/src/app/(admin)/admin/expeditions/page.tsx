@@ -3,6 +3,7 @@ import Link from "next/link"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { ExpeditionActions } from "./expeditions-actions"
+import { PhotoLightbox } from "@/components/photo-lightbox"
 import {
   ZONE_LABELS,
   MODE_LABELS,
@@ -210,13 +211,8 @@ export default async function ExpeditionsAdminPage({
                 {photos.length > 0 && (
                   <div className="sm:col-span-2">
                     <p className="text-[11px] font-medium uppercase tracking-wider text-phoebe-anthracite/70">Photos</p>
-                    <div className="mt-1 flex flex-wrap gap-2">
-                      {photos.map((url, i) => (
-                        <a key={i} href={url} target="_blank" rel="noopener noreferrer">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={url} alt={`Colis ${i + 1}`} className="h-16 w-16 rounded-lg border border-phoebe-pearl object-cover" />
-                        </a>
-                      ))}
+                    <div className="mt-1">
+                      <PhotoLightbox photos={photos} />
                     </div>
                   </div>
                 )}
