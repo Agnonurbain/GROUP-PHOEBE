@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { BackLink } from "@/components/public/back-link"
+import { PhotoLightbox } from "@/components/photo-lightbox"
 import {
   ZONE_LABELS,
   MODE_LABELS,
@@ -32,6 +33,7 @@ export default async function SuiviPage({
     | { numero_suivi: string; statut: string; zone: string; mode: string; created_at: string }
     | null = null
   let historique: { statut: string; horodatage: string }[] = []
+  let photos: string[] = []
   let introuvable = false
 
   if (numeroNorm) {
@@ -39,12 +41,13 @@ export default async function SuiviPage({
     const db = getAdmin()
     const { data } = await db
       .from("expeditions")
-      .select("id, numero_suivi, statut, zone, mode, created_at")
+      .select("*")
       .eq("numero_suivi", numeroNorm)
       .single()
 
     if (data) {
       expedition = data
+      photos = ((data as unknown as { photos?: string[] }).photos) ?? []
       const { data: hist } = await db
         .from("expedition_statut_historique")
         .select("statut, horodatage")
@@ -100,6 +103,15 @@ export default async function SuiviPage({
             {ZONE_LABELS[expedition.zone as keyof typeof ZONE_LABELS] ?? expedition.zone} ·{" "}
             {MODE_LABELS[expedition.mode as keyof typeof MODE_LABELS] ?? expedition.mode}
           </p>
+
+          {photos.length > 0 && (
+            <div className="mt-5">
+              <p className="text-xs uppercase tracking-wider text-public-text-muted">Photos du colis</p>
+              <div className="mt-2">
+                <PhotoLightbox photos={photos} />
+              </div>
+            </div>
+          )}
 
           {historique.length > 0 && (
             <ol className="mt-6 space-y-4 border-t border-public-border pt-6">

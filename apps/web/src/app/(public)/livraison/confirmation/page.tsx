@@ -5,6 +5,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { Button } from "@/components/ui"
 import { CheckIcon } from "@/components/icons"
+import { PhotoLightbox } from "@/components/photo-lightbox"
 import { ZONE_LABELS, MODE_LABELS, STATUT_LIVRAISON_LABELS } from "@/lib/livraison"
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default async function ConfirmationLivraison({
   let expedition:
     | { numero_suivi: string; statut: string; zone: string; mode: string; prix: number | null; destinataire_nom: string; client_id: string }
     | null = null
+  let photos: string[] = []
 
   if (exp && user) {
     const admin = createAdminClient<Database>(
@@ -35,10 +37,13 @@ export default async function ConfirmationLivraison({
     )
     const { data } = await admin
       .from("expeditions")
-      .select("numero_suivi, statut, zone, mode, prix, destinataire_nom, client_id")
+      .select("*")
       .eq("id", exp)
       .single()
-    if (data && data.client_id === user.sub) expedition = data
+    if (data && data.client_id === user.sub) {
+      expedition = data
+      photos = ((data as unknown as { photos?: string[] }).photos) ?? []
+    }
   }
 
   return (
@@ -82,6 +87,15 @@ export default async function ConfirmationLivraison({
               </div>
             )}
           </dl>
+
+          {photos.length > 0 && (
+            <div className="mt-5">
+              <p className="text-xs uppercase tracking-wider text-public-text-muted">Photos du colis</p>
+              <div className="mt-2">
+                <PhotoLightbox photos={photos} />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
