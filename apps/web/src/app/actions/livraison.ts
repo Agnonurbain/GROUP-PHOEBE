@@ -10,13 +10,15 @@ import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import {
   computeLivraisonPrix,
   genererNumeroSuivi,
+  deriverZoneLivraison,
   ZONE_LABELS,
   MODE_LABELS,
   STATUT_LIVRAISON,
   STATUT_LIVRAISON_LABELS,
-  isZoneLivraison,
   isModeLivraison,
+  type CommuneMatch,
 } from "@/lib/livraison";
+import { getCommunes } from "@/lib/public-cache";
 import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouvelleReservation } from "./notifications-admin";
 
@@ -72,9 +74,10 @@ export async function creerExpedition(
   const expediteurContact = (formData.get("expediteur_contact") as string)?.trim();
   const destinataireNom = (formData.get("destinataire_nom") as string)?.trim();
   const destinataireContact = (formData.get("destinataire_contact") as string)?.trim();
-  const adresseCollecte = (formData.get("adresse_collecte") as string)?.trim();
-  const adresseLivraison = (formData.get("adresse_livraison") as string)?.trim();
-  const zone = formData.get("zone") as string;
+  const detailCollecte = (formData.get("adresse_collecte") as string)?.trim();
+  const detailLivraison = (formData.get("adresse_livraison") as string)?.trim();
+  const communeCollecte = ((formData.get("commune_collecte") as string) || "").trim();
+  const communeLivraison = ((formData.get("commune_livraison") as string) || "").trim();
   const mode = formData.get("mode") as string;
   const natureColis = ((formData.get("nature_colis") as string) || "").trim() || null;
   const dimensions = ((formData.get("dimensions") as string) || "").trim() || null;
@@ -85,16 +88,32 @@ export async function creerExpedition(
   if (
     !expediteurNom || !expediteurContact ||
     !destinataireNom || !destinataireContact ||
-    !adresseCollecte || !adresseLivraison
+    !detailCollecte || !detailLivraison ||
+    !communeCollecte || !communeLivraison
   ) {
     return { error: "Tous les champs expéditeur, destinataire et adresses sont obligatoires." };
   }
-  if (!isZoneLivraison(zone) || !isModeLivraison(mode)) {
-    return { error: "Zone ou mode de livraison invalide." };
+  if (!isModeLivraison(mode)) {
+    return { error: "Mode de livraison invalide." };
   }
   if (!["cinetpay", "stripe"].includes(methode)) {
     return { error: "Méthode de paiement invalide." };
   }
+
+  // Zone déduite (autoritaire) des communes saisies : même source de matching
+  // que le client (communes en cache) → montant affiché == montant facturé.
+  const communes = await getCommunes();
+  const matchCommune = (t: string): CommuneMatch => {
+    const q = t.trim().toLowerCase();
+    if (!q) return null;
+    const c = communes.find((cc) => cc.nom.toLowerCase() === q);
+    return c ? { id: c.id, zoneId: c.zone_id ?? null } : null;
+  };
+  const zone = deriverZoneLivraison(matchCommune(communeCollecte), matchCommune(communeLivraison));
+
+  // Adresses complètes = détail + commune.
+  const adresseCollecte = `${detailCollecte} — ${communeCollecte}`;
+  const adresseLivraison = `${detailLivraison} — ${communeLivraison}`;
 
   const poidsKg = poidsRaw ? Number(poidsRaw) : null;
   if (poidsKg !== null && (Number.isNaN(poidsKg) || poidsKg <= 0)) {

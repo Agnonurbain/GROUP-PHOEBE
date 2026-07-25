@@ -53,6 +53,27 @@ export function isModeLivraison(v: string): v is ModeLivraison {
   return (MODES_LIVRAISON as readonly string[]).includes(v);
 }
 
+// Commune résolue (depuis la table communes) ou null si l'adresse ne correspond
+// à aucune commune connue (ville de l'intérieur non répertoriée).
+export type CommuneMatch = { id: string; zoneId: string | null } | null;
+
+// Déduit la zone livraison du couple (collecte, livraison) :
+//   même commune          → intracommunale
+//   même zone tarifaire    → intercommunale (ex. deux communes du Grand Abidjan)
+//   sinon / non répertoriée → nationale
+export function deriverZoneLivraison(
+  collecte: CommuneMatch,
+  livraison: CommuneMatch
+): ZoneLivraison {
+  if (collecte && livraison) {
+    if (collecte.id === livraison.id) return "intracommunale";
+    if (collecte.zoneId && livraison.zoneId && collecte.zoneId === livraison.zoneId) {
+      return "intercommunale";
+    }
+  }
+  return "nationale";
+}
+
 /** Prix d'une livraison pour une zone et un mode, ou null si combinaison invalide. */
 export function computeLivraisonPrix(zone: string, mode: string): number | null {
   if (!isZoneLivraison(zone) || !isModeLivraison(mode)) return null;
