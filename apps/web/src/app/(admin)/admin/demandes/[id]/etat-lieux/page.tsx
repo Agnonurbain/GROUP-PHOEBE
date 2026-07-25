@@ -1,9 +1,9 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
+import { PhotoLightbox } from "@/components/photo-lightbox";
 import { EtatLieuxForm } from "./etat-lieux-form";
 
 export const metadata: Metadata = {
@@ -61,18 +61,8 @@ export default async function EtatLieuxPage({
               Kilométrage : {demande.kilometrage_depart?.toLocaleString("fr-FR")} km
               · Carburant : {demande.carburant_depart?.replace("_", " ")}
             </p>
-            <div className="mt-2 flex gap-2 overflow-x-auto">
-              {demande.etat_lieux_depart_photos.map((url, i) => (
-                <Image
-                  key={i}
-                  src={url}
-                  alt={`Départ ${i + 1}`}
-                  width={80}
-                  height={80}
-                  className="h-20 w-20 rounded-xl object-cover ring-1 ring-black/5"
-                  unoptimized
-                />
-              ))}
+            <div className="mt-2">
+              <PhotoLightbox photos={demande.etat_lieux_depart_photos} thumbClassName="h-20 w-20" />
             </div>
           </div>
           </ScrollReveal>
@@ -93,18 +83,8 @@ export default async function EtatLieuxPage({
                 </span>
               )}
             </p>
-            <div className="mt-2 flex gap-2 overflow-x-auto">
-              {demande.etat_lieux_retour_photos.map((url, i) => (
-                <Image
-                  key={i}
-                  src={url}
-                  alt={`Retour ${i + 1}`}
-                  width={80}
-                  height={80}
-                  className="h-20 w-20 rounded-xl object-cover ring-1 ring-black/5"
-                  unoptimized
-                />
-              ))}
+            <div className="mt-2">
+              <PhotoLightbox photos={demande.etat_lieux_retour_photos} thumbClassName="h-20 w-20" />
             </div>
           </div>
           </ScrollReveal>
