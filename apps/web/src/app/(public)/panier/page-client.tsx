@@ -29,15 +29,12 @@ export default function Panier() {
     }
   }, [items]);
 
-  const montantLocation = items.reduce(
+  // Sous-total par jour uniquement : les dates, la zone et la caution exacte
+  // sont appliquées à l'étape paiement. (cautionBaseFcfa porte le TAUX, ex. 0,3.)
+  const sousTotalParJour = items.reduce(
     (sum, i) => sum + i.prixJournalier * i.quantite,
     0
   )
-  const cautionTotale = items.reduce(
-    (sum, i) => sum + i.cautionBaseFcfa * i.quantite,
-    0
-  )
-  const total = montantLocation + cautionTotale
 
   if (count === 0) {
     return (
@@ -80,8 +77,10 @@ export default function Panier() {
         <h1 className="text-4xl font-bold text-public-text">Panier ({count} véhicule{count > 1 ? "s" : ""})</h1>
         <Button
           variant="text-link"
-          onClick={clearCart}
-          className="text-[#EF4444] hover:text-[#DC2626]"
+          onClick={() => {
+            if (window.confirm("Vider le panier ? Cette action retire tous les véhicules.")) clearCart()
+          }}
+          className="text-error hover:text-error/80"
         >
           Vider le panier
         </Button>
@@ -99,13 +98,14 @@ export default function Panier() {
                   </div>
                   <p className="mt-1 text-3xl font-bold text-public-text-muted">
                     {item.prixJournalier.toLocaleString()} FCFA/jour
-                    {item.cautionBaseFcfa > 0 && ` · Caution: ${item.cautionBaseFcfa.toLocaleString()} FCFA`}
+                    {item.cautionBaseFcfa > 0 && ` · Caution: ${Math.round(item.cautionBaseFcfa * 100)}% (remboursable)`}
                   </p>
                 </div>
                 <Button
                   variant="icon"
                   onClick={() => removeItem(item.groupKey)}
-                  className="text-public-text-muted hover:bg-[rgba(239,68,68,0.1)] hover:text-[#EF4444]"
+                  aria-label={`Retirer ${item.marque} ${item.modele} du panier`}
+                  className="text-public-text-muted hover:bg-error/10 hover:text-error"
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18" />
@@ -119,15 +119,17 @@ export default function Panier() {
                   <button
                     onClick={() => updateQuantity(item.groupKey, item.quantite - 1)}
                     disabled={item.quantite <= 1}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#2A2A2A] text-public-text-muted hover:border-[#F97316]/30 hover:text-public-text disabled:opacity-30 transition-colors"
+                    aria-label="Diminuer la quantité"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-public-border text-public-text-muted hover:border-accent-orange/30 hover:text-public-text disabled:opacity-30 transition-colors"
                   >
                     −
                   </button>
-                  <span className="w-8 text-center text-sm font-bold text-public-text">{item.quantite}</span>
+                  <span className="w-8 text-center text-sm font-bold text-public-text" aria-live="polite">{item.quantite}</span>
                   <button
                     onClick={() => updateQuantity(item.groupKey, item.quantite + 1)}
                     disabled={item.quantite >= item.maxDisponible}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-[#2A2A2A] text-public-text-muted hover:border-[#F97316]/30 hover:text-public-text disabled:opacity-30 transition-colors"
+                    aria-label="Augmenter la quantité"
+                    className="flex h-7 w-7 items-center justify-center rounded-lg border border-public-border text-public-text-muted hover:border-accent-orange/30 hover:text-public-text disabled:opacity-30 transition-colors"
                   >
                     +
                   </button>
@@ -139,15 +141,15 @@ export default function Panier() {
                       type="checkbox"
                       checked={item.avecChauffeur}
                       onChange={() => toggleChauffeur(item.groupKey)}
-                      className="h-4 w-4 rounded border-[#2A2A2A] bg-[#0A0A0A] text-[#F97316] focus:ring-[#F97316]"
+                      className="h-4 w-4 rounded border-public-border bg-public-bg accent-accent-orange"
                     />
                     Avec chauffeur
                   </label>
                 )}
               </div>
 
-              <div className="mt-4 flex items-center justify-between border-t border-[#2A2A2A] pt-3">
-                <span className="text-sm text-public-text-muted">Sous-total</span>
+              <div className="mt-4 flex items-center justify-between border-t border-public-border pt-3">
+                <span className="text-sm text-public-text-muted">Sous-total / jour</span>
                 <span className="text-3xl font-bold text-public-text">
                   {(item.prixJournalier * item.quantite).toLocaleString()} FCFA
                 </span>
@@ -162,18 +164,17 @@ export default function Panier() {
             <div className="mt-6 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-public-text-muted">Location ({count} véhicule{count > 1 ? "s" : ""})</span>
-                <span className="text-3xl font-bold text-public-text">{montantLocation.toLocaleString()} FCFA</span>
+                <span className="text-3xl font-bold text-public-text">{sousTotalParJour.toLocaleString()} FCFA</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-public-text-muted">Caution totale</span>
-                <span className="text-3xl font-bold text-public-text">{cautionTotale.toLocaleString()} FCFA</span>
-              </div>
-              <p className="text-sm text-public-text-muted">(Caution remboursable sous 72h après restitution)</p>
-              <hr className="border-[#2A2A2A]" />
+              <p className="text-sm text-public-text-muted">Prix par jour, hors caution.</p>
+              <hr className="border-public-border" />
               <div className="flex justify-between">
-                <span className="text-sm font-bold text-public-text">Total à payer</span>
-                <span className="text-3xl font-bold text-[#F97316]">{total.toLocaleString()} FCFA</span>
+                <span className="text-sm font-bold text-public-text">Sous-total / jour</span>
+                <span className="text-3xl font-bold text-accent-orange">{sousTotalParJour.toLocaleString()} FCFA</span>
               </div>
+              <p className="text-xs text-public-text-muted">
+                Total final (durée, destination et caution) calculé à l&apos;étape suivante.
+              </p>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-3 text-sm text-public-text-muted">
@@ -195,7 +196,7 @@ export default function Panier() {
               <p className="text-sm text-public-text-muted">Moyens de paiement</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {["Orange Money", "MTN MoMo", "Wave", "Carte Bancaire"].map((m) => (
-                  <span key={m} className="rounded-lg border border-[#2A2A2A] px-3 py-1.5 text-[11px] text-public-text-muted">{m}</span>
+                  <span key={m} className="rounded-lg border border-public-border px-3 py-1.5 text-[11px] text-public-text-muted">{m}</span>
                 ))}
               </div>
             </div>
