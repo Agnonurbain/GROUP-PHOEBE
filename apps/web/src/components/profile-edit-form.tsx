@@ -46,7 +46,7 @@ export function ProfileEditForm({
             </div>
           )}
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">Telephone</dt>
+            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">Téléphone</dt>
             <dd className="mt-1 font-medium text-phoebe-anthracite">
               {telephone || "—"}
             </dd>
@@ -62,7 +62,7 @@ export function ProfileEditForm({
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">Role</dt>
+            <dt className="text-xs font-medium uppercase tracking-wider text-phoebe-anthracite/70">Rôle</dt>
             <dd className="font-medium capitalize text-phoebe-anthracite">
               {role}
             </dd>
@@ -128,7 +128,7 @@ export function ProfileEditForm({
             htmlFor="telephone"
             className="mb-1.5 block text-sm font-medium text-phoebe-anthracite"
           >
-            Telephone
+            Téléphone
           </label>
           <input
             id="telephone"

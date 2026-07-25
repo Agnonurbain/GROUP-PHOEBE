@@ -3,6 +3,7 @@ import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { VerificationBadge } from "@/components/verification-badge"
 import { ProfileEditForm } from "@/components/profile-edit-form"
+import { ChangePasswordForm } from "@/components/change-password-form"
 import { getSignedDocUrl } from "@/lib/storage"
 import type { StatutVerification } from "@/lib/auth"
 import { DeleteAccountButton } from "@/components/delete-account-button"
@@ -19,7 +20,12 @@ export const metadata: Metadata = {
   },
 }
 
-export default async function CompteProfilPage() {
+export default async function CompteProfilPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mdp?: string }>
+}) {
+  const { mdp } = await searchParams
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
   const user = claimsData?.claims
@@ -53,6 +59,11 @@ export default async function CompteProfilPage() {
   const statut = profile.statut_verification as StatutVerification
   const isClient = profile.role === "client"
 
+  // Un compte a un mot de passe s'il s'est inscrit par email ou telephone.
+  // Les comptes Google seuls (providers = ["google"]) n'en ont pas.
+  const providers = (user.app_metadata?.providers as string[] | undefined) ?? []
+  const hasPassword = providers.includes("email") || providers.includes("phone")
+
   const [pieceUrl, permisUrl] = isClient
     ? await Promise.all([
         getSignedDocUrl(supabase, profile.piece_identite_url),
@@ -84,6 +95,25 @@ export default async function CompteProfilPage() {
           email={profile.email ?? null}
           role={profile.role}
         />
+
+        {mdp === "ok" && (
+          <p role="status" className="rounded-2xl border border-accent-green/20 bg-accent-green/5 px-5 py-3.5 text-sm font-medium text-accent-green">
+            Votre mot de passe a été modifié avec succès.
+          </p>
+        )}
+
+        {hasPassword && <ChangePasswordForm />}
+
+        {isClient && (
+          <Card>
+            <div className="flex items-center justify-between">
+              <h2 className="text-3xl font-semibold text-public-text">Mes réservations</h2>
+              <a href="/compte/reservations" className="text-sm font-medium text-accent-gold hover:text-accent-gold-hover transition-colors">
+                Voir mes réservations →
+              </a>
+            </div>
+          </Card>
+        )}
 
         {isClient && (
           <Card>

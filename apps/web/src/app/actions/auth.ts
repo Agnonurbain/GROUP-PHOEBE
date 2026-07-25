@@ -11,6 +11,7 @@ import { checkRateLimit } from "@/lib/rate-limit";
 export type AuthState = {
   error?: string;
   phone?: string;
+  success?: boolean;
 };
 
 export async function inscription(
@@ -254,6 +255,65 @@ export async function changerMotDePasse(
   }
 
   redirect("/compte/profil");
+}
+
+// Changement de mot de passe depuis le profil (compte email/telephone).
+// Verifie le mot de passe ACTUEL avant de le remplacer : une session volee ne
+// suffit pas a changer le mot de passe sans connaitre l'ancien.
+export async function changerMotDePasseProfil(
+  _prev: AuthState,
+  formData: FormData
+): Promise<AuthState> {
+  const actuel = formData.get("mot_de_passe_actuel") as string;
+  const nouveau = formData.get("nouveau_mot_de_passe") as string;
+  const confirmation = formData.get("confirmation") as string;
+
+  if (!actuel || !nouveau || !confirmation) {
+    return { error: "Tous les champs sont obligatoires." };
+  }
+  if (nouveau.length < 8) {
+    return { error: "Le nouveau mot de passe doit contenir au moins 8 caractères." };
+  }
+  if (nouveau !== confirmation) {
+    return { error: "Les mots de passe ne correspondent pas." };
+  }
+  if (nouveau === actuel) {
+    return { error: "Le nouveau mot de passe doit être différent de l'actuel." };
+  }
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return { error: "Session expirée. Veuillez vous reconnecter." };
+  }
+  if (!user.email && !user.phone) {
+    return { error: "Ce compte n'utilise pas de mot de passe (connexion via Google)." };
+  }
+
+  // Verifie le mot de passe actuel sur un client jetable : signInWithPassword
+  // n'affecte pas la session courante (persistSession desactive).
+  const verif = createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false, autoRefreshToken: false } }
+  );
+  const { error: verifErr } = await verif.auth.signInWithPassword(
+    user.email
+      ? { email: user.email, password: actuel }
+      : { phone: user.phone!, password: actuel }
+  );
+  if (verifErr) {
+    return { error: "Mot de passe actuel incorrect." };
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: nouveau });
+  if (error) {
+    return { error: error.message };
+  }
+
+  redirect("/compte/profil?mdp=ok");
 }
 
 export async function updateProfile(
