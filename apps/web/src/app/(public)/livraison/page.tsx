@@ -49,9 +49,12 @@ export default async function Livraison({
             Le paiement a été annulé. Vous pouvez relancer votre commande à tout moment.
           </div>
         )}
-        <div className="mt-8">
+        <div className="mt-8 flex flex-wrap items-center gap-4">
           <Link href="/livraison/commander">
             <Button variant="orange" size="lg">Commander une livraison</Button>
+          </Link>
+          <Link href="/suivi" className="text-sm font-semibold text-accent-orange transition-colors hover:text-accent-orange-hover">
+            Suivre un colis →
           </Link>
         </div>
       </section>
