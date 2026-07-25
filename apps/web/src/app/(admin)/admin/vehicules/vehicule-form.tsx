@@ -267,8 +267,8 @@ export default function VehiculeForm({
           </div>
 
           <div className="flex flex-wrap gap-6">
-            <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
-              <input
+            <label htmlFor="vf-climatisation" className="flex items-center gap-2 text-sm text-phoebe-anthracite">
+              <input id="vf-climatisation"
                 type="checkbox"
                 name="climatisation"
                 defaultChecked={vehicule?.climatisation ?? false}
@@ -276,8 +276,8 @@ export default function VehiculeForm({
               />
               Climatisation
             </label>
-            <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
-              <input
+            <label htmlFor="vf-chauffeur_disponible" className="flex items-center gap-2 text-sm text-phoebe-anthracite">
+              <input id="vf-chauffeur_disponible"
                 type="checkbox"
                 name="chauffeur_disponible"
                 defaultChecked={vehicule?.chauffeur_disponible ?? false}
@@ -285,8 +285,8 @@ export default function VehiculeForm({
               />
               Chauffeur disponible
             </label>
-            <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
-              <input
+            <label htmlFor="vf-camera_interieure" className="flex items-center gap-2 text-sm text-phoebe-anthracite">
+              <input id="vf-camera_interieure"
                 type="checkbox"
                 name="camera_interieure"
                 defaultChecked={vehicule?.camera_interieure ?? true}
@@ -294,8 +294,8 @@ export default function VehiculeForm({
               />
               Caméra intérieure
             </label>
-            <label className="flex items-center gap-2 text-sm text-phoebe-anthracite">
-              <input
+            <label htmlFor="vf-gps" className="flex items-center gap-2 text-sm text-phoebe-anthracite">
+              <input id="vf-gps"
                 type="checkbox"
                 name="gps"
                 defaultChecked={vehicule?.gps ?? false}
@@ -310,11 +310,11 @@ export default function VehiculeForm({
               <span className={labelClass}>Chauffeurs affectés</span>
               <div className="mt-1 space-y-1.5">
                 {chauffeurs.map((c) => (
-                  <label
+                  <label htmlFor="vf-chauffeur_ids"
                     key={c.id}
                     className="flex items-center gap-2 text-sm text-phoebe-anthracite"
                   >
-                    <input
+                    <input id="vf-chauffeur_ids"
                       type="checkbox"
                       name="chauffeur_ids"
                       value={c.id}

@@ -57,20 +57,20 @@ export function ProposerPrixForm({
         <input type="hidden" name="vehicule_id" value={vehiculeId} />
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">
+            <label htmlFor="ppf-champ" className="mb-1 block text-xs font-medium text-phoebe-anthracite">
               Champ
             </label>
-            <select name="champ" required className={inputClass}>
+            <select id="ppf-champ" name="champ" required className={inputClass}>
               {CHAMP_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">
+            <label htmlFor="ppf-valeur_proposee" className="mb-1 block text-xs font-medium text-phoebe-anthracite">
               Nouveau prix (FCFA)
             </label>
-            <input
+            <input id="ppf-valeur_proposee"
               name="valeur_proposee"
               type="number"
               min={1}
@@ -80,10 +80,10 @@ export function ProposerPrixForm({
           </div>
         </div>
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">
+          <label htmlFor="ppf-commentaire" className="mb-1 block text-xs font-medium text-phoebe-anthracite">
             Commentaire (optionnel)
           </label>
-          <input name="commentaire" className={inputClass} placeholder="Raison de la modification" />
+          <input id="ppf-commentaire" name="commentaire" className={inputClass} placeholder="Raison de la modification" />
         </div>
         <SubmitButton className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/80 hover:shadow-md">
           Envoyer la proposition

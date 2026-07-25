@@ -132,8 +132,8 @@ export default async function DemandesPage({
 
       <form method="GET" action="/admin/demandes" className="flex flex-wrap items-end gap-3">
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Statut</label>
-          <select name="statut" defaultValue={filtreStatut}
+          <label htmlFor="df-statut" className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Statut</label>
+          <select id="df-statut" name="statut" defaultValue={filtreStatut}
             className="rounded-lg border border-phoebe-pearl bg-white px-3 py-2 text-sm text-phoebe-anthracite">
             <option value="actives">Actives</option>
             <option value="historique">Historique</option>
@@ -145,8 +145,8 @@ export default async function DemandesPage({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Type</label>
-          <select name="type" defaultValue={filtreType}
+          <label htmlFor="df-type" className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Type</label>
+          <select id="df-type" name="type" defaultValue={filtreType}
             className="rounded-lg border border-phoebe-pearl bg-white px-3 py-2 text-sm text-phoebe-anthracite">
             <option value="all">Tous</option>
             {TYPES.map((t) => (
@@ -156,14 +156,14 @@ export default async function DemandesPage({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Du</label>
-          <input type="date" name="date_debut" defaultValue={filtreDateDebut}
+          <label htmlFor="df-date_debut" className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Du</label>
+          <input id="df-date_debut" type="date" name="date_debut" defaultValue={filtreDateDebut}
             className="rounded-lg border border-phoebe-pearl bg-white px-3 py-2 text-sm text-phoebe-anthracite" />
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Au</label>
-          <input type="date" name="date_fin" defaultValue={filtreDateFin}
+          <label htmlFor="df-date_fin" className="mb-1 block text-xs font-medium text-phoebe-anthracite/70">Au</label>
+          <input id="df-date_fin" type="date" name="date_fin" defaultValue={filtreDateFin}
             className="rounded-lg border border-phoebe-pearl bg-white px-3 py-2 text-sm text-phoebe-anthracite" />
         </div>
 

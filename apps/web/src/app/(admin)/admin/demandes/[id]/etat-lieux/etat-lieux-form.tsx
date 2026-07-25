@@ -102,10 +102,10 @@ export function EtatLieuxForm({
             />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+            <label htmlFor="el-carburant" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
               Niveau de carburant *
             </label>
-            <select
+            <select id="el-carburant"
               name="carburant"
               required
               defaultValue={type === "retour" ? undefined : "plein"}
@@ -146,10 +146,10 @@ export function EtatLieuxForm({
         )}
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+          <label htmlFor="el-photos" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
             Photos horodatées
           </label>
-          <input
+          <input id="el-photos"
             name="photos"
             type="file"
             accept="image/*"
@@ -160,10 +160,10 @@ export function EtatLieuxForm({
 
         {type === "retour" && cautionMax != null && cautionMax > 0 && (
           <div>
-            <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+            <label htmlFor="el-caution_retenue" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
               Montant de caution à retenir (FCFA)
             </label>
-            <input
+            <input id="el-caution_retenue"
               name="caution_retenue"
               type="number"
               min={0}
