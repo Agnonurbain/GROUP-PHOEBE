@@ -13,13 +13,14 @@ import { serializeJsonLd } from "@/lib/json-ld"
 
 const PAGE_SIZE = 12
 
+// CollectionPage plutôt qu'un ItemList vide : la grille est rendue en streaming
+// dans un enfant Suspense, les items ne sont donc pas disponibles ici. On décrit
+// honnêtement la page de collection sans lister d'éléments fantômes.
 const catalogueSchema = {
   "@context": "https://schema.org",
-  "@type": "ItemList",
+  "@type": "CollectionPage",
   name: "Catalogue de véhicules",
   description: "Flotte de véhicules premium à la location ou à l'achat à Abidjan et partout en Côte d'Ivoire",
-  itemListElement: [],
-  numberOfItems: 0,
 }
 
 export const metadata: Metadata = {
@@ -148,10 +149,21 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
   return (
     <>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {paged.map((g) => (
+        {paged.map((g) => {
+          const hasLoc = g.prixJournalier > 0
+          const hasVente = !!g.prixVente && g.prixVente > 0
+          // Les deux → page de choix ; vente seule → fiche en mode achat ;
+          // sinon → fiche en location (comportement par défaut).
+          const href =
+            hasLoc && hasVente
+              ? `/transport/catalogue/groupe/${encodeURIComponent(g.groupKey)}/choix`
+              : hasVente
+                ? `/transport/vehicule/${g.groupKey}?mode=achat`
+                : `/transport/vehicule/${g.groupKey}`
+          return (
           <Link
             key={g.groupKey}
-            href={`/transport/vehicule/${g.groupKey}`}
+            href={href}
             className="group"
           >
             <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-accent-orange/30 hover:bg-public-bg-elevated hover:shadow-xl hover:shadow-black/20">
@@ -184,7 +196,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
                   ))}
               </div>
               <div className="mt-5 flex items-center justify-between border-t border-public-border pt-4">
-                {g.prixJournalier > 0 ? (
+                {hasLoc ? (
                   <span
                     className="relative inline-block bg-accent-orange px-4 py-1.5 text-sm font-bold text-[#0A0A0A]"
                     style={{
@@ -193,16 +205,26 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
                   >
                     {g.prixJournalier.toLocaleString()} FCFA/j
                   </span>
+                ) : hasVente ? (
+                  <span
+                    className="relative inline-block bg-accent-gold px-4 py-1.5 text-sm font-bold text-[#0A0A0A]"
+                    style={{
+                      clipPath: "polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)",
+                    }}
+                  >
+                    {g.prixVente!.toLocaleString()} FCFA
+                  </span>
                 ) : (
                   <span className="text-sm font-semibold text-public-text-muted">Prix sur demande</span>
                 )}
-                <span className="inline-flex items-center gap-1 text-sm font-semibold text-accent-orange transition-all duration-300 group-hover:gap-2">
-                  Réserver <ChevronRightIcon size={14} />
+                <span className={`inline-flex items-center gap-1 text-sm font-semibold transition-all duration-300 group-hover:gap-2 ${!hasLoc && hasVente ? "text-accent-gold" : "text-accent-orange"}`}>
+                  {!hasLoc && hasVente ? "Acheter" : "Réserver"} <ChevronRightIcon size={14} />
                 </span>
               </div>
             </Card>
           </Link>
-        ))}
+          )
+        })}
       </div>
 
       {totalPages > 1 && (

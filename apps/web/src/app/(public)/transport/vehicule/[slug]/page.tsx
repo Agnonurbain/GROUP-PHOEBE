@@ -5,6 +5,8 @@ import { parseGroupKey } from "@/lib/vehicle-group"
 import { Badge } from "@/components/ui"
 import { VehicleGallery } from "@/components/public/vehicle-gallery"
 import { VehicleBooking } from "@/components/public/vehicle-booking"
+import { VehiclePurchase } from "@/components/public/vehicle-purchase"
+import Link from "next/link"
 import { ViewItemTracker } from "@/components/analytics/view-item-tracker"
 import { BackLink } from "@/components/public/back-link"
 import { serializeJsonLd } from "@/lib/json-ld"
@@ -32,8 +34,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-export default async function VehicleDetail({ params }: { params: Promise<{ slug: string }> }) {
+export default async function VehicleDetail({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<{ mode?: string }>
+}) {
   const { slug } = await params
+  const { mode } = await searchParams
   const supabase = await createClient()
   const parsed = parseGroupKey(slug)
   if (!parsed) notFound()
@@ -48,6 +57,15 @@ export default async function VehicleDetail({ params }: { params: Promise<{ slug
   if (!vehicules || vehicules.length === 0) notFound()
 
   const rep = vehicules[0]
+
+  // Le groupe peut proposer la location, l'achat, ou les deux. Le mode choisi
+  // (via ?mode=, issu de la page « Location ou Achat ») pilote l'encart affiché.
+  const hasVente = vehicules.some((v) => Number(v.prix_vente) > 0)
+  const hasLocation = vehicules.some(
+    (v) => Number(v.prix_journalier) > 0 || Number(v.prix_mensuel) > 0
+  )
+  const venteRep = vehicules.find((v) => Number(v.prix_vente) > 0) ?? rep
+  const modeAchat = mode === "achat" && hasVente
 
   const { data: photos } = await supabase
     .from("vehicule_photos")
@@ -134,11 +152,16 @@ export default async function VehicleDetail({ params }: { params: Promise<{ slug
         unitText: "jour",
       },
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.5",
-      reviewCount: "12",
-    },
+  }
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Accueil", item: baseUrl },
+      { "@type": "ListItem", position: 2, name: "Transport", item: `${baseUrl}/transport/catalogue` },
+      { "@type": "ListItem", position: 3, name: `${rep.marque} ${rep.modele}`, item: currentUrl },
+    ],
   }
 
   return (
@@ -146,6 +169,10 @@ export default async function VehicleDetail({ params }: { params: Promise<{ slug
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(productSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbSchema) }}
       />
       <ViewItemTracker
         item={{
@@ -158,10 +185,20 @@ export default async function VehicleDetail({ params }: { params: Promise<{ slug
           item_variant: rep.modele,
         }}
       />
-      <nav className="flex items-center gap-3 px-6 pt-6 text-sm text-public-text-faint">
+      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-3 px-6 pt-6 text-sm text-public-text-faint">
         <BackLink href="/transport/catalogue" label="Retour au catalogue" />
         <span aria-hidden="true">·</span>
-        <span>Accueil &gt; Transport &gt; {rep.marque} {rep.modele}</span>
+        <ol className="flex flex-wrap items-center gap-1.5">
+          <li>
+            <Link href="/" className="transition-colors hover:text-accent-orange">Accueil</Link>
+          </li>
+          <li aria-hidden="true">›</li>
+          <li>
+            <Link href="/transport/catalogue" className="transition-colors hover:text-accent-orange">Transport</Link>
+          </li>
+          <li aria-hidden="true">›</li>
+          <li aria-current="page" className="text-public-text-muted">{rep.marque} {rep.modele}</li>
+        </ol>
       </nav>
 
       <div className="grid gap-12 px-6 py-8 lg:grid-cols-5">
@@ -231,16 +268,48 @@ export default async function VehicleDetail({ params }: { params: Promise<{ slug
         </div>
 
         <div className="lg:col-span-2">
-          <VehicleBooking
-            vehiculeId={rep.id}
-            groupKey={slug}
-            marque={rep.marque}
-            modele={rep.modele}
-            prixJournalier={rep.prix_journalier ?? 0}
-            chauffeurDisponible={rep.chauffeur_disponible}
-            zonePrices={zonePrices}
-            defaultPrice={rep.prix_journalier ?? 0}
-          />
+          {/* Bascule entre les deux modes lorsque le véhicule est à la fois
+              louable et à vendre. */}
+          {hasLocation && hasVente && (
+            <div className="mb-4">
+              {modeAchat ? (
+                <Link
+                  href={`/transport/vehicule/${slug}?mode=location`}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-orange transition-colors hover:text-accent-orange-hover"
+                >
+                  ← Plutôt le louer ?
+                </Link>
+              ) : (
+                <Link
+                  href={`/transport/vehicule/${slug}?mode=achat`}
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-gold transition-colors hover:text-accent-gold-hover"
+                >
+                  Vous préférez l&apos;acheter ? →
+                </Link>
+              )}
+            </div>
+          )}
+
+          {modeAchat ? (
+            <VehiclePurchase
+              vehiculeId={venteRep.id}
+              marque={venteRep.marque}
+              modele={venteRep.modele}
+              categorie={venteRep.categorie}
+              prixVente={Number(venteRep.prix_vente) || 0}
+            />
+          ) : (
+            <VehicleBooking
+              vehiculeId={rep.id}
+              groupKey={slug}
+              marque={rep.marque}
+              modele={rep.modele}
+              prixJournalier={rep.prix_journalier ?? 0}
+              chauffeurDisponible={rep.chauffeur_disponible}
+              zonePrices={zonePrices}
+              defaultPrice={rep.prix_journalier ?? 0}
+            />
+          )}
         </div>
       </div>
     </>
