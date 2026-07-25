@@ -6,6 +6,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { creerSessionStripe } from "@/lib/payments/stripe";
 import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
+import { computeItemPricing, type ZonePricing } from "@/lib/pricing";
 import { notifierAdminNouvelleReservation } from "./notifications-admin";
 
 type CartInput = {
@@ -57,6 +58,7 @@ export async function checkoutCart(
   const fin = formData.get("fin") as string;
   const villeDepart = (formData.get("ville_depart") as string) || null;
   const destination = (formData.get("destination") as string) || null;
+  const zoneNom = (formData.get("zone") as string) || null;
   const methode = formData.get("methode_paiement") as string;
 
   if (!rawItems || !debut || !fin) {
@@ -90,6 +92,19 @@ export async function checkoutCart(
   const admin = getAdmin();
   const adminSupabase = await createClient();
 
+  // Tarification par zone : le client envoie le NOM de zone qu'il a vu affiché
+  // (detectedZone). On recharge ses paramètres tarifaires côté serveur pour que
+  // le montant facturé corresponde exactement à celui présenté.
+  let zone: ZonePricing = null;
+  if (zoneNom) {
+    const { data: zoneData } = await admin
+      .from("zones_tarifaires")
+      .select("coefficient_majoration, tarif_chauffeur_journalier, chauffeur_statut, caution_multiplicateur")
+      .eq("nom", zoneNom)
+      .maybeSingle();
+    if (zoneData) zone = zoneData as unknown as ZonePricing;
+  }
+
   const createdDemandes: Array<{ id: string; vehiculeId: string; chauffeurId: string | null; montant: number; caution: number }> = [];
 
   const peri = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
@@ -113,10 +128,18 @@ export async function checkoutCart(
       if (bookedForItem >= item.quantite) break;
       if (!vehicule.prix_journalier) continue;
 
-      // Montant pour UN vehicule (le total du panier = somme des vehicules).
-      const montantPerVehicule = Number(vehicule.prix_journalier) * nbJours;
-      const tauxCaution = vehicule.taux_caution ? Number(vehicule.taux_caution) : TAUX_CAUTION_DEFAUT;
-      const cautionPerVehicule = Math.round(montantPerVehicule * tauxCaution);
+      // Prix pour UN vehicule, tarification zone incluse (coefficient, chauffeur
+      // obligatoire a l'interieur, caution = % du montant zone). Source unique
+      // partagee avec l'affichage client -> montant affiche == montant facture.
+      const { montant: montantPerVehicule, caution: cautionPerVehicule, chauffeurObligatoire } =
+        computeItemPricing({
+          prixJournalier: Number(vehicule.prix_journalier),
+          tauxCaution: vehicule.taux_caution ? Number(vehicule.taux_caution) : TAUX_CAUTION_DEFAUT,
+          nbJours,
+          avecChauffeur: item.avecChauffeur,
+          zone,
+        });
+      const avecChauffeurEffectif = item.avecChauffeur || chauffeurObligatoire;
 
       const { error: dispoErr } = await admin
         .from("disponibilites_vehicule")
@@ -130,7 +153,7 @@ export async function checkoutCart(
 
       let chauffeurId: string | null = null;
 
-      if (item.avecChauffeur && vehicule.chauffeur_disponible) {
+      if (avecChauffeurEffectif && vehicule.chauffeur_disponible) {
         const { data: vcLinks } = await admin
           .from("vehicule_chauffeurs")
           .select("chauffeur_id")
@@ -158,7 +181,7 @@ export async function checkoutCart(
           periode: peri,
           ville_depart: villeDepart,
           destination,
-          avec_chauffeur: item.avecChauffeur,
+          avec_chauffeur: avecChauffeurEffectif,
           chauffeur_id: chauffeurId,
           montant: montantPerVehicule,
           caution: cautionPerVehicule,

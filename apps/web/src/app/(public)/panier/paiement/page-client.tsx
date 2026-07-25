@@ -9,10 +9,18 @@ import { PanierStepper } from "@/components/panier-stepper"
 import { BackLink } from "@/components/public/back-link"
 import { Button, Card, Badge } from "@/components/ui"
 import { checkoutCart, type CheckoutState } from "@/app/actions/checkout"
+import { computeItemPricing, type ZonePricing } from "@/lib/pricing"
 import { trackBeginCheckout } from "@/lib/analytics"
 
 type Commune = { id: string; nom: string; zone_id: string; zone_nom: string }
-type Zone = { id: string; nom: string }
+type Zone = {
+  id: string
+  nom: string
+  coefficient_majoration: number
+  tarif_chauffeur_journalier: number
+  chauffeur_statut: string
+  caution_multiplicateur: number
+}
 
 const ZONE_COLORS: Record<string, string> = {
   "Abidjan": "#F97316",
@@ -80,8 +88,13 @@ export default function PaiementPage() {
       .select("id, nom, zone_id")
       .then(async ({ data: communesData }) => {
         if (!communesData) return
-        const { data: zonesData } = await supabase.from("zones_tarifaires").select("id, nom")
-        if (!zonesData) return
+        // Ces colonnes tarifaires existent en base (utilisées par le flux
+        // négociation) mais manquent aux types générés -> cast, comme ailleurs.
+        const { data: zonesRaw } = await supabase
+          .from("zones_tarifaires")
+          .select("id, nom, coefficient_majoration, tarif_chauffeur_journalier, chauffeur_statut, caution_multiplicateur")
+        const zonesData = (zonesRaw ?? []) as unknown as Zone[]
+        if (zonesData.length === 0) return
         setZones(zonesData)
         const zoneMap = new Map(zonesData.map((z) => [z.id, z.nom]))
         setCommunes(
@@ -135,6 +148,18 @@ export default function PaiementPage() {
   const detectedZone = selectedCommune?.zone_nom || (showManual ? manualZone : "")
   const zoneColor = ZONE_COLORS[detectedZone] || "#C9A84C"
 
+  // Paramètres tarifaires de la zone détectée (même source que le serveur).
+  const zonePricing: ZonePricing = useMemo(() => {
+    const z = zones.find((z) => z.nom === detectedZone)
+    if (!z) return null
+    return {
+      coefficient_majoration: z.coefficient_majoration,
+      tarif_chauffeur_journalier: z.tarif_chauffeur_journalier,
+      chauffeur_statut: z.chauffeur_statut,
+      caution_multiplicateur: z.caution_multiplicateur,
+    }
+  }, [zones, detectedZone])
+
   // Track begin_checkout when page loads with cart items
   useEffect(() => {
     if (count > 0) {
@@ -148,26 +173,45 @@ export default function PaiementPage() {
         item_brand: i.marque,
       }))
       const value = items.reduce(
-        (sum, i) => sum + i.prixJournalier * i.quantite + i.cautionBaseFcfa * i.quantite,
+        (sum, i) => sum + i.prixJournalier * i.quantite,
         0,
       )
       trackBeginCheckout(checkoutItems, value, "XOF")
     }
   }, [items, count])
 
-  const total = items.reduce(
-    (sum, i) => sum + i.prixJournalier * i.quantite + i.cautionBaseFcfa * i.quantite,
-    0,
-  )
-
   const nbJours =
     debut && fin
       ? Math.max(1, Math.round((new Date(fin).getTime() - new Date(debut).getTime()) / (1000 * 60 * 60 * 24)))
       : 0
 
-  const totalAvecDuree = nbJours > 0
-    ? items.reduce((sum, i) => sum + i.prixJournalier * i.quantite * nbJours + i.cautionBaseFcfa * i.quantite, 0)
-    : total
+  // Tarification par article (× quantité), zone incluse. `cautionBaseFcfa` du
+  // panier porte en réalité le TAUX de caution du véhicule (ex. 0,3). Tant que
+  // les dates ne sont pas saisies, on estime sur 1 jour.
+  const joursCalcul = nbJours > 0 ? nbJours : 1
+  const perItem = items.map((i) => {
+    const p = computeItemPricing({
+      prixJournalier: i.prixJournalier,
+      tauxCaution: i.cautionBaseFcfa,
+      nbJours: joursCalcul,
+      avecChauffeur: i.avecChauffeur,
+      zone: zonePricing,
+    })
+    return {
+      i,
+      montantLocation: p.montantLocation * i.quantite,
+      montantChauffeur: p.montantChauffeur * i.quantite,
+      montant: p.montant * i.quantite,
+      caution: p.caution * i.quantite,
+      chauffeurObligatoire: p.chauffeurObligatoire,
+    }
+  })
+
+  const totalLocation = perItem.reduce((s, x) => s + x.montantLocation, 0)
+  const totalChauffeur = perItem.reduce((s, x) => s + x.montantChauffeur, 0)
+  const totalCaution = perItem.reduce((s, x) => s + x.caution, 0)
+  const totalAvecDuree = totalLocation + totalChauffeur + totalCaution
+  const chauffeurObligatoire = perItem.some((x) => x.chauffeurObligatoire)
 
   if (count === 0) {
     return (
@@ -202,7 +246,7 @@ export default function PaiementPage() {
       </div>
 
       {state?.error && (
-        <div className="mx-6 mb-6 rounded-xl border border-[rgba(239,68,68,0.3)] bg-[rgba(239,68,68,0.08)] px-5 py-3 text-sm text-[#EF4444]">
+        <div role="alert" className="mx-6 mb-6 rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error">
           {state.error}
         </div>
       )}
@@ -259,7 +303,7 @@ export default function PaiementPage() {
                   id="debut" name="debut" type="date" required
                   value={debut}
                   onChange={(e) => setDebut(e.target.value)}
-                  className="w-full rounded-xl border border-public-border bg-[#0A0A0A] px-4 py-2.5 text-sm text-public-text focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30 [color-scheme:dark]"
+                  className="w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30 [color-scheme:dark]"
                 />
               </div>
               <div>
@@ -269,7 +313,7 @@ export default function PaiementPage() {
                   value={fin}
                   onChange={(e) => setFin(e.target.value)}
                   min={debut || undefined}
-                  className="w-full rounded-xl border border-public-border bg-[#0A0A0A] px-4 py-2.5 text-sm text-public-text focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30 [color-scheme:dark]"
+                  className="w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30 [color-scheme:dark]"
                 />
               </div>
             </div>
@@ -301,7 +345,7 @@ export default function PaiementPage() {
                 onChange={handleDestinationChange}
                 onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true) }}
                 autoComplete="off"
-                className="w-full rounded-xl border border-public-border bg-[#0A0A0A] px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-muted focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30"
+                className="w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-muted focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30"
               />
               {showSuggestions && suggestions.length > 0 && (
                 <div
@@ -345,7 +389,7 @@ export default function PaiementPage() {
                       id="zone-manuelle"
                       value={manualZone}
                       onChange={(e) => setManualZone(e.target.value)}
-                      className="w-full rounded-xl border border-public-border bg-[#0A0A0A] px-4 py-2.5 text-sm text-public-text focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30"
+                      className="w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30"
                     >
                       <option value="">Sélectionnez une zone</option>
                       {zones.map((z) => (
@@ -374,7 +418,7 @@ export default function PaiementPage() {
               ].map((m) => (
                 <label
                   key={m.name}
-                  className="flex cursor-pointer items-center gap-4 rounded-xl border border-public-border bg-[#0A0A0A] p-4 transition-all hover:border-accent-orange/30 has-[:checked]:border-accent-orange has-[:checked]:bg-[rgba(249,115,22,0.05)]"
+                  className="flex cursor-pointer items-center gap-4 rounded-xl border border-public-border bg-public-bg p-4 transition-all hover:border-accent-orange/30 has-[:checked]:border-accent-orange has-[:checked]:bg-accent-orange/5"
                 >
                   <input
                     type="radio"
@@ -397,19 +441,17 @@ export default function PaiementPage() {
           <Card className="sticky top-24">
             <h2 className="text-base font-semibold text-public-text mb-4">Récapitulatif</h2>
             <div className="space-y-3">
-              {items.map((item) => (
+              {perItem.map(({ i: item, montant }) => (
                 <div key={item.groupKey} className="flex items-center justify-between border-b border-public-border pb-3 last:border-0 last:pb-0">
                   <div className="min-w-0 flex-1 pr-2">
                     <p className="text-sm font-medium text-public-text truncate">{item.marque} {item.modele}</p>
                     <p className="text-xs text-public-text-muted">
-                      &times;{item.quantite} &middot; {item.prixJournalier.toLocaleString()} FCFA/jour
-                      {nbJours > 0 && ` &middot; ${nbJours}j`}
+                      ×{item.quantite} · {item.prixJournalier.toLocaleString()} FCFA/jour
+                      {nbJours > 0 && ` · ${nbJours}j`}
                     </p>
                   </div>
                   <span className="text-sm font-bold text-public-text whitespace-nowrap">
-                    {nbJours > 0
-                      ? (item.prixJournalier * item.quantite * nbJours).toLocaleString()
-                      : (item.prixJournalier * item.quantite).toLocaleString()} FCFA
+                    {montant.toLocaleString()} FCFA
                   </span>
                 </div>
               ))}
@@ -418,28 +460,33 @@ export default function PaiementPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-public-text-muted">Location</span>
-                <span className="font-medium text-public-text">
-                  {nbJours > 0
-                    ? items.reduce((s, i) => s + i.prixJournalier * i.quantite * nbJours, 0).toLocaleString()
-                    : items.reduce((s, i) => s + i.prixJournalier * i.quantite, 0).toLocaleString()} FCFA
-                </span>
+                <span className="font-medium text-public-text">{totalLocation.toLocaleString()} FCFA</span>
               </div>
+              {totalChauffeur > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-public-text-muted">
+                    Chauffeur{chauffeurObligatoire ? " (obligatoire)" : ""}
+                  </span>
+                  <span className="font-medium text-public-text">{totalChauffeur.toLocaleString()} FCFA</span>
+                </div>
+              )}
               <div className="flex justify-between text-sm">
                 <span className="text-public-text-muted">Caution (remboursable)</span>
-                <span className="font-medium text-public-text">
-                  {items.reduce((s, i) => s + i.cautionBaseFcfa * i.quantite, 0).toLocaleString()} FCFA
-                </span>
+                <span className="font-medium text-public-text">{totalCaution.toLocaleString()} FCFA</span>
               </div>
             </div>
             <hr className="my-4 border-public-border" />
             <div className="flex justify-between">
               <span className="text-sm font-bold text-public-text">Total à payer</span>
               <span className="text-xl font-bold text-accent-orange">
-                {nbJours > 0
-                  ? (items.reduce((s, i) => s + i.prixJournalier * i.quantite * nbJours + i.cautionBaseFcfa * i.quantite, 0)).toLocaleString()
-                  : total.toLocaleString()} FCFA
+                {totalAvecDuree.toLocaleString()} FCFA
               </span>
             </div>
+            {chauffeurObligatoire && (
+              <p className="mt-2 text-xs text-accent-orange">
+                Chauffeur obligatoire inclus pour cette zone.
+              </p>
+            )}
             {detectedZone && (
               <div className="mt-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: `${zoneColor}40`, backgroundColor: `${zoneColor}08` }}>
                 <p className="text-public-text-muted">Zone appliquée</p>
@@ -477,7 +524,7 @@ export default function PaiementPage() {
             <div className="mt-6 space-y-3">
               <Link
                 href="/panier"
-                className="flex w-full items-center justify-center rounded-lg border border-[#2A2A2A] py-3 text-sm font-semibold text-public-text hover:bg-[#1A1A1A] transition-colors"
+                className="flex w-full items-center justify-center rounded-lg border border-public-border py-3 text-sm font-semibold text-public-text hover:bg-public-bg-elevated transition-colors"
               >
                 Retour au panier
               </Link>
