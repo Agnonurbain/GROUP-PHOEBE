@@ -1,29 +1,29 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { marquerNotificationLue, marquerToutesLues, type NotifAdmin } from "@/app/actions/notifications-admin";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 
 type Props = {
   initialNonLues: number;
   initialRecentes: NotifAdmin[];
 };
 
+// POC shadcn/ui : le panneau de notifications, jusqu'ici un dropdown fait main
+// (etat open manuel, listener mousedown pour le clic exterieur, aucune gestion
+// clavier), utilise desormais la primitive DropdownMenu. Elle apporte
+// gratuitement : ouverture/fermeture, clic exterieur, touche Echap, navigation
+// aux fleches, gestion et restauration du focus.
 export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props) {
-  const [open, setOpen] = useState(false);
   const [nonLues, setNonLues] = useState(initialNonLues);
   const [recentes, setRecentes] = useState(initialRecentes);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
 
   async function handleClickNotification(n: NotifAdmin) {
     if (!n.lue) {
@@ -33,7 +33,6 @@ export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props
         prev.map((x) => (x.id === n.id ? { ...x, lue: true } : x))
       );
     }
-    setOpen(false);
   }
 
   async function handleToutLire() {
@@ -43,11 +42,10 @@ export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props
   }
 
   return (
-    <div ref={ref} className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="relative flex h-9 w-9 items-center justify-center rounded-xl text-phoebe-anthracite/70 transition-colors hover:bg-phoebe-pearl hover:text-phoebe-anthracite"
+    <DropdownMenu>
+      <DropdownMenuTrigger
         aria-label="Notifications"
+        className="relative flex h-9 w-9 items-center justify-center rounded-xl text-phoebe-anthracite/70 outline-none transition-colors hover:bg-phoebe-pearl hover:text-phoebe-anthracite"
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -58,66 +56,53 @@ export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props
             {nonLues > 9 ? "9+" : nonLues}
           </span>
         )}
-      </button>
+      </DropdownMenuTrigger>
 
-      {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-80 origin-top-right animate-fade-in rounded-xl border border-phoebe-pearl bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-phoebe-pearl px-4 py-3">
-            <span className="text-sm font-semibold text-phoebe-anthracite">
-              Notifications
-            </span>
-            {nonLues > 0 && (
-              <button
-                onClick={handleToutLire}
-                className="text-xs text-phoebe-green hover:underline"
-              >
-                Tout marquer lu
-              </button>
-            )}
-          </div>
-
-          <div className="max-h-80 overflow-y-auto">
-            {recentes.length === 0 ? (
-              <div className="px-4 py-8 text-center text-sm text-phoebe-anthracite/70">
-                Aucune notification
-              </div>
-            ) : (
-              recentes.map((n) => {
-                const content = (
-                  <button
-                    onClick={() => handleClickNotification(n)}
-                    className={`flex w-full gap-3 px-4 py-3 text-left transition-colors hover:bg-phoebe-pearl/50 ${
-                      !n.lue ? "bg-phoebe-green/3" : ""
-                    }`}
-                  >
-                    <div className={`mt-1 h-2 w-2 shrink-0 rounded-full ${!n.lue ? "bg-phoebe-green" : "bg-transparent"}`} />
-                    <div className="min-w-0 flex-1">
-                      <p className={`truncate text-sm ${!n.lue ? "font-medium text-phoebe-anthracite" : "text-phoebe-anthracite/70"}`}>
-                        {n.titre}
-                      </p>
-                      <p className="mt-0.5 truncate text-xs text-phoebe-anthracite/70">
-                        {n.message}
-                      </p>
-                      <p className="mt-0.5 text-[10px] text-phoebe-anthracite/70">
-                        {formatRelativeTime(n.created_at)}
-                      </p>
-                    </div>
-                  </button>
-                );
-
-                return n.lien ? (
-                  <Link key={n.id} href={n.lien} onClick={() => handleClickNotification(n)}>
-                    {content}
-                  </Link>
-                ) : (
-                  <div key={n.id}>{content}</div>
-                );
-              })
-            )}
-          </div>
+      <DropdownMenuContent align="end" className="w-80 p-0">
+        <div className="flex items-center justify-between px-4 py-3">
+          <span className="text-sm font-semibold text-phoebe-anthracite">Notifications</span>
+          {nonLues > 0 && (
+            <button onClick={handleToutLire} className="text-xs text-phoebe-green hover:underline">
+              Tout marquer lu
+            </button>
+          )}
         </div>
-      )}
-    </div>
+
+        <DropdownMenuSeparator className="my-0" />
+
+        <div className="max-h-80 overflow-y-auto py-1">
+          {recentes.length === 0 ? (
+            <p className="px-4 py-8 text-center text-sm text-phoebe-anthracite/70">Aucune notification</p>
+          ) : (
+            recentes.map((n) => {
+              const inner = (
+                <>
+                  <span className={`mt-1 h-2 w-2 shrink-0 rounded-full ${!n.lue ? "bg-phoebe-green" : "bg-transparent"}`} />
+                  <span className="min-w-0 flex-1">
+                    <span className={`block truncate text-sm ${!n.lue ? "font-medium text-phoebe-anthracite" : "text-phoebe-anthracite/70"}`}>
+                      {n.titre}
+                    </span>
+                    <span className="mt-0.5 block truncate text-xs text-phoebe-anthracite/70">{n.message}</span>
+                    <span className="mt-0.5 block text-[10px] text-phoebe-anthracite/70">{formatRelativeTime(n.created_at)}</span>
+                  </span>
+                </>
+              );
+
+              return (
+                <DropdownMenuItem
+                  key={n.id}
+                  onClick={() => handleClickNotification(n)}
+                  className={`flex cursor-pointer items-start gap-3 rounded-none px-4 py-3 ${!n.lue ? "bg-phoebe-green/5" : ""}`}
+                  {...(n.lien ? { render: <Link href={n.lien} /> } : {})}
+                >
+                  {inner}
+                </DropdownMenuItem>
+              );
+            })
+          )}
+        </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
