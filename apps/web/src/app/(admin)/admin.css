@@ -1,30 +1,14 @@
 :root {
-  --color-phoebe-green: #39A044;
-  --color-phoebe-green-deep: #23632A;
-  --color-phoebe-green-darker: #143D1A;
-  --color-phoebe-green-darkest: #0A1F0D;
-  --color-phoebe-green-light: #4FBF5A;
-  --color-phoebe-green-pale: #E8F5E9;
-  --color-phoebe-gold: #D38C37;
-  --color-phoebe-gold-light: #E5A84A;
-  /* Seule nuance d'or lisible en texte sur blanc/pearl : 5.7:1.
-     #D38C37 ne donne que 2.8:1, l'ancien #A86B24 que 4.4:1. */
-  --color-phoebe-gold-dark: #8F5A1E;
-  --color-phoebe-gold-shimmer: #F4D06F;
-  --color-phoebe-white: #FFFFFF;
-  --color-phoebe-anthracite: #22282B;
-  --color-phoebe-anthracite-light: #2D3438;
-  --color-phoebe-pearl: #F3F9F3;
-  --color-phoebe-pearl-warm: #FAF6EE;
+  /* Les jetons de marque phoebe-* et semantiques (error/success/warning/info)
+     vivent desormais dans le @theme global de globals.css, charge partout. Ne
+     pas les redefinir ici : ils resteraient invisibles sur les pages non-admin.
+     Ci-dessous, uniquement les overrides propres au back-office. */
 
+  /* Primaire = vert PHOEBE dans l'admin (or #C9A84C sur le public) */
   --color-primary: #39A044;
   --color-primary-hover: #23632A;
   --color-secondary: #D38C37;
   --color-surface: #F3F9F3;
-  --color-error: #DC2626;
-  --color-success: #39A044;
-  --color-warning: #D38C37;
-  --color-info: #2563EB;
 
   --gradient-phoebe: linear-gradient(135deg, #39A044 0%, #23632A 100%);
   --gradient-gold: linear-gradient(135deg, #E5A84A 0%, #D38C37 50%, #A86B24 100%);

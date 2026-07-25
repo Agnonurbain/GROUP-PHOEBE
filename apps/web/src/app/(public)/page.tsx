@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import { createClient } from "@/lib/supabase/server"
 import HomePageClient from "./page-client"
 
 export const metadata: Metadata = {
@@ -18,6 +19,16 @@ export const metadata: Metadata = {
   },
 }
 
-export default function HomePage() {
-  return <HomePageClient />
+export default async function HomePage() {
+  const supabase = await createClient()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const user = claimsData?.claims
+
+  let role: string | null = null
+  if (user) {
+    const { data } = await supabase.from("users").select("role").eq("id", user.sub).single()
+    role = data?.role ?? null
+  }
+
+  return <HomePageClient role={role} />
 }

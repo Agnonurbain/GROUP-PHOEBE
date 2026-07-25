@@ -23,7 +23,7 @@ export function AuthHeader() {
         />
         <div className="mt-4 h-px w-24 bg-gradient-to-r from-transparent via-phoebe-gold/40 to-transparent" />
         <p className="mt-6 max-w-xs text-sm leading-relaxed text-white/60">
-          Votre plateforme premium de location et vente de vehicules en Cote d&apos;Ivoire.
+          Transport, immobilier, assistance et livraison — votre plateforme de services premium en Côte d&apos;Ivoire.
         </p>
       </div>
     </div>

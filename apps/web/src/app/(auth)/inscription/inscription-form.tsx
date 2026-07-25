@@ -23,8 +23,8 @@ export default function InscriptionForm() {
 
   return (
     <ScrollReveal variant="scale-in">
-      <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">Creer un compte</h1>
-      <p className="mt-2 mb-8 text-sm text-phoebe-anthracite/70">Rejoignez GROUP PHOEBE et accedez a nos services premium</p>
+      <h1 className="text-2xl font-bold tracking-tight text-phoebe-anthracite sm:text-3xl">Créer un compte</h1>
+      <p className="mt-2 mb-8 text-sm text-phoebe-anthracite/70">Rejoignez GROUP PHOEBE et accédez à nos services premium</p>
 
       {state.error && (
         <div className="animate-fade-in mb-6 flex items-start gap-3 rounded-xl border border-error/20 bg-error/5 px-4 py-3.5 text-sm text-error">
@@ -37,8 +37,8 @@ export default function InscriptionForm() {
 
       {state.phone === "email_sent" && (
         <div className="animate-fade-in mb-6 rounded-xl border border-phoebe-green/20 bg-phoebe-green/5 px-4 py-3.5 text-sm text-phoebe-green-deep">
-          <p className="font-semibold">Compte cree avec succes !</p>
-          <p className="mt-1 text-phoebe-green-deep/80">Un email de confirmation a ete envoye. Verifiez votre boite de reception pour activer votre compte.</p>
+          <p className="font-semibold">Compte créé avec succès !</p>
+          <p className="mt-1 text-phoebe-green-deep/80">Un email de confirmation a été envoyé. Vérifiez votre boîte de réception pour activer votre compte.</p>
         </div>
       )}
 
@@ -89,14 +89,14 @@ export default function InscriptionForm() {
             type="text"
             required
             className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
-            placeholder="Prenom Nom"
+            placeholder="Prénom Nom"
           />
         </div>
 
         {mode === "phone" ? (
           <div>
             <label htmlFor="telephone" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-              Telephone
+              Téléphone
             </label>
             <input
               id="telephone"
@@ -144,7 +144,7 @@ export default function InscriptionForm() {
           <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
             Mot de passe
           </label>
-          <PasswordInput id="password" name="password" required minLength={8} placeholder="8 caracteres minimum" />
+          <PasswordInput id="password" name="password" required minLength={8} placeholder="8 caractères minimum" />
         </div>
 
         <SubmitButton>S&apos;inscrire</SubmitButton>
@@ -156,7 +156,7 @@ export default function InscriptionForm() {
       </div>
 
       <p className="mt-6 text-center text-sm text-phoebe-anthracite/70">
-        Deja un compte ?{" "}
+        Déjà un compte ?{" "}
         <Link href={redirectTo ? `/connexion?redirect=${encodeURIComponent(redirectTo)}` : "/connexion"} className="font-semibold text-phoebe-green transition-colors duration-200 hover:text-phoebe-green-deep">
           Se connecter
         </Link>

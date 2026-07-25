@@ -3,6 +3,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Badge, Button, Card } from "@/components/ui"
 import ImmobilierFiltres from "./immobilier-filtres"
+import { BackLink } from "@/components/public/back-link"
 import { getBiensWithPhotos } from "@/lib/public-cache"
 import { serializeJsonLd } from "@/lib/json-ld"
 
@@ -94,6 +95,9 @@ export default async function Immobilier({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(listingSchema) }}
       />
+      <div className="px-6 pt-6">
+        <BackLink href="/" label="Retour à l'accueil" />
+      </div>
       <section className="flex flex-col items-center gap-6 px-6 py-16 text-center">
         <Image
           src="/logos/logo-imm.png"

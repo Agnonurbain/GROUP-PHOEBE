@@ -8,7 +8,6 @@ import {
   ServiceCard,
   AnimatedCounter,
   GoldTrail,
-  MagneticButton,
   HeroSlideshow,
 } from "@/components/effects"
 
@@ -47,7 +46,9 @@ const services = [
   },
 ]
 
-export default function HomePage() {
+export default function HomePage({ role = null }: { role?: string | null }) {
+  const isGuest = role === null
+  const isStaff = role === "operateur" || role === "proprietaire"
   return (
     <GoldTrail>
       {/* Hero */}
@@ -55,35 +56,23 @@ export default function HomePage() {
         <HeroSlideshow />
 
         {/* Panneau verre fumé : garantit la lisibilité quelle que soit l'image derrière */}
-        <div className="relative z-10 flex flex-col items-center gap-6 rounded-3xl bg-black/55 px-8 py-10 ring-1 ring-white/10 backdrop-blur-md sm:px-14">
+        <div className="relative z-10 flex max-w-3xl flex-col items-center gap-8 rounded-3xl bg-black/55 px-8 py-12 ring-1 ring-white/10 backdrop-blur-md sm:px-14">
           <ScrollReveal variant="fade-up">
-            <Image
-              src="/logos/logo_g-phoebe.png"
-              alt="GROUP PHOEBE"
-              width={334}
-              height={303}
-              priority
-              className="h-auto w-[240px] md:w-[300px] animate-glow-pulse"
-            />
+            <h1 className="text-balance text-3xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl [text-shadow:0_2px_16px_rgba(0,0,0,0.9)]">
+              L&apos;excellence à chaque étape de votre vie
+            </h1>
           </ScrollReveal>
           <ScrollReveal variant="fade-up" delay={0.2}>
-            <p className="text-lg font-medium text-white md:text-xl [text-shadow:0_2px_12px_rgba(0,0,0,0.9)]">
-              L&apos;excellence à chaque étape de votre vie
-            </p>
-          </ScrollReveal>
-          <ScrollReveal variant="fade-up" delay={0.35}>
             <div className="flex flex-col gap-4 sm:flex-row">
-              <MagneticButton>
-                <Link
-                  href="#services"
-                  className="block rounded-lg bg-accent-gold px-6 py-3 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
-                >
-                  Découvrir nos services
-                </Link>
-              </MagneticButton>
+              <Link
+                href="#services"
+                className="btn-premium [--btn-glow:rgba(201,168,76,0.45)] block rounded-lg bg-accent-gold px-6 py-3 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover"
+              >
+                Découvrir nos services
+              </Link>
               <Link
                 href="/contact"
-                className="block rounded-lg border border-white/40 bg-black/40 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-black/60"
+                className="btn-premium [--btn-glow:rgba(255,255,255,0.15)] block rounded-lg border border-white/40 bg-black/40 px-6 py-3 text-sm font-semibold text-white hover:bg-black/60"
               >
                 Contactez-nous
               </Link>
@@ -134,7 +123,7 @@ export default function HomePage() {
         <StaggerContainer className="mt-8 grid w-full max-w-6xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {services.map((s, i) => (
             <ServiceCard key={s.title} index={i}>
-              <Link href={s.href} className="group flex h-full flex-col justify-between rounded-2xl border border-public-border bg-public-bg-card p-8 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:shadow-black/20 hover:border-accent-gold/30 hover:bg-public-bg-elevated">
+              <Link href={s.href} className="btn-premium [--btn-glow:rgba(201,168,76,0.3)] group flex h-full flex-col justify-between rounded-2xl border border-public-border bg-public-bg-card p-8 hover:border-accent-gold/30 hover:bg-public-bg-elevated">
                 <div>
                   <div className="relative mb-6 flex h-28 w-full items-center justify-center">
                     <Image
@@ -157,31 +146,35 @@ export default function HomePage() {
         </StaggerContainer>
       </section>
 
-      {/* CTA */}
-      <ScrollReveal variant="scale-in">
-        <section className="flex flex-col items-center gap-6 border-t border-public-border bg-public-bg-card px-6 py-28 text-center">
-          <h2 className="text-3xl font-semibold tracking-tight text-public-text md:text-4xl">Prêt à commencer ?</h2>
-          <p className="text-base text-public-text-muted md:text-lg">Rejoignez GROUP PHOEBE et bénéficiez de services d&apos;exception.</p>
-          <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row">
-            <MagneticButton>
-              <Link
-                href="/inscription"
-                className="block rounded-lg bg-accent-gold px-8 py-3.5 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
-              >
-                S&apos;inscrire
-              </Link>
-            </MagneticButton>
-            <MagneticButton>
+      {/* CTA — masque pour le staff (operateur/proprietaire) : sans objet pour eux */}
+      {!isStaff && (
+        <ScrollReveal variant="scale-in">
+          <section className="flex flex-col items-center gap-6 border-t border-public-border bg-public-bg-card px-6 py-28 text-center">
+            <h2 className="text-3xl font-semibold tracking-tight text-public-text md:text-4xl">Prêt à commencer ?</h2>
+            <p className="text-base text-public-text-muted md:text-lg">
+              {isGuest
+                ? "Rejoignez GROUP PHOEBE et bénéficiez de services d'exception."
+                : "Une question ? Notre équipe est à votre écoute."}
+            </p>
+            <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row">
+              {isGuest && (
+                <Link
+                  href="/inscription"
+                  className="btn-premium [--btn-glow:rgba(201,168,76,0.45)] block rounded-lg bg-accent-gold px-8 py-3.5 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover"
+                >
+                  S&apos;inscrire
+                </Link>
+              )}
               <Link
                 href="/contact"
-                className="block rounded-lg border border-public-border px-8 py-3.5 text-sm font-semibold text-public-text transition-colors hover:bg-public-bg-elevated"
+                className="btn-premium [--btn-glow:rgba(201,168,76,0.25)] block rounded-lg border border-public-border px-8 py-3.5 text-sm font-semibold text-public-text hover:bg-public-bg-elevated"
               >
                 Nous contacter
               </Link>
-            </MagneticButton>
-          </div>
-        </section>
-      </ScrollReveal>
+            </div>
+          </section>
+        </ScrollReveal>
+      )}
     </GoldTrail>
   )
 }

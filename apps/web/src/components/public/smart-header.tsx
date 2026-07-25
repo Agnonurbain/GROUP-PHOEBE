@@ -5,8 +5,9 @@ import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui"
+import { LogoutButton } from "@/components/logout-button"
 
-type Vertical = "transport" | "immobilier" | "assistance" | "default"
+type Vertical = "transport" | "livraison" | "immobilier" | "assistance" | "default"
 
 interface SmartHeaderProps {
   vertical?: Vertical
@@ -17,18 +18,21 @@ interface SmartHeaderProps {
 const logos: Record<Vertical, { src: string; alt: string; w: number; h: number }> = {
   default: { src: "/logos/logo_g-phoebe.png", alt: "GROUP PHOEBE", w: 334, h: 303 },
   transport: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 407, h: 345 },
+  livraison: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 407, h: 345 },
   immobilier: { src: "/logos/logo-imm.png", alt: "Immobilier", w: 308, h: 278 },
   assistance: { src: "/logos/logo-assi-etud.png", alt: "Assistance Voyages & Études", w: 429, h: 346 },
 }
 
 const verticales = [
   { id: "transport" as const, label: "Transport", href: "/transport/catalogue" },
+  { id: "livraison" as const, label: "Livraison", href: "/livraison" },
   { id: "immobilier" as const, label: "Immobilier", href: "/immobilier" },
   { id: "assistance" as const, label: "Assistance", href: "/assistance" },
 ]
 
 function detectVertical(pathname: string): Vertical {
   if (pathname.startsWith("/transport")) return "transport"
+  if (pathname.startsWith("/livraison")) return "livraison"
   if (pathname.startsWith("/immobilier")) return "immobilier"
   if (pathname.startsWith("/assistance")) return "assistance"
   return "default"
@@ -102,13 +106,18 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
             ),
           )}
           {session ? (
-            <span className="flex items-center gap-2">
+            <span className="flex items-center gap-3">
               <Link
                 href="/compte/profil"
+                aria-label="Mon profil"
                 className="flex h-8 w-8 items-center justify-center rounded-full bg-accent-gold/20 text-sm font-semibold text-accent-gold"
               >
                 {(session.nom ?? "U")[0].toUpperCase()}
               </Link>
+              <LogoutButton
+                label="Déconnexion"
+                className="text-sm text-public-text-muted transition-colors hover:text-public-text"
+              />
             </span>
           ) : (
             <span className="flex items-center gap-3">
@@ -177,6 +186,12 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
             >
               {session ? "Mon compte" : "Connexion"}
             </Link>
+            {session && (
+              <LogoutButton
+                label="Déconnexion"
+                className="flex min-h-11 w-full items-center rounded-lg px-3 py-2.5 text-left text-sm text-public-text-muted transition-colors hover:bg-white/5 hover:text-public-text"
+              />
+            )}
             {!session && (
               <Link
                 href="/inscription"

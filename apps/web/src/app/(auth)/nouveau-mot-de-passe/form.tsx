@@ -53,7 +53,7 @@ export default function NouveauMotDePasseForm() {
             required
             minLength={8}
             autoFocus
-            placeholder="8 caracteres minimum"
+            placeholder="8 caractères minimum"
           />
         </div>
 
