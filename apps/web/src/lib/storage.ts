@@ -1,5 +1,11 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
+// Un document stocké est-il un PDF ? (sinon on le traite comme une image.)
+export function isPdfPath(path: string | null | undefined): boolean {
+  if (!path) return false;
+  return path.toLowerCase().split("?")[0].endsWith(".pdf");
+}
+
 export async function getSignedDocUrl(
   supabase: SupabaseClient,
   path: string | null
