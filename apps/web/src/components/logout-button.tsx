@@ -1,28 +1,38 @@
 "use client"
 
-import { useFormStatus } from "react-dom"
+import { useRef, useState } from "react"
 import { deconnexion } from "@/app/actions/auth"
-
-function SubmitButton({ className, label }: { className?: string; label: string }) {
-  const { pending } = useFormStatus()
-  return (
-    <button type="submit" disabled={pending} className={className}>
-      {pending ? "..." : label}
-    </button>
-  )
-}
+import { ConfirmDialog } from "@/components/confirm-dialog"
 
 export function LogoutButton({ className, label = "Déconnexion" }: { className?: string; label?: string }) {
+  const [open, setOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
+
   return (
-    <form
-      action={deconnexion}
-      onSubmit={(e) => {
-        if (!window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
-          e.preventDefault()
-        }
-      }}
-    >
-      <SubmitButton className={className} label={label} />
-    </form>
+    <>
+      <button type="button" className={className} onClick={() => setOpen(true)}>
+        {label}
+      </button>
+
+      {/* Le formulaire déclenche le server action ; le bouton visible ne fait
+          qu'ouvrir la confirmation. */}
+      <form ref={formRef} action={deconnexion} className="hidden" />
+
+      <ConfirmDialog
+        open={open}
+        title="Se déconnecter ?"
+        message="Vous devrez vous reconnecter pour accéder à votre compte."
+        confirmLabel="Se déconnecter"
+        cancelLabel="Annuler"
+        danger
+        busy={busy}
+        onCancel={() => setOpen(false)}
+        onConfirm={() => {
+          setBusy(true)
+          formRef.current?.requestSubmit()
+        }}
+      />
+    </>
   )
 }

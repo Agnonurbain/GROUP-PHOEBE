@@ -66,11 +66,15 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
     ? isStaff
       ? [{ href: "/admin", label: "Back-office" }]
       : [
-          { href: "/transport/catalogue", label: "Catalogue" },
           { href: "/compte/reservations", label: "Mes réservations" },
           { href: "/compte/profil", label: session.nom ?? "Profil", isName: true },
         ]
     : verticales
+
+  // Client connecté : bouton bien visible pour choisir son service, sauf s'il
+  // est déjà sur l'accueil (où les services sont affichés).
+  const isClient = !!session && !isStaff
+  const showServiceCta = isClient && pathname !== "/"
 
   return (
     <header
@@ -107,6 +111,14 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
           )}
           {session ? (
             <span className="flex items-center gap-3">
+              {showServiceCta && (
+                <Link
+                  href="/#services"
+                  className="rounded-lg bg-accent-gold px-4 py-2 text-sm font-semibold text-[#0A0A0A] shadow-sm transition-colors hover:bg-accent-gold-hover"
+                >
+                  Choisir un service
+                </Link>
+              )}
               <Link
                 href="/compte/profil"
                 aria-label="Mon profil"
@@ -162,6 +174,15 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
       {menuOpen && (
         <div id="menu-mobile" className="animate-fade-in border-t border-white/10 bg-public-bg/98 backdrop-blur-md md:hidden">
           <nav className="space-y-1 px-6 py-4">
+            {showServiceCta && (
+              <Link
+                href="/#services"
+                onClick={() => setMenuOpen(false)}
+                className="flex min-h-11 items-center justify-center rounded-lg bg-accent-gold px-3 py-2.5 text-center text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
+              >
+                Choisir un service
+              </Link>
+            )}
             {navLinks.map((link) =>
               "isName" in link && link.isName ? (
                 <span key={link.href} className="block px-3 py-2.5 text-sm font-medium text-accent-gold">

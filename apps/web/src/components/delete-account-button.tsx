@@ -1,27 +1,38 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { supprimerCompte, type AuthState } from "@/app/actions/auth";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export function DeleteAccountButton() {
-  const [state, action] = useActionState<AuthState>(supprimerCompte, {});
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer votre compte ? Cette action est irreversible.")) {
-      e.preventDefault();
-    }
-  };
+  const [state, action, isPending] = useActionState<AuthState>(supprimerCompte, {});
+  const [open, setOpen] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
 
   return (
     <>
-      <form action={action} onSubmit={handleSubmit}>
-        <button
-          type="submit"
-          className="rounded-xl border-2 border-error/30 px-5 py-2.5 text-sm font-semibold text-error transition-all hover:bg-error hover:text-white hover:shadow-md"
-        >
-          Supprimer mon compte
-        </button>
-      </form>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="rounded-xl border-2 border-error/30 px-5 py-2.5 text-sm font-semibold text-error transition-all hover:bg-error hover:text-white hover:shadow-md"
+      >
+        Supprimer mon compte
+      </button>
+
+      <form ref={formRef} action={action} className="hidden" />
+
+      <ConfirmDialog
+        open={open}
+        title="Supprimer votre compte ?"
+        message="Cette action est irréversible. Toutes vos données personnelles seront définitivement effacées, conformément au RGPD."
+        confirmLabel="Supprimer définitivement"
+        cancelLabel="Annuler"
+        danger
+        busy={isPending}
+        onCancel={() => setOpen(false)}
+        onConfirm={() => formRef.current?.requestSubmit()}
+      />
+
       {state.error && (
         <p className="mt-2 text-xs text-error">{state.error}</p>
       )}
