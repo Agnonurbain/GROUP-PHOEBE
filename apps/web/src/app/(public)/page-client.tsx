@@ -46,9 +46,23 @@ const services = [
   },
 ]
 
-export default function HomePage({ role = null }: { role?: string | null }) {
+export default function HomePage({
+  role = null,
+  vehiculeCount = 0,
+  modeleCount = 0,
+}: {
+  role?: string | null
+  vehiculeCount?: number
+  modeleCount?: number
+}) {
   const isGuest = role === null
   const isStaff = role === "operateur" || role === "proprietaire"
+
+  const stats = [
+    { target: vehiculeCount, suffix: "", label: "Véhicules" },
+    { target: modeleCount, suffix: "", label: "Modèles" },
+    { target: 4, suffix: "", label: "Services" },
+  ]
   return (
     <GoldTrail>
       {/* Hero */}
@@ -91,15 +105,10 @@ export default function HomePage({ role = null }: { role?: string | null }) {
         </ScrollReveal>
       </section>
 
-      {/* Stats */}
+      {/* Stats — chiffres réels issus de la base */}
       <section className="border-y border-public-border bg-public-bg-card px-6 py-16">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 text-center md:grid-cols-4">
-          {[
-            { target: 150, suffix: "+", label: "Véhicules" },
-            { target: 500, suffix: "+", label: "Clients servis" },
-            { target: 8, suffix: " ans", label: "D'expérience" },
-            { target: 4, suffix: "", label: "Services" },
-          ].map((stat, i) => (
+        <div className="mx-auto grid max-w-4xl grid-cols-3 gap-8 text-center">
+          {stats.map((stat, i) => (
             <ScrollReveal key={stat.label} variant="fade-up" delay={i * 0.1}>
               <div>
                 <p className="text-3xl font-bold text-accent-gold md:text-4xl">
@@ -144,6 +153,88 @@ export default function HomePage({ role = null }: { role?: string | null }) {
             </ServiceCard>
           ))}
         </StaggerContainer>
+      </section>
+
+      {/* Pourquoi nous choisir */}
+      <section className="border-t border-public-border bg-public-bg-card px-6 py-28">
+        <div className="mx-auto max-w-6xl">
+          <ScrollReveal variant="fade-up">
+            <h2 className="text-center text-3xl font-semibold tracking-tight text-public-text md:text-4xl">Pourquoi nous choisir</h2>
+          </ScrollReveal>
+          <ScrollReveal variant="fade-up" delay={0.1}>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-base text-public-text-muted md:text-lg">
+              Un service pensé pour votre tranquillité, du premier clic à la prestation.
+            </p>
+          </ScrollReveal>
+          <StaggerContainer className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                title: "Paiement sécurisé",
+                desc: "Carte bancaire et Mobile Money (Orange, MTN, Wave), transactions chiffrées.",
+                icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+              },
+              {
+                title: "Couverture nationale",
+                desc: "Abidjan et tout l'intérieur de la Côte d'Ivoire.",
+                icon: <><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" /><circle cx="12" cy="10" r="3" /></>,
+              },
+              {
+                title: "Chauffeurs professionnels",
+                desc: "Option chauffeur expérimenté pour des trajets sereins.",
+                icon: <><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" /></>,
+              },
+              {
+                title: "Assistance dédiée",
+                desc: "Une équipe à votre écoute pour chaque réservation.",
+                icon: <><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></>,
+              },
+            ].map((f) => (
+              <ServiceCard key={f.title} index={0}>
+                <div className="flex h-full flex-col rounded-2xl border border-public-border bg-public-bg p-8">
+                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-accent-gold/10 text-accent-gold">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                      {f.icon}
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-public-text">{f.title}</h3>
+                  <p className="mt-2 text-sm text-public-text-muted">{f.desc}</p>
+                </div>
+              </ServiceCard>
+            ))}
+          </StaggerContainer>
+        </div>
+      </section>
+
+      {/* Comment ça marche */}
+      <section className="px-6 py-28">
+        <div className="mx-auto max-w-6xl">
+          <ScrollReveal variant="fade-up">
+            <h2 className="text-center text-3xl font-semibold tracking-tight text-public-text md:text-4xl">Comment ça marche</h2>
+          </ScrollReveal>
+          <ScrollReveal variant="fade-up" delay={0.1}>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-base text-public-text-muted md:text-lg">
+              Réserver n&apos;a jamais été aussi simple — en quatre étapes.
+            </p>
+          </ScrollReveal>
+          <StaggerContainer className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { title: "Choisissez", desc: "Parcourez nos services et trouvez ce qu'il vous faut." },
+              { title: "Réservez", desc: "Ajoutez au panier, indiquez vos dates et votre destination." },
+              { title: "Payez en sécurité", desc: "Réglez par carte ou Mobile Money en toute confiance." },
+              { title: "Profitez", desc: "Nous nous occupons du reste. Bonne route !" },
+            ].map((step, i) => (
+              <ServiceCard key={step.title} index={i}>
+                <div className="flex h-full flex-col rounded-2xl border border-public-border bg-public-bg-card p-8">
+                  <span className="mb-5 flex h-11 w-11 items-center justify-center rounded-full bg-accent-gold text-lg font-bold text-[#0A0A0A]">
+                    {i + 1}
+                  </span>
+                  <h3 className="text-lg font-semibold text-public-text">{step.title}</h3>
+                  <p className="mt-2 text-sm text-public-text-muted">{step.desc}</p>
+                </div>
+              </ServiceCard>
+            ))}
+          </StaggerContainer>
+        </div>
       </section>
 
       {/* CTA — masque pour le staff (operateur/proprietaire) : sans objet pour eux */}
