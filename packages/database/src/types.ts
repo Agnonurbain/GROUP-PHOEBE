@@ -1035,6 +1035,7 @@ export type Database = {
       }
       paiements: {
         Row: {
+          commande_id: string | null
           created_at: string
           id: string
           methode: string
@@ -1047,6 +1048,7 @@ export type Database = {
           webhook_reference: string | null
         }
         Insert: {
+          commande_id?: string | null
           created_at?: string
           id?: string
           methode: string
@@ -1059,6 +1061,7 @@ export type Database = {
           webhook_reference?: string | null
         }
         Update: {
+          commande_id?: string | null
           created_at?: string
           id?: string
           methode?: string

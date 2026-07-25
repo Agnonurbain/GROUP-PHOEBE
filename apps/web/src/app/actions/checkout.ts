@@ -192,6 +192,11 @@ export async function checkoutCart(
 
   const paiements: Array<{ id: string; demande_id: string }> = [];
 
+  // Un identifiant de commande partage par tous les paiements du panier : le
+  // webhook confirmera (ou annulera) l'ensemble du groupe, pas seulement le
+  // paiement renvoye par le prestataire.
+  const commandeId = crypto.randomUUID();
+
   for (const demande of createdDemandes) {
     const itemMontant = demande.montant + demande.caution;
 
@@ -205,6 +210,7 @@ export async function checkoutCart(
         montant: itemMontant,
         methode: methode as "cinetpay" | "stripe",
         statut: "en_attente",
+        commande_id: commandeId,
       })
       .select("id")
       .single();
