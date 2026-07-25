@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { parseGroupKey } from "@/lib/vehicle-group"
+import { parseGroupKey, makeGroupKey } from "@/lib/vehicle-group"
 import { Badge } from "@/components/ui"
 import { VehicleGallery } from "@/components/public/vehicle-gallery"
 import { VehicleBooking } from "@/components/public/vehicle-booking"
@@ -16,9 +16,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const parsed = parseGroupKey(slug)
   if (!parsed) return {}
   const supabase = await createClient()
-  const { data: vehicules } = await supabase.from("vehicules").select("marque, modele, description").eq("marque", parsed.marque).eq("modele", parsed.modele).eq("statut", "disponible").limit(1)
-  if (!vehicules || vehicules.length === 0) return {}
-  const v = vehicules[0]
+  // marque/modele sont stockés en clair : on retrouve le groupe en recalculant
+  // la clé sur chaque ligne (comme la page « choix »), pas via un eq sur le slug.
+  const { data: all } = await supabase.from("vehicules").select("marque, modele, description").eq("statut", "disponible")
+  const v = (all ?? []).find((x) => makeGroupKey(x.marque, x.modele) === slug)
+  if (!v) return {}
   return {
     title: `${v.marque} ${v.modele} — Location & Achat`,
     description: v.description || `Réservez un ${v.marque} ${v.modele} à Abidjan, Côte d'Ivoire. Location courte durée, longue durée ou achat. Prix compétitifs, livraison partout.`,
@@ -47,14 +49,16 @@ export default async function VehicleDetail({
   const parsed = parseGroupKey(slug)
   if (!parsed) notFound()
 
-  const { data: vehicules } = await supabase
+  // On retrouve le groupe en recalculant makeGroupKey sur chaque véhicule
+  // disponible (marque/modele en clair) plutôt qu'un eq sur le slug.
+  const { data: allV } = await supabase
     .from("vehicules")
     .select("*")
-    .eq("marque", parsed.marque)
-    .eq("modele", parsed.modele)
     .eq("statut", "disponible")
 
-  if (!vehicules || vehicules.length === 0) notFound()
+  const vehicules = (allV ?? []).filter((v) => makeGroupKey(v.marque, v.modele) === slug)
+
+  if (vehicules.length === 0) notFound()
 
   const rep = vehicules[0]
 
