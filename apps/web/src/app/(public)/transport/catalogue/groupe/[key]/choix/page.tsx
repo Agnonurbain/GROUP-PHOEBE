@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { notFound, redirect } from "next/navigation"
+import { notFound } from "next/navigation"
 import Image from "next/image"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
@@ -57,15 +57,10 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
 
   const photo = photos?.[0]?.url
 
-  const { data: claimsData } = await supabase.auth.getClaims()
-  const user = claimsData?.claims
-
+  // Le choix Location / Achat est public : la connexion n'est exigée qu'au
+  // moment de réserver (panier) ou d'envoyer une demande d'achat.
   const hasLocation = vehicules.some((v) => v.prix_journalier || v.prix_mensuel)
   const hasVente = vehicules.some((v) => v.prix_vente)
-
-  if (!user) {
-    redirect(`/inscription?redirect=/transport/catalogue/groupe/${encodeURIComponent(groupKey)}/choix`)
-  }
 
   const disponibles = vehicules.filter((v) => v.statut === "disponible")
 
@@ -81,13 +76,12 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
       <Card className="overflow-hidden p-0">
         {photo && (
           <div className="relative aspect-[16/7] w-full overflow-hidden">
-            <Image loading="lazy"
+            <Image
               src={photo}
               alt={`${rep.marque} ${rep.modele}`}
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
-              unoptimized
             />
           </div>
         )}

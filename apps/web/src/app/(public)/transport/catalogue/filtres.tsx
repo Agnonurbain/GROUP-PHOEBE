@@ -6,7 +6,7 @@ import { Chip, Input } from "@/components/ui"
 import { UserIcon } from "@/components/icons"
 
 const inputClass =
-  "w-full rounded-xl border border-[#2A2A2A] bg-[#0A0A0A] px-4 py-2.5 text-sm text-[#F5F5F5] transition-all duration-200 focus:border-[#F97316] focus:bg-[#141414] focus:outline-none focus:ring-2 focus:ring-[#F97316]/15"
+  "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text transition-all duration-200 focus:border-accent-orange focus:bg-public-bg-card focus:outline-none focus:ring-2 focus:ring-accent-orange/15"
 
 type Zone = { id: string; nom: string; ordre: number }
 
@@ -46,11 +46,13 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
     [update]
   )
 
-  const hasFilters = searchParams.toString().length > 0
-  const activeCount = Array.from(searchParams.keys()).length
+  // `page` n'est pas un filtre : on l'exclut du décompte et de l'état « actif ».
+  const filterKeys = Array.from(searchParams.keys()).filter((k) => k !== "page")
+  const hasFilters = filterKeys.length > 0
+  const activeCount = filterKeys.length
 
   return (
-    <div className="mb-8 space-y-5 rounded-2xl border border-[#2A2A2A] bg-[#141414] p-5 shadow-sm">
+    <div className="mb-8 space-y-5 rounded-2xl border border-public-border bg-public-bg-card p-5 shadow-sm">
       {/* Row 1: Search + Category */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <div className="lg:col-span-2">
@@ -103,7 +105,8 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
           <Chip key={z.id} label={z.nom} chipVariant="gold" active={get("zone") === z.id} onClick={() => toggle("zone", z.id)} />
         ))}
         <button type="button" onClick={() => setShowMore((s) => !s)}
-          className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer select-none border-dashed ${showMore ? "border-[#F97316] text-[#F97316]" : "border-[#2A2A2A] text-public-text-faint"}`}>
+          aria-expanded={showMore}
+          className={`rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-all duration-200 cursor-pointer select-none border-dashed ${showMore ? "border-accent-orange text-accent-orange" : "border-public-border text-public-text-faint"}`}>
           {showMore ? "Moins de filtres" : "Plus de filtres"}
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
             className={`ml-1 inline-block transition-transform ${showMore ? "rotate-180" : ""}`}>
@@ -114,7 +117,7 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
 
       {/* Row 3: Advanced filters (collapsible) */}
       {showMore && (
-        <div className="grid gap-4 rounded-xl border border-[#2A2A2A] bg-[#0A0A0A] p-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 rounded-xl border border-public-border bg-public-bg p-4 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <label htmlFor="f-carburant" className="mb-1 block text-xs font-medium text-public-text-muted">Carburant</label>
             <select id="f-carburant" value={get("carburant")} onChange={(e) => update("carburant", e.target.value)} className={inputClass}>
@@ -173,15 +176,15 @@ export default function Filtres({ zones }: { zones: Zone[] }) {
 
       {/* Active filter count + Reset */}
       {hasFilters && (
-        <div className="flex items-center gap-3 border-t border-[#2A2A2A] pt-4">
-          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[#F97316]">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[rgba(249,115,22,0.1)] text-[10px] font-bold text-[#F97316]">
+        <div className="flex items-center gap-3 border-t border-public-border pt-4">
+          <span className="inline-flex items-center gap-1.5 text-xs font-medium text-accent-orange">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent-orange/10 text-[10px] font-bold text-accent-orange">
               {activeCount}
             </span>
             filtre{activeCount > 1 ? "s" : ""} actif{activeCount > 1 ? "s" : ""}
           </span>
           <button type="button" onClick={() => router.push("/transport/catalogue")}
-            className="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-medium text-public-text-muted transition-all hover:bg-[rgba(239,68,68,0.1)] hover:text-[#EF4444]">
+            className="cursor-pointer rounded-lg px-2.5 py-1 text-xs font-medium text-public-text-muted transition-all hover:bg-error/10 hover:text-error">
             Réinitialiser
           </button>
         </div>
