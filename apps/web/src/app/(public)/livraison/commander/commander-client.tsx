@@ -1,35 +1,108 @@
 "use client"
 
-import { useActionState, useState } from "react"
+import { useActionState, useCallback, useMemo, useState } from "react"
 import Link from "next/link"
 import { BackLink } from "@/components/public/back-link"
 import { Card } from "@/components/ui"
 import { creerExpedition, type LivraisonState } from "@/app/actions/livraison"
 import {
-  ZONES_LIVRAISON,
   MODES_LIVRAISON,
-  ZONE_LABELS,
   MODE_LABELS,
+  ZONE_LABELS,
   computeLivraisonPrix,
+  deriverZoneLivraison,
+  type CommuneMatch,
 } from "@/lib/livraison"
+
+type Commune = { id: string; nom: string; zoneId: string | null }
 
 const inputClass =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-orange focus:outline-none focus:ring-2 focus:ring-accent-orange/20"
 
 const labelClass = "mb-1.5 block text-sm font-medium text-public-text"
 
+function CommuneField({
+  id,
+  name,
+  label,
+  communes,
+  text,
+  setText,
+}: {
+  id: string
+  name: string
+  label: string
+  communes: Commune[]
+  text: string
+  setText: (v: string) => void
+}) {
+  const [open, setOpen] = useState(false)
+  const suggestions = useMemo(() => {
+    const q = text.trim().toLowerCase()
+    if (!q) return []
+    return communes.filter((c) => c.nom.toLowerCase().includes(q)).slice(0, 8)
+  }, [text, communes])
+
+  return (
+    <div className="relative">
+      <label htmlFor={id} className={labelClass}>{label}</label>
+      <input
+        id={id}
+        name={name}
+        value={text}
+        required
+        autoComplete="off"
+        onChange={(e) => { setText(e.target.value); setOpen(true) }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        placeholder="Commune (ex. Cocody)"
+        className={inputClass}
+      />
+      {open && suggestions.length > 0 && (
+        <div className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-public-border bg-public-bg-card shadow-xl">
+          {suggestions.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onMouseDown={() => { setText(c.nom); setOpen(false) }}
+              className="block w-full px-4 py-2.5 text-left text-sm text-public-text transition-colors hover:bg-public-bg-elevated first:rounded-t-xl last:rounded-b-xl"
+            >
+              {c.nom}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function CommanderClient({
   defaultNom,
   defaultContact,
+  communes,
 }: {
   defaultNom: string
   defaultContact: string
+  communes: Commune[]
 }) {
   const [state, formAction, pending] = useActionState<LivraisonState, FormData>(creerExpedition, {})
-  const [zone, setZone] = useState<string>(ZONES_LIVRAISON[0])
-  const [mode, setMode] = useState<string>(MODES_LIVRAISON[1])
+  const [mode, setMode] = useState<string>(MODES_LIVRAISON[0])
+  const [communeCollecte, setCommuneCollecte] = useState("")
+  const [communeLivraison, setCommuneLivraison] = useState("")
 
-  const prix = computeLivraisonPrix(zone, mode)
+  const matchCommune = useCallback(
+    (t: string): CommuneMatch => {
+      const q = t.trim().toLowerCase()
+      if (!q) return null
+      const c = communes.find((cc) => cc.nom.toLowerCase() === q)
+      return c ? { id: c.id, zoneId: c.zoneId } : null
+    },
+    [communes]
+  )
+
+  const adressesRenseignees = communeCollecte.trim() !== "" && communeLivraison.trim() !== ""
+  const zone = deriverZoneLivraison(matchCommune(communeCollecte), matchCommune(communeLivraison))
+  const prix = adressesRenseignees ? computeLivraisonPrix(zone, mode) : null
 
   return (
     <div className="px-6 py-10">
@@ -38,7 +111,7 @@ export default function CommanderClient({
       </div>
       <h1 className="text-4xl font-bold text-public-text">Commander une livraison</h1>
       <p className="mt-2 text-sm text-public-text-muted">
-        Renseignez les détails de votre envoi. Le prix est calculé selon la zone et le mode choisis.
+        Renseignez les adresses : la zone et le prix sont calculés automatiquement.
       </p>
 
       {state.error && (
@@ -72,41 +145,34 @@ export default function CommanderClient({
             </div>
           </Card>
 
-          {/* Adresses */}
+          {/* Adresses — la zone en découle */}
           <Card>
             <h2 className="text-base font-semibold text-public-text">Adresses</h2>
-            <div className="mt-5 space-y-5">
+            <p className="mt-1 text-xs text-public-text-muted">La zone de livraison se déduit des communes saisies.</p>
+            <div className="mt-5 grid gap-5 sm:grid-cols-2">
+              <CommuneField id="commune_collecte" name="commune_collecte" label="Commune de collecte *" communes={communes} text={communeCollecte} setText={setCommuneCollecte} />
+              <CommuneField id="commune_livraison" name="commune_livraison" label="Commune de livraison *" communes={communes} text={communeLivraison} setText={setCommuneLivraison} />
               <div>
                 <label htmlFor="adresse_collecte" className={labelClass}>Adresse de collecte *</label>
-                <input id="adresse_collecte" name="adresse_collecte" required placeholder="Où récupérer le colis ?" className={inputClass} />
+                <input id="adresse_collecte" name="adresse_collecte" required placeholder="Quartier, rue, repère…" className={inputClass} />
               </div>
               <div>
                 <label htmlFor="adresse_livraison" className={labelClass}>Adresse de livraison *</label>
-                <input id="adresse_livraison" name="adresse_livraison" required placeholder="Où livrer le colis ?" className={inputClass} />
+                <input id="adresse_livraison" name="adresse_livraison" required placeholder="Quartier, rue, repère…" className={inputClass} />
               </div>
             </div>
           </Card>
 
-          {/* Zone & mode */}
+          {/* Mode */}
           <Card>
-            <h2 className="text-base font-semibold text-public-text">Zone & mode</h2>
-            <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <div>
-                <label htmlFor="zone" className={labelClass}>Zone *</label>
-                <select id="zone" name="zone" value={zone} onChange={(e) => setZone(e.target.value)} className={inputClass}>
-                  {ZONES_LIVRAISON.map((z) => (
-                    <option key={z} value={z}>{ZONE_LABELS[z]}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="mode" className={labelClass}>Mode *</label>
-                <select id="mode" name="mode" value={mode} onChange={(e) => setMode(e.target.value)} className={inputClass}>
-                  {MODES_LIVRAISON.map((m) => (
-                    <option key={m} value={m}>{MODE_LABELS[m]}</option>
-                  ))}
-                </select>
-              </div>
+            <h2 className="text-base font-semibold text-public-text">Mode de livraison</h2>
+            <div className="mt-5">
+              <label htmlFor="mode" className={labelClass}>Mode *</label>
+              <select id="mode" name="mode" value={mode} onChange={(e) => setMode(e.target.value)} className={inputClass}>
+                {MODES_LIVRAISON.map((m) => (
+                  <option key={m} value={m}>{MODE_LABELS[m]}</option>
+                ))}
+              </select>
             </div>
           </Card>
 
@@ -129,6 +195,18 @@ export default function CommanderClient({
               <div className="sm:col-span-2">
                 <label htmlFor="valeur_declaree" className={labelClass}>Valeur déclarée (FCFA)</label>
                 <input id="valeur_declaree" name="valeur_declaree" type="number" inputMode="numeric" min="0" placeholder="Optionnel" className={inputClass} />
+              </div>
+              <div className="sm:col-span-2">
+                <label htmlFor="photos" className={labelClass}>Photos du colis (optionnel)</label>
+                <input
+                  id="photos"
+                  name="photos"
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="block w-full text-sm text-public-text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-accent-orange/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-accent-orange hover:file:bg-accent-orange/20"
+                />
+                <p className="mt-1 text-xs text-public-text-faint">Ajoutez une ou plusieurs photos pour faciliter la prise en charge.</p>
               </div>
             </div>
           </Card>
@@ -156,8 +234,10 @@ export default function CommanderClient({
             <h2 className="text-base font-semibold text-public-text">Récapitulatif</h2>
             <div className="mt-5 space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-public-text-muted">Zone</span>
-                <span className="font-medium text-public-text">{ZONE_LABELS[zone as keyof typeof ZONE_LABELS]}</span>
+                <span className="text-public-text-muted">Zone (auto)</span>
+                <span className="font-medium text-public-text">
+                  {adressesRenseignees ? ZONE_LABELS[zone] : "—"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-public-text-muted">Mode</span>
@@ -171,13 +251,18 @@ export default function CommanderClient({
                 {prix !== null ? `${prix.toLocaleString()} FCFA` : "—"}
               </span>
             </div>
+            {!adressesRenseignees && (
+              <p className="mt-2 text-xs text-public-text-faint">
+                Renseignez les communes pour calculer le prix.
+              </p>
+            )}
 
             <button
               type="submit"
               disabled={pending || prix === null}
               className="mt-6 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-accent-orange-hover active:scale-[0.98] disabled:opacity-50"
             >
-              {pending ? "Traitement…" : `Payer ${prix !== null ? prix.toLocaleString() : ""} FCFA`}
+              {pending ? "Traitement…" : prix !== null ? `Payer ${prix.toLocaleString()} FCFA` : "Renseignez les adresses"}
             </button>
 
             <Link href="/livraison" className="mt-3 block text-center text-xs text-public-text-muted transition-colors hover:text-public-text">

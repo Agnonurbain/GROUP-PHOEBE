@@ -2,10 +2,34 @@ import { describe, it, expect } from "vitest";
 import {
   computeLivraisonPrix,
   genererNumeroSuivi,
+  deriverZoneLivraison,
   TARIFS_LIVRAISON,
   ZONES_LIVRAISON,
   MODES_LIVRAISON,
 } from "@/lib/livraison";
+
+describe("deriverZoneLivraison", () => {
+  const cocody = { id: "c-cocody", zoneId: "z-abidjan" };
+  const plateau = { id: "c-plateau", zoneId: "z-abidjan" };
+  const bouake = { id: "c-bouake", zoneId: "z-interieur" };
+
+  it("même commune → intracommunale", () => {
+    expect(deriverZoneLivraison(cocody, cocody)).toBe("intracommunale");
+  });
+
+  it("communes différentes, même zone → intercommunale", () => {
+    expect(deriverZoneLivraison(cocody, plateau)).toBe("intercommunale");
+  });
+
+  it("zones différentes → nationale", () => {
+    expect(deriverZoneLivraison(cocody, bouake)).toBe("nationale");
+  });
+
+  it("commune non répertoriée (null) → nationale", () => {
+    expect(deriverZoneLivraison(cocody, null)).toBe("nationale");
+    expect(deriverZoneLivraison(null, null)).toBe("nationale");
+  });
+});
 
 describe("computeLivraisonPrix", () => {
   it("retourne le prix de la grille pour chaque combinaison zone × mode", () => {

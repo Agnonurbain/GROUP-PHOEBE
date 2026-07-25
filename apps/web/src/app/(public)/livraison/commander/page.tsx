@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
+import { getCommunes } from "@/lib/public-cache"
 import CommanderClient from "./commander-client"
 
 export const metadata: Metadata = {
@@ -17,16 +18,22 @@ export default async function CommanderLivraisonPage() {
     redirect("/connexion?redirect=/livraison/commander")
   }
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("nom, telephone")
-    .eq("id", user.sub)
-    .single()
+  const [{ data: profile }, communesData] = await Promise.all([
+    supabase.from("users").select("nom, telephone").eq("id", user.sub).single(),
+    getCommunes(),
+  ])
+
+  const communes = (communesData ?? []).map((c) => ({
+    id: c.id,
+    nom: c.nom,
+    zoneId: c.zone_id ?? null,
+  }))
 
   return (
     <CommanderClient
       defaultNom={profile?.nom ?? ""}
       defaultContact={profile?.telephone ?? ""}
+      communes={communes}
     />
   )
 }

@@ -10,13 +10,17 @@ import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import {
   computeLivraisonPrix,
   genererNumeroSuivi,
+  deriverZoneLivraison,
   ZONE_LABELS,
   MODE_LABELS,
   STATUT_LIVRAISON,
   STATUT_LIVRAISON_LABELS,
-  isZoneLivraison,
   isModeLivraison,
+  type CommuneMatch,
 } from "@/lib/livraison";
+import { getCommunes } from "@/lib/public-cache";
+import { compressImage } from "@/lib/compress-image";
+import { validateImageUpload } from "@/lib/upload-validation";
 import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouvelleReservation } from "./notifications-admin";
 
@@ -72,9 +76,10 @@ export async function creerExpedition(
   const expediteurContact = (formData.get("expediteur_contact") as string)?.trim();
   const destinataireNom = (formData.get("destinataire_nom") as string)?.trim();
   const destinataireContact = (formData.get("destinataire_contact") as string)?.trim();
-  const adresseCollecte = (formData.get("adresse_collecte") as string)?.trim();
-  const adresseLivraison = (formData.get("adresse_livraison") as string)?.trim();
-  const zone = formData.get("zone") as string;
+  const detailCollecte = (formData.get("adresse_collecte") as string)?.trim();
+  const detailLivraison = (formData.get("adresse_livraison") as string)?.trim();
+  const communeCollecte = ((formData.get("commune_collecte") as string) || "").trim();
+  const communeLivraison = ((formData.get("commune_livraison") as string) || "").trim();
   const mode = formData.get("mode") as string;
   const natureColis = ((formData.get("nature_colis") as string) || "").trim() || null;
   const dimensions = ((formData.get("dimensions") as string) || "").trim() || null;
@@ -85,16 +90,32 @@ export async function creerExpedition(
   if (
     !expediteurNom || !expediteurContact ||
     !destinataireNom || !destinataireContact ||
-    !adresseCollecte || !adresseLivraison
+    !detailCollecte || !detailLivraison ||
+    !communeCollecte || !communeLivraison
   ) {
     return { error: "Tous les champs expéditeur, destinataire et adresses sont obligatoires." };
   }
-  if (!isZoneLivraison(zone) || !isModeLivraison(mode)) {
-    return { error: "Zone ou mode de livraison invalide." };
+  if (!isModeLivraison(mode)) {
+    return { error: "Mode de livraison invalide." };
   }
   if (!["cinetpay", "stripe"].includes(methode)) {
     return { error: "Méthode de paiement invalide." };
   }
+
+  // Zone déduite (autoritaire) des communes saisies : même source de matching
+  // que le client (communes en cache) → montant affiché == montant facturé.
+  const communes = await getCommunes();
+  const matchCommune = (t: string): CommuneMatch => {
+    const q = t.trim().toLowerCase();
+    if (!q) return null;
+    const c = communes.find((cc) => cc.nom.toLowerCase() === q);
+    return c ? { id: c.id, zoneId: c.zone_id ?? null } : null;
+  };
+  const zone = deriverZoneLivraison(matchCommune(communeCollecte), matchCommune(communeLivraison));
+
+  // Adresses complètes = détail + commune.
+  const adresseCollecte = `${detailCollecte} — ${communeCollecte}`;
+  const adresseLivraison = `${detailLivraison} — ${communeLivraison}`;
 
   const poidsKg = poidsRaw ? Number(poidsRaw) : null;
   if (poidsKg !== null && (Number.isNaN(poidsKg) || poidsKg <= 0)) {
@@ -138,6 +159,31 @@ export async function creerExpedition(
 
   if (expErr || !expedition) {
     return { error: "Impossible de créer l'expédition. Veuillez réessayer." };
+  }
+
+  // Photos du colis (optionnelles) : upload en service-role vers le bucket
+  // public colis-photos. Une photo invalide est ignorée sans bloquer la commande.
+  const files = formData.getAll("photos") as File[];
+  const photoUrls: string[] = [];
+  for (const file of files) {
+    if (!file || typeof file === "string" || !file.size) continue;
+    let ext: string;
+    try {
+      ({ ext } = validateImageUpload(file));
+    } catch {
+      continue;
+    }
+    const compressed = await compressImage(file);
+    const path = `${expedition.id}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await admin.storage
+      .from("colis-photos")
+      .upload(path, await compressed.arrayBuffer(), { contentType: compressed.type });
+    if (upErr) continue;
+    const { data: { publicUrl } } = admin.storage.from("colis-photos").getPublicUrl(path);
+    photoUrls.push(publicUrl);
+  }
+  if (photoUrls.length > 0) {
+    await admin.from("expeditions").update({ photos: photoUrls } as never).eq("id", expedition.id);
   }
 
   const { data: paiement, error: paiementErr } = await admin
