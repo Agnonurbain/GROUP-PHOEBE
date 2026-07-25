@@ -14,7 +14,14 @@ function SubmitButton({ className, label }: { className?: string; label: string 
 
 export function LogoutButton({ className, label = "Déconnexion" }: { className?: string; label?: string }) {
   return (
-    <form action={deconnexion}>
+    <form
+      action={deconnexion}
+      onSubmit={(e) => {
+        if (!window.confirm("Êtes-vous sûr de vouloir vous déconnecter ?")) {
+          e.preventDefault()
+        }
+      }}
+    >
       <SubmitButton className={className} label={label} />
     </form>
   )
