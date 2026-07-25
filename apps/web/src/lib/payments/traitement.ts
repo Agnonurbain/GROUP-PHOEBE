@@ -73,13 +73,13 @@ export async function confirmerCommande(
     return { ok: false, raison: `Statut inattendu: ${primary.statut}` };
   }
 
+  // La reference du prestataire (payment_intent Stripe) est portee par TOUS les
+  // paiements du groupe : ils partagent une seule transaction. Sans cela, annuler
+  // un vehicule secondaire ne pourrait pas etre rembourse automatiquement
+  // (rembourserPaiement a besoin du payment_intent).
   for (const p of group) {
     if (p.statut !== "en_attente") continue;
-    const r = await confirmerUnPaiement(
-      admin,
-      p,
-      p.id === paiementId ? stripePaymentIntent : undefined
-    );
+    const r = await confirmerUnPaiement(admin, p, stripePaymentIntent);
     if (!r.ok) return r;
   }
 

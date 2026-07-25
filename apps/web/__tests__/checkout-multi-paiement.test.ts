@@ -131,6 +131,22 @@ describe("Paiement multi-vehicules — confirmation de toute la commande", () =>
     expect(vehicules[0].statut).toBe("reserve");
   });
 
+  it("Stripe : le payment_intent est stocke sur TOUS les paiements du groupe (annulation partielle remboursable)", async () => {
+    const paiements = [
+      paiement("p1", { methode: "stripe" }),
+      paiement("p2", { methode: "stripe" }),
+      paiement("p3", { methode: "stripe" }),
+    ];
+    const demandes = [demande("d-p1"), demande("d-p2"), demande("d-p3")];
+    const store = createStore({ paiements, demandes_transport: demandes });
+
+    await confirmerCommande(store as any, "p1", "pi_test_123");
+
+    // Chaque paiement porte la reference : annuler un vehicule secondaire pourra
+    // etre rembourse automatiquement (rembourserPaiement a besoin du payment_intent).
+    expect(paiements.every((p) => p.webhook_reference === "pi_test_123")).toBe(true);
+  });
+
   it("idempotence : un paiement deja capture n'est pas retraite", async () => {
     const paiements = [paiement("p1", { statut: "capture" }), paiement("p2")];
     const demandes = [demande("d-p1"), demande("d-p2")];
