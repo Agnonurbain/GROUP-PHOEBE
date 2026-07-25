@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server"
 
 import { Card } from "@/components/ui"
 import { annulerParClient } from "@/app/actions/demandes"
+import { PayerAcompte } from "@/components/public/payer-acompte"
 
 export const metadata: Metadata = {
   title: "Mes Réservations",
@@ -25,6 +26,9 @@ type ReservationItem = {
   price: string
   status: string
   photoUrl: string | null
+  /** Montant à régler maintenant (acompte achat ou prix négocié), le cas échéant. */
+  aPayer: number | null
+  isAchat: boolean
 }
 
 const TABS = [
@@ -69,7 +73,7 @@ export default async function CompteReservations({
   const [transportRes, immobilierRes, assistanceRes] = await Promise.all([
     supabase
       .from("demandes_transport")
-      .select("id, created_at, statut, montant, categorie, vehicule_id, vehicules!inner(marque, modele)")
+      .select("id, created_at, statut, montant, categorie, type, prix_negocie, vehicule_id, vehicules!inner(marque, modele)")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -104,6 +108,13 @@ export default async function CompteReservations({
     price: d.montant ? `${d.montant.toLocaleString()} FCFA` : "—",
     status: d.statut,
     photoUrl: d.vehicule_id ? (photoMap.get(d.vehicule_id) ?? null) : null,
+    // Un prix négocié / acompte confirmé par l'équipe (statut en_attente_paiement)
+    // reste à régler par le client depuis cette page.
+    aPayer:
+      d.statut === "en_attente_paiement" && d.prix_negocie != null && Number(d.prix_negocie) > 0
+        ? Number(d.prix_negocie)
+        : null,
+    isAchat: d.type === "achat",
   })) ?? []
 
   const immobilierReservations: ReservationItem[] = immobilierRes.data?.map((d) => ({
@@ -115,6 +126,8 @@ export default async function CompteReservations({
     price: d.montant_offre ? `${d.montant_offre.toLocaleString()} FCFA` : "—",
     status: d.statut,
     photoUrl: null,
+    aPayer: null,
+    isAchat: false,
   })) ?? []
 
   const assistanceReservations: ReservationItem[] = assistanceRes.data?.map((d) => ({
@@ -126,6 +139,8 @@ export default async function CompteReservations({
     price: "—",
     status: d.statut,
     photoUrl: null,
+    aPayer: null,
+    isAchat: false,
   })) ?? []
 
   const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations]
@@ -208,7 +223,10 @@ export default async function CompteReservations({
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 <span className={`text-sm font-semibold ${st.color}`}>{st.label}</span>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col items-end gap-1.5">
+                  {r.aPayer != null && (
+                    <PayerAcompte demandeId={r.id} montant={r.aPayer} isAchat={r.isAchat} />
+                  )}
                   <Link
                     href={`/reservation/confirmation?demande=${r.id}`}
                     className="text-xs text-public-text hover:text-accent-gold transition-colors text-right"
