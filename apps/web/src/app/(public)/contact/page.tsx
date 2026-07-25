@@ -1,7 +1,21 @@
 import type { Metadata } from "next"
 import { BackLink } from "@/components/public/back-link"
-import { Badge, Button, Card, Input } from "@/components/ui"
+import { Badge, Card } from "@/components/ui"
 import { MailIcon, PhoneIcon } from "@/components/icons"
+import { ContactForm } from "@/components/public/contact-form"
+
+function mapSujet(raw: string): { category: string; message: string } {
+  if (/estimation|bien|immobil/i.test(raw)) {
+    return {
+      category: "Immobilier",
+      message: /estimation/i.test(raw) ? "Je souhaite une estimation de mon bien." : "",
+    }
+  }
+  if (/transport|livraison/i.test(raw)) return { category: "Transport & Livraison", message: "" }
+  if (/visa|voyage|assistance|etud/i.test(raw)) return { category: "Assistance Voyages", message: "" }
+  if (/partenariat/i.test(raw)) return { category: "Partenariat", message: "" }
+  return { category: "Transport & Livraison", message: raw ? `Objet : ${raw}` : "" }
+}
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -17,7 +31,14 @@ export const metadata: Metadata = {
   },
 }
 
-export default function Contact() {
+export default async function Contact({
+  searchParams,
+}: {
+  searchParams: Promise<{ sujet?: string }>
+}) {
+  const { sujet } = await searchParams
+  const { category, message } = mapSujet(sujet ?? "")
+
   return (
     <>
       <section className="px-6 py-16">
@@ -30,40 +51,8 @@ export default function Contact() {
       </section>
 
       <div className="grid gap-12 px-6 pb-20 lg:grid-cols-5">
-        <div className="lg:col-span-3 space-y-8">
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <label className="text-sm font-medium text-public-text-muted">Prénom</label>
-              <Input type="text" variant="default" className="mt-1" placeholder="Jean" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-public-text-muted">Nom</label>
-              <Input type="text" variant="default" className="mt-1" placeholder="Kouamé" />
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-public-text-muted">Email</label>
-            <Input type="email" variant="default" className="mt-1" placeholder="vous@exemple.com" />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-public-text-muted">Téléphone</label>
-            <Input type="tel" inputMode="tel" variant="default" className="mt-1" placeholder="+225 01 02 03 04" />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-public-text-muted">Sujet</label>
-            <select className="mt-1 w-full rounded-lg border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text">
-              <option>Transport & Livraison</option>
-              <option>Immobilier</option>
-              <option>Assistance Voyages</option>
-              <option>Partenariat</option>
-              <option>Autre</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-public-text-muted">Message</label>
-            <textarea rows={5} className="mt-1 w-full rounded-lg border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder-public-text-faint" placeholder="Décrivez votre demande..." />
-          </div>
-          <Button variant="default" className="w-full">Envoyer le message</Button>
+        <div className="lg:col-span-3">
+          <ContactForm defaultCategory={category} defaultMessage={message} />
         </div>
 
         <div className="lg:col-span-2 space-y-8">
