@@ -3,7 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { ScrollReveal } from "@/components/effects";
 import { VerificationBadge } from "@/components/verification-badge";
 import { VerificationActions } from "./actions-client";
-import { getSignedDocUrl } from "@/lib/storage";
+import { getSignedDocUrl, isPdfPath } from "@/lib/storage";
+import { DocumentPreview } from "@/components/document-preview";
 import type { StatutVerification } from "@/lib/auth";
 
 export const metadata: Metadata = {
@@ -58,13 +59,18 @@ export default async function VerificationsPage() {
     }
   }
 
-  const signedUrls: Record<string, { piece: string | null; permis: string | null }> = {};
+  const signedUrls: Record<string, { piece: string | null; permis: string | null; pieceIsPdf: boolean; permisIsPdf: boolean }> = {};
   for (const u of pending ?? []) {
     const [piece, permis] = await Promise.all([
       getSignedDocUrl(supabase, u.piece_identite_url),
       getSignedDocUrl(supabase, u.permis_conduire_url),
     ]);
-    signedUrls[u.id] = { piece, permis };
+    signedUrls[u.id] = {
+      piece,
+      permis,
+      pieceIsPdf: isPdfPath(u.piece_identite_url),
+      permisIsPdf: isPdfPath(u.permis_conduire_url),
+    };
   }
 
   return (
@@ -108,24 +114,20 @@ export default async function VerificationsPage() {
                     )}
                     <div className="flex gap-3 pt-1 text-xs">
                       {signedUrls[user.id]?.piece && (
-                        <a
-                          href={signedUrls[user.id].piece!}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-phoebe-green underline hover:text-phoebe-green-deep"
-                        >
-                          Pièce d&apos;identité
-                        </a>
+                        <DocumentPreview
+                          url={signedUrls[user.id].piece!}
+                          label="Pièce d'identité"
+                          isPdf={signedUrls[user.id].pieceIsPdf}
+                          className="inline-flex items-center gap-1.5 text-phoebe-green underline hover:text-phoebe-green-deep"
+                        />
                       )}
                       {signedUrls[user.id]?.permis && (
-                        <a
-                          href={signedUrls[user.id].permis!}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-phoebe-green underline hover:text-phoebe-green-deep"
-                        >
-                          Permis de conduire
-                        </a>
+                        <DocumentPreview
+                          url={signedUrls[user.id].permis!}
+                          label="Permis de conduire"
+                          isPdf={signedUrls[user.id].permisIsPdf}
+                          className="inline-flex items-center gap-1.5 text-phoebe-green underline hover:text-phoebe-green-deep"
+                        />
                       )}
                     </div>
                   </div>

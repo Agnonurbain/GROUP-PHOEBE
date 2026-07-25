@@ -4,7 +4,8 @@ import { createClient } from "@/lib/supabase/server"
 import { VerificationBadge } from "@/components/verification-badge"
 import { ProfileEditForm } from "@/components/profile-edit-form"
 import { ChangePasswordForm } from "@/components/change-password-form"
-import { getSignedDocUrl } from "@/lib/storage"
+import { getSignedDocUrl, isPdfPath } from "@/lib/storage"
+import { DocumentPreview } from "@/components/document-preview"
 import type { StatutVerification } from "@/lib/auth"
 import { DeleteAccountButton } from "@/components/delete-account-button"
 import { LogoutButton } from "@/components/logout-button"
@@ -70,6 +71,8 @@ export default async function CompteProfilPage({
         getSignedDocUrl(supabase, profile.permis_conduire_url),
       ])
     : [null, null]
+  const pieceIsPdf = isPdfPath(profile.piece_identite_url)
+  const permisIsPdf = isPdfPath(profile.permis_conduire_url)
 
   return (
     <div className="px-6 py-10">
@@ -145,16 +148,12 @@ export default async function CompteProfilPage({
                 {(pieceUrl || permisUrl) && (
                   <div className="flex gap-4 text-sm">
                     {pieceUrl && (
-                      <a href={pieceUrl} target="_blank" rel="noopener noreferrer"
-                        className="font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover">
-                        Pièce d&apos;identité
-                      </a>
+                      <DocumentPreview url={pieceUrl} label="Pièce d'identité" isPdf={pieceIsPdf}
+                        className="inline-flex items-center gap-1.5 font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover" />
                     )}
                     {permisUrl && (
-                      <a href={permisUrl} target="_blank" rel="noopener noreferrer"
-                        className="font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover">
-                        Permis de conduire
-                      </a>
+                      <DocumentPreview url={permisUrl} label="Permis de conduire" isPdf={permisIsPdf}
+                        className="inline-flex items-center gap-1.5 font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover" />
                     )}
                   </div>
                 )}
@@ -176,16 +175,12 @@ export default async function CompteProfilPage({
                 {(pieceUrl || permisUrl) && (
                   <div className="flex gap-4 text-sm">
                     {pieceUrl && (
-                      <a href={pieceUrl} target="_blank" rel="noopener noreferrer"
-                        className="font-medium text-public-text-muted underline underline-offset-2 hover:text-public-text">
-                        Pièce d&apos;identité soumise
-                      </a>
+                      <DocumentPreview url={pieceUrl} label="Pièce d'identité soumise" isPdf={pieceIsPdf}
+                        className="inline-flex items-center gap-1.5 font-medium text-public-text-muted underline underline-offset-2 hover:text-public-text" />
                     )}
                     {permisUrl && (
-                      <a href={permisUrl} target="_blank" rel="noopener noreferrer"
-                        className="font-medium text-public-text-muted underline underline-offset-2 hover:text-public-text">
-                        Permis soumis
-                      </a>
+                      <DocumentPreview url={permisUrl} label="Permis soumis" isPdf={permisIsPdf}
+                        className="inline-flex items-center gap-1.5 font-medium text-public-text-muted underline underline-offset-2 hover:text-public-text" />
                     )}
                   </div>
                 )}
@@ -199,16 +194,12 @@ export default async function CompteProfilPage({
                 {(pieceUrl || permisUrl) && (
                   <div className="flex gap-4 text-sm">
                     {pieceUrl && (
-                      <a href={pieceUrl} target="_blank" rel="noopener noreferrer"
-                        className="font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover">
-                        Pièce d&apos;identité
-                      </a>
+                      <DocumentPreview url={pieceUrl} label="Pièce d'identité" isPdf={pieceIsPdf}
+                        className="inline-flex items-center gap-1.5 font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover" />
                     )}
                     {permisUrl && (
-                      <a href={permisUrl} target="_blank" rel="noopener noreferrer"
-                        className="font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover">
-                        Permis de conduire
-                      </a>
+                      <DocumentPreview url={permisUrl} label="Permis de conduire" isPdf={permisIsPdf}
+                        className="inline-flex items-center gap-1.5 font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover" />
                     )}
                   </div>
                 )}
