@@ -142,6 +142,10 @@ async function confirmerUnPaiement(
     }
   }
 
+  // Livraison (expeditions) : aucun changement de statut à la capture — l'état
+  // de paiement est porté par la table paiements ; la gestion du cycle de vie
+  // (prise_en_charge → en_transit → livree) se fait côté admin.
+
   return { ok: true };
 }
 
@@ -249,6 +253,8 @@ export async function annulerCommande(
         .eq("id", paiement.reference_id)
         .eq("statut", "en_attente_paiement");
     }
+    // Livraison : le paiement échoué reste tracé dans paiements ; l'expédition
+    // non payée demeure au statut "creee" (ignorée côté admin).
   }
 
   return { ok: true };
