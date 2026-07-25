@@ -86,10 +86,11 @@ export function EtatLieuxForm({
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+            <label htmlFor="el-kilometrage" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
               Kilométrage *
             </label>
             <input
+              id="el-kilometrage"
               name="kilometrage"
               type="number"
               min={0}
