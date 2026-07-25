@@ -153,7 +153,7 @@ export const getBiensWithPhotos = unstable_cache(
       .from("bien_medias")
       .select("bien_id, url")
       .in("bien_id", ids)
-      .eq("type", "image")
+      .eq("type", "photo")
       .order("ordre", { ascending: true });
 
     const photoMap = new Map<string, string>();
@@ -164,6 +164,25 @@ export const getBiensWithPhotos = unstable_cache(
     return { biens, photoMap };
   },
   ["biens_with_photos"],
+  { revalidate: 3600, tags: ["biens"] }
+);
+
+export const getBienById = unstable_cache(
+  async (id: string) => {
+    const supabase = createPublicClient();
+    const { data: bien } = await supabase.from("biens").select("*").eq("id", id).single();
+    if (!bien) return null;
+
+    const { data: medias } = await supabase
+      .from("bien_medias")
+      .select("url, type, ordre")
+      .eq("bien_id", id)
+      .eq("type", "photo")
+      .order("ordre", { ascending: true });
+
+    return { bien, photos: (medias ?? []).map((m) => ({ url: m.url })) };
+  },
+  ["bien_by_id"],
   { revalidate: 3600, tags: ["biens"] }
 );
 
