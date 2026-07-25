@@ -1,15 +1,38 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
-import { getPays, isOffreKey, offreLabel } from "@/lib/assistance";
+import { getPays, isOffreKey, offreLabel, isStatutDossier, STATUT_DOSSIER_LABELS } from "@/lib/assistance";
+import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouveauDossierVoyage } from "./notifications-admin";
 
 export type AssistanceState = {
   error?: string;
 };
+
+export type DossierActionState = {
+  error?: string;
+  success?: boolean;
+};
+
+async function requireStaff() {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) throw new Error("Non authentifié");
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.sub)
+    .single();
+  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+    throw new Error("Accès refusé");
+  }
+  return user;
+}
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -72,4 +95,63 @@ export async function creerDossierVoyage(
   );
 
   redirect(`/assistance/confirmation?pays=${encodeURIComponent(pays.name)}`);
+}
+
+// ─── Admin : gestion des dossiers de voyage ──────────────────────────────────
+
+export async function changerStatutDossier(
+  _prev: DossierActionState,
+  formData: FormData
+): Promise<DossierActionState> {
+  await requireStaff();
+  const admin = getAdmin();
+  const dossierId = formData.get("dossier_id") as string;
+  const statut = formData.get("statut") as string;
+
+  if (!dossierId || !isStatutDossier(statut)) {
+    return { error: "Statut invalide." };
+  }
+
+  const { data: dossier } = await admin
+    .from("dossiers_voyage")
+    .select("client_id, pays_cible")
+    .eq("id", dossierId)
+    .single();
+
+  const { error } = await admin
+    .from("dossiers_voyage")
+    .update({ statut, updated_at: new Date().toISOString() })
+    .eq("id", dossierId);
+  if (error) return { error: error.message };
+
+  if (dossier) {
+    await notifierClient(
+      dossier.client_id,
+      "Mise à jour de votre dossier visa",
+      `Votre dossier ${dossier.pays_cible} : ${STATUT_DOSSIER_LABELS[statut] ?? statut}.`
+    );
+  }
+  revalidatePath("/admin/dossiers-voyage");
+  return { success: true };
+}
+
+export async function affecterConseiller(
+  _prev: DossierActionState,
+  formData: FormData
+): Promise<DossierActionState> {
+  await requireStaff();
+  const admin = getAdmin();
+  const dossierId = formData.get("dossier_id") as string;
+  const conseillerId = (formData.get("conseiller_id") as string) || null;
+
+  if (!dossierId) return { error: "Dossier invalide." };
+
+  const { error } = await admin
+    .from("dossiers_voyage")
+    .update({ conseiller_id: conseillerId, updated_at: new Date().toISOString() })
+    .eq("id", dossierId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/dossiers-voyage");
+  return { success: true };
 }

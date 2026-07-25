@@ -160,6 +160,15 @@ export function AdminMobileNav({
               </div>
             </div>
 
+            <div>
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
+                Assistance
+              </h2>
+              <div className="space-y-0.5">
+                <NavLink href="/admin/dossiers-voyage">Dossiers visa</NavLink>
+              </div>
+            </div>
+
             {isProprietaire && (
               <div>
                 <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-phoebe-anthracite/70">

@@ -116,6 +116,13 @@ export default async function AdminShellLayout({
             </nav>
           </div>
 
+          <div>
+            <SectionTitle>Assistance</SectionTitle>
+            <nav className="space-y-0.5">
+              <NavLink href="/admin/dossiers-voyage">Dossiers visa</NavLink>
+            </nav>
+          </div>
+
           {isProprietaire && (
             <div>
               <SectionTitle>Administration</SectionTitle>

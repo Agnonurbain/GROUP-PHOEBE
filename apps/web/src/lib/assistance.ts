@@ -90,3 +90,24 @@ export function isOffreKey(v: string): v is OffreKey {
 export function offreLabel(key: OffreKey): string {
   return OFFRES.find((o) => o.key === key)?.name ?? key;
 }
+
+// ─── Statuts d'un dossier de voyage (CHECK de la table dossiers_voyage) ───────
+export const STATUTS_DOSSIER = [
+  "soumis",
+  "en_cours_traitement",
+  "pieces_complementaires_requises",
+  "finalise",
+] as const;
+
+export type StatutDossier = (typeof STATUTS_DOSSIER)[number];
+
+export const STATUT_DOSSIER_LABELS: Record<string, string> = {
+  soumis: "Soumis",
+  en_cours_traitement: "En cours de traitement",
+  pieces_complementaires_requises: "Pièces complémentaires requises",
+  finalise: "Finalisé",
+};
+
+export function isStatutDossier(v: string): v is StatutDossier {
+  return (STATUTS_DOSSIER as readonly string[]).includes(v);
+}
