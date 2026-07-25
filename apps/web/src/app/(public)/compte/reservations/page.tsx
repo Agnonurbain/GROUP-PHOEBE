@@ -29,6 +29,8 @@ type ReservationItem = {
   /** Montant à régler maintenant (acompte achat ou prix négocié), le cas échéant. */
   aPayer: number | null
   isAchat: boolean
+  /** Lien « Voir le détail » (diffère selon le type : confirmation, suivi…). */
+  detailHref: string
 }
 
 const TABS = [
@@ -41,10 +43,10 @@ function isActive(s: string) {
   return !["terminee", "termine", "finalise", "annulee", "annule", "refusee", "refuse"].includes(s)
 }
 function isTerminee(s: string) {
-  return ["terminee", "termine", "finalise"].includes(s)
+  return ["terminee", "termine", "finalise", "livree"].includes(s)
 }
 function isAnnulee(s: string) {
-  return ["annulee", "annule", "refusee", "refuse"].includes(s)
+  return ["annulee", "annule", "refusee", "refuse", "echec_livraison"].includes(s)
 }
 
 function canCancel(status: string) {
@@ -70,7 +72,7 @@ export default async function CompteReservations({
     )
   }
 
-  const [transportRes, immobilierRes, assistanceRes] = await Promise.all([
+  const [transportRes, immobilierRes, assistanceRes, livraisonRes] = await Promise.all([
     supabase
       .from("demandes_transport")
       .select("id, created_at, statut, montant, categorie, type, prix_negocie, vehicule_id, vehicules!inner(marque, modele)")
@@ -84,6 +86,11 @@ export default async function CompteReservations({
     supabase
       .from("dossiers_voyage")
       .select("id, created_at, statut, type, pays_cible")
+      .eq("client_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("expeditions")
+      .select("id, created_at, statut, prix, numero_suivi, mode")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
   ])
@@ -104,6 +111,7 @@ export default async function CompteReservations({
     created_at: d.created_at,
     title: `${d.vehicules?.marque ?? ""} ${d.vehicules?.modele ?? ""}`.trim() || "Véhicule",
     category: "Transport",
+    detailHref: `/reservation/confirmation?demande=${d.id}`,
     period: new Date(d.created_at).toLocaleDateString("fr-FR"),
     price: d.montant ? `${d.montant.toLocaleString()} FCFA` : "—",
     status: d.statut,
@@ -122,6 +130,7 @@ export default async function CompteReservations({
     created_at: d.created_at,
     title: d.biens?.localisation ?? "Bien immobilier",
     category: "Immobilier",
+    detailHref: `/reservation/confirmation?demande=${d.id}`,
     period: `Visite: ${new Date(d.created_at).toLocaleDateString("fr-FR")}`,
     price: d.montant_offre ? `${d.montant_offre.toLocaleString()} FCFA` : "—",
     status: d.statut,
@@ -135,6 +144,7 @@ export default async function CompteReservations({
     created_at: d.created_at,
     title: `${d.type} - ${d.pays_cible}`,
     category: "Assistance",
+    detailHref: `/reservation/confirmation?demande=${d.id}`,
     period: new Date(d.created_at).toLocaleDateString("fr-FR"),
     price: "—",
     status: d.statut,
@@ -143,7 +153,21 @@ export default async function CompteReservations({
     isAchat: false,
   })) ?? []
 
-  const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations]
+  const livraisonReservations: ReservationItem[] = livraisonRes.data?.map((d) => ({
+    id: d.id,
+    created_at: d.created_at,
+    title: `Colis ${d.numero_suivi}`,
+    category: "Livraison",
+    detailHref: `/suivi?numero=${encodeURIComponent(d.numero_suivi)}`,
+    period: new Date(d.created_at).toLocaleDateString("fr-FR"),
+    price: d.prix != null ? `${Number(d.prix).toLocaleString()} FCFA` : "—",
+    status: d.statut,
+    photoUrl: null,
+    aPayer: null,
+    isAchat: false,
+  })) ?? []
+
+  const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const filtered =
@@ -228,10 +252,10 @@ export default async function CompteReservations({
                     <PayerAcompte demandeId={r.id} montant={r.aPayer} isAchat={r.isAchat} />
                   )}
                   <Link
-                    href={`/reservation/confirmation?demande=${r.id}`}
+                    href={r.detailHref}
                     className="text-xs text-public-text hover:text-accent-gold transition-colors text-right"
                   >
-                    Voir le détail
+                    {r.category === "Livraison" ? "Suivre le colis" : "Voir le détail"}
                   </Link>
                   {r.category === "Transport" && canCancel(r.status) && (
                     <form action={async () => { await annulerParClient(r.id) }}>
