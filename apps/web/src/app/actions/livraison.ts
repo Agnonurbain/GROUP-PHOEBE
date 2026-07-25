@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -11,14 +12,45 @@ import {
   genererNumeroSuivi,
   ZONE_LABELS,
   MODE_LABELS,
+  STATUT_LIVRAISON,
+  STATUT_LIVRAISON_LABELS,
   isZoneLivraison,
   isModeLivraison,
 } from "@/lib/livraison";
+import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouvelleReservation } from "./notifications-admin";
 
 export type LivraisonState = {
   error?: string;
 };
+
+export type ExpeditionActionState = {
+  error?: string;
+  success?: boolean;
+};
+
+// Statuts d'expédition sur lesquels un livreur est considéré « occupé ».
+const STATUTS_EN_COURS = [
+  STATUT_LIVRAISON.creee,
+  STATUT_LIVRAISON.priseEnCharge,
+  STATUT_LIVRAISON.enTransit,
+] as const;
+
+async function requireStaff() {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) throw new Error("Non authentifié");
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.sub)
+    .single();
+  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+    throw new Error("Accès refusé");
+  }
+  return user;
+}
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -158,4 +190,139 @@ export async function creerExpedition(
   await notifierAdminNouvelleReservation(expedition.id, expediteurNom, 1, prix);
 
   redirect(paymentUrl);
+}
+
+// ─── Admin : affectation livreur & cycle de statut ───────────────────────────
+
+type AdminClient = ReturnType<typeof createAdminClient<Database>>;
+
+// Choisit automatiquement un livreur actif : préfère ceux dont la zone de
+// couverture correspond (ou est vide), et prend le moins chargé sous sa capacité.
+async function choisirLivreurAuto(admin: AdminClient, zone: string): Promise<string | null> {
+  const { data: livreurs } = await admin
+    .from("livreurs")
+    .select("id, capacite_max_par_jour, zone_couverture")
+    .eq("actif", true);
+  if (!livreurs || livreurs.length === 0) return null;
+
+  const { data: enCours } = await admin
+    .from("expeditions")
+    .select("livreur_id")
+    .in("statut", [...STATUTS_EN_COURS])
+    .not("livreur_id", "is", null);
+
+  const charge = new Map<string, number>();
+  for (const e of enCours ?? []) {
+    if (e.livreur_id) charge.set(e.livreur_id, (charge.get(e.livreur_id) ?? 0) + 1);
+  }
+
+  const preferes = livreurs.filter((l) => !l.zone_couverture || l.zone_couverture === zone);
+  const pool = preferes.length > 0 ? preferes : livreurs;
+  const disponibles = pool.filter(
+    (l) => (charge.get(l.id) ?? 0) < (l.capacite_max_par_jour ?? Number.POSITIVE_INFINITY)
+  );
+  if (disponibles.length === 0) return null;
+
+  disponibles.sort((a, b) => (charge.get(a.id) ?? 0) - (charge.get(b.id) ?? 0));
+  return disponibles[0].id;
+}
+
+async function assignerEtNotifier(
+  admin: AdminClient,
+  expeditionId: string,
+  livreurId: string
+): Promise<ExpeditionActionState> {
+  const { data: exp } = await admin
+    .from("expeditions")
+    .select("client_id, numero_suivi")
+    .eq("id", expeditionId)
+    .single();
+
+  const { error } = await admin
+    .from("expeditions")
+    .update({ livreur_id: livreurId, updated_at: new Date().toISOString() })
+    .eq("id", expeditionId);
+  if (error) return { error: error.message };
+
+  if (exp) {
+    await notifierClient(
+      exp.client_id,
+      "Livreur affecté",
+      `Un livreur a été affecté à votre colis ${exp.numero_suivi}.`
+    );
+  }
+  revalidatePath("/admin/expeditions");
+  return { success: true };
+}
+
+export async function affecterLivreurAuto(
+  _prev: ExpeditionActionState,
+  formData: FormData
+): Promise<ExpeditionActionState> {
+  await requireStaff();
+  const admin = getAdmin();
+  const expeditionId = formData.get("expedition_id") as string;
+  if (!expeditionId) return { error: "Expédition invalide." };
+
+  const { data: exp } = await admin
+    .from("expeditions")
+    .select("zone")
+    .eq("id", expeditionId)
+    .single();
+  if (!exp) return { error: "Expédition introuvable." };
+
+  const livreurId = await choisirLivreurAuto(admin, exp.zone);
+  if (!livreurId) return { error: "Aucun livreur disponible pour cette zone." };
+
+  return assignerEtNotifier(admin, expeditionId, livreurId);
+}
+
+export async function affecterLivreurManuel(
+  _prev: ExpeditionActionState,
+  formData: FormData
+): Promise<ExpeditionActionState> {
+  await requireStaff();
+  const admin = getAdmin();
+  const expeditionId = formData.get("expedition_id") as string;
+  const livreurId = formData.get("livreur_id") as string;
+  if (!expeditionId || !livreurId) return { error: "Expédition ou livreur manquant." };
+
+  return assignerEtNotifier(admin, expeditionId, livreurId);
+}
+
+export async function changerStatutExpedition(
+  _prev: ExpeditionActionState,
+  formData: FormData
+): Promise<ExpeditionActionState> {
+  await requireStaff();
+  const admin = getAdmin();
+  const expeditionId = formData.get("expedition_id") as string;
+  const statut = formData.get("statut") as string;
+
+  const valides = Object.values(STATUT_LIVRAISON) as string[];
+  if (!expeditionId || !valides.includes(statut)) {
+    return { error: "Statut invalide." };
+  }
+
+  const { data: exp } = await admin
+    .from("expeditions")
+    .select("client_id, numero_suivi")
+    .eq("id", expeditionId)
+    .single();
+
+  const { error } = await admin
+    .from("expeditions")
+    .update({ statut, updated_at: new Date().toISOString() })
+    .eq("id", expeditionId);
+  if (error) return { error: error.message };
+
+  if (exp) {
+    await notifierClient(
+      exp.client_id,
+      "Mise à jour de votre livraison",
+      `Votre colis ${exp.numero_suivi} : ${STATUT_LIVRAISON_LABELS[statut] ?? statut}.`
+    );
+  }
+  revalidatePath("/admin/expeditions");
+  return { success: true };
 }
