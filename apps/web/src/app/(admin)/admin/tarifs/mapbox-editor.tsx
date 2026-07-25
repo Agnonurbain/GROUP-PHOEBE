@@ -179,6 +179,7 @@ export function MapboxEditor({
 
   const handleClear = async () => {
     if (!drawRef.current) return;
+    if (!window.confirm("Supprimer le polygone de cette zone ? La zone n'aura plus de délimitation géographique.")) return;
     drawRef.current.deleteAll();
     setSaving(true);
     setResult(null);
@@ -232,7 +233,7 @@ export function MapboxEditor({
                 className="h-[400px] w-full overflow-hidden rounded-xl border border-phoebe-pearl"
               />
 
-              {result?.error && <p className="text-xs text-error">{result.error}</p>}
+              {result?.error && <p role="alert" className="text-xs text-error">{result.error}</p>}
               {result?.success && <p className="text-xs text-phoebe-green-deep">Polygone enregistré.</p>}
 
               <div className="flex gap-2">

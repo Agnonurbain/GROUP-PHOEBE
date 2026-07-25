@@ -51,8 +51,8 @@ export function AuditFilters({
   return (
     <div className="flex flex-wrap gap-4 pt-2 border-t border-phoebe-pearl">
       <div className="flex items-center gap-2">
-        <label className="text-xs text-phoebe-anthracite/70">Action :</label>
-        <select
+        <label htmlFor="af-action" className="text-xs text-phoebe-anthracite/70">Action :</label>
+        <select id="af-action"
           value={filters.action || ""}
           onChange={(e) => apply({ action: e.target.value || undefined })}
           className={inputClass}
@@ -67,8 +67,8 @@ export function AuditFilters({
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="text-xs text-phoebe-anthracite/70">Utilisateur :</label>
-        <select
+        <label htmlFor="af-user" className="text-xs text-phoebe-anthracite/70">Utilisateur :</label>
+        <select id="af-user"
           value={filters.user || ""}
           onChange={(e) => apply({ user: e.target.value || undefined })}
           className={inputClass}
@@ -83,8 +83,8 @@ export function AuditFilters({
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="text-xs text-phoebe-anthracite/70">Du :</label>
-        <input
+        <label htmlFor="af-dateFrom" className="text-xs text-phoebe-anthracite/70">Du :</label>
+        <input id="af-dateFrom"
           type="date"
           value={filters.dateFrom || ""}
           onChange={(e) => apply({ dateFrom: e.target.value || undefined })}
@@ -93,8 +93,8 @@ export function AuditFilters({
       </div>
 
       <div className="flex items-center gap-2">
-        <label className="text-xs text-phoebe-anthracite/70">Au :</label>
-        <input
+        <label htmlFor="af-dateTo" className="text-xs text-phoebe-anthracite/70">Au :</label>
+        <input id="af-dateTo"
           type="date"
           value={filters.dateTo || ""}
           onChange={(e) => apply({ dateTo: e.target.value || undefined })}

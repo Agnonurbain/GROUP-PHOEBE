@@ -53,18 +53,18 @@ export function CoefficientsForm({
           <input type="hidden" name="zone_id" value={zoneId} />
 
           {state.error && (
-            <p className="text-xs text-error">{state.error}</p>
+            <p role="alert" className="text-xs text-error">{state.error}</p>
           )}
           {state.success && (
-            <p className="text-xs text-phoebe-green-deep">Paramètres mis à jour.</p>
+            <p role="status" className="text-xs text-phoebe-green-deep">Paramètres mis à jour.</p>
           )}
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+              <label htmlFor={`coef-${zoneId}-coefficient_majoration`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
                 Coefficient prix
               </label>
-              <input
+              <input id={`coef-${zoneId}-coefficient_majoration`}
                 name="coefficient_majoration"
                 type="number"
                 step="0.01"
@@ -76,10 +76,10 @@ export function CoefficientsForm({
               />
             </div>
             <div>
-              <label className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+              <label htmlFor={`coef-${zoneId}-caution_multiplicateur`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
                 Multiplicateur caution
               </label>
-              <input
+              <input id={`coef-${zoneId}-caution_multiplicateur`}
                 name="caution_multiplicateur"
                 type="number"
                 step="0.01"
@@ -91,10 +91,10 @@ export function CoefficientsForm({
               />
             </div>
             <div>
-              <label className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+              <label htmlFor={`coef-${zoneId}-km_inclus_par_jour`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
                 KM inclus/jour
               </label>
-              <input
+              <input id={`coef-${zoneId}-km_inclus_par_jour`}
                 name="km_inclus_par_jour"
                 type="number"
                 min="0"
@@ -104,10 +104,10 @@ export function CoefficientsForm({
               />
             </div>
             <div>
-              <label className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+              <label htmlFor={`coef-${zoneId}-supplement_km_fcfa`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
                 Supplément km (FCFA)
               </label>
-              <input
+              <input id={`coef-${zoneId}-supplement_km_fcfa`}
                 name="supplement_km_fcfa"
                 type="number"
                 min="0"
@@ -117,10 +117,10 @@ export function CoefficientsForm({
               />
             </div>
             <div>
-              <label className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+              <label htmlFor={`coef-${zoneId}-chauffeur_statut`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
                 Chauffeur
               </label>
-              <select
+              <select id={`coef-${zoneId}-chauffeur_statut`}
                 name="chauffeur_statut"
                 defaultValue={initial.chauffeur_statut}
                 required
@@ -132,10 +132,10 @@ export function CoefficientsForm({
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+              <label htmlFor={`coef-${zoneId}-tarif_chauffeur_journalier`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
                 Tarif chauffeur/jour (FCFA)
               </label>
-              <input
+              <input id={`coef-${zoneId}-tarif_chauffeur_journalier`}
                 name="tarif_chauffeur_journalier"
                 type="number"
                 min="0"
@@ -147,10 +147,10 @@ export function CoefficientsForm({
           </div>
 
           <div>
-            <label className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+            <label htmlFor={`coef-${zoneId}-commentaire`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
               Commentaire *
             </label>
-            <textarea
+            <textarea id={`coef-${zoneId}-commentaire`}
               name="commentaire"
               required
               rows={2}

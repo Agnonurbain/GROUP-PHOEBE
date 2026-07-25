@@ -73,6 +73,7 @@ export function BlocagesVehiculeList({
                 size="sm"
                 disabled={isPending}
                 onClick={() => {
+                  if (!window.confirm("Supprimer cette période bloquée ?")) return;
                   startTransition(async () => {
                     await supprimerBlocageVehicule(b.id, vehiculeId);
                   });
@@ -124,6 +125,7 @@ export function BlocagesChauffeurList({
               size="sm"
               disabled={isPending}
               onClick={() => {
+                if (!window.confirm("Supprimer cette période bloquée ?")) return;
                 startTransition(async () => {
                   await supprimerBlocageChauffeur(b.id, vehiculeId);
                 });

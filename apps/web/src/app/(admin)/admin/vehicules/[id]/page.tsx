@@ -179,7 +179,10 @@ export default async function EditVehiculePage({
           <section className="rounded-2xl border border-error/20 bg-error/5 p-5">
             <h2 className="mb-3 text-sm font-semibold text-error">Zone danger</h2>
             <form action={handleDelete}>
-              <SubmitButton variant="danger">
+              <SubmitButton
+                variant="danger"
+                confirm="Supprimer définitivement ce véhicule ? Cette action est irréversible."
+              >
                 Supprimer ce véhicule
               </SubmitButton>
             </form>
