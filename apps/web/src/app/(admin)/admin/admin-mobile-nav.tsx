@@ -165,6 +165,7 @@ export function AdminMobileNav({
                 Immobilier
               </h2>
               <div className="space-y-0.5">
+                <NavLink href="/admin/biens">Biens</NavLink>
                 <NavLink href="/admin/demandes-immobilier">Demandes immobilier</NavLink>
               </div>
             </div>
