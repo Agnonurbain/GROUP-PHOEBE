@@ -119,6 +119,7 @@ export default async function AdminShellLayout({
           <div>
             <SectionTitle>Immobilier</SectionTitle>
             <nav className="space-y-0.5">
+              <NavLink href="/admin/biens">Biens</NavLink>
               <NavLink href="/admin/demandes-immobilier">Demandes immobilier</NavLink>
             </nav>
           </div>
