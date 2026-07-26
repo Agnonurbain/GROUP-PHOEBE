@@ -203,7 +203,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
                       clipPath: "polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)",
                     }}
                   >
-                    {g.prixJournalier.toLocaleString()} FCFA/j
+                    {g.prixJournalier.toLocaleString("fr-FR")} FCFA/j
                   </span>
                 ) : hasVente ? (
                   <span
@@ -212,7 +212,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
                       clipPath: "polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)",
                     }}
                   >
-                    {g.prixVente!.toLocaleString()} FCFA
+                    {g.prixVente!.toLocaleString("fr-FR")} FCFA
                   </span>
                 ) : (
                   <span className="text-sm font-semibold text-public-text-muted">Prix sur demande</span>

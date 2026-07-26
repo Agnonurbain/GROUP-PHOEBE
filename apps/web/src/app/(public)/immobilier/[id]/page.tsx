@@ -23,10 +23,10 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const titre = `${typeBienLabel(bien.type)} à ${bien.localisation}`
   return {
     title: `${titre} — Immobilier`,
-    description: bien.description || `${titre} — ${Number(bien.prix).toLocaleString()} FCFA. Découvrez ce bien avec GROUP PHOEBE.`,
+    description: bien.description || `${titre} — ${Number(bien.prix).toLocaleString("fr-FR")} FCFA. Découvrez ce bien avec GROUP PHOEBE.`,
     openGraph: {
       title: `${titre} — Immobilier`,
-      description: bien.description || `${titre} — ${Number(bien.prix).toLocaleString()} FCFA.`,
+      description: bien.description || `${titre} — ${Number(bien.prix).toLocaleString("fr-FR")} FCFA.`,
     },
   }
 }
@@ -105,7 +105,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
           </div>
 
           <h1 className="mt-3 text-4xl font-bold text-public-text">{typeBienLabel(bien.type)} — {bien.localisation}</h1>
-          <p className="mt-2 text-3xl font-bold text-accent-green">{Number(bien.prix).toLocaleString()} FCFA</p>
+          <p className="mt-2 text-3xl font-bold text-accent-green">{Number(bien.prix).toLocaleString("fr-FR")} FCFA</p>
 
           {bien.description && (
             <p className="mt-6 text-sm leading-relaxed text-public-text-muted">{bien.description}</p>
@@ -128,7 +128,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
           <div className="sticky top-24 space-y-4">
             <div className="rounded-2xl border border-public-border bg-public-bg-card p-6">
               <p className="text-sm text-public-text-muted">Prix</p>
-              <p className="mt-1 text-2xl font-bold text-accent-green">{Number(bien.prix).toLocaleString()} FCFA</p>
+              <p className="mt-1 text-2xl font-bold text-accent-green">{Number(bien.prix).toLocaleString("fr-FR")} FCFA</p>
             </div>
             <BienInteractionForm bienId={bien.id} isLoggedIn={isLoggedIn} />
           </div>

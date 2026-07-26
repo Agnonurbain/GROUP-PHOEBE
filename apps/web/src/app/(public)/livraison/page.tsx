@@ -72,7 +72,7 @@ export default async function Livraison({
                 {ZONES_LIVRAISON.map((zone) => (
                   <li key={zone} className="flex items-center justify-between text-sm">
                     <span className="text-public-text-muted">{ZONE_LABELS[zone]}</span>
-                    <span className="font-bold text-accent-orange">{TARIFS_LIVRAISON[zone][mode].toLocaleString()} FCFA</span>
+                    <span className="font-bold text-accent-orange">{TARIFS_LIVRAISON[zone][mode].toLocaleString("fr-FR")} FCFA</span>
                   </li>
                 ))}
               </ul>
@@ -111,7 +111,7 @@ export default async function Livraison({
               <h3 className="text-base font-semibold text-public-text">{ZONE_LABELS[zone]}</h3>
               <p className="mt-1 text-sm text-public-text-muted">{ZONE_DESCRIPTIONS[zone]}</p>
               <p className="mt-3 text-sm text-public-text-muted">
-                À partir de <span className="font-bold text-accent-orange">{TARIFS_LIVRAISON[zone].standard.toLocaleString()} FCFA</span>
+                À partir de <span className="font-bold text-accent-orange">{TARIFS_LIVRAISON[zone].standard.toLocaleString("fr-FR")} FCFA</span>
               </p>
             </Card>
           ))}

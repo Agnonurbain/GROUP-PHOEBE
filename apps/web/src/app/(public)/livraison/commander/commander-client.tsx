@@ -248,7 +248,7 @@ export default function CommanderClient({
             <div className="flex items-center justify-between">
               <span className="text-sm font-bold text-public-text">Total</span>
               <span className="text-xl font-bold text-accent-orange">
-                {prix !== null ? `${prix.toLocaleString()} FCFA` : "—"}
+                {prix !== null ? `${prix.toLocaleString("fr-FR")} FCFA` : "—"}
               </span>
             </div>
             {!adressesRenseignees && (
@@ -262,7 +262,7 @@ export default function CommanderClient({
               disabled={pending || prix === null}
               className="mt-6 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-accent-orange-hover active:scale-[0.98] disabled:opacity-50"
             >
-              {pending ? "Traitement…" : prix !== null ? `Payer ${prix.toLocaleString()} FCFA` : "Renseignez les adresses"}
+              {pending ? "Traitement…" : prix !== null ? `Payer ${prix.toLocaleString("fr-FR")} FCFA` : "Renseignez les adresses"}
             </button>
 
             <Link href="/livraison" className="mt-3 block text-center text-xs text-public-text-muted transition-colors hover:text-public-text">

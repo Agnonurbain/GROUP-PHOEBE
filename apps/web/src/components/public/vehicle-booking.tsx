@@ -76,8 +76,8 @@ export function VehicleBooking({
                     </span>
                     <span className="text-3xl font-bold text-accent-orange">
                       {z.prixMin > 0
-                        ? `${z.prixMin.toLocaleString()} - ${z.prixMax.toLocaleString()}`
-                        : defaultPrice.toLocaleString()}
+                        ? `${z.prixMin.toLocaleString("fr-FR")} - ${z.prixMax.toLocaleString("fr-FR")}`
+                        : defaultPrice.toLocaleString("fr-FR")}
                     </span>
                   </div>
                   <div className="mt-2 flex items-center justify-between text-sm text-public-text-muted">
@@ -96,7 +96,7 @@ export function VehicleBooking({
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-semibold text-public-text">Prix standard</span>
                   <span className="text-3xl font-bold text-accent-orange">
-                    {defaultPrice > 0 ? `${defaultPrice.toLocaleString()} FCFA/jour` : "Sur demande"}
+                    {defaultPrice > 0 ? `${defaultPrice.toLocaleString("fr-FR")} FCFA/jour` : "Sur demande"}
                   </span>
                 </div>
               </div>
@@ -136,7 +136,7 @@ export function VehicleBooking({
           </Button>
 
           <p className="mt-3 text-center text-3xl font-bold text-public-text-muted">
-            {defaultPrice > 0 ? `À partir de ${defaultPrice.toLocaleString()} FCFA/jour` : "Contactez-nous pour un devis"}
+            {defaultPrice > 0 ? `À partir de ${defaultPrice.toLocaleString("fr-FR")} FCFA/jour` : "Contactez-nous pour un devis"}
           </p>
         </Card>
       </div>
@@ -147,7 +147,7 @@ export function VehicleBooking({
           <div>
             <p className="text-xs text-public-text-muted">À partir de</p>
             <p className="text-lg font-bold text-accent-orange">
-              {defaultPrice > 0 ? `${defaultPrice.toLocaleString()} FCFA/jour` : "Sur demande"}
+              {defaultPrice > 0 ? `${defaultPrice.toLocaleString("fr-FR")} FCFA/jour` : "Sur demande"}
             </p>
           </div>
           <Button variant="orange" size="lg" className="shrink-0" onClick={handleSubmit}>

@@ -284,7 +284,7 @@ export default function PaiementPage() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-semibold text-public-text truncate">{i.marque} {i.modele}</p>
                   <p className="text-xs text-public-text-muted">{i.categorie} &times; {i.quantite}</p>
-                  <p className="text-sm font-bold text-accent-orange mt-0.5">{i.prixJournalier.toLocaleString()} FCFA/jour</p>
+                  <p className="text-sm font-bold text-accent-orange mt-0.5">{i.prixJournalier.toLocaleString("fr-FR")} FCFA/jour</p>
                 </div>
               </div>
             ))}
@@ -446,12 +446,12 @@ export default function PaiementPage() {
                   <div className="min-w-0 flex-1 pr-2">
                     <p className="text-sm font-medium text-public-text truncate">{item.marque} {item.modele}</p>
                     <p className="text-xs text-public-text-muted">
-                      ×{item.quantite} · {item.prixJournalier.toLocaleString()} FCFA/jour
+                      ×{item.quantite} · {item.prixJournalier.toLocaleString("fr-FR")} FCFA/jour
                       {nbJours > 0 && ` · ${nbJours}j`}
                     </p>
                   </div>
                   <span className="text-sm font-bold text-public-text whitespace-nowrap">
-                    {montant.toLocaleString()} FCFA
+                    {montant.toLocaleString("fr-FR")} FCFA
                   </span>
                 </div>
               ))}
@@ -460,26 +460,26 @@ export default function PaiementPage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-public-text-muted">Location</span>
-                <span className="font-medium text-public-text">{totalLocation.toLocaleString()} FCFA</span>
+                <span className="font-medium text-public-text">{totalLocation.toLocaleString("fr-FR")} FCFA</span>
               </div>
               {totalChauffeur > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-public-text-muted">
                     Chauffeur{chauffeurObligatoire ? " (obligatoire)" : ""}
                   </span>
-                  <span className="font-medium text-public-text">{totalChauffeur.toLocaleString()} FCFA</span>
+                  <span className="font-medium text-public-text">{totalChauffeur.toLocaleString("fr-FR")} FCFA</span>
                 </div>
               )}
               <div className="flex justify-between text-sm">
                 <span className="text-public-text-muted">Caution (remboursable)</span>
-                <span className="font-medium text-public-text">{totalCaution.toLocaleString()} FCFA</span>
+                <span className="font-medium text-public-text">{totalCaution.toLocaleString("fr-FR")} FCFA</span>
               </div>
             </div>
             <hr className="my-4 border-public-border" />
             <div className="flex justify-between">
               <span className="text-sm font-bold text-public-text">Total à payer</span>
               <span className="text-xl font-bold text-accent-orange">
-                {totalAvecDuree.toLocaleString()} FCFA
+                {totalAvecDuree.toLocaleString("fr-FR")} FCFA
               </span>
             </div>
             {chauffeurObligatoire && (
@@ -544,7 +544,7 @@ export default function PaiementPage() {
                     Traitement en cours...
                   </>
                 ) : (
-                  <>Confirmer et payer {totalAvecDuree.toLocaleString()} FCFA</>
+                  <>Confirmer et payer {totalAvecDuree.toLocaleString("fr-FR")} FCFA</>
                 )}
               </Button>
             </div>
