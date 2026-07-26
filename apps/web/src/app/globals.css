@@ -51,6 +51,9 @@
   --color-info: #2563EB;
 
   --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
+
+  /* Display serif éditoriale (accueil) — utilitaire `font-display`. */
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
 }
 
 :root {
