@@ -7,7 +7,7 @@ interface CardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  default: "border-[#2A2A2A] bg-[#141414] hover:bg-[#1A1A1A]",
+  default: "border-[#423C35] bg-[#1C1A18] hover:bg-[#262320]",
   admin: "border-phoebe-pearl bg-white hover:shadow-lg",
   "accent-gold": "border-[#C9A84C]/30 bg-[rgba(201,168,76,0.05)]",
   "accent-green": "border-[rgba(5,150,105,0.3)] bg-[rgba(5,150,105,0.05)]",

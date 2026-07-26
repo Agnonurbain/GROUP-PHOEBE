@@ -25,14 +25,14 @@ export function PanierStepper({ current }: { current: number }) {
                     ? "bg-[#059669] text-white"
                     : active
                       ? "bg-[#C9A84C] text-[#0A0A0A]"
-                      : "border border-[#2A2A2A] text-public-text-faint"
+                      : "border border-[#423C35] text-public-text-faint"
                 }`}
               >
                 {done ? <CheckIcon size={14} aria-hidden="true" /> : i + 1}
               </span>
               <span
                 className={`text-xs font-medium ${
-                  active ? "text-[#F5F5F5]" : "text-public-text-faint"
+                  active ? "text-[#EDE9E3]" : "text-public-text-faint"
                 }`}
               >
                 {step.label}
@@ -41,7 +41,7 @@ export function PanierStepper({ current }: { current: number }) {
               {i < STEPS.length - 1 && (
                 <span
                   aria-hidden="true"
-                  className={`mx-2 h-px w-8 ${done ? "bg-[#059669]" : "bg-[#2A2A2A]"}`}
+                  className={`mx-2 h-px w-8 ${done ? "bg-[#059669]" : "bg-[#423C35]"}`}
                 />
               )}
             </li>

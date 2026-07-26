@@ -7,7 +7,7 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  default: "bg-[#0A0A0A] border-[#2A2A2A] text-[#F5F5F5]",
+  default: "bg-[#141312] border-[#423C35] text-[#EDE9E3]",
   admin: "bg-white border-phoebe-anthracite/20 text-phoebe-anthracite",
 }
 

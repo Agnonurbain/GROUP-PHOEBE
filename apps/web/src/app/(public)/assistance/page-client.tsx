@@ -1,118 +1,119 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Badge, Card } from "@/components/ui"
+import { Badge } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
+import { PageHero, SectionHead } from "@/components/public/section-head"
 import { PAYS_LIST, prixApartir, type Pays } from "@/lib/assistance"
+
+/* Hallmark · Editorial index (page service) — voir design.md.
+   Les anciennes cartes à survol masquaient leur contenu tant qu'on ne survolait
+   pas : inaccessible au tactile. Remplacées par des blocs toujours lisibles. */
 
 const categorieLabel = (c: Pays["categorie"]) => (c === "etudes" ? "Études" : "Voyage")
 
 const etudesCountries = PAYS_LIST.filter((d) => d.categorie === "etudes")
 const voyageCountries = PAYS_LIST.filter((d) => d.categorie === "voyage")
 
-function InteractiveCard({
-  title,
+function ChoixBloc({
+  titre,
   desc,
   countries,
-  color,
 }: {
-  title: string
+  titre: string
   desc: string
   countries: Pays[]
-  color: string
 }) {
-  const [hovered, setHovered] = useState(false)
-
   return (
-    <Card
-      className="relative transition-all duration-300 hover:border-accent-blue/30"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      <div className={`transition-opacity duration-300 ${hovered ? "opacity-0" : "opacity-100"}`}>
-        <h3 className="text-lg font-semibold text-public-text">{title}</h3>
-        <p className="mt-2 text-sm text-public-text-muted">{desc}</p>
-        <span className="mt-3 inline-block text-sm font-medium text-accent-blue-on-dark">
-          {countries.map((c) => c.name).join(" · ")}
-        </span>
+    <div className="flex flex-col border-t border-public-border pt-8">
+      <h3 className="font-display text-2xl font-medium text-public-text">{titre}</h3>
+      <p className="mt-2 max-w-sm text-sm text-public-text-muted">{desc}</p>
+      <div className="mt-6 flex flex-wrap gap-2">
+        {countries.map((c) => (
+          <Link
+            key={c.slug}
+            href={`/assistance/pays/${c.slug}`}
+            className="inline-flex items-center gap-2 rounded-lg border border-accent-blue/30 bg-accent-blue/10 px-3 py-2 text-sm font-medium text-accent-blue-on-dark transition-all hover:bg-accent-blue/20"
+          >
+            <span className="text-lg">{c.flag}</span>
+            {c.name}
+          </Link>
+        ))}
       </div>
-      <div
-        className={`absolute inset-0 flex flex-col justify-center gap-3 rounded-2xl p-6 transition-all duration-300 ${
-          hovered ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
-        }`}
-        style={{ backgroundColor: `${color}12`, border: `1px solid ${color}30` }}
-      >
-        <p className="text-sm font-semibold text-public-text">{title}</p>
-        <div className="flex flex-wrap gap-2">
-          {countries.map((c) => (
-            <Link
-              key={c.slug}
-              href={`/assistance/pays/${c.slug}`}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-accent-blue/30 bg-accent-blue/10 px-3 py-2 text-sm font-medium text-accent-blue-on-dark transition-all hover:bg-accent-blue/20"
-            >
-              <span className="text-lg">{c.flag}</span>
-              <span>{c.name}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </Card>
+    </div>
   )
 }
 
 export default function Assistance() {
   return (
     <>
-      <div className="px-6 pt-6">
+      <div className="px-6 pt-6 sm:px-10">
         <BackLink href="/" label="Retour à l'accueil" />
       </div>
-      <section className="flex flex-col items-center gap-6 px-6 py-16 text-center">
-        <Image
-          src="/logos/logo-assi-etud.png"
-          alt="Assistance Voyages & Études"
-          width={429}
-          height={346}
-          className="h-28 w-auto animate-glow-pulse"
-          priority
-        />
-        <h1 className="text-4xl font-bold text-public-text md:text-5xl">Votre visa, notre expertise</h1>
-        <p className="text-base text-public-text-muted md:text-lg">Études en Chine, voyages en Europe — nous ouvrons les portes du monde</p>
+
+      <PageHero
+        eyebrow="Assistance Voyages & Études"
+        title="Votre visa, notre expertise"
+        lede="Études en Chine, voyages en Europe — nous montons et suivons votre dossier de bout en bout."
+        aside={
+          <Image
+            src="/logos/logo-assi-etud.png"
+            alt="Assistance Voyages & Études"
+            width={429}
+            height={346}
+            className="h-24 w-auto opacity-90"
+            priority
+          />
+        }
+      />
+
+      {/* Deux portes d'entrée — blocs éditoriaux, contenu toujours visible */}
+      <section className="px-6 py-20 sm:px-10">
+        <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:gap-16">
+          <ChoixBloc
+            titre="Je veux étudier à l'étranger"
+            desc="Bourses et admissions en Chine : nous négocions et montons votre dossier de A à Z."
+            countries={etudesCountries}
+          />
+          <ChoixBloc
+            titre="Je veux voyager en Europe"
+            desc="Visa Schengen pour la Norvège, la France, l'Italie, le Portugal et la Grèce."
+            countries={voyageCountries}
+          />
+        </div>
       </section>
 
-      <div className="grid gap-6 px-6 pb-16 md:grid-cols-2">
-        <InteractiveCard
-          title="Je veux étudier à l'étranger"
-          desc="Bourses et admissions en Chine : nous négocions et montons votre dossier de A à Z."
-          countries={etudesCountries}
-          color="#2563EB"
-        />
-        <InteractiveCard
-          title="Je veux voyager en Europe"
-          desc="Visa Schengen pour la Norvège, la France, l'Italie, le Portugal et la Grèce."
-          countries={voyageCountries}
-          color="#2563EB"
-        />
-      </div>
-
-      <section className="px-6 pb-20">
-        <h2 className="text-3xl font-semibold text-public-text">Destinations</h2>
-        <p className="mt-1 text-sm text-public-text-muted">Les pays que nous couvrons</p>
-        <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {PAYS_LIST.map((d) => (
-            <Link key={d.name} href={`/assistance/pays/${d.slug}`} className="block group">
-              <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-accent-blue/30 hover:bg-public-bg-elevated hover:shadow-xl hover:shadow-black/20">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{d.flag}</span>
+      {/* Destinations — liste éditoriale (traitement distinct des blocs ci-dessus) */}
+      <section className="border-t border-public-border bg-public-bg-card px-6 py-20 sm:px-10">
+        <div className="mx-auto max-w-6xl">
+          <SectionHead
+            title="Destinations"
+            lede="Les pays que nous couvrons, avec le tarif de départ de notre accompagnement."
+            className="border-b-0 pb-0"
+          />
+          <div className="mt-10">
+            {PAYS_LIST.map((d, i) => (
+              <Link
+                key={d.slug}
+                href={`/assistance/pays/${d.slug}`}
+                className="group grid grid-cols-[2.5rem_1fr] items-center gap-5 border-b border-public-border py-6 transition-colors hover:bg-public-bg/60 first:border-t sm:grid-cols-[4rem_1fr_auto] sm:gap-10 sm:px-3"
+              >
+                <span className="font-display text-2xl font-medium leading-none text-public-text-faint transition-colors group-hover:text-accent-blue-on-dark">
+                  0{i + 1}
+                </span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-2xl" aria-hidden="true">{d.flag}</span>
+                  <h3 className="font-display text-xl font-medium text-public-text sm:text-2xl">{d.name}</h3>
                   <Badge variant="blue">{categorieLabel(d.categorie)}</Badge>
                 </div>
-                <h3 className="mt-3 text-lg font-semibold text-public-text">{d.name}</h3>
-                <p className="mt-1 text-2xl font-bold text-accent-blue-on-dark">{prixApartir(d)}</p>
-                <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-blue-on-dark transition-all group-hover:gap-2">Voir l&apos;offre →</span>
-              </Card>
-            </Link>
-          ))}
+                <div className="col-span-2 flex items-center justify-between gap-4 sm:col-span-1 sm:justify-end">
+                  <span className="text-sm font-semibold text-accent-blue-on-dark">{prixApartir(d)}</span>
+                  <span className="text-sm text-public-text-faint transition-all group-hover:text-accent-blue-on-dark" aria-hidden="true">→</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
     </>

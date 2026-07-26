@@ -38,7 +38,7 @@ export function PhoebeLogo({ variant = "default", className = "", ...props }: Lo
         fontSize="24"
         fontWeight="300"
         letterSpacing="4"
-        fill={variant === "admin" ? "#22282B" : "#F5F5F5"}
+        fill={variant === "admin" ? "#22282B" : "#EDE9E3"}
         fontFamily="system-ui, sans-serif"
       >
         PHOEBE

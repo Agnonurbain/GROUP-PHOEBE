@@ -164,7 +164,7 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
             required
             accept="image/*,.pdf"
             onChange={handlePieceChange}
-            className="w-full text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-[#2A2A2A] file:px-4 file:py-2 file:text-sm file:font-medium file:text-public-text hover:file:bg-[#3A3A3A]"
+            className="w-full text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-[#423C35] file:px-4 file:py-2 file:text-sm file:font-medium file:text-public-text hover:file:bg-[#4E463D]"
           />
           {previewPiece && (
             <div className="mt-3 overflow-hidden rounded-lg border border-public-border">
@@ -195,7 +195,7 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
             required
             accept="image/*,.pdf"
             onChange={handlePermisChange}
-            className="w-full text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-[#2A2A2A] file:px-4 file:py-2 file:text-sm file:font-medium file:text-public-text hover:file:bg-[#3A3A3A]"
+            className="w-full text-sm file:mr-4 file:rounded-lg file:border-0 file:bg-[#423C35] file:px-4 file:py-2 file:text-sm file:font-medium file:text-public-text hover:file:bg-[#4E463D]"
           />
           {previewPermis && (
             <div className="mt-3 overflow-hidden rounded-lg border border-public-border">
@@ -224,7 +224,7 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
           </button>
           <a
             href="/compte/profil"
-            className="flex items-center rounded-lg border border-[#2A2A2A] px-4 py-2 text-sm text-public-text-muted transition-colors hover:bg-[#1A1A1A]"
+            className="flex items-center rounded-lg border border-[#423C35] px-4 py-2 text-sm text-public-text-muted transition-colors hover:bg-[#262320]"
           >
             Annuler
           </a>
