@@ -78,7 +78,10 @@ export async function creerDossierVoyage(
       type: prestation.type,
       pays_cible: pays.name,
       statut: "soumis",
-    })
+      // Colonnes ajoutées en 00041 (pas encore dans les types générés).
+      prestation: prestation.name,
+      montant_estime: prestation.prix,
+    } as never)
     .select("id")
     .single();
 
