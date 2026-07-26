@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { DossierActions } from "./dossiers-actions"
-import { STATUTS_DOSSIER, STATUT_DOSSIER_LABELS } from "@/lib/assistance"
+import { STATUTS_DOSSIER, STATUT_DOSSIER_LABELS, prixLabel } from "@/lib/assistance"
 
 export const metadata: Metadata = {
   title: "Dossiers visa — Administration",
@@ -70,12 +70,17 @@ export default async function DossiersVoyageAdminPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {dossiers.map((d) => (
+          {dossiers.map((d) => {
+            const prestation = (d as { prestation?: string | null }).prestation ?? null
+            const montant = (d as { montant_estime?: number | null }).montant_estime ?? null
+            return (
             <div key={d.id} className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-base font-semibold text-phoebe-anthracite">{d.pays_cible}</span>
+                    <span className="text-base font-semibold text-phoebe-anthracite">
+                      {prestation ? `${prestation} — ${d.pays_cible}` : d.pays_cible}
+                    </span>
                     <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUT_COLORS[d.statut] ?? "bg-phoebe-pearl text-phoebe-anthracite"}`}>
                       {STATUT_DOSSIER_LABELS[d.statut] ?? d.statut}
                     </span>
@@ -85,9 +90,14 @@ export default async function DossiersVoyageAdminPage() {
                     {new Date(d.created_at).toLocaleDateString("fr-FR")}
                   </p>
                 </div>
-                <p className="text-xs text-phoebe-anthracite/70">
-                  {d.conseiller_id ? `Conseiller : ${userNom.get(d.conseiller_id) ?? "—"}` : "Non affecté"}
-                </p>
+                <div className="text-right">
+                  {prestation && (
+                    <p className="text-sm font-bold text-phoebe-green-deep">{prixLabel(montant)}</p>
+                  )}
+                  <p className="text-xs text-phoebe-anthracite/70">
+                    {d.conseiller_id ? `Conseiller : ${userNom.get(d.conseiller_id) ?? "—"}` : "Non affecté"}
+                  </p>
+                </div>
               </div>
 
               <DossierActions
@@ -98,7 +108,8 @@ export default async function DossiersVoyageAdminPage() {
                 statuts={statuts}
               />
             </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
