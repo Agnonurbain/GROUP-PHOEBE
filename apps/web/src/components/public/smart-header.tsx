@@ -78,7 +78,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
 
   return (
     <header
-      className={`sticky top-0 z-40 border-b border-white/10 transition-all duration-200 ${
+      className={`sticky top-0 z-40 border-b border-public-border transition-all duration-200 ${
         scrolled
           ? "bg-public-bg/95 backdrop-blur-md shadow-sm shadow-black/5"
           : "bg-public-bg/90 backdrop-blur-md"
@@ -99,9 +99,9 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
               <Link
                 key={link.href}
                 href={link.href}
-                className={`text-sm transition-colors ${
+                className={`relative text-sm transition-colors ${
                   showVerticalNav && "id" in link && link.id === vertical
-                    ? "text-public-text font-medium"
+                    ? "font-medium text-public-text after:absolute after:-bottom-1.5 after:left-0 after:h-px after:w-full after:bg-[var(--color-vertical,#C9A84C)]"
                     : "text-public-text-muted hover:text-public-text"
                 }`}
               >
@@ -172,7 +172,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
       </div>
 
       {menuOpen && (
-        <div id="menu-mobile" className="animate-fade-in border-t border-white/10 bg-public-bg/98 backdrop-blur-md md:hidden">
+        <div id="menu-mobile" className="animate-fade-in border-t border-public-border bg-public-bg/98 backdrop-blur-md md:hidden">
           <nav className="space-y-1 px-6 py-4">
             {showServiceCta && (
               <Link
@@ -199,7 +199,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
                 </Link>
               ),
             )}
-            <hr className="border-white/10" />
+            <hr className="border-public-border" />
             <Link
               href={session ? "/compte/profil" : "/connexion"}
               className="flex min-h-11 items-center rounded-lg px-3 py-2.5 text-sm font-medium text-accent-gold transition-colors hover:bg-accent-gold/5"

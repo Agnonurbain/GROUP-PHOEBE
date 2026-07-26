@@ -1,7 +1,8 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { BackLink } from "@/components/public/back-link"
-import { Badge, Button, Card } from "@/components/ui"
+import { Button } from "@/components/ui"
+import { PageHero, SectionHead } from "@/components/public/section-head"
 import {
   ZONES_LIVRAISON,
   MODES_LIVRAISON,
@@ -11,6 +12,10 @@ import {
   MODE_DESCRIPTIONS,
   TARIFS_LIVRAISON,
 } from "@/lib/livraison"
+
+/* Hallmark · Editorial index (page service) — voir design.md.
+   Quatre traitements distincts pour éviter le patron IA : hero biaisé →
+   grille tarifaire en tableau → process numéroté → listes éditoriales. */
 
 export const metadata: Metadata = {
   title: "Livraison de colis — Transport & Coursier",
@@ -26,6 +31,20 @@ export const metadata: Metadata = {
   },
 }
 
+const ETAPES = [
+  { title: "Commandez", desc: "Choisissez votre mode et remplissez les détails de livraison en ligne." },
+  { title: "Payez", desc: "Réglez en ligne par carte ou Mobile Money, en toute sécurité." },
+  { title: "Nous collectons", desc: "Un coursier récupère votre colis à l'adresse de collecte." },
+  { title: "Livraison", desc: "Votre colis est livré au destinataire, rapidement et en sécurité." },
+]
+
+const TYPES_COLIS = [
+  { title: "Petits colis", desc: "Documents, vêtements, accessoires — jusqu'à 5 kg" },
+  { title: "Colis moyens", desc: "Équipements électroniques, livres, cadeaux — jusqu'à 15 kg" },
+  { title: "Gros colis", desc: "Cartons, meubles, équipements — jusqu'à 50 kg" },
+  { title: "Courses & commissions", desc: "Achats en magasin, retrait de documents, courses diverses" },
+]
+
 export default async function Livraison({
   searchParams,
 }: {
@@ -35,104 +54,139 @@ export default async function Livraison({
 
   return (
     <>
-      <section className="px-6 py-16">
-        <div className="mb-6">
-          <BackLink href="/" label="Retour à l'accueil" />
-        </div>
-        <Badge variant="orange">Livraison</Badge>
-        <h1 className="mt-4 text-4xl font-bold text-public-text md:text-5xl">Livraison de colis & Coursier</h1>
-        <p className="mt-3 max-w-2xl text-base text-public-text-muted md:text-lg">
-          Envois rapides et sécurisés à Abidjan et partout en Côte d&apos;Ivoire, livrés porte-à-porte.
-        </p>
-        {echec && (
-          <div role="alert" className="mt-6 max-w-2xl rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error">
-            Le paiement a été annulé. Vous pouvez relancer votre commande à tout moment.
-          </div>
-        )}
-        <div className="mt-8 flex flex-wrap items-center gap-4">
-          <Link href="/livraison/commander">
-            <Button variant="orange" size="lg">Commander une livraison</Button>
-          </Link>
-          <Link href="/suivi" className="text-sm font-semibold text-accent-orange transition-colors hover:text-accent-orange-hover">
-            Suivre un colis →
-          </Link>
-        </div>
-      </section>
+      <div className="px-6 pt-6 sm:px-10">
+        <BackLink href="/" label="Retour à l'accueil" />
+      </div>
 
-      {/* Tarifs — source unique (grille lib/livraison) */}
-      <section className="px-6 pb-20">
-        <h2 className="text-3xl font-semibold text-public-text">Nos tarifs</h2>
-        <p className="mt-2 text-sm text-public-text-muted">Prix par mode d&apos;envoi et zone de destination.</p>
-        <div className="mt-8 grid gap-6 md:grid-cols-3">
-          {MODES_LIVRAISON.map((mode) => (
-            <Card key={mode} className="flex flex-col transition-all hover:border-accent-orange/30 hover:bg-public-bg-elevated">
-              <h3 className="text-lg font-semibold text-public-text">{MODE_LABELS[mode]}</h3>
-              <p className="mt-2 text-sm text-public-text-muted">{MODE_DESCRIPTIONS[mode]}</p>
-              <ul className="mt-5 space-y-2 border-t border-public-border pt-4">
+      <PageHero
+        eyebrow="Livraison"
+        title={<>Livraison de colis &amp; Coursier</>}
+        lede="Envois rapides et sécurisés à Abidjan et partout en Côte d'Ivoire, livrés porte-à-porte."
+        actions={
+          <>
+            <Link href="/livraison/commander">
+              <Button variant="orange" size="lg">Commander une livraison</Button>
+            </Link>
+            <Link
+              href="/suivi"
+              className="text-sm font-semibold text-accent-orange transition-colors hover:text-accent-orange-hover"
+            >
+              Suivre un colis →
+            </Link>
+          </>
+        }
+      />
+
+      {echec && (
+        <div role="alert" className="mx-6 mt-8 max-w-2xl rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error sm:mx-10">
+          Le paiement a été annulé. Vous pouvez relancer votre commande à tout moment.
+        </div>
+      )}
+
+      {/* Tarifs — grille zones × modes (source unique lib/livraison) */}
+      <section className="px-6 py-20 sm:px-10">
+        <div className="mx-auto max-w-6xl">
+          <SectionHead
+            title="Nos tarifs"
+            lede="Le prix dépend de la distance entre la collecte et la livraison, et du mode d'envoi choisi."
+          />
+          <div className="mt-8 overflow-x-auto">
+            <table className="w-full min-w-[640px] border-collapse text-left">
+              <thead>
+                <tr className="border-b border-public-border">
+                  <th scope="col" className="py-4 pr-6 text-xs font-medium uppercase tracking-[0.15em] text-public-text-muted">
+                    Zone
+                  </th>
+                  {MODES_LIVRAISON.map((mode) => (
+                    <th key={mode} scope="col" className="py-4 pr-6 text-sm font-semibold text-public-text">
+                      {MODE_LABELS[mode]}
+                      <span className="mt-1 block text-xs font-normal text-public-text-faint">
+                        {MODE_DESCRIPTIONS[mode]}
+                      </span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
                 {ZONES_LIVRAISON.map((zone) => (
-                  <li key={zone} className="flex items-center justify-between text-sm">
-                    <span className="text-public-text-muted">{ZONE_LABELS[zone]}</span>
-                    <span className="font-bold text-accent-orange">{TARIFS_LIVRAISON[zone][mode].toLocaleString("fr-FR")} FCFA</span>
-                  </li>
+                  <tr key={zone} className="border-b border-public-border transition-colors hover:bg-public-bg-card/60">
+                    <th scope="row" className="py-5 pr-6 align-top">
+                      <span className="block text-sm font-semibold text-public-text">{ZONE_LABELS[zone]}</span>
+                      <span className="mt-1 block max-w-[14rem] text-xs font-normal text-public-text-muted">
+                        {ZONE_DESCRIPTIONS[zone]}
+                      </span>
+                    </th>
+                    {MODES_LIVRAISON.map((mode) => (
+                      <td key={mode} className="py-5 pr-6 align-top">
+                        <span className="font-display text-xl font-medium text-accent-orange">
+                          {TARIFS_LIVRAISON[zone][mode].toLocaleString("fr-FR")}
+                        </span>
+                        <span className="ml-1 text-xs text-public-text-muted">FCFA</span>
+                      </td>
+                    ))}
+                  </tr>
                 ))}
-              </ul>
-            </Card>
-          ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 text-xs text-public-text-faint">
+            La zone est déterminée automatiquement à partir des adresses de collecte et de livraison.
+          </p>
         </div>
       </section>
 
-      {/* Comment ça marche */}
-      <section className="mx-6 mb-20 rounded-2xl border border-public-border bg-public-bg-card p-8">
-        <h2 className="text-3xl font-semibold text-public-text">Comment ça marche</h2>
-        <div className="mt-8 grid gap-6 md:grid-cols-4">
-          {[
-            { step: "1", title: "Commandez", desc: "Choisissez votre mode et remplissez les détails de livraison en ligne." },
-            { step: "2", title: "Payez", desc: "Réglez en ligne par carte ou Mobile Money, en toute sécurité." },
-            { step: "3", title: "Nous collectons", desc: "Un coursier récupère votre colis à l'adresse de collecte." },
-            { step: "4", title: "Livraison", desc: "Votre colis est livré au destinataire, rapidement et en sécurité." },
-          ].map((s) => (
-            <div key={s.step} className="flex items-start gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent-orange text-sm font-bold text-white">{s.step}</div>
-              <div>
-                <h3 className="text-base font-semibold text-public-text">{s.title}</h3>
-                <p className="text-sm text-public-text-muted">{s.desc}</p>
+      {/* Comment ça marche — process en ligne, grands numéros display */}
+      <section className="border-t border-public-border bg-public-bg-card px-6 py-20 sm:px-10">
+        <div className="mx-auto max-w-6xl">
+          <SectionHead title="Comment ça marche" className="border-b-0 pb-0" />
+          <div className="mt-12 grid gap-y-10 sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-4 lg:gap-x-8">
+            {ETAPES.map((s, i) => (
+              <div key={s.title}>
+                <span className="font-display block text-5xl font-medium leading-none text-accent-orange/25">
+                  0{i + 1}
+                </span>
+                <div className="mt-4 border-t border-public-border pt-4">
+                  <h3 className="text-base font-semibold text-public-text">{s.title}</h3>
+                  <p className="mt-2 text-sm text-public-text-muted">{s.desc}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Zones de livraison */}
-      <section className="mx-6 mb-20 rounded-2xl border border-public-border bg-public-bg-card p-8">
-        <h2 className="text-3xl font-semibold text-public-text">Zones de livraison</h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          {ZONES_LIVRAISON.map((zone) => (
-            <Card key={zone} className="transition-all hover:border-accent-orange/30">
-              <h3 className="text-base font-semibold text-public-text">{ZONE_LABELS[zone]}</h3>
-              <p className="mt-1 text-sm text-public-text-muted">{ZONE_DESCRIPTIONS[zone]}</p>
-              <p className="mt-3 text-sm text-public-text-muted">
-                À partir de <span className="font-bold text-accent-orange">{TARIFS_LIVRAISON[zone].standard.toLocaleString("fr-FR")} FCFA</span>
-              </p>
-            </Card>
-          ))}
+      {/* Types de colis — liste éditoriale (traitement différent des sections voisines) */}
+      <section className="px-6 py-20 sm:px-10">
+        <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <SectionHead
+              title="Ce que nous transportons"
+              lede="Du pli administratif au gros colis, avec la même attention."
+              className="border-b-0 pb-0"
+            />
+          </div>
+          <div className="flex flex-col">
+            {TYPES_COLIS.map((c) => (
+              <div key={c.title} className="flex items-baseline justify-between gap-6 border-t border-public-border py-6 first:border-t-0 first:pt-0">
+                <h3 className="text-lg font-semibold text-public-text">{c.title}</h3>
+                <p className="max-w-sm text-right text-sm text-public-text-muted">{c.desc}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Types de colis */}
-      <section className="mx-6 mb-20 rounded-2xl border border-public-border bg-public-bg-card p-8">
-        <h2 className="text-3xl font-semibold text-public-text">Types de colis</h2>
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          {[
-            { title: "Petits colis", desc: "Documents, vêtements, accessoires — jusqu'à 5 kg" },
-            { title: "Colis moyens", desc: "Équipements électroniques, livres, cadeaux — jusqu'à 15 kg" },
-            { title: "Gros colis", desc: "Cartons, meubles, équipements — jusqu'à 50 kg" },
-            { title: "Courses & commissions", desc: "Achats en magasin, retrait de documents, courses diverses" },
-          ].map((c) => (
-            <Card key={c.title} className="transition-all hover:border-accent-orange/30">
-              <h3 className="text-base font-semibold text-public-text">{c.title}</h3>
-              <p className="mt-1 text-sm text-public-text-muted">{c.desc}</p>
-            </Card>
-          ))}
+      {/* Close — statement biaisé */}
+      <section className="border-t border-public-border bg-public-bg-card px-6 py-24 sm:px-10">
+        <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
+          <h2 className="font-display max-w-2xl text-3xl font-medium leading-[1.15] tracking-tight text-public-text sm:text-4xl">
+            Un colis à envoyer <em className="italic text-accent-orange">aujourd&apos;hui</em> ?
+          </h2>
+          <div className="flex flex-wrap gap-4 lg:shrink-0">
+            <Link href="/livraison/commander">
+              <Button variant="orange" size="lg">Commander une livraison</Button>
+            </Link>
+          </div>
         </div>
       </section>
     </>

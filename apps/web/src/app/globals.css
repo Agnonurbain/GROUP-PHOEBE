@@ -5,14 +5,18 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-public-bg: #0A0A0A;
-  --color-public-bg-card: #141414;
-  --color-public-bg-elevated: #1A1A1A;
-  --color-public-border: #2A2A2A;
-  --color-public-text: #F5F5F5;
-  --color-public-text-muted: #8A8A8A;
-  /* #4A4A4A ne donnait que 2.2:1 sur #0A0A0A : illisible. 5.1:1 ici. */
-  --color-public-text-faint: #818181;
+  /* Charbon chaud plutôt que noir pur : le couple #0A0A0A/#F5F5F5 éblouissait
+     et écrasait les filets (1,29:1 — quasi invisibles). Ici le fond respire,
+     les filets se voient (1,71:1) et le texte garde 15:1. */
+  --color-public-bg: #141312;
+  --color-public-bg-card: #1C1A18;
+  --color-public-bg-elevated: #262320;
+  --color-public-border: #423C35;
+  --color-public-text: #EDE9E3;
+  /* 7,1:1 sur le fond (contre 5,2:1 avant) */
+  --color-public-text-muted: #A79F95;
+  /* 4,9:1 : plancher AA conservé pour le texte discret */
+  --color-public-text-faint: #8A8279;
   --color-accent-gold: #C9A84C;
   --color-accent-gold-hover: #B8943A;
   --color-accent-orange: #F97316;
@@ -59,13 +63,13 @@
 :root {
 
   /* Public theme (legacy names) */
-  --public-bg: #0A0A0A;
-  --public-bg-card: #141414;
-  --public-bg-elevated: #1A1A1A;
-  --public-border: #2A2A2A;
-  --public-text: #F5F5F5;
-  --public-text-muted: #8A8A8A;
-  --public-text-faint: #818181;
+  --public-bg: #141312;
+  --public-bg-card: #1C1A18;
+  --public-bg-elevated: #262320;
+  --public-border: #423C35;
+  --public-text: #EDE9E3;
+  --public-text-muted: #A79F95;
+  --public-text-faint: #8A8279;
 
   --accent-gold: #C9A84C;
   --accent-gold-hover: #B8943A;
@@ -77,11 +81,11 @@
   --accent-blue-hover: #1D4ED8;
 
   /* Design System tokens */
-  --color-background: #0A0A0A;
-  --color-background-secondary: #141414;
-  --color-surface: #1A1A1A;
-  --color-text-primary: #F5F5F5;
-  --color-text-secondary: #8A8A8A;
+  --color-background: #141312;
+  --color-background-secondary: #1C1A18;
+  --color-surface: #262320;
+  --color-text-primary: #EDE9E3;
+  --color-text-secondary: #A79F95;
   --color-vertical: #C9A84C;
   --color-vertical-hover: #A8893A;
   --color-vertical-glow: rgba(201, 168, 76, 0.3);

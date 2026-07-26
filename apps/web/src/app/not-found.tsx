@@ -2,10 +2,10 @@ import Link from "next/link"
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#0A0A0A] px-4">
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-[#141312] px-4">
       <p className="text-[140px] font-bold leading-none tracking-tight text-[rgba(201,168,76,0.1)]">404</p>
       <div className="-mt-10 text-center">
-        <h1 className="text-xl font-bold text-[#F5F5F5]">Page introuvable</h1>
+        <h1 className="text-xl font-bold text-[#EDE9E3]">Page introuvable</h1>
         <p className="mt-2 text-sm text-public-text-muted">La page que vous cherchez n&apos;existe pas ou n&apos;est plus accessible.</p>
       </div>
       <Link

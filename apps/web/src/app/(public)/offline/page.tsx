@@ -11,7 +11,7 @@ export default function OfflinePage() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-public-bg px-6 text-center">
       <div className="max-w-md">
         <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-public-bg-card">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#8A8A8A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#A79F95" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="1" y1="1" x2="23" y2="23" />
             <path d="M16.72 11.06A10.94 10.94 0 0 1 19 12.55" />
             <path d="M5 12.55a10.94 10.94 0 0 1 5.17-2.39" />

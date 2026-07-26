@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server"
 import { groupVehicles } from "@/lib/vehicle-group"
 import Filtres from "./filtres"
 import { BackLink } from "@/components/public/back-link"
+import { PageHero, SectionHead } from "@/components/public/section-head"
 import { Badge, Card } from "@/components/ui"
 import { SearchIcon, ChevronRightIcon } from "@/components/icons"
 import { getZonesTarifaires } from "@/lib/public-cache"
@@ -287,28 +288,32 @@ export default async function TransportCatalogue({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(catalogueSchema) }}
       />
-      <section className="px-6 py-16">
-        <div className="mb-6">
-          <BackLink href="/" label="Retour à l'accueil" />
-        </div>
-        <h1 className="text-4xl font-bold text-public-text md:text-5xl">Notre Flotte</h1>
-        <p className="mt-3 text-base text-public-text-muted md:text-lg">Découvrez nos véhicules d&apos;exception pour vos déplacements</p>
-      </section>
+      <div className="px-6 pt-6 sm:px-10">
+        <BackLink href="/" label="Retour à l'accueil" />
+      </div>
 
-      <div className="px-6">
+      <PageHero
+        eyebrow="Transport"
+        title="Notre Flotte"
+        lede="Découvrez nos véhicules d'exception pour vos déplacements."
+      />
+
+      <div className="mx-auto max-w-6xl px-6 py-10 sm:px-10">
         <Suspense>
           <Filtres zones={zones ?? []} />
         </Suspense>
       </div>
 
-      <div className="flex items-center justify-between px-6 pb-6">
-        <h2 className="text-3xl font-semibold text-public-text">Véhicules disponibles</h2>
-      </div>
-
-      <div className="px-6 pb-20">
-        <Suspense fallback={<GridSkeleton />}>
-          <VehiculeGrid searchParams={sp} />
-        </Suspense>
+      <div className="mx-auto max-w-6xl px-6 pb-20 sm:px-10">
+        <SectionHead
+          title="Véhicules disponibles"
+          lede="Cliquez sur un véhicule pour le réserver ou faire une demande d'achat."
+        />
+        <div className="mt-10">
+          <Suspense fallback={<GridSkeleton />}>
+            <VehiculeGrid searchParams={sp} />
+          </Suspense>
+        </div>
       </div>
     </>
   )

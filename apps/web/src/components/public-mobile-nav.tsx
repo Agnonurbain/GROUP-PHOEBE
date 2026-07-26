@@ -19,7 +19,7 @@ export function PublicMobileNav({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex h-10 w-10 items-center justify-center rounded-lg text-[#8A8A8A] transition-colors hover:bg-[#1A1A1A]"
+        className="flex h-10 w-10 items-center justify-center rounded-lg text-[#A79F95] transition-colors hover:bg-[#262320]"
         aria-label={open ? "Fermer le menu" : "Ouvrir le menu"}
         aria-expanded={open}
       >
@@ -40,7 +40,7 @@ export function PublicMobileNav({
       {open && (
         <>
           <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setOpen(false)} />
-          <div className="fixed left-0 right-0 top-16 z-50 border-b border-[#2A2A2A] bg-[#0A0A0A] px-5 py-4 shadow-xl backdrop-blur-md">
+          <div className="fixed left-0 right-0 top-16 z-50 border-b border-[#423C35] bg-[#141312] px-5 py-4 shadow-xl backdrop-blur-md">
             <nav className="flex flex-col gap-0.5">
               {links.map((link) =>
                 link.isButton ? (
@@ -57,7 +57,7 @@ export function PublicMobileNav({
                     key={link.href}
                     href={link.href}
                     onClick={() => setOpen(false)}
-                    className="rounded-xl px-4 py-3 text-sm font-medium text-[#8A8A8A] transition-all hover:bg-[#1A1A1A] hover:text-[#F5F5F5]"
+                    className="rounded-xl px-4 py-3 text-sm font-medium text-[#A79F95] transition-all hover:bg-[#262320] hover:text-[#EDE9E3]"
                   >
                     {link.label}
                   </Link>
@@ -65,7 +65,7 @@ export function PublicMobileNav({
               )}
             </nav>
             {authAction && (
-              <div className="mt-3 border-t border-[#2A2A2A] pt-3">{authAction}</div>
+              <div className="mt-3 border-t border-[#423C35] pt-3">{authAction}</div>
             )}
           </div>
         </>
