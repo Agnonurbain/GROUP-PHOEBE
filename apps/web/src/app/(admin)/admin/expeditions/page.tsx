@@ -181,7 +181,7 @@ export default async function ExpeditionsAdminPage({
                 </div>
                 <div className="text-right">
                   <p className="text-lg font-bold text-phoebe-gold-dark">
-                    {e.prix != null ? `${Number(e.prix).toLocaleString()} FCFA` : "—"}
+                    {e.prix != null ? `${Number(e.prix).toLocaleString("fr-FR")} FCFA` : "—"}
                   </p>
                   <p className="text-xs text-phoebe-anthracite/70">
                     {e.livreur_id ? `Livreur : ${livreurNom.get(e.livreur_id) ?? "—"}` : "Non affecté"}

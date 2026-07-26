@@ -4,6 +4,9 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
+    // Next 16 exige de déclarer les qualités autorisées (75 par défaut + celles
+    // utilisées explicitement dans l'app).
+    qualities: [75, 80, 85],
     remotePatterns: [
       {
         protocol: "https",

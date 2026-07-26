@@ -54,7 +54,7 @@ function InteractiveCard({
             >
               <span className="text-lg">{c.flag}</span>
               <span>{c.name}</span>
-              <span className="ml-1 text-xs opacity-70">{c.prix.base.toLocaleString()} FCFA</span>
+              <span className="ml-1 text-xs opacity-70">{c.prix.base.toLocaleString("fr-FR")} FCFA</span>
             </Link>
           ))}
         </div>
@@ -109,7 +109,7 @@ export default function Assistance() {
                   <Badge variant="blue">{typeLabel(d.type)}</Badge>
                 </div>
                 <h3 className="mt-3 text-lg font-semibold text-public-text">{d.name}</h3>
-                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">À partir de {d.prix.base.toLocaleString()} FCFA</p>
+                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">À partir de {d.prix.base.toLocaleString("fr-FR")} FCFA</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-blue-on-dark transition-all group-hover:gap-2">Voir l&apos;offre →</span>
               </Card>
             </Link>

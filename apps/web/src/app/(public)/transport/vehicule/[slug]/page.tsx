@@ -113,7 +113,7 @@ export default async function VehicleDetail({
     { label: "Places", value: rep.nb_places ? String(rep.nb_places) : "—" },
     { label: "Boîte", value: rep.boite ? `Boîte ${rep.boite}` : "—" },
     { label: "Carburant", value: rep.carburant ?? "—" },
-    { label: "Kilométrage", value: rep.kilometrage ? `${Number(rep.kilometrage).toLocaleString()} km` : "—" },
+    { label: "Kilométrage", value: rep.kilometrage ? `${Number(rep.kilometrage).toLocaleString("fr-FR")} km` : "—" },
     { label: "Localisation", value: rep.localisation ?? "—" },
     { label: "État", value: rep.etat ?? "—" },
   ]

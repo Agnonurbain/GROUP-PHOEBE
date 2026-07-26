@@ -39,7 +39,7 @@ export function VehiclePurchase({
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold text-public-text">Prix affiché</span>
             <span className="text-3xl font-bold text-accent-gold">
-              {prixVente > 0 ? `${prixVente.toLocaleString()} FCFA` : "Sur demande"}
+              {prixVente > 0 ? `${prixVente.toLocaleString("fr-FR")} FCFA` : "Sur demande"}
             </span>
           </div>
           <p className="mt-2 text-xs text-public-text-muted">

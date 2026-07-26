@@ -83,7 +83,7 @@ export default async function ConfirmationLivraison({
             {expedition.prix != null && (
               <div className="flex justify-between">
                 <dt className="text-public-text-muted">Montant</dt>
-                <dd className="font-bold text-public-text">{expedition.prix.toLocaleString()} FCFA</dd>
+                <dd className="font-bold text-public-text">{expedition.prix.toLocaleString("fr-FR")} FCFA</dd>
               </div>
             )}
           </dl>

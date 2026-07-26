@@ -138,7 +138,7 @@ export default function CountryDetail() {
           <div className="mt-8 grid grid-cols-4 gap-4">
             {[
               { label: "Délai", value: pays.delay, color: "text-accent-blue-on-dark" },
-              { label: "À partir de", value: `${pays.prix.base.toLocaleString()} FCFA`, color: "text-accent-gold" },
+              { label: "À partir de", value: `${pays.prix.base.toLocaleString("fr-FR")} FCFA`, color: "text-accent-gold" },
               { label: "Type", value: pays.visa, color: "text-accent-blue-on-dark" },
               { label: "Taux", value: `${pays.success} succès`, color: "text-accent-green" },
             ].map((s) => (
@@ -192,7 +192,7 @@ export default function CountryDetail() {
                   <Badge variant="gold" className="absolute -top-2.5 right-4">Recommandé</Badge>
                 )}
                 <h3 className="text-base font-semibold text-public-text">{offre.name}</h3>
-                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">{pays.prix[offre.key].toLocaleString()} FCFA</p>
+                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">{pays.prix[offre.key].toLocaleString("fr-FR")} FCFA</p>
                 <ul className="mt-4 space-y-2">
                   {offre.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-public-text-muted">

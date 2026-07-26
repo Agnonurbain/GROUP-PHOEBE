@@ -138,7 +138,7 @@ export default async function Immobilier({
                   <Badge variant="green">{typeBienLabel(b.type)}</Badge>
                 </div>
                 <h3 className="text-lg font-semibold text-public-text">{typeBienLabel(b.type)} – {b.localisation}</h3>
-                <p className="mt-1 text-3xl font-bold text-accent-green">{b.prix.toLocaleString()} FCFA</p>
+                <p className="mt-1 text-3xl font-bold text-accent-green">{b.prix.toLocaleString("fr-FR")} FCFA</p>
                 <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-public-text-muted">
                   {b.surface_m2 && <span>{b.surface_m2} m²</span>}
                   {b.nb_chambres && <span>{b.nb_chambres} {b.nb_chambres > 1 ? "chambres" : "chambre"}</span>}

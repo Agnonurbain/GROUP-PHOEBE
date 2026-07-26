@@ -96,7 +96,7 @@ export default async function DemandesImmobilierAdminPage() {
                 </div>
                 <div className="text-right">
                   {d.montant_offre != null && (
-                    <p className="text-lg font-bold text-phoebe-green-deep">{Number(d.montant_offre).toLocaleString()} FCFA</p>
+                    <p className="text-lg font-bold text-phoebe-green-deep">{Number(d.montant_offre).toLocaleString("fr-FR")} FCFA</p>
                   )}
                   <p className="text-xs text-phoebe-anthracite/70">
                     {d.agent_id ? `Agent : ${agentNom.get(d.agent_id) ?? "—"}` : "Non affecté"}

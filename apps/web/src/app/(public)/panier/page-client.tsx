@@ -97,7 +97,7 @@ export default function Panier() {
                     <Badge variant="green">{item.categorie}</Badge>
                   </div>
                   <p className="mt-1 text-3xl font-bold text-public-text-muted">
-                    {item.prixJournalier.toLocaleString()} FCFA/jour
+                    {item.prixJournalier.toLocaleString("fr-FR")} FCFA/jour
                     {item.cautionBaseFcfa > 0 && ` · Caution: ${Math.round(item.cautionBaseFcfa * 100)}% (remboursable)`}
                   </p>
                 </div>
@@ -151,7 +151,7 @@ export default function Panier() {
               <div className="mt-4 flex items-center justify-between border-t border-public-border pt-3">
                 <span className="text-sm text-public-text-muted">Sous-total / jour</span>
                 <span className="text-3xl font-bold text-public-text">
-                  {(item.prixJournalier * item.quantite).toLocaleString()} FCFA
+                  {(item.prixJournalier * item.quantite).toLocaleString("fr-FR")} FCFA
                 </span>
               </div>
             </Card>
@@ -164,13 +164,13 @@ export default function Panier() {
             <div className="mt-6 space-y-3">
               <div className="flex justify-between text-sm">
                 <span className="text-public-text-muted">Location ({count} véhicule{count > 1 ? "s" : ""})</span>
-                <span className="text-3xl font-bold text-public-text">{sousTotalParJour.toLocaleString()} FCFA</span>
+                <span className="text-3xl font-bold text-public-text">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
               </div>
               <p className="text-sm text-public-text-muted">Prix par jour, hors caution.</p>
               <hr className="border-public-border" />
               <div className="flex justify-between">
                 <span className="text-sm font-bold text-public-text">Sous-total / jour</span>
-                <span className="text-3xl font-bold text-accent-orange">{sousTotalParJour.toLocaleString()} FCFA</span>
+                <span className="text-3xl font-bold text-accent-orange">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
               </div>
               <p className="text-xs text-public-text-muted">
                 Total final (durée, destination et caution) calculé à l&apos;étape suivante.

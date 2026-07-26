@@ -21,7 +21,7 @@ export function PayerAcompte({
     <form action={action} className="flex flex-col items-end gap-1.5">
       <input type="hidden" name="demande_id" value={demandeId} />
       <span className="text-xs font-semibold text-accent-gold">
-        {isAchat ? "Acompte" : "À payer"} : {montant.toLocaleString()} FCFA
+        {isAchat ? "Acompte" : "À payer"} : {montant.toLocaleString("fr-FR")} FCFA
       </span>
       <div className="flex gap-1.5">
         <button
