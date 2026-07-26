@@ -189,7 +189,7 @@ export default async function VehicleDetail({
           item_variant: rep.modele,
         }}
       />
-      <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-3 px-6 pt-6 text-sm text-public-text-faint">
+      <nav aria-label="Fil d'Ariane" className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-6 pt-6 text-sm text-public-text-faint sm:px-10">
         <BackLink href="/transport/catalogue" label="Retour au catalogue" />
         <span aria-hidden="true">·</span>
         <ol className="flex flex-wrap items-center gap-1.5">
@@ -205,7 +205,7 @@ export default async function VehicleDetail({
         </ol>
       </nav>
 
-      <div className="grid gap-12 px-6 py-8 lg:grid-cols-5">
+      <div className="mx-auto grid max-w-6xl gap-12 px-6 py-8 sm:px-10 lg:grid-cols-5">
         <div className="lg:col-span-3">
           <VehicleGallery photos={photos ?? []} alt={`${rep.marque} ${rep.modele}`} />
 
@@ -214,7 +214,7 @@ export default async function VehicleDetail({
               <Badge variant={rep.statut === "disponible" ? "green" : "gold"}>
                 {rep.statut === "disponible" ? "Disponible" : "Sur demande"}
               </Badge>
-              <h1 className="mt-3 text-4xl font-bold text-public-text">{rep.marque} {rep.modele}</h1>
+              <h1 className="font-display mt-3 text-4xl font-medium tracking-tight text-public-text md:text-5xl">{rep.marque} {rep.modele}</h1>
             </div>
           </div>
 
@@ -239,7 +239,7 @@ export default async function VehicleDetail({
           </p>
 
           <div className="mt-10">
-            <h3 className="text-lg font-semibold text-public-text">Caractéristiques techniques</h3>
+            <h2 className="font-display border-b border-public-border pb-3 text-xl font-medium text-public-text">Caractéristiques techniques</h2>
             <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-4">
               {specs.map((s) => (
                 <div key={s.label}>
@@ -251,7 +251,7 @@ export default async function VehicleDetail({
           </div>
 
           <div className="mt-10">
-            <h3 className="text-lg font-semibold text-public-text">Équipements</h3>
+            <h2 className="font-display border-b border-public-border pb-3 text-xl font-medium text-public-text">Équipements</h2>
             <div className="mt-5 grid grid-cols-2 gap-3">
               {[
                 rep.climatisation ? "Climatisation" : null,

@@ -52,7 +52,7 @@ export default function Panier() {
             <rect x="68" y="55" width="8" height="12" rx="1" fill="currentColor" fillOpacity="0.1" />
             <rect x="80" y="58" width="8" height="10" rx="1" fill="currentColor" fillOpacity="0.08" />
           </svg>
-          <h2 className="text-3xl font-semibold text-public-text">Votre panier est vide</h2>
+          <h2 className="font-display text-3xl font-medium text-public-text">Votre panier est vide</h2>
           <p className="text-sm text-public-text-muted">Parcourez notre catalogue pour ajouter des véhicules.</p>
           <Link
             href="/transport/catalogue"
@@ -69,12 +69,12 @@ export default function Panier() {
     <>
       <PanierStepper current={0} />
 
-      <div className="px-6 pt-6">
+      <div className="mx-auto max-w-6xl px-6 pt-6 sm:px-10">
         <BackLink href="/transport/catalogue" label="Retour au catalogue" />
       </div>
 
-      <div className="flex items-center justify-between px-6 py-8">
-        <h1 className="text-4xl font-bold text-public-text">Panier ({count} véhicule{count > 1 ? "s" : ""})</h1>
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-8 sm:px-10">
+        <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">Panier ({count} véhicule{count > 1 ? "s" : ""})</h1>
         <Button
           variant="text-link"
           onClick={() => {
@@ -86,7 +86,7 @@ export default function Panier() {
         </Button>
       </div>
 
-      <div className="grid gap-12 px-6 pb-20 lg:grid-cols-5">
+      <div className="mx-auto grid max-w-6xl gap-12 px-6 pb-20 sm:px-10 lg:grid-cols-5">
         <div className="space-y-6 lg:col-span-3">
           {items.map((item) => (
             <Card key={item.groupKey} className="p-5">
@@ -96,9 +96,16 @@ export default function Panier() {
                     <h3 className="text-base font-semibold text-public-text">{item.marque} {item.modele}</h3>
                     <Badge variant="green">{item.categorie}</Badge>
                   </div>
-                  <p className="mt-1 text-3xl font-bold text-public-text-muted">
-                    {item.prixJournalier.toLocaleString("fr-FR")} FCFA/jour
-                    {item.cautionBaseFcfa > 0 && ` · Caution: ${Math.round(item.cautionBaseFcfa * 100)}% (remboursable)`}
+                  <p className="mt-1.5">
+                    <span className="font-display text-xl font-medium text-public-text">
+                      {item.prixJournalier.toLocaleString("fr-FR")} FCFA
+                    </span>
+                    <span className="text-sm text-public-text-muted"> /jour</span>
+                    {item.cautionBaseFcfa > 0 && (
+                      <span className="block text-xs text-public-text-muted">
+                        Caution : {Math.round(item.cautionBaseFcfa * 100)} % (remboursable)
+                      </span>
+                    )}
                   </p>
                 </div>
                 <Button
@@ -150,7 +157,7 @@ export default function Panier() {
 
               <div className="mt-4 flex items-center justify-between border-t border-public-border pt-3">
                 <span className="text-sm text-public-text-muted">Sous-total / jour</span>
-                <span className="text-3xl font-bold text-public-text">
+                <span className="font-display text-xl font-medium text-public-text">
                   {(item.prixJournalier * item.quantite).toLocaleString("fr-FR")} FCFA
                 </span>
               </div>
@@ -160,17 +167,17 @@ export default function Panier() {
 
         <div className="lg:col-span-2">
           <Card className="sticky top-24">
-            <h2 className="text-3xl font-semibold text-public-text">Récapitulatif</h2>
+            <h2 className="font-display border-b border-public-border pb-3 text-2xl font-medium text-public-text">Récapitulatif</h2>
             <div className="mt-6 space-y-3">
-              <div className="flex justify-between text-sm">
+              <div className="flex items-baseline justify-between gap-4 text-sm">
                 <span className="text-public-text-muted">Location ({count} véhicule{count > 1 ? "s" : ""})</span>
-                <span className="text-3xl font-bold text-public-text">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
+                <span className="font-display text-lg font-medium text-public-text">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
               </div>
               <p className="text-sm text-public-text-muted">Prix par jour, hors caution.</p>
               <hr className="border-public-border" />
-              <div className="flex justify-between">
-                <span className="text-sm font-bold text-public-text">Sous-total / jour</span>
-                <span className="text-3xl font-bold text-accent-orange">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
+              <div className="flex items-baseline justify-between gap-4">
+                <span className="text-sm font-semibold text-public-text">Sous-total / jour</span>
+                <span className="font-display text-3xl font-medium text-accent-orange">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
               </div>
               <p className="text-xs text-public-text-muted">
                 Total final (durée, destination et caution) calculé à l&apos;étape suivante.

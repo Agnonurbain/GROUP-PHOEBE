@@ -87,7 +87,7 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
         )}
 
         <div className="p-8">
-          <h1 className="text-4xl font-bold text-public-text">
+          <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">
             {rep.marque} {rep.modele}
           </h1>
           <p className="mt-1.5 text-sm text-public-text-muted">
@@ -111,7 +111,7 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
             )}
           </div>
 
-          <h2 className="text-3xl font-semibold text-public-text text-center mb-6 mt-10">
+          <h2 className="font-display mb-6 mt-10 border-b border-public-border pb-3 text-2xl font-medium text-public-text">
             Que souhaitez-vous faire ?
           </h2>
 

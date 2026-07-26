@@ -218,7 +218,7 @@ export default function PaiementPage() {
       <>
         <PanierStepper current={1} />
         <div className="flex flex-col items-center gap-6 px-6 py-20">
-          <h2 className="text-3xl font-semibold text-public-text">Votre panier est vide</h2>
+          <h2 className="font-display text-3xl font-medium text-public-text">Votre panier est vide</h2>
           <Link
             href="/transport/catalogue"
             className="rounded-lg bg-accent-orange px-6 py-3 text-sm font-semibold text-white hover:bg-accent-orange-hover transition-colors"
@@ -234,24 +234,24 @@ export default function PaiementPage() {
     <>
       <PanierStepper current={1} />
 
-      <div className="px-6 pt-6">
+      <div className="mx-auto max-w-6xl px-6 pt-6 sm:px-10">
         <BackLink href="/panier" label="Retour au panier" />
       </div>
 
-      <div className="px-6 py-8">
-        <h1 className="text-4xl font-bold text-public-text">Paiement</h1>
+      <div className="mx-auto max-w-6xl px-6 py-8 sm:px-10">
+        <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">Paiement</h1>
         <p className="mt-2 text-sm text-public-text-muted">
           Choisissez vos dates, votre destination et votre moyen de paiement pour finaliser la réservation.
         </p>
       </div>
 
       {state?.error && (
-        <div role="alert" className="mx-6 mb-6 rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error">
+        <div role="alert" className="mx-auto mb-6 max-w-6xl rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error sm:px-10">
           {state.error}
         </div>
       )}
 
-      <form action={formAction} className="grid gap-12 px-6 pb-20 lg:grid-cols-5">
+      <form action={formAction} className="mx-auto grid max-w-6xl gap-12 px-6 pb-20 sm:px-10 lg:grid-cols-5">
         <input type="hidden" name="items" value={JSON.stringify(items.map((i) => ({
           groupKey: i.groupKey,
           marque: i.marque,
@@ -476,9 +476,9 @@ export default function PaiementPage() {
               </div>
             </div>
             <hr className="my-4 border-public-border" />
-            <div className="flex justify-between">
-              <span className="text-sm font-bold text-public-text">Total à payer</span>
-              <span className="text-xl font-bold text-accent-orange">
+            <div className="flex items-baseline justify-between gap-4">
+              <span className="text-sm font-semibold text-public-text">Total à payer</span>
+              <span className="font-display text-3xl font-medium text-accent-orange">
                 {totalAvecDuree.toLocaleString("fr-FR")} FCFA
               </span>
             </div>
