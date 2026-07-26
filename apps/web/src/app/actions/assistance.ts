@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
-import { getPays, isOffreKey, offreLabel, isStatutDossier, STATUT_DOSSIER_LABELS } from "@/lib/assistance";
+import { getPays, getPrestation, isStatutDossier, STATUT_DOSSIER_LABELS } from "@/lib/assistance";
 import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouveauDossierVoyage } from "./notifications-admin";
 
@@ -62,11 +62,12 @@ export async function creerDossierVoyage(
   if (!profile) return { error: "Profil introuvable." };
 
   const slug = formData.get("pays_slug") as string;
-  const offreKey = formData.get("offre") as string;
+  const prestationKey = formData.get("prestation") as string;
 
   const pays = getPays(slug);
   if (!pays) return { error: "Destination invalide." };
-  if (!isOffreKey(offreKey)) return { error: "Offre invalide." };
+  const prestation = prestationKey ? getPrestation(pays, prestationKey) : null;
+  if (!prestation) return { error: "Prestation invalide." };
 
   const admin = getAdmin();
 
@@ -74,7 +75,7 @@ export async function creerDossierVoyage(
     .from("dossiers_voyage")
     .insert({
       client_id: user.sub,
-      type: pays.type,
+      type: prestation.type,
       pays_cible: pays.name,
       statut: "soumis",
     })
@@ -85,13 +86,12 @@ export async function creerDossierVoyage(
     return { error: "Impossible de créer le dossier. Veuillez réessayer." };
   }
 
-  const montantEstime = pays.prix[offreKey];
   await notifierAdminNouveauDossierVoyage(
     dossier.id,
     profile.nom,
     pays.name,
-    offreLabel(offreKey),
-    montantEstime
+    prestation.name,
+    prestation.prix
   );
 
   redirect(`/assistance/confirmation?pays=${encodeURIComponent(pays.name)}`);

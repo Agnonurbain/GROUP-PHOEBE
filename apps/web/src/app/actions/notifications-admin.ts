@@ -47,7 +47,7 @@ export async function notifierAdminNouveauDossierVoyage(
   clientNom: string,
   pays: string,
   offre: string,
-  montantEstime: number
+  montantEstime: number | null
 ) {
   const supabase = await createClient();
 
@@ -64,7 +64,7 @@ export async function notifierAdminNouveauDossierVoyage(
     evenement: "nouveau_dossier_voyage",
     contenu: JSON.stringify({
       titre: "Nouveau dossier visa",
-      message: `${clientNom} · Visa ${pays} · ${offre} · ~${montantEstime.toLocaleString("fr-FR")} FCFA`,
+      message: `${clientNom} · Visa ${pays} · ${offre} · ${montantEstime === null ? "Sur devis" : `~${montantEstime.toLocaleString("fr-FR")} FCFA`}`,
       lien: `/admin`,
     }),
     statut_envoi: "envoye" as const,
