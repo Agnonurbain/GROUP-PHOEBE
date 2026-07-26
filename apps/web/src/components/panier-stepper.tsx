@@ -8,7 +8,7 @@ const STEPS = [
 
 export function PanierStepper({ current }: { current: number }) {
   return (
-    <nav aria-label="Progression de la commande" className="px-6 pt-6">
+    <nav aria-label="Progression de la commande" className="border-b border-public-border px-6 py-5 sm:px-10">
       <ol className="mx-auto flex max-w-xl items-center justify-between">
         {STEPS.map((step, i) => {
           const done = i < current
@@ -20,19 +20,19 @@ export function PanierStepper({ current }: { current: number }) {
               aria-current={active ? "step" : undefined}
             >
               <span
-                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold transition-colors ${
+                className={`font-display flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-medium transition-colors ${
                   done
-                    ? "bg-[#059669] text-white"
+                    ? "bg-accent-green text-white"
                     : active
-                      ? "bg-[#C9A84C] text-[#0A0A0A]"
-                      : "border border-[#423C35] text-public-text-faint"
+                      ? "bg-accent-gold text-[#0A0A0A]"
+                      : "border border-public-border text-public-text-faint"
                 }`}
               >
                 {done ? <CheckIcon size={14} aria-hidden="true" /> : i + 1}
               </span>
               <span
                 className={`text-xs font-medium ${
-                  active ? "text-[#EDE9E3]" : "text-public-text-faint"
+                  active ? "text-public-text" : "text-public-text-faint"
                 }`}
               >
                 {step.label}
@@ -41,7 +41,7 @@ export function PanierStepper({ current }: { current: number }) {
               {i < STEPS.length - 1 && (
                 <span
                   aria-hidden="true"
-                  className={`mx-2 h-px w-8 ${done ? "bg-[#059669]" : "bg-[#423C35]"}`}
+                  className={`mx-2 h-px w-8 ${done ? "bg-accent-green" : "bg-public-border"}`}
                 />
               )}
             </li>

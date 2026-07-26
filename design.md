@@ -94,6 +94,15 @@ chiffres-clés et les filets d'accentuation — jamais des aplats de fond larges
 Échelle d'ancrage : `h1` = `text-5xl` → `md:text-7xl` · `h2` = `text-4xl` →
 `md:text-5xl` · lede = `text-lg`.
 
+### Montants
+
+Les prix portent `font-display` — c'est un chiffre, pas du corps de texte.
+**Une seule taille dominante par écran** : le montant décisif (total à payer,
+sous-total) en `text-3xl`, les montants de ligne en `text-lg`/`text-xl`, les
+mentions annexes (caution, unité `/jour`) en `text-xs`/`text-sm`.
+Un montant secondaire en `text-3xl` inverse la hiérarchie — c'est un bug, pas
+un choix.
+
 ---
 
 ## Rythme des têtes de section
@@ -193,3 +202,4 @@ Un seul CTA primaire visible par écran.
 | 2026-07-26 | `/` | Refonte éditoriale premium. Introduction de Fraunces (`--font-display`). |
 | 2026-07-26 | `design.md`, header/footer, 4 pages services | Verrouillage du système et alignement des destinations de l'accueil. |
 | 2026-07-26 | Palette (tout le public) | Sortie du noir pur : charbon chaud, filets visibles (+33 %), encres adoucies. Tokens seuls — aucune structure touchée. |
+| 2026-07-26 | Parcours d'achat | Fiche véhicule, page choix, panier, paiement, stepper. Display sur titres et montants, conteneur `max-w-6xl` unifié, hiérarchie des prix rétablie. |
