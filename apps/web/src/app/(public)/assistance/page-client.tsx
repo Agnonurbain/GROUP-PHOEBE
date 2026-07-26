@@ -5,12 +5,12 @@ import Link from "next/link"
 import Image from "next/image"
 import { Badge, Card } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
-import { PAYS_LIST, type Pays } from "@/lib/assistance"
+import { PAYS_LIST, prixApartir, type Pays } from "@/lib/assistance"
 
-const typeLabel = (t: Pays["type"]) => (t === "etudes" ? "Études" : "Tourisme")
+const categorieLabel = (c: Pays["categorie"]) => (c === "etudes" ? "Études" : "Voyage")
 
-const etudesCountries = PAYS_LIST.filter((d) => d.type === "etudes")
-const tourismeCountries = PAYS_LIST.filter((d) => d.type === "tourisme_visa")
+const etudesCountries = PAYS_LIST.filter((d) => d.categorie === "etudes")
+const voyageCountries = PAYS_LIST.filter((d) => d.categorie === "voyage")
 
 function InteractiveCard({
   title,
@@ -54,7 +54,6 @@ function InteractiveCard({
             >
               <span className="text-lg">{c.flag}</span>
               <span>{c.name}</span>
-              <span className="ml-1 text-xs opacity-70">{c.prix.base.toLocaleString("fr-FR")} FCFA</span>
             </Link>
           ))}
         </div>
@@ -79,37 +78,37 @@ export default function Assistance() {
           priority
         />
         <h1 className="text-4xl font-bold text-public-text md:text-5xl">Votre visa, notre expertise</h1>
-        <p className="text-base text-public-text-muted md:text-lg">Chine, Italie, Europe — nous ouvrons les portes du monde</p>
+        <p className="text-base text-public-text-muted md:text-lg">Études en Chine, voyages en Europe — nous ouvrons les portes du monde</p>
       </section>
 
       <div className="grid gap-6 px-6 pb-16 md:grid-cols-2">
         <InteractiveCard
           title="Je veux étudier à l'étranger"
-          desc="Nos programmes étudiants vous ouvrent les portes des meilleures universités."
+          desc="Bourses et admissions en Chine : nous négocions et montons votre dossier de A à Z."
           countries={etudesCountries}
           color="#2563EB"
         />
         <InteractiveCard
           title="Je veux voyager en Europe"
-          desc="Explorez l'Europe avec nos forfaits touristiques sur mesure."
-          countries={tourismeCountries}
+          desc="Visa Schengen pour la Norvège, la France, l'Italie, le Portugal et la Grèce."
+          countries={voyageCountries}
           color="#2563EB"
         />
       </div>
 
       <section className="px-6 pb-20">
-        <h2 className="text-3xl font-semibold text-public-text">Destinations phares</h2>
-        <p className="mt-1 text-sm text-public-text-muted">Les pays qui vous attendent</p>
+        <h2 className="text-3xl font-semibold text-public-text">Destinations</h2>
+        <p className="mt-1 text-sm text-public-text-muted">Les pays que nous couvrons</p>
         <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {PAYS_LIST.map((d) => (
             <Link key={d.name} href={`/assistance/pays/${d.slug}`} className="block group">
               <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-accent-blue/30 hover:bg-public-bg-elevated hover:shadow-xl hover:shadow-black/20">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">{d.flag}</span>
-                  <Badge variant="blue">{typeLabel(d.type)}</Badge>
+                  <Badge variant="blue">{categorieLabel(d.categorie)}</Badge>
                 </div>
                 <h3 className="mt-3 text-lg font-semibold text-public-text">{d.name}</h3>
-                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">À partir de {d.prix.base.toLocaleString("fr-FR")} FCFA</p>
+                <p className="mt-1 text-2xl font-bold text-accent-blue-on-dark">{prixApartir(d)}</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-blue-on-dark transition-all group-hover:gap-2">Voir l&apos;offre →</span>
               </Card>
             </Link>
