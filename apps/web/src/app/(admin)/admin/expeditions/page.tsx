@@ -221,6 +221,7 @@ export default async function ExpeditionsAdminPage({
               <ExpeditionActions
                 expeditionId={e.id}
                 currentStatut={e.statut}
+                currentPrix={Number(e.prix)}
                 assigned={!!e.livreur_id}
                 livreurs={livreursActifs}
                 statuts={statuts}

@@ -6,6 +6,8 @@ import {
   TARIFS_LIVRAISON,
   ZONES_LIVRAISON,
   MODES_LIVRAISON,
+  palierPoids,
+  POIDS_MAX_KG,
 } from "@/lib/livraison";
 
 describe("deriverZoneLivraison", () => {
@@ -60,5 +62,49 @@ describe("genererNumeroSuivi", () => {
   it("génère des numéros distincts (pas de collision immédiate)", () => {
     const set = new Set(Array.from({ length: 500 }, () => genererNumeroSuivi()));
     expect(set.size).toBe(500);
+  });
+});
+
+describe("paliers de poids", () => {
+  it("le premier palier ne majore pas le tarif de base", () => {
+    expect(computeLivraisonPrix("intracommunale", "standard", 3)).toBe(
+      TARIFS_LIVRAISON.intracommunale.standard
+    );
+  });
+
+  it("applique le multiplicateur du palier, arrondi à la centaine", () => {
+    // 2500 (intercommunale/standard) × 1,5 = 3750 → 3800
+    expect(computeLivraisonPrix("intercommunale", "standard", 12)).toBe(3800);
+    // 5000 (nationale/standard) × 2,5 = 12500
+    expect(computeLivraisonPrix("nationale", "standard", 40)).toBe(12500);
+  });
+
+  it("un colis plus lourd n'est jamais moins cher", () => {
+    for (const zone of ZONES_LIVRAISON) {
+      for (const mode of MODES_LIVRAISON) {
+        const leger = computeLivraisonPrix(zone, mode, 1)!;
+        const moyen = computeLivraisonPrix(zone, mode, 10)!;
+        const lourd = computeLivraisonPrix(zone, mode, 40)!;
+        expect(moyen).toBeGreaterThanOrEqual(leger);
+        expect(lourd).toBeGreaterThanOrEqual(moyen);
+      }
+    }
+  });
+
+  it("passe sur devis au-delà du poids maximum", () => {
+    expect(computeLivraisonPrix("intracommunale", "standard", POIDS_MAX_KG + 0.1)).toBeNull();
+    expect(palierPoids(POIDS_MAX_KG + 1)).toBeNull();
+  });
+
+  it("rejette un poids nul ou négatif", () => {
+    expect(palierPoids(0)).toBeNull();
+    expect(palierPoids(-5)).toBeNull();
+    expect(computeLivraisonPrix("intracommunale", "standard", -1)).toBeNull();
+  });
+
+  it("sans poids, retourne le tarif de base (« à partir de »)", () => {
+    expect(computeLivraisonPrix("nationale", "express")).toBe(
+      TARIFS_LIVRAISON.nationale.express
+    );
   });
 });
