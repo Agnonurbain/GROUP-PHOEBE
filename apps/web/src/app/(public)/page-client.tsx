@@ -110,16 +110,18 @@ export default function HomePage({
 
   return (
     <GoldTrail>
-      {/* Hero — contenu ancré en bas à gauche (pas de bloc centré plein écran) */}
-      <section className="relative flex min-h-[85vh] items-end overflow-hidden px-6 pb-24 pt-32 sm:px-10">
+      {/* Hero — bloc centré dans l'image (le texte reste composé au centre pour
+          tenir la symétrie du cadrage photo). */}
+      <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden px-6 py-28 sm:px-10">
         <HeroSlideshow />
 
         <div className="relative z-10 mx-auto w-full max-w-6xl">
-          <div className="max-w-2xl">
+          <div className="mx-auto flex max-w-3xl flex-col items-center text-center">
             <ScrollReveal variant="fade-up">
-              <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.25em] text-accent-gold">
+              <p className="flex items-center justify-center gap-3 text-xs font-medium uppercase tracking-[0.25em] text-accent-gold">
                 <span aria-hidden="true" className="h-px w-8 bg-accent-gold" />
                 GROUP PHOEBE — Côte d&apos;Ivoire
+                <span aria-hidden="true" className="h-px w-8 bg-accent-gold" />
               </p>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={0.1}>
@@ -128,12 +130,12 @@ export default function HomePage({
               </h1>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={0.2}>
-              <p className="mt-6 max-w-xl text-lg text-white/85 [text-shadow:0_1px_12px_rgba(0,0,0,0.85)]">
+              <p className="mx-auto mt-6 max-w-xl text-lg text-white/85 [text-shadow:0_1px_12px_rgba(0,0,0,0.85)]">
                 Transport, immobilier, assistance voyages et livraison — quatre métiers, une même exigence, partout en Côte d&apos;Ivoire.
               </p>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={0.3}>
-              <div className="mt-9 flex flex-col gap-4 sm:flex-row">
+              <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link
                   href="#services"
                   className="btn-premium [--btn-glow:rgba(201,168,76,0.45)] inline-flex items-center justify-center gap-2 rounded-lg bg-accent-gold px-7 py-3.5 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover"
@@ -156,9 +158,12 @@ export default function HomePage({
       {/* Preuve — bande fine, chiffres réels, alignés à gauche (pas de compteurs centrés) */}
       <section className="border-y border-public-border bg-public-bg-card">
         <div className="mx-auto flex max-w-6xl flex-col divide-y divide-public-border px-6 sm:flex-row sm:divide-x sm:divide-y-0 sm:px-10">
+          {/* Le padding vit sur le wrapper : `first:` doit se résoudre contre le
+              conteneur flex, pas contre le ScrollReveal (dont le div interne est
+              toujours « premier enfant », d'où un pl-0 appliqué partout). */}
           {stats.map((stat, i) => (
-            <ScrollReveal key={stat.label} variant="fade-up" delay={i * 0.1} className="flex-1">
-              <div className="flex items-baseline gap-4 py-6 sm:flex-col sm:items-start sm:gap-2 sm:px-10 sm:py-9 sm:first:pl-0">
+            <ScrollReveal key={stat.label} variant="fade-up" delay={i * 0.1} className="flex-1 sm:px-10 sm:first:pl-0">
+              <div className="flex items-baseline gap-4 py-6 sm:flex-col sm:items-start sm:gap-2 sm:py-9">
                 <p className="font-display text-4xl font-medium leading-none text-accent-gold md:text-5xl">
                   <AnimatedCounter target={stat.target} suffix={stat.suffix} />
                 </p>
@@ -182,13 +187,21 @@ export default function HomePage({
           </ScrollReveal>
 
           <StaggerContainer>
+            {/* Lignes pleine largeur : pas d'inclinaison (bancale à cette échelle),
+                on ne garde que l'éclat qui suit le curseur. */}
             {services.map((s, i) => (
-              <ServiceCard key={s.title} index={i}>
+              <ServiceCard key={s.title} index={i} tilt={false}>
                 <Link
                   href={s.href}
-                  className="group grid grid-cols-[3rem_1fr] items-center gap-5 border-b border-public-border py-8 transition-colors hover:bg-public-bg-card/60 sm:grid-cols-[6rem_1fr_auto] sm:gap-10 sm:px-4"
+                  className="group relative grid grid-cols-[3rem_1fr] items-center gap-5 overflow-hidden border-b border-public-border py-8 transition-colors duration-300 hover:bg-public-bg-card/60 sm:grid-cols-[6rem_1fr_auto] sm:gap-10 sm:px-4"
                 >
-                  <span className="font-display text-3xl font-medium leading-none text-public-text-faint transition-colors group-hover:text-accent-gold sm:text-4xl">
+                  {/* Filet d'accent qui s'allume à la couleur du métier */}
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-y-0 left-0 w-px origin-top scale-y-0 transition-transform duration-500 ease-out group-hover:scale-y-100"
+                    style={{ background: s.color }}
+                  />
+                  <span className="font-display text-3xl font-medium leading-none text-public-text-faint transition-colors duration-300 group-hover:text-accent-gold sm:text-4xl">
                     0{i + 1}
                   </span>
                   <div>
@@ -234,8 +247,8 @@ export default function HomePage({
 
           <div className="flex flex-col">
             {engagements.map((f, i) => (
-              <ScrollReveal key={f.title} variant="fade-up" delay={i * 0.08}>
-                <div className="flex gap-5 border-t border-public-border py-7 first:border-t-0 first:pt-0">
+              <ScrollReveal key={f.title} variant="fade-up" delay={i * 0.08} className="border-t border-public-border first:border-t-0">
+                <div className="flex gap-5 py-7">
                   <span className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-accent-gold/30 text-accent-gold">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                       {f.icon}

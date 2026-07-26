@@ -119,6 +119,18 @@ L'eyebrow est **optionnel** — ne pas en mettre sur chaque section (tell IA).
   `animate-glow-pulse` sur un logo de hero.
 - `prefers-reduced-motion` : opacité seule.
 
+### Survol — tilt & éclat (`TiltCard`)
+
+- **Tilt** : `maxTilt` = **4°** par défaut (soit ±8°). Le mouvement *accompagne*
+  le curseur, il ne bascule pas l'élément. Retour plus lent que l'aller
+  (0,45 s, `cubic-bezier(0.22, 1, 0.36, 1)`) pour qu'il se pose.
+- **Blocs larges** (lignes pleine largeur) : `tilt={false}`. Une inclinaison est
+  bancale à cette échelle — on ne garde que l'éclat.
+- **Éclat** : halo or radial qui suit le pointeur (`rgba(201,168,76,0.16)`),
+  apparition 0,5 s. Complété si utile par un filet d'accent qui s'allume.
+- Souris uniquement (`pointerType === "mouse"`) : au tactile il n'y a pas de
+  survol réel et le tilt parasite le défilement. Désactivé en reduced-motion.
+
 ---
 
 ## Voix des CTA
@@ -154,8 +166,12 @@ Un seul CTA primaire visible par écran.
 
 ## Interdits (anti-slop) — vérifiés à chaque refonte
 
-1. **Hero centré pleine hauteur** (`min-h-[90vh]` + `text-center`). Le hero est
-   biaisé à gauche et sa hauteur suit le contenu.
+1. **Hero centré pleine hauteur** (`min-h-[90vh]` + `text-center`) — sur les
+   pages *sans* image plein cadre. Le hero de page service est biaisé à gauche
+   (`PageHero`) et sa hauteur suit le contenu.
+   **Exception assumée — accueil** : au-dessus du slideshow plein cadre, le bloc
+   est centré. Un texte collé à gauche laissait un vide de ~1000 px à droite sur
+   grand écran et cassait le cadrage photo. La photo impose sa symétrie.
 2. **Deux sections consécutives avec le même traitement de carte.** Trois
    grilles de 4 cartes égales = le patron IA.
 3. **Tuile-icône au-dessus du titre.** Icône **en ligne** avec le titre.
