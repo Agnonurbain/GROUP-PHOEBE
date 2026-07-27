@@ -2,8 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useTheme } from "next-themes"
-import { Sun, Moon, LogOut, ChevronsUpDown } from "lucide-react"
+import { LogOut, ChevronsUpDown } from "lucide-react"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,11 +10,11 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/admin-ui/breadcrumb"
-import { Button } from "@/components/admin-ui/button"
-import { Separator } from "@/components/admin-ui/separator"
-import { SidebarTrigger } from "@/components/admin-ui/sidebar"
-import { Avatar, AvatarFallback } from "@/components/admin-ui/avatar"
+} from "@/components/shadcn/breadcrumb"
+import { Button } from "@/components/shadcn/button"
+import { Separator } from "@/components/shadcn/separator"
+import { SidebarTrigger } from "@/components/shadcn/sidebar"
+import { Avatar, AvatarFallback } from "@/components/shadcn/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,27 +23,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/admin-ui/dropdown-menu"
+} from "@/components/shadcn/dropdown-menu"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { deconnexion } from "@/app/actions/auth"
 import { buildBreadcrumb } from "../_lib/nav"
-
-function ThemeToggle() {
-  const { resolvedTheme, setTheme } = useTheme()
-
-  // Les deux icônes sont rendues et c'est le CSS qui choisit : pas d'état de
-  // montage, donc aucune divergence serveur/client à gérer.
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-      aria-label="Changer de thème"
-    >
-      <Sun className="size-4 dark:hidden" />
-      <Moon className="hidden size-4 dark:block" />
-    </Button>
-  )
-}
 
 export function AdminHeader({
   nom,

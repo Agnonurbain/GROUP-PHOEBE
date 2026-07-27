@@ -1,7 +1,7 @@
 "use client"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/admin-ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/admin-ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shadcn/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/shadcn/tabs"
 import { DataTable } from "./data-table"
 import { colonnesDemandes, type LigneDemande } from "./columns-demandes"
 import { colonnesClients, type LigneClient } from "./columns-clients"

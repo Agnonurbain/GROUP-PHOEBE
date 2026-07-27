@@ -3,11 +3,18 @@
 import { useActionState, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import {
+  PHONE_INPUT_MODE,
+  PHONE_PATTERN,
+  PHONE_PLACEHOLDER,
+  PHONE_AIDE,
+} from "@/lib/telephone";
 import { connexion, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { PasswordInput } from "@/components/password-input";
 import { GoogleButton } from "@/components/google-button";
 import { ScrollReveal } from "@/components/effects";
+import { Tabs, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
 
 export default function ConnexionForm() {
   const [state, action] = useActionState<AuthState, FormData>(connexion, {});
@@ -39,36 +46,19 @@ export default function ConnexionForm() {
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-phoebe-gold/30 to-transparent" />
       </div>
 
-      <div className="mb-6">
-        <div className="flex gap-2 bg-phoebe-pearl/30 rounded-xl p-1" role="radiogroup" aria-label="Mode de connexion">
-          <button
-            type="button"
-            role="radio"
-            aria-checked={loginMode === "phone"}
-            onClick={() => setLoginMode("phone")}
-            className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
-              loginMode === "phone"
-                ? "bg-white text-phoebe-anthracite shadow-sm"
-                : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
-            }`}
-          >
-            Téléphone
-          </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={loginMode === "email"}
-            onClick={() => setLoginMode("email")}
-            className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
-              loginMode === "email"
-                ? "bg-white text-phoebe-anthracite shadow-sm"
-                : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
-            }`}
-          >
-            Email
-          </button>
-        </div>
-      </div>
+      {/* Tabs shadcn : rôles et états ARIA fournis par la primitive, et même
+          contrôle que sur l'inscription — l'ancien couple de boutons différait
+          d'un écran à l'autre. */}
+      <Tabs
+        value={loginMode}
+        onValueChange={(v) => setLoginMode(v as "phone" | "email")}
+        className="mb-6"
+      >
+        <TabsList className="w-full">
+          <TabsTrigger value="phone" className="flex-1">Téléphone</TabsTrigger>
+          <TabsTrigger value="email" className="flex-1">Email</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <form action={action} className="space-y-5">
         {redirectTo && <input type="hidden" name="redirect" value={redirectTo} />}
@@ -83,12 +73,12 @@ export default function ConnexionForm() {
               name="identifiant"
               type="tel"
               required
-              inputMode="numeric"
-              pattern="[+][0-9]{7,15}"
+              inputMode={PHONE_INPUT_MODE}
+              pattern={PHONE_PATTERN}
               className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
-              placeholder="+225 XX XX XX XX XX"
+              placeholder={PHONE_PLACEHOLDER}
             />
-            <p className="mt-1 text-xs text-phoebe-anthracite/70">Format international : +225 XX XX XX XX XX</p>
+            <p className="mt-1 text-xs text-phoebe-anthracite/70">{PHONE_AIDE}</p>
           </div>
         )}
 

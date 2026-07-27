@@ -3,11 +3,18 @@
 import { useActionState, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import {
+  PHONE_INPUT_MODE,
+  PHONE_PATTERN,
+  PHONE_PLACEHOLDER,
+  PHONE_AIDE,
+} from "@/lib/telephone";
 import { inscription, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { PasswordInput } from "@/components/password-input";
 import { GoogleButton } from "@/components/google-button";
 import { ScrollReveal } from "@/components/effects";
+import { Tabs, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
 
 export default function InscriptionForm() {
   const [state, action] = useActionState<AuthState, FormData>(inscription, {});
@@ -17,7 +24,7 @@ export default function InscriptionForm() {
 
   const maxDate = useMemo(() => {
     const d = new Date();
-    d.setFullYear(d.getFullYear() - 21);
+    d.setFullYear(d.getFullYear() - 18);
     return d.toISOString().split("T")[0];
   }, []);
 
@@ -35,7 +42,7 @@ export default function InscriptionForm() {
         </div>
       )}
 
-      {state.phone === "email_sent" && (
+      {state.emailSent && (
         <div className="animate-fade-in mb-6 rounded-xl border border-phoebe-green/20 bg-phoebe-green/5 px-4 py-3.5 text-sm text-phoebe-green-deep">
           <p className="font-semibold">Compte créé avec succès !</p>
           <p className="mt-1 text-phoebe-green-deep/80">Un email de confirmation a été envoyé. Vérifiez votre boîte de réception pour activer votre compte.</p>
@@ -50,30 +57,18 @@ export default function InscriptionForm() {
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-phoebe-gold/30 to-transparent" />
       </div>
 
-      <div className="mb-6 flex gap-2 rounded-xl bg-phoebe-pearl/50 p-1">
-        <button
-          type="button"
-          onClick={() => setMode("phone")}
-          className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-            mode === "phone"
-              ? "bg-phoebe-green text-white shadow-md shadow-phoebe-green/25"
-              : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
-          }`}
-        >
-          Par telephone
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("email")}
-          className={`flex-1 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
-            mode === "email"
-              ? "bg-phoebe-green text-white shadow-md shadow-phoebe-green/25"
-              : "text-phoebe-anthracite/70 hover:text-phoebe-anthracite"
-          }`}
-        >
-          Par email
-        </button>
-      </div>
+      {/* L'ancien sélecteur n'exposait aucun rôle ni état : un lecteur d'écran
+          ne pouvait pas savoir quel mode était actif. */}
+      <Tabs
+        value={mode}
+        onValueChange={(v) => setMode(v as "phone" | "email")}
+        className="mb-6"
+      >
+        <TabsList className="w-full">
+          <TabsTrigger value="phone" className="flex-1">Par téléphone</TabsTrigger>
+          <TabsTrigger value="email" className="flex-1">Par email</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       <form action={action} className="space-y-5">
         <input type="hidden" name="mode" value={mode} />
@@ -103,11 +98,12 @@ export default function InscriptionForm() {
               name="telephone"
               type="tel"
               required
-              inputMode="numeric"
-              pattern="[+][0-9]{7,15}"
+              inputMode={PHONE_INPUT_MODE}
+              pattern={PHONE_PATTERN}
               className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
-              placeholder="+225 XX XX XX XX XX"
+              placeholder={PHONE_PLACEHOLDER}
             />
+            <p className="mt-1 text-xs text-phoebe-anthracite/70">{PHONE_AIDE}</p>
           </div>
         ) : (
           <div>
@@ -137,7 +133,7 @@ export default function InscriptionForm() {
             max={maxDate}
             className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
           />
-          <p className="mt-1.5 text-xs text-phoebe-anthracite/70">Vous devez avoir au moins 21 ans.</p>
+          <p className="mt-1.5 text-xs text-phoebe-anthracite/70">Vous devez avoir au moins 18 ans. La location de véhicule reste réservée aux 21 ans et plus.</p>
         </div>
 
         <div>
@@ -150,10 +146,7 @@ export default function InscriptionForm() {
         <SubmitButton>S&apos;inscrire</SubmitButton>
       </form>
 
-      <div className="mt-8 flex items-center gap-3">
-        <div className="h-px flex-1 bg-phoebe-anthracite/10" />
-        <div className="h-px flex-1 bg-phoebe-anthracite/10" />
-      </div>
+      <div className="mt-8 h-px bg-phoebe-anthracite/10" />
 
       <p className="mt-6 text-center text-sm text-phoebe-anthracite/70">
         Déjà un compte ?{" "}

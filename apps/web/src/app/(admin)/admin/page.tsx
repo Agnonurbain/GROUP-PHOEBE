@@ -12,8 +12,8 @@ import {
   ArrowUp,
   CircleAlert,
 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/admin-ui/card";
-import { Button } from "@/components/admin-ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shadcn/card";
+import { Button } from "@/components/shadcn/button";
 import { KpiCard } from "./_components/kpi-card";
 import { RevenueAreaChart } from "./_components/revenue-area-chart";
 import { ActiviteBarChart } from "./_components/activite-bar-chart";

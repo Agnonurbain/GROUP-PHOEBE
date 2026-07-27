@@ -96,7 +96,7 @@ export default function VerifierOtpForm() {
         {resendState.error && (
           <p className="mt-2 text-xs text-accent-red">{resendState.error}</p>
         )}
-        {resendState.phone === "resent" && (
+        {resendState.codeSent && (
           <p className="mt-2 text-xs text-accent-green">Nouveau code envoyé !</p>
         )}
       </div>

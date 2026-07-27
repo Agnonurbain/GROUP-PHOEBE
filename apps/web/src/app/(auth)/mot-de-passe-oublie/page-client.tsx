@@ -3,6 +3,11 @@
 import { useState } from "react";
 import { useActionState, useEffect } from "react";
 import Link from "next/link";
+import {
+  PHONE_INPUT_MODE,
+  PHONE_PATTERN,
+  PHONE_PLACEHOLDER,
+} from "@/lib/telephone";
 import { envoyerCodeReset, envoyerResetEmail, renvoyerCode, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { ScrollReveal } from "@/components/effects";
@@ -55,7 +60,7 @@ export default function MotDePasseOubliePage() {
         </div>
       )}
 
-      {emailState.phone === "sent" && mode === "email" && (
+      {emailState.codeSent && mode === "email" && (
         <div className="animate-fade-in mb-6 rounded-xl border border-phoebe-green/20 bg-phoebe-green/5 px-4 py-3.5 text-sm text-phoebe-green-deep">
           Un email de réinitialisation a été envoyé. Vérifiez votre boîte de réception.
         </div>
@@ -101,12 +106,12 @@ export default function MotDePasseOubliePage() {
               type="tel"
               required
               autoFocus
-              inputMode="numeric"
-              pattern="[+][0-9]{7,15}"
+              inputMode={PHONE_INPUT_MODE}
+              pattern={PHONE_PATTERN}
               value={phoneNumber}
               onChange={(e) => setPhoneNumber(e.target.value)}
               className="w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
-              placeholder="+225 XX XX XX XX XX"
+              placeholder={PHONE_PLACEHOLDER}
             />
           </div>
         ) : (
@@ -157,7 +162,7 @@ export default function MotDePasseOubliePage() {
           {resendState.error && (
             <p className="mt-2 text-xs text-error">{resendState.error}</p>
           )}
-          {resendState.phone === "resent" && (
+          {resendState.codeSent && (
             <p className="mt-2 text-xs text-phoebe-green-deep">
               Nouveau code envoyé !
             </p>

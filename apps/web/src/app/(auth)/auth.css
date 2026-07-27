@@ -1,0 +1,40 @@
+/* Thème sombre des pages d'authentification.
+   Même principe que le back-office (voir (admin)/admin.css) : plutôt que de
+   réécrire les 72 couleurs claires codées en dur (52 `text-phoebe-anthracite`,
+   9 `bg-white`, 11 `phoebe-pearl`), on INVERSE les jetons.
+
+   Tout est scopé à `[data-auth]`, posé sur le conteneur du layout : la classe
+   `dark` peut persister après navigation vers le site public sans l'affecter,
+   celui-ci ayant ses propres jetons. */
+
+.dark [data-auth] {
+  /* Encres : sombres en clair → claires en sombre */
+  --color-phoebe-anthracite: #e6ebe7;
+  --color-phoebe-anthracite-light: #c4cdc7;
+
+  /* Surfaces et bordures */
+  --color-phoebe-pearl: #2a322c;
+  --color-phoebe-pearl-warm: #2e2a24;
+  --color-phoebe-white: #1f1d1b;
+
+  /* Teintes de marque utilisées comme TEXTE : les nuances foncées, prévues
+     pour un fond blanc, deviennent illisibles sur sombre. */
+  --color-phoebe-green: #4fbf5a;
+  --color-phoebe-green-deep: #7bd488;
+  --color-phoebe-gold: #e5a84a;
+  --color-phoebe-gold-dark: #e9b860;
+  --color-error: #f87171;
+  --color-success: #4fbf5a;
+}
+
+/* `bg-white` est une valeur littérale de Tailwind, pas un jeton : elle ne peut
+   pas être inversée par variable. Le panneau du formulaire suit la surface. */
+.dark [data-auth] .bg-white {
+  background-color: var(--card);
+}
+
+/* Le panneau gauche (bg-hex-pattern) est déjà sombre dans les deux thèmes :
+   rien à faire. Seule la bordure de séparation doit suivre. */
+.dark [data-auth] .border-phoebe-pearl {
+  border-color: var(--border);
+}

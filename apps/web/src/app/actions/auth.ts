@@ -5,14 +5,25 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { hasMinimumAge } from "@/lib/auth";
-import { validerTelephone } from "@/lib/telephone";
+import { validerTelephone, normaliserTelephone } from "@/lib/telephone";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 export type AuthState = {
   error?: string;
-  phone?: string;
   success?: boolean;
+  /** Un e-mail de confirmation d'inscription a été envoyé. */
+  emailSent?: boolean;
+  /** Un code (SMS ou e-mail) a été envoyé ou renvoyé. */
+  codeSent?: boolean;
 };
+
+/** Clé de limitation stable : sans normalisation, ajouter une espace au
+ *  numéro ou changer la casse de l'e-mail créait un nouveau compteur, ce qui
+ *  rendait la limite contournable. */
+function cleLimite(prefixe: string, identifiant: string): string {
+  const compact = normaliserTelephone(identifiant) ?? identifiant.trim().toLowerCase();
+  return `${prefixe}:${compact}`;
+}
 
 export async function inscription(
   _prev: AuthState,
@@ -31,17 +42,28 @@ export async function inscription(
     return { error: "Tous les champs sont obligatoires." };
   }
 
-  if (!hasMinimumAge(dateNaissance, 21)) {
-    return { error: "Vous devez avoir au moins 21 ans pour vous inscrire." };
+  // 18 ans : majorité légale pour ouvrir un compte. La contrainte propre à la
+  // location de véhicule ne doit pas bloquer un dossier visa ou un envoi de colis.
+  if (!hasMinimumAge(dateNaissance, 18)) {
+    return { error: "Vous devez avoir au moins 18 ans pour vous inscrire." };
   }
 
   if (password.length < 8) {
     return { error: "Le mot de passe doit contenir au moins 8 caractères." };
   }
 
-  if (mode === "phone" && telephone) {
+  let telephoneNormalise: string | null = null;
+  if (mode === "phone") {
     const errTel = validerTelephone(telephone);
     if (errTel) return { error: errTel };
+    telephoneNormalise = normaliserTelephone(telephone);
+    if (!telephoneNormalise) return { error: "Format de téléphone invalide." };
+  }
+
+  // Seule action d'authentification qui n'était pas limitée — or une inscription
+  // par téléphone déclenche l'envoi d'un SMS facturé.
+  if (!checkRateLimit(cleLimite("signup", identifiant))) {
+    return { error: "Trop de tentatives. Réessayez dans une minute." };
   }
 
   const supabase = await createClient();
@@ -57,7 +79,10 @@ export async function inscription(
           },
         }
       : {
-          phone: telephone,
+          // Valeur NORMALISÉE : « +225 07 00 00 00 00 » et « +2250700000000 »
+          // créeraient sinon deux identités, et le compte deviendrait
+          // inaccessible selon la façon dont l'utilisateur retape son numéro.
+          phone: telephoneNormalise!,
           password,
           options: {
             data: { nom, display_name: nom, date_naissance: dateNaissance, role: "client" },
@@ -79,11 +104,11 @@ export async function inscription(
   }
 
   if (mode === "email") {
-    return { phone: "email_sent" };
+    return { emailSent: true };
   }
 
   const nextUrl = formData.get("redirect") as string | null;
-  const otpParams = new URLSearchParams({ phone: telephone });
+  const otpParams = new URLSearchParams({ phone: telephoneNormalise! });
   if (nextUrl && nextUrl.startsWith("/")) otpParams.set("next", nextUrl);
   redirect(`/verifier-otp?${otpParams.toString()}`);
 }
@@ -99,17 +124,24 @@ export async function connexion(
     return { error: "Tous les champs sont obligatoires." };
   }
 
-  if (!checkRateLimit(`login:${identifiant}`)) {
+  if (!checkRateLimit(cleLimite("login", identifiant))) {
     return { error: "Trop de tentatives. Réessayez dans une minute." };
   }
 
   const supabase = await createClient();
   const isEmail = identifiant.includes("@");
 
+  // Même normalisation qu'à l'inscription, sinon un compte créé avec un numéro
+  // espacé serait introuvable à la connexion.
+  const telephone = isEmail ? null : normaliserTelephone(identifiant);
+  if (!isEmail && !telephone) {
+    return { error: "Identifiant ou mot de passe incorrect." };
+  }
+
   const { error, data } = await supabase.auth.signInWithPassword(
     isEmail
-      ? { email: identifiant, password }
-      : { phone: identifiant, password }
+      ? { email: identifiant.trim(), password }
+      : { phone: telephone!, password }
   );
 
   if (error) {
@@ -143,14 +175,17 @@ export async function verifierOtp(
     return { error: "Le code de vérification est obligatoire." };
   }
 
-  if (!checkRateLimit(`otp:${phone}`)) {
+  const phoneNormalise = normaliserTelephone(phone);
+  if (!phoneNormalise) return { error: "Numéro de téléphone invalide." };
+
+  if (!checkRateLimit(cleLimite("otp", phone))) {
     return { error: "Trop de tentatives. Réessayez dans une minute." };
   }
 
   const supabase = await createClient();
 
   const { error } = await supabase.auth.verifyOtp({
-    phone,
+    phone: phoneNormalise,
     token,
     type: "sms",
   });
@@ -176,20 +211,23 @@ export async function envoyerCodeReset(
   const errTel = validerTelephone(telephone);
   if (errTel) return { error: errTel };
 
-  if (!checkRateLimit(`reset:sms:${telephone}`)) {
+  const telephoneNormalise = normaliserTelephone(telephone);
+  if (!telephoneNormalise) return { error: "Format de téléphone invalide." };
+
+  if (!checkRateLimit(cleLimite("reset:sms", telephone))) {
     return { error: "Trop de tentatives. Réessayez dans une minute." };
   }
 
   const supabase = await createClient();
 
-  const { error } = await supabase.auth.signInWithOtp({ phone: telephone });
+  const { error } = await supabase.auth.signInWithOtp({ phone: telephoneNormalise });
 
   if (error) {
     return { error: "Impossible d’envoyer le code. Vérifiez le numéro." };
   }
 
   redirect(
-    `/verifier-otp?phone=${encodeURIComponent(telephone)}&next=/nouveau-mot-de-passe`
+    `/verifier-otp?phone=${encodeURIComponent(telephoneNormalise)}&next=/nouveau-mot-de-passe`
   );
 }
 
@@ -203,7 +241,7 @@ export async function envoyerResetEmail(
     return { error: "L'adresse email est obligatoire." };
   }
 
-  if (!checkRateLimit(`reset:email:${email}`)) {
+  if (!checkRateLimit(cleLimite("reset:email", email))) {
     return { error: "Trop de tentatives. Réessayez dans une minute." };
   }
 
@@ -217,7 +255,7 @@ export async function envoyerResetEmail(
     return { error: "Impossible d'envoyer l'email. Vérifiez l'adresse." };
   }
 
-  return { phone: "sent" };
+  return { codeSent: true };
 }
 
 export async function changerMotDePasse(
@@ -328,13 +366,18 @@ export async function updateProfile(
     return { error: "Le nom est obligatoire." };
   }
 
+  let telephoneNormalise: string | null = null;
   if (telephone) {
     const errTel = validerTelephone(telephone);
     if (errTel) return { error: errTel };
+    telephoneNormalise = normaliserTelephone(telephone);
+    if (!telephoneNormalise) return { error: "Format de téléphone invalide." };
   }
 
-  if (dateNaissance && !hasMinimumAge(dateNaissance, 21)) {
-    return { error: "Vous devez avoir au moins 21 ans." };
+  // Aligné sur l'inscription. Les 21 ans restent exigés à la vérification
+  // d'identité (compte/verification), seule porte d'accès à la location.
+  if (dateNaissance && !hasMinimumAge(dateNaissance, 18)) {
+    return { error: "Vous devez avoir au moins 18 ans." };
   }
 
   const supabase = await createClient();
@@ -348,7 +391,7 @@ export async function updateProfile(
     .from("users")
     .update({
       nom,
-      telephone: telephone || undefined,
+      telephone: telephoneNormalise || undefined,
       date_naissance: dateNaissance || undefined,
     })
     .eq("id", user.sub);
@@ -373,18 +416,21 @@ export async function renvoyerCode(
   const errTel = validerTelephone(phone);
   if (errTel) return { error: errTel };
 
-  if (!checkRateLimit(`renvoyer:code:${phone}`)) {
+  const phoneNormalise = normaliserTelephone(phone);
+  if (!phoneNormalise) return { error: "Format de téléphone invalide." };
+
+  if (!checkRateLimit(cleLimite("renvoyer:code", phone))) {
     return { error: "Trop de tentatives. Réessayez dans une minute." };
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({ phone });
+  const { error } = await supabase.auth.signInWithOtp({ phone: phoneNormalise });
 
   if (error) {
     return { error: "Impossible de renvoyer le code. Réessayez plus tard." };
   }
 
-  return { phone: "resent" };
+  return { codeSent: true };
 }
 
 export async function supprimerCompte(): Promise<AuthState> {

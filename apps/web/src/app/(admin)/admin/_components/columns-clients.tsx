@@ -3,9 +3,9 @@
 import Link from "next/link"
 import type { ColumnDef } from "@tanstack/react-table"
 import { ArrowUpDown, MoreHorizontal } from "lucide-react"
-import { Badge } from "@/components/admin-ui/badge"
-import { Button } from "@/components/admin-ui/button"
-import { Avatar, AvatarFallback } from "@/components/admin-ui/avatar"
+import { Badge } from "@/components/shadcn/badge"
+import { Button } from "@/components/shadcn/button"
+import { Avatar, AvatarFallback } from "@/components/shadcn/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/admin-ui/dropdown-menu"
+} from "@/components/shadcn/dropdown-menu"
 
 export type LigneClient = {
   id: string

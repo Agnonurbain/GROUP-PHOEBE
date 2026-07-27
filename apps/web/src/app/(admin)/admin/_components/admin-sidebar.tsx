@@ -16,7 +16,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/admin-ui/sidebar"
+} from "@/components/shadcn/sidebar"
 import { NAV_GROUPS, isActive, type BadgeKey } from "../_lib/nav"
 
 export type NavCounts = Record<BadgeKey, number | null>

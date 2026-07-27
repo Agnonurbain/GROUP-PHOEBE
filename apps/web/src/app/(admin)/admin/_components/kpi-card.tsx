@@ -1,5 +1,5 @@
 import { TrendingUp, TrendingDown, type LucideIcon } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/admin-ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/shadcn/card"
 import { cn } from "@/lib/utils"
 
 export function KpiCard({
