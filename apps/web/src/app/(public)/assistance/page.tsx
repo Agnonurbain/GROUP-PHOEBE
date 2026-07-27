@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import AssistanceClient from "./page-client"
 import { serializeJsonLd } from "@/lib/json-ld"
+import { getTarifsAssistance } from "@/lib/public-cache"
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
@@ -69,14 +70,16 @@ export const metadata: Metadata = {
   },
 }
 
-export default function AssistancePage() {
+export default async function AssistancePage() {
+  const tarifs = await getTarifsAssistance()
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
-      <AssistanceClient />
+      <AssistanceClient tarifs={tarifs} />
     </>
   )
 }

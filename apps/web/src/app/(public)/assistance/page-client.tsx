@@ -5,7 +5,13 @@ import Image from "next/image"
 import { Badge } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
 import { PageHero, SectionHead } from "@/components/public/section-head"
-import { PAYS_LIST, prixApartir, type Pays } from "@/lib/assistance"
+import {
+  PAYS_LIST,
+  appliquerTarifsListe,
+  prixApartir,
+  type Pays,
+  type TarifsAssistance,
+} from "@/lib/assistance"
 
 /* Hallmark · Editorial index (page service) — voir design.md.
    Les anciennes cartes à survol masquaient leur contenu tant qu'on ne survolait
@@ -13,8 +19,7 @@ import { PAYS_LIST, prixApartir, type Pays } from "@/lib/assistance"
 
 const categorieLabel = (c: Pays["categorie"]) => (c === "etudes" ? "Études" : "Voyage")
 
-const etudesCountries = PAYS_LIST.filter((d) => d.categorie === "etudes")
-const voyageCountries = PAYS_LIST.filter((d) => d.categorie === "voyage")
+
 
 function ChoixBloc({
   titre,
@@ -45,7 +50,12 @@ function ChoixBloc({
   )
 }
 
-export default function Assistance() {
+export default function Assistance({ tarifs }: { tarifs: TarifsAssistance }) {
+  // Prix issus de la base (éditables en /admin/tarifs) appliqués au catalogue.
+  const pays = appliquerTarifsListe(PAYS_LIST, tarifs)
+  const etudesCountries = pays.filter((d) => d.categorie === "etudes")
+  const voyageCountries = pays.filter((d) => d.categorie === "voyage")
+
   return (
     <>
       <div className="px-6 pt-6 sm:px-10">

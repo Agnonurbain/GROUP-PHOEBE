@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import CountryDetailClient from "./page-client"
 import { getPays } from "@/lib/assistance"
+import { getTarifsAssistance } from "@/lib/public-cache"
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   }
 }
 
-export default function CountryDetailWrapper() {
-  return <CountryDetailClient />
+export default async function CountryDetailWrapper() {
+  const tarifs = await getTarifsAssistance()
+  return <CountryDetailClient tarifs={tarifs} />
 }

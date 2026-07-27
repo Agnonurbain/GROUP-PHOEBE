@@ -556,3 +556,62 @@ async function revalidateLivraisonCache() {
   const { revalidateTag } = await import("next/cache");
   (revalidateTag as (tag: string) => void)("tarifs_livraison");
 }
+
+// ─── Tarifs d'assistance (propriétaire uniquement) ───────────────────────────
+// Un champ vide vaut « Sur devis » (prix null) : c'est l'état des destinations
+// Europe tant que GROUP PHOEBE n'a pas communiqué ses tarifs.
+
+export async function modifierTarifAssistance(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  const userId = await requireProprietaireAvecId();
+  const admin = getAdmin();
+
+  const paysSlug = (formData.get("pays_slug") as string)?.trim();
+  const prestationKey = (formData.get("prestation_key") as string)?.trim();
+  const prixRaw = ((formData.get("prix") as string) || "").trim();
+
+  if (!paysSlug || !prestationKey) return { error: "Prestation invalide." };
+
+  let prix: number | null = null;
+  if (prixRaw !== "") {
+    prix = Number(prixRaw);
+    if (!Number.isFinite(prix) || prix <= 0) {
+      return { error: "Le prix doit être un montant positif, ou vide pour « Sur devis »." };
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: ancien } = await (admin.from as any)("tarifs_assistance")
+    .select("prix")
+    .eq("pays_slug", paysSlug)
+    .eq("prestation_key", prestationKey)
+    .maybeSingle();
+
+  // upsert : une prestation ajoutée au code après la migration n'a pas de ligne.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from as any)("tarifs_assistance").upsert(
+    {
+      pays_slug: paysSlug,
+      prestation_key: prestationKey,
+      prix,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "pays_slug,prestation_key" }
+  );
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: "modifier_tarif_assistance",
+    tableName: "tarifs_assistance",
+    oldValues: { pays_slug: paysSlug, prestation_key: prestationKey, prix: ancien?.prix ?? null },
+    newValues: { pays_slug: paysSlug, prestation_key: prestationKey, prix },
+  });
+
+  revalidatePath("/admin/tarifs");
+  const { revalidateTag } = await import("next/cache");
+  (revalidateTag as (tag: string) => void)("tarifs_assistance");
+  return { success: true };
+}

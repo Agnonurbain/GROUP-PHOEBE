@@ -7,6 +7,7 @@ const TABS = [
   { key: "cartographie", label: "Cartographie" },
   { key: "prix", label: "Prix & Communes" },
   { key: "livraison", label: "Livraison" },
+  { key: "assistance", label: "Assistance" },
 ] as const;
 
 export type TabKey = (typeof TABS)[number]["key"];

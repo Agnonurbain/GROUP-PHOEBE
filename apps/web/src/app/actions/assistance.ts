@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { getPays, getPrestation, isStatutDossier, STATUT_DOSSIER_LABELS } from "@/lib/assistance";
+import { getTarifsAssistance } from "@/lib/public-cache";
 import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouveauDossierVoyage } from "./notifications-admin";
 
@@ -64,7 +65,10 @@ export async function creerDossierVoyage(
   const slug = formData.get("pays_slug") as string;
   const prestationKey = formData.get("prestation") as string;
 
-  const pays = getPays(slug);
+  // Tarifs pilotés depuis /admin/tarifs : même source que l'affichage client,
+  // donc le montant notifié à l'équipe correspond au prix annoncé.
+  const tarifs = await getTarifsAssistance();
+  const pays = getPays(slug, tarifs);
   if (!pays) return { error: "Destination invalide." };
   const prestation = prestationKey ? getPrestation(pays, prestationKey) : null;
   if (!prestation) return { error: "Prestation invalide." };
