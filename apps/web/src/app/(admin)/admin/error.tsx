@@ -25,10 +25,10 @@ export default function AdminError({
           <line x1="9" y1="9" x2="15" y2="15"/>
         </svg>
       </div>
-      <h2 className="mt-5 text-xl font-bold text-phoebe-anthracite">
+      <h2 className="mt-5 text-xl font-bold text-foreground">
         Erreur dans le back-office
       </h2>
-      <p className="mt-2 text-sm text-phoebe-anthracite/70">
+      <p className="mt-2 text-sm text-muted-foreground">
         Impossible de charger cette page. Veuillez réessayer.
       </p>
       <Button variant="admin" onClick={reset} className="mt-6">

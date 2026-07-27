@@ -10,6 +10,25 @@
   --color-secondary: #D38C37;
   --color-surface: #F3F9F3;
 
+  /* Jetons shadcn du back-office. La base `neutral` livre des gris : les
+     graphiques seraient illisibles (5 nuances de gris) et la sidebar sans
+     identité. On les repasse aux couleurs de la marque.
+     Ce fichier n'est importé que par (admin)/layout.tsx : le public n'est pas
+     concerné. */
+  --primary: #39a044;
+  --primary-foreground: #ffffff;
+  --ring: #39a044;
+  --sidebar-primary: #39a044;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef7ef;
+  --sidebar-accent-foreground: #23632a;
+
+  --chart-1: #39a044; /* vert PHOEBE — série principale */
+  --chart-2: #d38c37; /* or */
+  --chart-3: #2563eb; /* bleu assistance */
+  --chart-4: #f97316; /* orange transport */
+  --chart-5: #23632a; /* vert profond */
+
   --gradient-phoebe: linear-gradient(135deg, #39A044 0%, #23632A 100%);
   --gradient-gold: linear-gradient(135deg, #E5A84A 0%, #D38C37 50%, #A86B24 100%);
   --gradient-gold-shimmer: linear-gradient(90deg, #A86B24, #F4D06F, #E5A84A, #F4D06F, #A86B24);
@@ -205,4 +224,75 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* ── Thème sombre du back-office ────────────────────────────────────────────
+   Les 14 pages admin existantes utilisent des couleurs CLAIRES en dur :
+   477 `text-phoebe-anthracite` (#22282B, quasi noir), 94 `bg-white`,
+   106 bordures `phoebe-pearl` (#F3F9F3, quasi blanc). Telles quelles, elles
+   sont illisibles sur fond sombre.
+
+   Plutôt que de réécrire 750 occurrences, on INVERSE les jetons : une encre
+   sombre devient claire, une surface claire devient sombre. Les pages n'ont pas
+   à changer.
+
+   Tout est scopé à `[data-admin]` (posé sur le conteneur de la sidebar) : même
+   si la classe `dark` persiste après navigation vers le site public, celui-ci
+   garde ses propres jetons. */
+.dark [data-admin] {
+  /* Encres : sombres en clair → claires en sombre */
+  --color-phoebe-anthracite: #e6ebe7;
+  --color-phoebe-anthracite-light: #c4cdc7;
+
+  /* Surfaces et bordures : claires en clair → sombres en sombre */
+  --color-phoebe-pearl: #2a322c;
+  --color-phoebe-pearl-warm: #2e2a24;
+  --color-phoebe-white: #1f1d1b;
+
+  /* Teintes de marque utilisées comme TEXTE : les nuances foncées, prévues pour
+     un fond blanc, deviennent illisibles. On les éclaircit. */
+  --color-phoebe-green: #4fbf5a;
+  --color-phoebe-green-deep: #7bd488;
+  --color-phoebe-gold: #e5a84a;
+  --color-phoebe-gold-dark: #e9b860;
+  --color-error: #f87171;
+  --color-success: #4fbf5a;
+  --color-warning: #e5a84a;
+  --color-info: #60a5fa;
+}
+
+/* `bg-white` est une valeur littérale de Tailwind, pas un jeton : elle ne peut
+   pas être inversée par variable. On la remappe sur la surface de carte. */
+.dark [data-admin] .bg-white {
+  background-color: var(--card);
+}
+
+/* Jetons shadcn du back-office en thème sombre. */
+.dark {
+  --primary: #4fbf5a;
+  --primary-foreground: #0a1f0d;
+  --ring: #4fbf5a;
+  --sidebar-primary: #4fbf5a;
+  --sidebar-primary-foreground: #0a1f0d;
+  --sidebar-accent: #1c2a1e;
+  --sidebar-accent-foreground: #e8f5e9;
+
+  --chart-1: #4fbf5a;
+  --chart-2: #e5a84a;
+  --chart-3: #60a5fa;
+  --chart-4: #fb923c;
+  --chart-5: #a3d9a8;
+}
+
+/* Quelques gris Tailwind littéraux subsistent (planning, disponibilités) pour
+   l'état « bloqué ». Comme `bg-white`, ce ne sont pas des jetons : ils sont
+   remappés sur les surfaces sémantiques en thème sombre. */
+.dark [data-admin] .bg-gray-50 {
+  background-color: var(--muted);
+}
+.dark [data-admin] .text-gray-600 {
+  color: var(--muted-foreground);
+}
+.dark [data-admin] .border-gray-200 {
+  border-color: var(--border);
 }
