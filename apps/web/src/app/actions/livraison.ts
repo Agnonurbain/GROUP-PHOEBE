@@ -16,8 +16,10 @@ import {
   STATUT_LIVRAISON,
   STATUT_LIVRAISON_LABELS,
   isModeLivraison,
+  POIDS_MAX_KG,
   type CommuneMatch,
 } from "@/lib/livraison";
+import { logAudit } from "@/lib/audit";
 import { getCommunes } from "@/lib/public-cache";
 import { compressImage } from "@/lib/compress-image";
 import { validateImageUpload } from "@/lib/upload-validation";
@@ -117,17 +119,24 @@ export async function creerExpedition(
   const adresseCollecte = `${detailCollecte} — ${communeCollecte}`;
   const adresseLivraison = `${detailLivraison} — ${communeLivraison}`;
 
+  // Le poids détermine le palier tarifaire : il est désormais obligatoire.
   const poidsKg = poidsRaw ? Number(poidsRaw) : null;
-  if (poidsKg !== null && (Number.isNaN(poidsKg) || poidsKg <= 0)) {
-    return { error: "Le poids doit être un nombre positif." };
+  if (poidsKg === null || Number.isNaN(poidsKg) || poidsKg <= 0) {
+    return { error: "Indiquez le poids du colis (en kg)." };
+  }
+  if (poidsKg > POIDS_MAX_KG) {
+    return {
+      error: `Au-delà de ${POIDS_MAX_KG} kg, la livraison se fait sur devis. Contactez-nous pour organiser l'envoi.`,
+    };
   }
   const valeurDeclaree = valeurRaw ? Number(valeurRaw) : null;
   if (valeurDeclaree !== null && (Number.isNaN(valeurDeclaree) || valeurDeclaree < 0)) {
     return { error: "La valeur déclarée est invalide." };
   }
 
-  // Prix recalculé côté serveur (autoritaire) à partir de la grille.
-  const prix = computeLivraisonPrix(zone, mode);
+  // Prix recalculé côté serveur (autoritaire) : grille zone × mode, pondérée
+  // par le palier de poids.
+  const prix = computeLivraisonPrix(zone, mode, poidsKg);
   if (prix === null) return { error: "Tarif indisponible pour cette combinaison." };
 
   const admin = getAdmin();
@@ -369,6 +378,75 @@ export async function changerStatutExpedition(
       `Votre colis ${exp.numero_suivi} : ${STATUT_LIVRAISON_LABELS[statut] ?? statut}.`
     );
   }
+  revalidatePath("/admin/expeditions");
+  return { success: true };
+}
+
+/**
+ * Ajuste le prix d'une expédition (staff).
+ *
+ * La zone est déduite de la commune déclarée par le client : si l'adresse réelle
+ * ne correspond pas (commune sous-déclarée pour payer moins), l'équipe doit
+ * pouvoir rétablir le juste prix. Autorisé tant que le colis n'est pas parti
+ * (`creee` ou `prise_en_charge`) — au-delà, la course est engagée.
+ *
+ * Le paiement déjà encaissé n'est PAS modifié : l'écart se règle hors ligne.
+ * Chaque ajustement est tracé dans le journal d'audit et notifié au client.
+ */
+export async function ajusterPrixExpedition(
+  _prev: ExpeditionActionState,
+  formData: FormData
+): Promise<ExpeditionActionState> {
+  const user = await requireStaff();
+  const admin = getAdmin();
+
+  const expeditionId = formData.get("expedition_id") as string;
+  const nouveauPrix = Number(formData.get("prix") as string);
+  const motif = ((formData.get("motif") as string) || "").trim();
+
+  if (!expeditionId) return { error: "Expédition invalide." };
+  if (!Number.isFinite(nouveauPrix) || nouveauPrix <= 0) {
+    return { error: "Le prix doit être un montant positif." };
+  }
+  if (!motif) return { error: "Indiquez le motif de l'ajustement." };
+
+  const { data: exp } = await admin
+    .from("expeditions")
+    .select("client_id, numero_suivi, prix, statut")
+    .eq("id", expeditionId)
+    .single();
+  if (!exp) return { error: "Expédition introuvable." };
+
+  const ajustable: string[] = [STATUT_LIVRAISON.creee, STATUT_LIVRAISON.priseEnCharge];
+  if (!ajustable.includes(exp.statut)) {
+    return { error: "Le prix ne peut plus être ajusté une fois le colis en transit." };
+  }
+
+  const ancienPrix = Number(exp.prix);
+  if (ancienPrix === nouveauPrix) return { success: true };
+
+  const { error } = await admin
+    .from("expeditions")
+    .update({ prix: nouveauPrix, updated_at: new Date().toISOString() })
+    .eq("id", expeditionId);
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId: user.sub as string,
+    action: "ajustement_prix_expedition",
+    tableName: "expeditions",
+    recordId: expeditionId,
+    oldValues: { prix: ancienPrix },
+    newValues: { prix: nouveauPrix, motif },
+  });
+
+  const sens = nouveauPrix > ancienPrix ? "revu à la hausse" : "revu à la baisse";
+  await notifierClient(
+    exp.client_id,
+    "Prix de votre livraison ajusté",
+    `Le tarif du colis ${exp.numero_suivi} a été ${sens} : ${nouveauPrix.toLocaleString("fr-FR")} FCFA (${motif}). Notre équipe vous recontacte pour la régularisation.`
+  );
+
   revalidatePath("/admin/expeditions");
   return { success: true };
 }

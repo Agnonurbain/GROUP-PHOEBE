@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useCallback, useMemo, useState } from "react"
+import { useActionState, useCallback, useState } from "react"
 import Link from "next/link"
 import { BackLink } from "@/components/public/back-link"
 import { Card } from "@/components/ui"
@@ -11,6 +11,9 @@ import {
   ZONE_LABELS,
   computeLivraisonPrix,
   deriverZoneLivraison,
+  palierPoids,
+  PALIERS_POIDS,
+  POIDS_MAX_KG,
   type CommuneMatch,
 } from "@/lib/livraison"
 
@@ -20,6 +23,12 @@ const inputClass =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-orange focus:outline-none focus:ring-2 focus:ring-accent-orange/20"
 
 const labelClass = "mb-1.5 block text-sm font-medium text-public-text"
+
+/* Liste fermée : en saisie libre, un client pouvait déclarer une commune proche
+   pour obtenir un tarif intracommunal alors que la livraison était nationale.
+   « Autre localité » retombe sur le tarif national (aucune correspondance
+   commune → zone nationale côté serveur), donc personne n'est bloqué. */
+export const AUTRE_LOCALITE = "Autre localité"
 
 function CommuneField({
   id,
@@ -36,42 +45,23 @@ function CommuneField({
   text: string
   setText: (v: string) => void
 }) {
-  const [open, setOpen] = useState(false)
-  const suggestions = useMemo(() => {
-    const q = text.trim().toLowerCase()
-    if (!q) return []
-    return communes.filter((c) => c.nom.toLowerCase().includes(q)).slice(0, 8)
-  }, [text, communes])
-
   return (
-    <div className="relative">
+    <div>
       <label htmlFor={id} className={labelClass}>{label}</label>
-      <input
+      <select
         id={id}
         name={name}
         value={text}
         required
-        autoComplete="off"
-        onChange={(e) => { setText(e.target.value); setOpen(true) }}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        placeholder="Commune (ex. Cocody)"
+        onChange={(e) => setText(e.target.value)}
         className={inputClass}
-      />
-      {open && suggestions.length > 0 && (
-        <div className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl border border-public-border bg-public-bg-card shadow-xl">
-          {suggestions.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              onMouseDown={() => { setText(c.nom); setOpen(false) }}
-              className="block w-full px-4 py-2.5 text-left text-sm text-public-text transition-colors hover:bg-public-bg-elevated first:rounded-t-xl last:rounded-b-xl"
-            >
-              {c.nom}
-            </button>
-          ))}
-        </div>
-      )}
+      >
+        <option value="">— Choisir une commune —</option>
+        {communes.map((c) => (
+          <option key={c.id} value={c.nom}>{c.nom}</option>
+        ))}
+        <option value={AUTRE_LOCALITE}>{AUTRE_LOCALITE} (tarif national)</option>
+      </select>
     </div>
   )
 }
@@ -89,6 +79,7 @@ export default function CommanderClient({
   const [mode, setMode] = useState<string>(MODES_LIVRAISON[0])
   const [communeCollecte, setCommuneCollecte] = useState("")
   const [communeLivraison, setCommuneLivraison] = useState("")
+  const [poids, setPoids] = useState("")
 
   const matchCommune = useCallback(
     (t: string): CommuneMatch => {
@@ -102,16 +93,26 @@ export default function CommanderClient({
 
   const adressesRenseignees = communeCollecte.trim() !== "" && communeLivraison.trim() !== ""
   const zone = deriverZoneLivraison(matchCommune(communeCollecte), matchCommune(communeLivraison))
-  const prix = adressesRenseignees ? computeLivraisonPrix(zone, mode) : null
+
+  // Le poids fait partie du prix : tant qu'il n'est pas saisi (ou hors grille),
+  // aucun montant n'est annoncé.
+  const poidsNum = poids.trim() === "" ? null : Number(poids)
+  const poidsValide = poidsNum !== null && Number.isFinite(poidsNum) && poidsNum > 0
+  const poidsHorsGrille = poidsValide && poidsNum > POIDS_MAX_KG
+  const palier = poidsValide && !poidsHorsGrille ? palierPoids(poidsNum) : null
+  const prix =
+    adressesRenseignees && poidsValide && !poidsHorsGrille
+      ? computeLivraisonPrix(zone, mode, poidsNum)
+      : null
 
   return (
-    <div className="px-6 py-10">
+    <div className="mx-auto max-w-6xl px-6 py-10 sm:px-10">
       <div className="mb-6">
         <BackLink href="/livraison" label="Retour à la livraison" />
       </div>
-      <h1 className="text-4xl font-bold text-public-text">Commander une livraison</h1>
+      <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">Commander une livraison</h1>
       <p className="mt-2 text-sm text-public-text-muted">
-        Renseignez les adresses : la zone et le prix sont calculés automatiquement.
+        Choisissez les communes et indiquez le poids : la zone et le prix sont calculés automatiquement.
       </p>
 
       {state.error && (
@@ -185,8 +186,30 @@ export default function CommanderClient({
                 <input id="nature_colis" name="nature_colis" placeholder="Documents, vêtements, électronique…" className={inputClass} />
               </div>
               <div>
-                <label htmlFor="poids_kg" className={labelClass}>Poids (kg)</label>
-                <input id="poids_kg" name="poids_kg" type="number" inputMode="decimal" min="0" step="0.1" placeholder="Ex : 2.5" className={inputClass} />
+                <label htmlFor="poids_kg" className={labelClass}>Poids (kg) *</label>
+                <input
+                  id="poids_kg"
+                  name="poids_kg"
+                  type="number"
+                  inputMode="decimal"
+                  min="0.1"
+                  max={POIDS_MAX_KG}
+                  step="0.1"
+                  required
+                  value={poids}
+                  onChange={(e) => setPoids(e.target.value)}
+                  placeholder="Ex : 2.5"
+                  aria-describedby="poids-aide"
+                  className={inputClass}
+                />
+                <p id="poids-aide" className="mt-1.5 text-xs text-public-text-faint">
+                  {PALIERS_POIDS.map((p) => p.label).join(" · ")} — au-delà de {POIDS_MAX_KG} kg, sur devis.
+                </p>
+                {poidsHorsGrille && (
+                  <p role="alert" className="mt-1.5 text-xs text-error">
+                    Au-delà de {POIDS_MAX_KG} kg, contactez-nous pour un devis.
+                  </p>
+                )}
               </div>
               <div>
                 <label htmlFor="dimensions" className={labelClass}>Dimensions</label>
@@ -243,17 +266,28 @@ export default function CommanderClient({
                 <span className="text-public-text-muted">Mode</span>
                 <span className="font-medium text-public-text">{MODE_LABELS[mode as keyof typeof MODE_LABELS]}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-public-text-muted">Palier de poids</span>
+                <span className="font-medium text-public-text">
+                  {palier ? palier.label : "—"}
+                  {palier && palier.multiplicateur !== 1 && (
+                    <span className="ml-1 text-xs text-public-text-muted">×{palier.multiplicateur}</span>
+                  )}
+                </span>
+              </div>
             </div>
             <hr className="my-4 border-public-border" />
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-public-text">Total</span>
-              <span className="text-xl font-bold text-accent-orange">
+            <div className="flex items-baseline justify-between gap-4">
+              <span className="text-sm font-semibold text-public-text">Total</span>
+              <span className="font-display text-3xl font-medium text-accent-orange">
                 {prix !== null ? `${prix.toLocaleString("fr-FR")} FCFA` : "—"}
               </span>
             </div>
-            {!adressesRenseignees && (
+            {prix === null && (
               <p className="mt-2 text-xs text-public-text-faint">
-                Renseignez les communes pour calculer le prix.
+                {poidsHorsGrille
+                  ? `Au-delà de ${POIDS_MAX_KG} kg : contactez-nous pour un devis.`
+                  : "Choisissez les communes et indiquez le poids pour calculer le prix."}
               </p>
             )}
 
@@ -262,7 +296,7 @@ export default function CommanderClient({
               disabled={pending || prix === null}
               className="mt-6 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-accent-orange-hover active:scale-[0.98] disabled:opacity-50"
             >
-              {pending ? "Traitement…" : prix !== null ? `Payer ${prix.toLocaleString("fr-FR")} FCFA` : "Renseignez les adresses"}
+              {pending ? "Traitement…" : prix !== null ? `Payer ${prix.toLocaleString("fr-FR")} FCFA` : "Complétez le formulaire"}
             </button>
 
             <Link href="/livraison" className="mt-3 block text-center text-xs text-public-text-muted transition-colors hover:text-public-text">

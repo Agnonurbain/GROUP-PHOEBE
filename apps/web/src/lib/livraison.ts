@@ -45,6 +45,35 @@ export const TARIFS_LIVRAISON: Record<ZoneLivraison, Record<ModeLivraison, numbe
   nationale: { standard: 5000, express: 8000, meme_jour: 11000, programmee: 6000 },
 };
 
+// ─── Paliers de poids ────────────────────────────────────────────────────────
+// Le prix de base (zone × mode) couvre le premier palier. Au-delà, un
+// multiplicateur s'applique : porter 40 kg à Bouaké coûte plus cher que porter
+// une enveloppe, et le prix doit le refléter.
+// MULTIPLICATEURS À CONFIRMER avec GROUP PHOEBE, comme la grille ci-dessus.
+
+/** Au-delà, l'envoi sort de la grille et passe sur devis. */
+export const POIDS_MAX_KG = 50;
+
+export type PalierPoids = {
+  /** Borne haute incluse, en kg. */
+  maxKg: number;
+  multiplicateur: number;
+  label: string;
+};
+
+export const PALIERS_POIDS: PalierPoids[] = [
+  { maxKg: 5, multiplicateur: 1, label: "Jusqu'à 5 kg" },
+  { maxKg: 15, multiplicateur: 1.5, label: "5 à 15 kg" },
+  { maxKg: POIDS_MAX_KG, multiplicateur: 2.5, label: "15 à 50 kg" },
+];
+
+/** Palier correspondant au poids, ou null au-delà du maximum accepté. */
+export function palierPoids(poidsKg: number | null | undefined): PalierPoids | null {
+  if (poidsKg === null || poidsKg === undefined) return PALIERS_POIDS[0];
+  if (!Number.isFinite(poidsKg) || poidsKg <= 0) return null;
+  return PALIERS_POIDS.find((p) => poidsKg <= p.maxKg) ?? null;
+}
+
 export function isZoneLivraison(v: string): v is ZoneLivraison {
   return (ZONES_LIVRAISON as readonly string[]).includes(v);
 }
@@ -74,10 +103,23 @@ export function deriverZoneLivraison(
   return "nationale";
 }
 
-/** Prix d'une livraison pour une zone et un mode, ou null si combinaison invalide. */
-export function computeLivraisonPrix(zone: string, mode: string): number | null {
+/**
+ * Prix d'une livraison : base (zone × mode) × multiplicateur du palier de poids.
+ * `null` si la combinaison est invalide ou si le poids dépasse POIDS_MAX_KG
+ * (l'envoi passe alors sur devis).
+ * Poids omis => premier palier, ce qui donne le tarif « à partir de ».
+ */
+export function computeLivraisonPrix(
+  zone: string,
+  mode: string,
+  poidsKg: number | null = null
+): number | null {
   if (!isZoneLivraison(zone) || !isModeLivraison(mode)) return null;
-  return TARIFS_LIVRAISON[zone][mode];
+  const palier = palierPoids(poidsKg);
+  if (!palier) return null;
+  const brut = TARIFS_LIVRAISON[zone][mode] * palier.multiplicateur;
+  // Arrondi à la centaine : des prix affichables, sans décimales parasites.
+  return Math.round(brut / 100) * 100;
 }
 
 // ─── Statuts d'une expédition (CHECK de la table expeditions) ─────────────────

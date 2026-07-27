@@ -11,6 +11,8 @@ import {
   MODE_LABELS,
   MODE_DESCRIPTIONS,
   TARIFS_LIVRAISON,
+  PALIERS_POIDS,
+  POIDS_MAX_KG,
 } from "@/lib/livraison"
 
 /* Hallmark · Editorial index (page service) — voir design.md.
@@ -88,7 +90,7 @@ export default async function Livraison({
         <div className="mx-auto max-w-6xl">
           <SectionHead
             title="Nos tarifs"
-            lede="Le prix dépend de la distance entre la collecte et la livraison, et du mode d'envoi choisi."
+            lede="Le prix dépend de la distance entre la collecte et la livraison, du mode d'envoi et du poids du colis."
           />
           <div className="mt-8 overflow-x-auto">
             <table className="w-full min-w-[640px] border-collapse text-left">
@@ -128,6 +130,26 @@ export default async function Livraison({
                 ))}
               </tbody>
             </table>
+          </div>
+          <div className="mt-6 rounded-xl border border-public-border bg-public-bg-card p-5">
+            <p className="text-sm font-semibold text-public-text">Poids du colis</p>
+            <p className="mt-1 text-xs text-public-text-muted">
+              Les tarifs ci-dessus valent pour le premier palier. Au-delà, un coefficient s&apos;applique :
+            </p>
+            <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
+              {PALIERS_POIDS.map((p) => (
+                <li key={p.label} className="text-sm text-public-text-muted">
+                  {p.label}
+                  <span className="ml-1.5 font-semibold text-accent-orange">
+                    {p.multiplicateur === 1 ? "tarif de base" : `×${p.multiplicateur}`}
+                  </span>
+                </li>
+              ))}
+              <li className="text-sm text-public-text-muted">
+                Au-delà de {POIDS_MAX_KG} kg
+                <span className="ml-1.5 font-semibold text-accent-orange">sur devis</span>
+              </li>
+            </ul>
           </div>
           <p className="mt-4 text-xs text-public-text-faint">
             La zone est déterminée automatiquement à partir des adresses de collecte et de livraison.

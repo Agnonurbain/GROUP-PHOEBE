@@ -5,6 +5,7 @@ import {
   affecterLivreurAuto,
   affecterLivreurManuel,
   changerStatutExpedition,
+  ajusterPrixExpedition,
   type ExpeditionActionState,
 } from "@/app/actions/livraison"
 
@@ -15,15 +16,21 @@ const btnGhost =
 const selectClass =
   "rounded-lg border border-phoebe-anthracite/15 bg-white px-3 py-2 text-xs text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
 
+// Le prix n'est ajustable que tant que le colis n'est pas parti : au-delà, la
+// course est engagée (même garde côté serveur).
+const STATUTS_PRIX_AJUSTABLE = ["creee", "prise_en_charge"]
+
 export function ExpeditionActions({
   expeditionId,
   currentStatut,
+  currentPrix,
   assigned,
   livreurs,
   statuts,
 }: {
   expeditionId: string
   currentStatut: string
+  currentPrix: number
   assigned: boolean
   livreurs: { id: string; nom: string }[]
   statuts: { value: string; label: string }[]
@@ -31,8 +38,10 @@ export function ExpeditionActions({
   const [autoState, autoAction, autoPending] = useActionState<ExpeditionActionState, FormData>(affecterLivreurAuto, {})
   const [manuelState, manuelAction, manuelPending] = useActionState<ExpeditionActionState, FormData>(affecterLivreurManuel, {})
   const [statutState, statutAction, statutPending] = useActionState<ExpeditionActionState, FormData>(changerStatutExpedition, {})
+  const [prixState, prixAction, prixPending] = useActionState<ExpeditionActionState, FormData>(ajusterPrixExpedition, {})
 
-  const erreur = autoState.error || manuelState.error || statutState.error
+  const erreur = autoState.error || manuelState.error || statutState.error || prixState.error
+  const prixAjustable = STATUTS_PRIX_AJUSTABLE.includes(currentStatut)
 
   return (
     <div className="mt-4 border-t border-phoebe-pearl pt-4">
@@ -81,6 +90,47 @@ export function ExpeditionActions({
           </button>
         </form>
       </div>
+
+      {/* Ajustement du prix : la zone vient de la commune déclarée par le client.
+          Si l'adresse réelle ne correspond pas, l'équipe rétablit le juste prix. */}
+      {prixAjustable && (
+        <form action={prixAction} className="mt-4 flex flex-wrap items-end gap-2 border-t border-phoebe-pearl pt-4">
+          <input type="hidden" name="expedition_id" value={expeditionId} />
+          <div>
+            <label htmlFor={`prix-${expeditionId}`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+              Ajuster le prix (FCFA)
+            </label>
+            <input
+              id={`prix-${expeditionId}`}
+              name="prix"
+              type="number"
+              min="1"
+              step="100"
+              defaultValue={currentPrix}
+              required
+              className={`${selectClass} w-32`}
+            />
+          </div>
+          <div className="flex-1 min-w-[12rem]">
+            <label htmlFor={`motif-${expeditionId}`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+              Motif
+            </label>
+            <input
+              id={`motif-${expeditionId}`}
+              name="motif"
+              required
+              placeholder="Ex : adresse réelle hors commune déclarée"
+              className={`${selectClass} w-full`}
+            />
+          </div>
+          <button type="submit" disabled={prixPending} className={btnGhost}>
+            {prixPending ? "…" : "Ajuster"}
+          </button>
+          <p className="w-full text-[11px] text-phoebe-anthracite/60">
+            L&apos;écart avec le montant déjà encaissé se régularise hors ligne. Le client est notifié, l&apos;ajustement est tracé.
+          </p>
+        </form>
+      )}
     </div>
   )
 }
