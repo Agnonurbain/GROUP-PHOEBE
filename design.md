@@ -14,6 +14,23 @@ Ce fichier documente **les règles**, pas une copie des tokens.
 **Editorial premium.** Sombre, or, typographie affirmée. Le contenu porte la
 page ; la décoration ne la sauve pas.
 
+### Thème clair (variante)
+
+Le sombre reste le **défaut** et l'identité. Une variante claire est disponible
+via le sélecteur du header ; elle est purement additive (`.light [data-vertical]`
+dans `globals.css`), donc le rendu initial ne change pas et il n'y a pas de
+scintillement avant hydratation.
+
+Deux règles la gouvernent :
+1. **Les aplats gardent les couleurs vives** — un bouton or reste or.
+2. **Les accents en TEXTE passent aux nuances foncées** : sur blanc, l'or vif
+   tombe à 2,29:1, l'orange à 2,8:1 et le vert à 3,77:1. Les variantes
+   `#8F5A1E`, `#C2410C` et `#047857` rétablissent 5,2 à 5,8:1.
+
+Corollaire : **ne jamais figer une valeur de la palette en dur** (`bg-[#141312]`,
+`text-[#EDE9E3]`…). Un hex ne bascule pas. Toujours passer par les jetons
+`public-bg`, `public-text`, `public-border`, etc.
+
 ---
 
 ## Familles de macrostructure

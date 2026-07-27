@@ -303,7 +303,7 @@ export default function CommanderClient({
             <button
               type="submit"
               disabled={pending || prix === null}
-              className="mt-6 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-accent-orange-hover active:scale-[0.98] disabled:opacity-50"
+              className="mt-6 flex min-h-[52px] w-full items-center justify-center gap-2 rounded-xl bg-accent-orange px-4 py-3 text-sm font-bold text-[#0A0A0A] shadow-md transition-all hover:bg-accent-orange-hover active:scale-[0.98] disabled:opacity-50"
             >
               {pending ? "Traitement…" : prix !== null ? `Payer ${prix.toLocaleString("fr-FR")} FCFA` : "Complétez le formulaire"}
             </button>

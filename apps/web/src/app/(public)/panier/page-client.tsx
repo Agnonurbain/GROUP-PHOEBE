@@ -56,7 +56,7 @@ export default function Panier() {
           <p className="text-sm text-public-text-muted">Parcourez notre catalogue pour ajouter des véhicules.</p>
           <Link
             href="/transport/catalogue"
-            className="rounded-lg bg-accent-orange px-6 py-3 text-sm font-semibold text-white hover:bg-accent-orange-hover transition-colors"
+            className="rounded-lg bg-accent-orange px-6 py-3 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-orange-hover transition-colors"
           >
             Voir le catalogue
           </Link>

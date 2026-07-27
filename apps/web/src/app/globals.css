@@ -427,3 +427,63 @@ textarea {
     @apply font-sans;
   }
 }
+/* ── Mode clair du site public ──────────────────────────────────────────────
+   Le public est sombre PAR DÉFAUT (jetons de base ci-dessus) : cette variante
+   est purement additive, donc le rendu initial ne change pas et il n'y a pas de
+   scintillement avant hydratation.
+
+   next-themes est configuré avec value={{ light: "light", dark: "dark" }} :
+   sans préférence enregistrée, aucune classe n'est posée et le site reste
+   sombre. La classe `light` n'apparaît que sur choix explicite.
+
+   Scopé à [data-vertical] — le conteneur du site public — pour ne pas déborder
+   sur le back-office ni sur les pages d'auth, qui ont leurs propres règles. */
+
+.light [data-vertical] {
+  color-scheme: light;
+
+  /* Surfaces : le blanc pur fatigue sur de longues pages, on garde une pointe
+     de chaleur cohérente avec l'or de la marque. */
+  --color-public-bg: #faf9f7;
+  --color-public-bg-card: #ffffff;
+  --color-public-bg-elevated: #f2efea;
+  --color-public-border: #e4dfd7;
+
+  /* Encres : 15,8:1 et 7,1:1 sur le fond. */
+  --color-public-text: #1c1a18;
+  --color-public-text-muted: #5f584f;
+  --color-public-text-faint: #787066;
+
+  /* Accents en TEXTE. Les nuances vives de la marque sont illisibles sur clair
+     (or 2,29:1, orange 2,8:1, vert 3,77:1) : on passe aux variantes foncées.
+     Le #8F5A1E est celui que le projet documentait déjà comme « seule nuance
+     d'or lisible sur blanc ». */
+  --color-accent-gold: #8f5a1e;
+  --color-accent-gold-hover: #7a4c19;
+  --color-accent-orange: #c2410c;
+  --color-accent-orange-hover: #9a340a;
+  --color-accent-green: #047857;
+  --color-accent-green-hover: #036249;
+  --color-accent-blue-on-dark: #1d4ed8;
+}
+
+/* Les APLATS gardent les couleurs vives : un bouton or reste or, c'est
+   l'identité de la marque. Seule l'encre du texte s'adapte. */
+.light [data-vertical] .bg-accent-gold {
+  background-color: #c9a84c;
+}
+.light [data-vertical] .bg-accent-gold:hover {
+  background-color: #b8943a;
+}
+.light [data-vertical] .bg-accent-orange {
+  background-color: #f97316;
+}
+.light [data-vertical] .bg-accent-orange:hover {
+  background-color: #e0660e;
+}
+.light [data-vertical] .bg-accent-green {
+  background-color: #059669;
+}
+
+/* Le hero repose sur une photo sombrée : son texte blanc et son voile restent
+   valables dans les deux thèmes. */

@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Footer } from "@/components/public/footer"
 import { SmartHeader } from "@/components/public/smart-header"
 import { VerticalLayout } from "./vertical-layout"
+import { ThemeProvider } from "@/components/theme-provider"
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -15,7 +16,12 @@ export default async function PublicLayout({ children }: { children: React.React
   }
 
   return (
-    <VerticalLayout>
+    // Sombre par défaut (identité verrouillée dans design.md) : `enableSystem`
+    // est désactivé, sinon un visiteur au système clair verrait le site basculer.
+    // Clé de stockage distincte : la préférence d'un opérateur dans le
+    // back-office ne doit pas changer le site vu par les visiteurs.
+    <ThemeProvider defaultTheme="dark" enableSystem={false} storageKey="theme-public">
+      <VerticalLayout>
       <a href="#contenu" className="skip-link">
         Aller au contenu principal
       </a>
@@ -24,6 +30,7 @@ export default async function PublicLayout({ children }: { children: React.React
         {children}
       </main>
       <Footer />
-    </VerticalLayout>
+      </VerticalLayout>
+    </ThemeProvider>
   )
 }

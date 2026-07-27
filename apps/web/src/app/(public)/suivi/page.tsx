@@ -79,7 +79,7 @@ export default async function SuiviPage({
         />
         <button
           type="submit"
-          className="shrink-0 rounded-xl bg-accent-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-orange-hover"
+          className="shrink-0 rounded-xl bg-accent-orange px-5 py-2.5 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-orange-hover"
         >
           Suivre
         </button>
