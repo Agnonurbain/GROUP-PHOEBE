@@ -10,6 +10,7 @@ import {
 } from "@/lib/livraison";
 import type { TarifsAssistance } from "@/lib/assistance";
 import { CONTACT_VIDE, type ParametresContact } from "@/lib/contact";
+import { makeGroupKey } from "@/lib/vehicle-group";
 
 // Transport catalogue
 export const getVehiculesCatalogue = unstable_cache(
@@ -316,4 +317,27 @@ export const getParametresContact = unstable_cache(
   },
   ["parametres_contact"],
   { revalidate: 3600, tags: ["parametres_contact"] }
+);
+
+// Chiffres affichés sur l'accueil (bande de preuve).
+// Sans cache, chaque visite de la page la plus fréquentée déclenchait un
+// balayage complet de `vehicules` juste pour compter les modèles distincts.
+// Le tag "vehicules" est déjà invalidé par revalidatePublicCache().
+export const getStatsAccueil = unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const { data, count } = await supabase
+      .from("vehicules")
+      .select("marque, modele", { count: "exact" })
+      .neq("statut", "indisponible");
+
+    const vehiculeCount = count ?? data?.length ?? 0;
+    const modeleCount = new Set(
+      (data ?? []).map((v) => makeGroupKey(v.marque, v.modele))
+    ).size;
+
+    return { vehiculeCount, modeleCount };
+  },
+  ["stats_accueil"],
+  { revalidate: 3600, tags: ["vehicules"] }
 );

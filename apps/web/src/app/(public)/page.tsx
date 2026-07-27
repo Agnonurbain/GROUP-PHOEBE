@@ -1,9 +1,8 @@
 import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
-import { makeGroupKey } from "@/lib/vehicle-group"
 import { serializeJsonLd, createOrganizationSchema, createWebSiteSchema } from "@/lib/json-ld"
 import HomePageClient from "./page-client"
-import { getParametresContact } from "@/lib/public-cache"
+import { getParametresContact, getStatsAccueil } from "@/lib/public-cache"
 
 export const metadata: Metadata = {
   title: "GROUP PHOEBE — Transport, Immobilier & Assistance",
@@ -33,17 +32,9 @@ export default async function HomePage() {
     role = data?.role ?? null
   }
 
-  // Chiffres réels (pas d'affirmations invérifiables) : taille de la flotte et
-  // nombre de modèles distincts, dérivés de la base.
-  const { data: vehiculesData, count } = await supabase
-    .from("vehicules")
-    .select("marque, modele", { count: "exact" })
-    .neq("statut", "indisponible")
-
-  const vehiculeCount = count ?? vehiculesData?.length ?? 0
-  const modeleCount = new Set(
-    (vehiculesData ?? []).map((v) => makeGroupKey(v.marque, v.modele))
-  ).size
+  // Chiffres réels (pas d'affirmations invérifiables), mis en cache : ils ne
+  // changent qu'à l'ajout d'un véhicule.
+  const { vehiculeCount, modeleCount } = await getStatsAccueil()
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
