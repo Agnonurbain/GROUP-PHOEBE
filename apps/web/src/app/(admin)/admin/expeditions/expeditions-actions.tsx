@@ -24,6 +24,7 @@ export function ExpeditionActions({
   expeditionId,
   currentStatut,
   currentPrix,
+  isProprietaire,
   assigned,
   livreurs,
   statuts,
@@ -31,6 +32,7 @@ export function ExpeditionActions({
   expeditionId: string
   currentStatut: string
   currentPrix: number
+  isProprietaire: boolean
   assigned: boolean
   livreurs: { id: string; nom: string }[]
   statuts: { value: string; label: string }[]
@@ -41,7 +43,7 @@ export function ExpeditionActions({
   const [prixState, prixAction, prixPending] = useActionState<ExpeditionActionState, FormData>(ajusterPrixExpedition, {})
 
   const erreur = autoState.error || manuelState.error || statutState.error || prixState.error
-  const prixAjustable = STATUTS_PRIX_AJUSTABLE.includes(currentStatut)
+  const prixAjustable = isProprietaire && STATUTS_PRIX_AJUSTABLE.includes(currentStatut)
 
   return (
     <div className="mt-4 border-t border-phoebe-pearl pt-4">

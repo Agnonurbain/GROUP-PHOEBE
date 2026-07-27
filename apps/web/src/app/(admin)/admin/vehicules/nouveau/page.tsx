@@ -13,6 +13,13 @@ export const metadata: Metadata = {
 export default async function NouveauVehiculePage() {
   const supabase = await createClient();
 
+  // Seul le propriétaire fixe les prix à la création.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const { data: profile } = claimsData?.claims
+    ? await supabase.from("users").select("role").eq("id", claimsData.claims.sub).single()
+    : { data: null };
+  const isProprietaire = profile?.role === "proprietaire";
+
   const [
     { data: chauffeurs },
     { data: zones },
@@ -50,6 +57,7 @@ export default async function NouveauVehiculePage() {
         <VehiculeForm
           action={creerVehicule}
           chauffeurs={chauffeurs ?? []}
+          isProprietaire={isProprietaire}
           intervallesPrix={intervallesRef as { categorie_vehicule: string; type: string; prix_min: number; prix_max: number }[]}
         />
       </ScrollReveal>
