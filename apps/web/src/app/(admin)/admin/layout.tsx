@@ -54,7 +54,10 @@ export default async function AdminShellLayout({
 
   return (
     <AdminThemeProvider>
-      <SidebarProvider>
+      {/* `data-admin` délimite le sous-arbre du back-office : les jetons clairs
+          hérités (phoebe-anthracite, phoebe-pearl…) y sont inversés en thème
+          sombre, sans toucher au reste du site. Voir admin.css. */}
+      <SidebarProvider data-admin>
         <AdminSidebar
           isProprietaire={isProprietaire}
           counts={{
