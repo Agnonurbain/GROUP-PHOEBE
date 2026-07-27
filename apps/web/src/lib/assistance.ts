@@ -140,8 +140,33 @@ export const PAYS: Record<string, Pays> = {
 
 export const PAYS_LIST: Pays[] = Object.values(PAYS);
 
-export function getPays(slug: string): Pays | null {
-  return PAYS[slug] ?? null;
+// ─── Tarifs pilotés depuis /admin/tarifs (table tarifs_assistance) ───────────
+// Les prix ci-dessus deviennent un REPLI : la source de vérité est la base.
+// Forme : { [paysSlug]: { [prestationKey]: prix | null } }, null = « Sur devis ».
+
+export type TarifsAssistance = Record<string, Record<string, number | null>>;
+
+/** Applique les tarifs de la base à un pays. Fonction pure. */
+export function appliquerTarifs(pays: Pays, tarifs: TarifsAssistance): Pays {
+  const parPrestation = tarifs[pays.slug];
+  if (!parPrestation) return pays;
+  return {
+    ...pays,
+    prestations: pays.prestations.map((p) =>
+      p.key in parPrestation ? { ...p, prix: parPrestation[p.key] } : p
+    ),
+  };
+}
+
+/** Idem sur une liste de pays. */
+export function appliquerTarifsListe(liste: Pays[], tarifs: TarifsAssistance): Pays[] {
+  return liste.map((p) => appliquerTarifs(p, tarifs));
+}
+
+export function getPays(slug: string, tarifs?: TarifsAssistance): Pays | null {
+  const pays = PAYS[slug] ?? null;
+  if (!pays) return null;
+  return tarifs ? appliquerTarifs(pays, tarifs) : pays;
 }
 
 export function getPrestation(pays: Pays, key: string): Prestation | null {

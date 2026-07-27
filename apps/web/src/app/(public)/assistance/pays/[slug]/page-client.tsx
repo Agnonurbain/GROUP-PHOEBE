@@ -7,7 +7,7 @@ import { Badge, Button } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
 import { CheckIcon } from "@/components/icons"
 import { creerDossierVoyage, type AssistanceState } from "@/app/actions/assistance"
-import { getPays, prixLabel } from "@/lib/assistance"
+import { getPays, prixLabel, type TarifsAssistance } from "@/lib/assistance"
 
 function StepCard({ num, title, desc, index }: { num: string; title: string; desc?: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -47,12 +47,13 @@ function StepCard({ num, title, desc, index }: { num: string; title: string; des
   )
 }
 
-export default function CountryDetail() {
+export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) {
   const params = useParams()
   const slug = params.slug as string
   const [state, formAction, pending] = useActionState<AssistanceState, FormData>(creerDossierVoyage, {})
 
-  const pays = useMemo(() => getPays(slug), [slug])
+  // Prix issus de la base (éditables en /admin/tarifs).
+  const pays = useMemo(() => getPays(slug, tarifs), [slug, tarifs])
 
   if (!pays) {
     return (

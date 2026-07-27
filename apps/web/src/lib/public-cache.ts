@@ -8,6 +8,7 @@ import {
   type GrilleTarifs,
   type PalierPoids,
 } from "@/lib/livraison";
+import type { TarifsAssistance } from "@/lib/assistance";
 
 // Transport catalogue
 export const getVehiculesCatalogue = unstable_cache(
@@ -232,6 +233,7 @@ export async function revalidatePublicCache() {
   (revalidateTag as (tag: string) => void)("biens");
   (revalidateTag as (tag: string) => void)("assistance");
   (revalidateTag as (tag: string) => void)("tarifs_livraison");
+  (revalidateTag as (tag: string) => void)("tarifs_assistance");
 }
 // Livraison — grille tarifaire et paliers de poids pilotés depuis /admin/tarifs.
 // Repli sur les constantes du module si la base ne répond pas : mieux vaut un
@@ -271,4 +273,27 @@ export const getTarifsLivraison = unstable_cache(
   },
   ["tarifs_livraison"],
   { revalidate: 3600, tags: ["tarifs_livraison"] }
+);
+
+// Assistance — prix des prestations pilotés depuis /admin/tarifs.
+// Repli sur un objet vide : les constantes de lib/assistance.ts s'appliquent
+// alors telles quelles, plutôt qu'une page sans prix.
+export const getTarifsAssistance = unstable_cache(
+  async (): Promise<TarifsAssistance> => {
+    const supabase = createPublicClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase.from as any)("tarifs_assistance")
+      .select("pays_slug, prestation_key, prix");
+
+    const tarifs: TarifsAssistance = {};
+    for (const t of (data ?? []) as {
+      pays_slug: string; prestation_key: string; prix: number | null;
+    }[]) {
+      tarifs[t.pays_slug] ??= {};
+      tarifs[t.pays_slug][t.prestation_key] = t.prix === null ? null : Number(t.prix);
+    }
+    return tarifs;
+  },
+  ["tarifs_assistance"],
+  { revalidate: 3600, tags: ["tarifs_assistance"] }
 );
