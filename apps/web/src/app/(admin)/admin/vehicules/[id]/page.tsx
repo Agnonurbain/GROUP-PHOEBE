@@ -145,6 +145,7 @@ export default async function EditVehiculePage({
           action={modifierVehicule}
           chauffeurs={chauffeurs ?? []}
           chauffeurIds={chauffeurIds}
+          isProprietaire={isProprietaire}
           intervallesPrix={intervallesRef as { categorie_vehicule: string; type: string; prix_min: number; prix_max: number }[]}
         />
       </ScrollReveal>

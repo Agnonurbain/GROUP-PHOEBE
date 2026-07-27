@@ -21,6 +21,8 @@ type Props = {
   chauffeurs?: Chauffeur[];
   chauffeurIds?: string[];
   intervallesPrix?: IntervallePrix[];
+  /** Seul le propriétaire fixe les prix ; l'opérateur passe par une proposition. */
+  isProprietaire?: boolean;
 };
 
 const inputClass =
@@ -43,6 +45,7 @@ export default function VehiculeForm({
   chauffeurs = [],
   chauffeurIds = [],
   intervallesPrix = [],
+  isProprietaire = false,
 }: Props) {
   const [state, formAction] = useActionState<VehiculeState, FormData>(
     action,
@@ -405,6 +408,13 @@ export default function VehiculeForm({
             </div>
           )}
 
+          {!isProprietaire && (
+            <p className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 px-4 py-3 text-sm text-phoebe-anthracite">
+              Les prix sont fixés par le propriétaire. Utilisez « Proposer un prix »,
+              plus bas, pour soumettre une modification.
+            </p>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="prix_journalier" className={labelClass}>
@@ -418,6 +428,7 @@ export default function VehiculeForm({
                 step="1000"
                 key={vehicule ? undefined : selectedCategorie}
                 defaultValue={vehicule?.prix_journalier ?? prixJourSuggere ?? ""}
+                disabled={!isProprietaire}
                 className={inputClass}
               />
               {intervalLocation && (
@@ -437,6 +448,7 @@ export default function VehiculeForm({
                 min={0}
                 step="1000"
                 defaultValue={vehicule?.prix_mensuel ?? ""}
+                disabled={!isProprietaire}
                 className={inputClass}
               />
             </div>
@@ -452,6 +464,7 @@ export default function VehiculeForm({
                 step="1000"
                 key={vehicule ? undefined : `vente-${selectedCategorie}`}
                 defaultValue={vehicule?.prix_vente ?? prixVenteSuggere ?? ""}
+                disabled={!isProprietaire}
                 className={inputClass}
               />
               {intervalVente && (
@@ -474,6 +487,7 @@ export default function VehiculeForm({
                 step="1000"
                 defaultValue={(vehicule as Record<string, unknown>)?.caution_base_fcfa as number ?? ""}
                 placeholder="50000"
+                disabled={!isProprietaire}
                 className={inputClass}
               />
               <p className="mt-1 text-xs text-phoebe-anthracite/70">
@@ -488,6 +502,7 @@ export default function VehiculeForm({
                 id="taux_caution"
                 name="taux_caution"
                 type="number"
+                disabled={!isProprietaire}
                 min={1}
                 max={99}
                 step="1"

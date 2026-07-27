@@ -20,7 +20,24 @@ async function requireStaff() {
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
     throw new Error("Accès refusé");
   }
-  return supabase;
+  return { supabase, role: profile.role as string };
+}
+
+// Champs tarifaires : seul le propriétaire les fixe. L'opérateur passe par
+// « Proposer un prix » (table propositions_tarifs), sinon le workflow de
+// validation ne sert à rien — il pouvait éditer le prix directement ici.
+const CHAMPS_PRIX = [
+  "prix_journalier",
+  "prix_mensuel",
+  "prix_vente",
+  "taux_caution",
+  "caution_base_fcfa",
+] as const;
+
+function retirerChampsPrix<T extends Record<string, unknown>>(row: T): T {
+  const copie = { ...row };
+  for (const champ of CHAMPS_PRIX) delete copie[champ];
+  return copie;
 }
 
 function num(val: FormDataEntryValue | null): number | null {
@@ -50,7 +67,7 @@ export async function creerVehicule(
   _prev: VehiculeState,
   formData: FormData
 ): Promise<VehiculeState> {
-  const supabase = await requireStaff();
+  const { supabase, role } = await requireStaff();
 
   const categorie = formData.get("categorie") as string;
   const marque = formData.get("marque") as string;
@@ -102,9 +119,13 @@ export async function creerVehicule(
     return row;
   });
 
+  // Un opérateur crée le véhicule sans en fixer le prix : le propriétaire le
+  // renseigne ensuite (ou valide une proposition).
+  const rowsFiltrees = role === "proprietaire" ? rows : rows.map(retirerChampsPrix);
+
   const { data, error } = await supabase
     .from("vehicules")
-    .insert(rows as never[])
+    .insert(rowsFiltrees as never[])
     .select("id");
 
   if (error) return { error: error.message };
@@ -124,7 +145,7 @@ export async function modifierVehicule(
   _prev: VehiculeState,
   formData: FormData
 ): Promise<VehiculeState> {
-  const supabase = await requireStaff();
+  const { supabase, role } = await requireStaff();
 
   const id = formData.get("id") as string;
   const categorie = formData.get("categorie") as string;
@@ -192,9 +213,13 @@ export async function modifierVehicule(
       ...(assurancePath ? { assurance_url: assurancePath } : {}),
       updated_at: new Date().toISOString(),
     };
+  // Les champs tarifaires envoyés par un opérateur sont ignorés : ils passent
+  // par le workflow de proposition.
+  const updateFiltre = role === "proprietaire" ? updateData : retirerChampsPrix(updateData);
+
   const { error } = await supabase
     .from("vehicules")
-    .update(updateData as never)
+    .update(updateFiltre as never)
     .eq("id", id);
 
   if (error) return { error: error.message };
@@ -231,7 +256,9 @@ export async function modifierVehicule(
       description: str(formData.get("description")),
       statut: "disponible" as const,
     }));
-    await supabase.from("vehicules").insert(copies as never[]);
+    await supabase
+      .from("vehicules")
+      .insert((role === "proprietaire" ? copies : copies.map(retirerChampsPrix)) as never[]);
   }
 
   revalidatePath(`/admin/vehicules/${id}`);
@@ -241,7 +268,7 @@ export async function modifierVehicule(
 }
 
 export async function supprimerVehicule(id: string): Promise<VehiculeState> {
-  const supabase = await requireStaff();
+  const { supabase } = await requireStaff();
 
   const { data: photos } = await supabase
     .from("vehicule_photos")
@@ -276,7 +303,7 @@ export async function ajouterPhotos(
   _prev: VehiculeState,
   formData: FormData
 ): Promise<VehiculeState> {
-  const supabase = await requireStaff();
+  const { supabase } = await requireStaff();
 
   const vehiculeId = formData.get("vehicule_id") as string;
   const files = formData.getAll("photos") as File[];
@@ -330,7 +357,7 @@ export async function ajouterPhotos(
 }
 
 export async function supprimerPhoto(photoId: string): Promise<VehiculeState> {
-  const supabase = await requireStaff();
+  const { supabase } = await requireStaff();
 
   const { data: photo } = await supabase
     .from("vehicule_photos")
@@ -361,7 +388,7 @@ export async function reordonnerPhoto(
   photoId: string,
   direction: "up" | "down"
 ): Promise<VehiculeState> {
-  const supabase = await requireStaff();
+  const { supabase } = await requireStaff();
 
   const { data: photo } = await supabase
     .from("vehicule_photos")
@@ -402,7 +429,7 @@ export async function mettreAJourPositionGps(
   latitude: number,
   longitude: number
 ): Promise<VehiculeState> {
-  const supabase = await requireStaff();
+  const { supabase } = await requireStaff();
 
   const { error } = await supabase
     .from("vehicules")

@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
+import { createClient } from "@/lib/supabase/server"
 import type { Database } from "@group-phoebe/database/types"
 import { ExpeditionActions } from "./expeditions-actions"
 import { PhotoLightbox } from "@/components/photo-lightbox"
@@ -55,6 +56,15 @@ export default async function ExpeditionsAdminPage({
   const filtre = fStatut !== "all" || fPaiement !== "all" || fAffectation !== "all" || fQ !== ""
 
   const db = getAdmin()
+
+  // L'ajustement de prix est réservé au propriétaire (garde également côté
+  // serveur dans ajusterPrixExpedition).
+  const supabase = await createClient()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const { data: profil } = claimsData?.claims
+    ? await supabase.from("users").select("role").eq("id", claimsData.claims.sub).single()
+    : { data: null }
+  const isProprietaire = profil?.role === "proprietaire"
 
   const { data: allExp } = await db
     .from("expeditions")
@@ -222,6 +232,7 @@ export default async function ExpeditionsAdminPage({
                 expeditionId={e.id}
                 currentStatut={e.statut}
                 currentPrix={Number(e.prix)}
+                isProprietaire={isProprietaire}
                 assigned={!!e.livreur_id}
                 livreurs={livreursActifs}
                 statuts={statuts}

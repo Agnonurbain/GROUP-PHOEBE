@@ -55,6 +55,15 @@ async function requireStaff() {
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
     throw new Error("Accès refusé");
   }
+  return { user, role: profile.role as string };
+}
+
+/** Tout ce qui touche à un montant facturé est réservé au propriétaire. */
+async function requireProprietaire() {
+  const { user, role } = await requireStaff();
+  if (role !== "proprietaire") {
+    throw new Error("Accès refusé : seul le propriétaire peut modifier un prix");
+  }
   return user;
 }
 
@@ -402,7 +411,7 @@ export async function ajusterPrixExpedition(
   _prev: ExpeditionActionState,
   formData: FormData
 ): Promise<ExpeditionActionState> {
-  const user = await requireStaff();
+  const user = await requireProprietaire();
   const admin = getAdmin();
 
   const expeditionId = formData.get("expedition_id") as string;
