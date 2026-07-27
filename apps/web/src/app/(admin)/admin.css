@@ -10,6 +10,25 @@
   --color-secondary: #D38C37;
   --color-surface: #F3F9F3;
 
+  /* Jetons shadcn du back-office. La base `neutral` livre des gris : les
+     graphiques seraient illisibles (5 nuances de gris) et la sidebar sans
+     identité. On les repasse aux couleurs de la marque.
+     Ce fichier n'est importé que par (admin)/layout.tsx : le public n'est pas
+     concerné. */
+  --primary: #39a044;
+  --primary-foreground: #ffffff;
+  --ring: #39a044;
+  --sidebar-primary: #39a044;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eef7ef;
+  --sidebar-accent-foreground: #23632a;
+
+  --chart-1: #39a044; /* vert PHOEBE — série principale */
+  --chart-2: #d38c37; /* or */
+  --chart-3: #2563eb; /* bleu assistance */
+  --chart-4: #f97316; /* orange transport */
+  --chart-5: #23632a; /* vert profond */
+
   --gradient-phoebe: linear-gradient(135deg, #39A044 0%, #23632A 100%);
   --gradient-gold: linear-gradient(135deg, #E5A84A 0%, #D38C37 50%, #A86B24 100%);
   --gradient-gold-shimmer: linear-gradient(90deg, #A86B24, #F4D06F, #E5A84A, #F4D06F, #A86B24);
@@ -205,4 +224,23 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+/* Thème sombre du back-office. La base neutre de shadcn donne un gris plat :
+   on réchauffe légèrement les surfaces et on garde le vert de marque lisible
+   sur fond sombre. */
+.dark {
+  --primary: #4fbf5a;
+  --primary-foreground: #0a1f0d;
+  --ring: #4fbf5a;
+  --sidebar-primary: #4fbf5a;
+  --sidebar-primary-foreground: #0a1f0d;
+  --sidebar-accent: #1c2a1e;
+  --sidebar-accent-foreground: #e8f5e9;
+
+  --chart-1: #4fbf5a;
+  --chart-2: #e5a84a;
+  --chart-3: #60a5fa;
+  --chart-4: #fb923c;
+  --chart-5: #a3d9a8;
 }

@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
-import { NavLink } from "./nav-link";
-import { AdminMobileNav } from "./admin-mobile-nav";
 import { NotificationsDropdown } from "@/components/notifications-dropdown";
 import { getNotificationsAdmin } from "@/app/actions/notifications-admin";
+import { SidebarInset, SidebarProvider } from "@/components/admin-ui/sidebar";
+import { AdminSidebar } from "./_components/admin-sidebar";
+import { AdminHeader } from "./_components/admin-header";
+import { AdminThemeProvider } from "./_components/theme-provider";
 
 export default async function AdminShellLayout({
   children,
@@ -52,120 +53,31 @@ export default async function AdminShellLayout({
   ]);
 
   return (
-    <div className="flex min-h-[calc(100vh-5rem)]">
-      <AdminMobileNav
+    <AdminThemeProvider>
+      <SidebarProvider>
+        <AdminSidebar
           isProprietaire={isProprietaire}
-          nbDemandesEnAttente={nbDemandesEnAttente ?? null}
-          nbRemboursements={nbRemboursements ?? null}
-          nbPropositions={nbPropositions ?? null}
+          counts={{
+            demandes: nbDemandesEnAttente ?? null,
+            remboursements: nbRemboursements ?? null,
+            propositions: nbPropositions ?? null,
+          }}
         />
-      <aside className="hidden md:flex w-60 shrink-0 flex-col overflow-y-auto border-r border-phoebe-pearl bg-gradient-to-b from-white to-phoebe-pearl/40">
-        {/* Admin branding */}
-        <div className="border-b border-phoebe-pearl px-4 py-4">
-          <Image
-            src="/logo.webp"
-            alt="Group PHOEBE"
-            width={200}
-            height={80}
-            className="h-14 w-auto object-contain"
-            quality={85}
+        <SidebarInset>
+          <AdminHeader
+            nom={profile?.nom ?? "Utilisateur"}
+            email={profile?.email ?? null}
+            role={role}
+            notifications={
+              <NotificationsDropdown
+                initialNonLues={notifsData.nonLues}
+                initialRecentes={notifsData.recentes}
+              />
+            }
           />
-          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-phoebe-gold-dark">
-            Back-office · {isProprietaire ? "Propriétaire" : "Opérateur"}
-          </p>
-        </div>
-
-        <div className="flex-1 space-y-6 p-4">
-          {isProprietaire && (
-            <div>
-              <NavLink href="/admin">Tableau de bord</NavLink>
-            </div>
-          )}
-
-          <div>
-            <SectionTitle>Transport</SectionTitle>
-            <nav className="space-y-0.5">
-              <NavLink href="/admin/demandes" badge={nbDemandesEnAttente}>
-                Demandes
-              </NavLink>
-              <NavLink href="/admin/vehicules">Véhicules</NavLink>
-              <NavLink href="/admin/reserver-pour-client">Réserver pour client</NavLink>
-              <NavLink href="/admin/verifications" exact>Vérifications</NavLink>
-              <NavLink href="/admin/verifications/historique">Historique vérif.</NavLink>
-              <NavLink href="/admin/planning">Planning</NavLink>
-              {isProprietaire && (
-                <NavLink href="/admin/remboursements" badge={nbRemboursements} badgeColor="bg-error">
-                  Remboursements
-                </NavLink>
-              )}
-              {isProprietaire && (
-                <NavLink href="/admin/propositions" badge={nbPropositions}>
-                  Propositions de prix
-                </NavLink>
-              )}
-              {isProprietaire && (
-                <NavLink href="/admin/tarifs">Zones &amp; Tarifs</NavLink>
-              )}
-            </nav>
-          </div>
-
-          <div>
-            <SectionTitle>Livraison</SectionTitle>
-            <nav className="space-y-0.5">
-              <NavLink href="/admin/expeditions">Livraisons</NavLink>
-            </nav>
-          </div>
-
-          <div>
-            <SectionTitle>Immobilier</SectionTitle>
-            <nav className="space-y-0.5">
-              <NavLink href="/admin/biens">Biens</NavLink>
-              <NavLink href="/admin/demandes-immobilier">Demandes immobilier</NavLink>
-            </nav>
-          </div>
-
-          <div>
-            <SectionTitle>Assistance</SectionTitle>
-            <nav className="space-y-0.5">
-              <NavLink href="/admin/dossiers-voyage">Dossiers visa</NavLink>
-            </nav>
-          </div>
-
-          {isProprietaire && (
-            <div>
-              <SectionTitle>Administration</SectionTitle>
-              <nav className="space-y-0.5">
-                <NavLink href="/admin/comptes">Comptes internes</NavLink>
-                <NavLink href="/admin/audit">Journal d&apos;audit</NavLink>
-              </nav>
-            </div>
-          )}
-        </div>
-
-        {/* Bottom branding */}
-        <div className="border-t border-phoebe-pearl px-5 py-3">
-          <p className="text-[9px] font-medium tracking-[0.12em] text-phoebe-anthracite/70">
-            GROUP PHOEBE &copy; {new Date().getFullYear()}
-          </p>
-        </div>
-      </aside>
-      <div className="flex-1 overflow-y-auto bg-phoebe-pearl/15">
-        <div className="flex items-center justify-end border-b border-phoebe-pearl bg-white px-4 py-2 md:px-8">
-          <NotificationsDropdown
-            initialNonLues={notifsData.nonLues}
-            initialRecentes={notifsData.recentes}
-          />
-        </div>
-        <div className="px-4 pb-4 pt-6 md:p-8">{children}</div>
-      </div>
-    </div>
-  );
-}
-
-function SectionTitle({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="mb-2 text-[10px] font-bold uppercase tracking-[0.15em] text-phoebe-anthracite/70">
-      {children}
-    </h2>
+          <div className="flex-1 bg-muted/30 px-4 pb-8 pt-6 md:px-8">{children}</div>
+        </SidebarInset>
+      </SidebarProvider>
+    </AdminThemeProvider>
   );
 }
