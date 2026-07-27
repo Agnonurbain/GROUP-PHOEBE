@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server"
 import { makeGroupKey } from "@/lib/vehicle-group"
-import { serializeJsonLd } from "@/lib/json-ld"
+import { serializeJsonLd, createOrganizationSchema, createWebSiteSchema } from "@/lib/json-ld"
 import HomePageClient from "./page-client"
+import { getParametresContact } from "@/lib/public-cache"
 
 export const metadata: Metadata = {
   title: "GROUP PHOEBE — Transport, Immobilier & Assistance",
@@ -45,22 +46,12 @@ export default async function HomePage() {
   ).size
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
-  const organizationSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "GROUP PHOEBE",
-    url: baseUrl,
-    logo: `${baseUrl}/logos/logo_g-phoebe.png`,
-    description:
-      "Transport et livraison, immobilier et assistance voyages à Abidjan et partout en Côte d'Ivoire.",
-    areaServed: { "@type": "Country", name: "Côte d'Ivoire" },
-  }
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "GROUP PHOEBE",
-    url: baseUrl,
-  }
+
+  // Coordonnées et réseaux pilotés depuis /admin/tarifs : le balisage suit ce
+  // que le propriétaire a réellement saisi.
+  const contact = await getParametresContact()
+  const organizationSchema = createOrganizationSchema({ baseUrl, contact })
+  const websiteSchema = createWebSiteSchema(baseUrl)
 
   return (
     <>
