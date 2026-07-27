@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { getCommunes } from "@/lib/public-cache"
+import { getCommunes, getTarifsLivraison } from "@/lib/public-cache"
 import CommanderClient from "./commander-client"
 
 export const metadata: Metadata = {
@@ -18,9 +18,10 @@ export default async function CommanderLivraisonPage() {
     redirect("/connexion?redirect=/livraison/commander")
   }
 
-  const [{ data: profile }, communesData] = await Promise.all([
+  const [{ data: profile }, communesData, tarifs] = await Promise.all([
     supabase.from("users").select("nom, telephone").eq("id", user.sub).single(),
     getCommunes(),
+    getTarifsLivraison(),
   ])
 
   const communes = (communesData ?? []).map((c) => ({
@@ -34,6 +35,8 @@ export default async function CommanderLivraisonPage() {
       defaultNom={profile?.nom ?? ""}
       defaultContact={profile?.telephone ?? ""}
       communes={communes}
+      grille={tarifs.grille}
+      paliers={tarifs.paliers}
     />
   )
 }

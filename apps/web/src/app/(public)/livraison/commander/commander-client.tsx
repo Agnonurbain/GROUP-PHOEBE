@@ -12,9 +12,10 @@ import {
   computeLivraisonPrix,
   deriverZoneLivraison,
   palierPoids,
-  PALIERS_POIDS,
-  POIDS_MAX_KG,
+  poidsMax,
   type CommuneMatch,
+  type GrilleTarifs,
+  type PalierPoids,
 } from "@/lib/livraison"
 
 type Commune = { id: string; nom: string; zoneId: string | null }
@@ -70,10 +71,17 @@ export default function CommanderClient({
   defaultNom,
   defaultContact,
   communes,
+  grille,
+  paliers,
 }: {
   defaultNom: string
   defaultContact: string
   communes: Commune[]
+  /* Grille et paliers viennent de la base (éditables en /admin/tarifs) et sont
+     passés en props : le calcul du prix reste une fonction pure et synchrone,
+     partagée à l'identique avec le serveur. */
+  grille: GrilleTarifs
+  paliers: PalierPoids[]
 }) {
   const [state, formAction, pending] = useActionState<LivraisonState, FormData>(creerExpedition, {})
   const [mode, setMode] = useState<string>(MODES_LIVRAISON[0])
@@ -96,13 +104,14 @@ export default function CommanderClient({
 
   // Le poids fait partie du prix : tant qu'il n'est pas saisi (ou hors grille),
   // aucun montant n'est annoncé.
+  const maxKg = poidsMax(paliers)
   const poidsNum = poids.trim() === "" ? null : Number(poids)
   const poidsValide = poidsNum !== null && Number.isFinite(poidsNum) && poidsNum > 0
-  const poidsHorsGrille = poidsValide && poidsNum > POIDS_MAX_KG
-  const palier = poidsValide && !poidsHorsGrille ? palierPoids(poidsNum) : null
+  const poidsHorsGrille = poidsValide && poidsNum > maxKg
+  const palier = poidsValide && !poidsHorsGrille ? palierPoids(poidsNum, paliers) : null
   const prix =
     adressesRenseignees && poidsValide && !poidsHorsGrille
-      ? computeLivraisonPrix(zone, mode, poidsNum)
+      ? computeLivraisonPrix(zone, mode, poidsNum, grille, paliers)
       : null
 
   return (
@@ -193,7 +202,7 @@ export default function CommanderClient({
                   type="number"
                   inputMode="decimal"
                   min="0.1"
-                  max={POIDS_MAX_KG}
+                  max={maxKg}
                   step="0.1"
                   required
                   value={poids}
@@ -203,11 +212,11 @@ export default function CommanderClient({
                   className={inputClass}
                 />
                 <p id="poids-aide" className="mt-1.5 text-xs text-public-text-faint">
-                  {PALIERS_POIDS.map((p) => p.label).join(" · ")} — au-delà de {POIDS_MAX_KG} kg, sur devis.
+                  {paliers.map((p) => p.label).join(" · ")} — au-delà de {maxKg} kg, sur devis.
                 </p>
                 {poidsHorsGrille && (
                   <p role="alert" className="mt-1.5 text-xs text-error">
-                    Au-delà de {POIDS_MAX_KG} kg, contactez-nous pour un devis.
+                    Au-delà de {maxKg} kg, contactez-nous pour un devis.
                   </p>
                 )}
               </div>
@@ -286,7 +295,7 @@ export default function CommanderClient({
             {prix === null && (
               <p className="mt-2 text-xs text-public-text-faint">
                 {poidsHorsGrille
-                  ? `Au-delà de ${POIDS_MAX_KG} kg : contactez-nous pour un devis.`
+                  ? `Au-delà de ${maxKg} kg : contactez-nous pour un devis.`
                   : "Choisissez les communes et indiquez le poids pour calculer le prix."}
               </p>
             )}

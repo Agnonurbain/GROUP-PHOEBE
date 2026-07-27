@@ -11,7 +11,10 @@ import { CommunesList } from "./communes-list";
 import { AjouterCommuneForm } from "./ajouter-commune-form";
 import { IntervallesList } from "./intervalles-list";
 import { AjouterIntervalleForm } from "./ajouter-intervalle-form";
+import { LivraisonTarifsForm } from "./livraison-form";
 import { CAT_LABELS } from "@/lib/constants";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { getTarifsLivraison } from "@/lib/public-cache";
 
 export const metadata: Metadata = {
   title: "Tarifs — Administration",
@@ -32,12 +35,35 @@ export default async function TarifsPage() {
     .single();
   if (profile?.role !== "proprietaire") redirect("/admin");
 
-  const [zones, communes, vehicules, intervalles] = await Promise.all([
+  const [zones, communes, vehicules, intervalles, tarifsLivraison] = await Promise.all([
       getZonesTarifaires(),
       getCommunes(),
       getVehiculesPrixBase(),
       getIntervallesPrix(),
+      getTarifsLivraison(),
     ]);
+
+  // Les paliers sont édités par id : on lit les lignes brutes (getTarifsLivraison
+  // ne renvoie que la forme utilisée pour le calcul du prix).
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: paliersRaw } = await (admin.from as any)("paliers_poids")
+    .select("id, ordre, label, max_kg, multiplicateur")
+    .order("ordre", { ascending: true });
+
+  const grilleLivraison = tarifsLivraison.grille;
+  const paliersPoidsRows = ((paliersRaw ?? []) as {
+    id: string; ordre: number; label: string; max_kg: number; multiplicateur: number;
+  }[]).map((p) => ({
+    id: p.id,
+    ordre: p.ordre,
+    label: p.label,
+    max_kg: Number(p.max_kg),
+    multiplicateur: Number(p.multiplicateur),
+  }));
 
   const intervallesList = (intervalles ?? []).map((ip: typeof intervalles[0]) => ({
     id: ip.id,
@@ -281,6 +307,9 @@ export default async function TarifsPage() {
                   </div>
                 </div>
               </div>
+            ),
+            livraison: (
+              <LivraisonTarifsForm grille={grilleLivraison} paliers={paliersPoidsRows} />
             ),
           }}
         </TarifsTabs>

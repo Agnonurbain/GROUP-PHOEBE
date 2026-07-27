@@ -7,6 +7,7 @@ import {
   ZONES_LIVRAISON,
   MODES_LIVRAISON,
   palierPoids,
+  poidsMax,
   POIDS_MAX_KG,
 } from "@/lib/livraison";
 
@@ -106,5 +107,44 @@ describe("paliers de poids", () => {
     expect(computeLivraisonPrix("nationale", "express")).toBe(
       TARIFS_LIVRAISON.nationale.express
     );
+  });
+});
+
+describe("grille et paliers pilotés (source base)", () => {
+  const grillePerso = {
+    intracommunale: { standard: 2000, express: 3000, meme_jour: 4000, programmee: 2500 },
+    intercommunale: { standard: 3000, express: 5000, meme_jour: 6000, programmee: 3500 },
+    nationale: { standard: 7000, express: 9000, meme_jour: 12000, programmee: 8000 },
+  };
+  const paliersPerso = [
+    { maxKg: 10, multiplicateur: 1, label: "Jusqu'à 10 kg" },
+    { maxKg: 30, multiplicateur: 2, label: "10 à 30 kg" },
+  ];
+
+  it("utilise la grille fournie plutôt que les constantes de repli", () => {
+    expect(computeLivraisonPrix("nationale", "standard", 5, grillePerso, paliersPerso)).toBe(7000);
+    // Sans grille fournie, on retombe sur le repli du module.
+    expect(computeLivraisonPrix("nationale", "standard", 5)).toBe(
+      TARIFS_LIVRAISON.nationale.standard
+    );
+  });
+
+  it("applique les paliers fournis", () => {
+    // 8 kg tombe dans le premier palier personnalisé (≤10 kg) : pas de majoration.
+    expect(computeLivraisonPrix("intracommunale", "standard", 8, grillePerso, paliersPerso)).toBe(2000);
+    // 20 kg → deuxième palier ×2.
+    expect(computeLivraisonPrix("intracommunale", "standard", 20, grillePerso, paliersPerso)).toBe(4000);
+  });
+
+  it("le plafond suit le dernier palier configuré", () => {
+    expect(poidsMax(paliersPerso)).toBe(30);
+    expect(computeLivraisonPrix("intracommunale", "standard", 31, grillePerso, paliersPerso)).toBeNull();
+    // Avec les paliers par défaut, 31 kg reste accepté.
+    expect(computeLivraisonPrix("intracommunale", "standard", 31)).not.toBeNull();
+  });
+
+  it("un tarif absent de la grille ne produit pas un prix fantaisiste", () => {
+    const grilleTrouee = { ...grillePerso, nationale: {} } as unknown as typeof grillePerso;
+    expect(computeLivraisonPrix("nationale", "standard", 5, grilleTrouee, paliersPerso)).toBeNull();
   });
 });

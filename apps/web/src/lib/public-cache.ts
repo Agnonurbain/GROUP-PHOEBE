@@ -1,5 +1,13 @@
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
+import {
+  TARIFS_LIVRAISON,
+  PALIERS_POIDS,
+  isZoneLivraison,
+  isModeLivraison,
+  type GrilleTarifs,
+  type PalierPoids,
+} from "@/lib/livraison";
 
 // Transport catalogue
 export const getVehiculesCatalogue = unstable_cache(
@@ -223,4 +231,44 @@ export async function revalidatePublicCache() {
   (revalidateTag as (tag: string) => void)("communes");
   (revalidateTag as (tag: string) => void)("biens");
   (revalidateTag as (tag: string) => void)("assistance");
+  (revalidateTag as (tag: string) => void)("tarifs_livraison");
 }
+// Livraison — grille tarifaire et paliers de poids pilotés depuis /admin/tarifs.
+// Repli sur les constantes du module si la base ne répond pas : mieux vaut un
+// prix cohérent (celui du seed) qu'une page de commande cassée.
+export const getTarifsLivraison = unstable_cache(
+  async () => {
+    const supabase = createPublicClient();
+    const [{ data: tarifs }, { data: paliers }] = await Promise.all([
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase.from as any)("tarifs_livraison").select("zone, mode, prix"),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (supabase.from as any)("paliers_poids")
+        .select("id, ordre, label, max_kg, multiplicateur")
+        .order("ordre", { ascending: true }),
+    ]);
+
+    const grille = structuredClone(TARIFS_LIVRAISON) as GrilleTarifs;
+    for (const t of (tarifs ?? []) as { zone: string; mode: string; prix: number }[]) {
+      if (isZoneLivraison(t.zone) && isModeLivraison(t.mode)) {
+        grille[t.zone][t.mode] = Number(t.prix);
+      }
+    }
+
+    const rows = (paliers ?? []) as {
+      id: string; ordre: number; label: string; max_kg: number; multiplicateur: number;
+    }[];
+    const paliersPoids: PalierPoids[] =
+      rows.length > 0
+        ? rows.map((p) => ({
+            maxKg: Number(p.max_kg),
+            multiplicateur: Number(p.multiplicateur),
+            label: p.label,
+          }))
+        : PALIERS_POIDS;
+
+    return { grille, paliers: paliersPoids };
+  },
+  ["tarifs_livraison"],
+  { revalidate: 3600, tags: ["tarifs_livraison"] }
+);

@@ -429,3 +429,130 @@ export async function getPropositionsTarifs(): Promise<{
     .limit(20);
   return { data: data as PropositionTarifsAvecRelations[] | null, error: error?.message };
 }
+// ─── Tarifs de livraison (propriétaire uniquement) ───────────────────────────
+// La grille zone × mode et les paliers de poids étaient figés dans le code :
+// seul un déploiement pouvait les changer. Ils vivent désormais en base, au
+// même titre que les tarifs transport.
+
+async function requireProprietaireAvecId() {
+  const { userId, role } = await requireStaff();
+  if (role !== "proprietaire") throw new Error("Accès refusé : propriétaire requis");
+  return userId;
+}
+
+export async function modifierTarifLivraison(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  const userId = await requireProprietaireAvecId();
+  const admin = getAdmin();
+
+  const zone = formData.get("zone") as string;
+  const mode = formData.get("mode") as string;
+  const prix = Number(formData.get("prix"));
+
+  if (!zone || !mode) return { error: "Zone ou mode manquant." };
+  if (!Number.isFinite(prix) || prix <= 0) {
+    return { error: "Le prix doit être un montant positif." };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: ancien } = await (admin.from as any)("tarifs_livraison")
+    .select("prix")
+    .eq("zone", zone)
+    .eq("mode", mode)
+    .single();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from as any)("tarifs_livraison")
+    .update({ prix, updated_at: new Date().toISOString() })
+    .eq("zone", zone)
+    .eq("mode", mode);
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: "modifier_tarif_livraison",
+    tableName: "tarifs_livraison",
+    oldValues: { zone, mode, prix: ancien?.prix ?? null },
+    newValues: { zone, mode, prix },
+  });
+
+  revalidatePath("/admin/tarifs");
+  await revalidateLivraisonCache();
+  return { success: true };
+}
+
+export async function modifierPalierPoids(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  const userId = await requireProprietaireAvecId();
+  const admin = getAdmin();
+
+  const id = formData.get("id") as string;
+  const label = ((formData.get("label") as string) || "").trim();
+  const maxKg = Number(formData.get("max_kg"));
+  const multiplicateur = Number(formData.get("multiplicateur"));
+
+  if (!id) return { error: "Palier invalide." };
+  if (!label) return { error: "Le libellé est obligatoire." };
+  if (!Number.isFinite(maxKg) || maxKg <= 0) {
+    return { error: "Le poids maximum doit être positif." };
+  }
+  if (!Number.isFinite(multiplicateur) || multiplicateur <= 0) {
+    return { error: "Le coefficient doit être positif." };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: paliers } = await (admin.from as any)("paliers_poids")
+    .select("id, ordre, max_kg, multiplicateur, label")
+    .order("ordre", { ascending: true });
+
+  const rows = (paliers ?? []) as {
+    id: string; ordre: number; max_kg: number; multiplicateur: number; label: string;
+  }[];
+  const courant = rows.find((p) => p.id === id);
+  if (!courant) return { error: "Palier introuvable." };
+
+  // Les bornes doivent rester strictement croissantes, sinon un palier devient
+  // inatteignable et le prix cesse d'être monotone.
+  const precedent = rows.filter((p) => p.ordre < courant.ordre).at(-1);
+  const suivant = rows.find((p) => p.ordre > courant.ordre);
+  if (precedent && maxKg <= Number(precedent.max_kg)) {
+    return { error: `Le poids doit dépasser celui du palier précédent (${precedent.max_kg} kg).` };
+  }
+  if (suivant && maxKg >= Number(suivant.max_kg)) {
+    return { error: `Le poids doit rester sous celui du palier suivant (${suivant.max_kg} kg).` };
+  }
+  if (precedent && multiplicateur < Number(precedent.multiplicateur)) {
+    return { error: "Le coefficient ne peut pas être inférieur à celui du palier précédent." };
+  }
+  if (suivant && multiplicateur > Number(suivant.multiplicateur)) {
+    return { error: "Le coefficient ne peut pas dépasser celui du palier suivant." };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from as any)("paliers_poids")
+    .update({ label, max_kg: maxKg, multiplicateur, updated_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: "modifier_palier_poids",
+    tableName: "paliers_poids",
+    recordId: id,
+    oldValues: { label: courant.label, max_kg: courant.max_kg, multiplicateur: courant.multiplicateur },
+    newValues: { label, max_kg: maxKg, multiplicateur },
+  });
+
+  revalidatePath("/admin/tarifs");
+  await revalidateLivraisonCache();
+  return { success: true };
+}
+
+async function revalidateLivraisonCache() {
+  const { revalidateTag } = await import("next/cache");
+  (revalidateTag as (tag: string) => void)("tarifs_livraison");
+}
