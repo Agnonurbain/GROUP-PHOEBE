@@ -1,51 +1,75 @@
+import { CONTACT_VIDE, reseauxActifs, type ParametresContact } from "@/lib/contact";
+
 export interface JsonLdContext {
   "@context": string;
   "@type": string;
   [key: string]: unknown;
 }
 
-export function createOrganizationSchema(): JsonLdContext {
-  return {
+/**
+ * Données structurées de l'organisation, alimentées par les coordonnées
+ * saisies en administration (table parametres_contact).
+ *
+ * Aucun champ n'est inventé : téléphone, e-mail, adresse et réseaux ne sont
+ * inclus que s'ils sont réellement renseignés. Publier un faux numéro ou un
+ * profil social inexistant dans un balisage lu par Google est pire qu'une
+ * absence.
+ */
+export function createOrganizationSchema(params: {
+  baseUrl: string;
+  contact?: ParametresContact;
+}): JsonLdContext {
+  const { baseUrl, contact } = params;
+  const c = contact ?? CONTACT_VIDE;
+
+  const schema: JsonLdContext = {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "GROUP PHOEBE",
-    url: "https://groupphoebe.com",
-    logo: "https://groupphoebe.com/logo.png",
-    sameAs: [
-      "https://facebook.com/groupphoebe",
-      "https://twitter.com/groupphoebe",
-      "https://linkedin.com/company/groupphoebe",
-      "https://instagram.com/groupphoebe",
-    ],
-    contactPoint: {
+    url: baseUrl,
+    logo: `${baseUrl}/logos/logo_g-phoebe.png`,
+    description:
+      "Transport et livraison, immobilier et assistance voyages à Abidjan et partout en Côte d'Ivoire.",
+    areaServed: { "@type": "Country", name: "Côte d'Ivoire" },
+  };
+
+  const reseaux = reseauxActifs(c).map((r) => r.url);
+  if (reseaux.length > 0) schema.sameAs = reseaux;
+
+  if (c.telephone || c.email) {
+    schema.contactPoint = {
       "@type": "ContactPoint",
-      telephone: "+225-01-02-03-04-05",
       contactType: "customer service",
       availableLanguage: ["French"],
       areaServed: "CI",
-    },
-    address: {
+      ...(c.telephone ? { telephone: c.telephone } : {}),
+      ...(c.email ? { email: c.email } : {}),
+    };
+  }
+
+  if (c.adresse) {
+    schema.address = {
       "@type": "PostalAddress",
       addressCountry: "CI",
-      addressLocality: "Abidjan",
-    },
-  };
+      streetAddress: c.adresse,
+    };
+  }
+
+  if (c.horaires) schema.openingHours = c.horaires;
+
+  return schema;
 }
 
-export function createWebSiteSchema(): JsonLdContext {
+/**
+ * Le SearchAction a été retiré : il déclarait à Google une recherche
+ * `/search?q=` alors que cette route n'existe pas.
+ */
+export function createWebSiteSchema(baseUrl: string): JsonLdContext {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "GROUP PHOEBE",
-    url: "https://groupphoebe.com",
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: "https://groupphoebe.com/search?q={search_term_string}",
-      },
-      "query-input": "required name=search_term_string",
-    },
+    url: baseUrl,
   };
 }
 
