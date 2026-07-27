@@ -16,6 +16,9 @@ export function ThemeProvider({ children, ...props }: ComponentProps<typeof Next
   return (
     <NextThemesProvider
       attribute="class"
+      // `light` doit poser une classe : le site public est sombre par défaut,
+      // donc « aucune classe » ne peut pas signifier « clair ».
+      value={{ light: "light", dark: "dark" }}
       defaultTheme="light"
       enableSystem
       disableTransitionOnChange

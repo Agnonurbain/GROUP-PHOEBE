@@ -227,7 +227,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
           <h2 className="font-display text-3xl font-medium text-public-text">Votre panier est vide</h2>
           <Link
             href="/transport/catalogue"
-            className="rounded-lg bg-accent-orange px-6 py-3 text-sm font-semibold text-white hover:bg-accent-orange-hover transition-colors"
+            className="rounded-lg bg-accent-orange px-6 py-3 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-orange-hover transition-colors"
           >
             Voir le catalogue
           </Link>
@@ -299,7 +299,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
           {/* Step 1 — Dates */}
           <Card>
             <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-white">1</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-[#0A0A0A]">1</span>
               <h2 className="text-base font-semibold text-public-text">Dates de location</h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -333,7 +333,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
           {/* Step 2 — Destination + Zone */}
           <Card>
             <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-white">2</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-[#0A0A0A]">2</span>
               <h2 className="text-base font-semibold text-public-text">Destination</h2>
             </div>
             <div className="relative">
@@ -412,7 +412,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
           {/* Step 3 — Paiement */}
           <Card>
             <div className="flex items-center gap-3 mb-4">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-white">3</span>
+              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-[#0A0A0A]">3</span>
               <h2 className="text-base font-semibold text-public-text">Moyen de paiement</h2>
             </div>
             <div className="space-y-3">

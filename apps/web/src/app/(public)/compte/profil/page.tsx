@@ -165,7 +165,7 @@ export default async function CompteProfilPage({
                   Vos documents ont été rejetés. Veuillez les soumettre à nouveau.
                 </p>
                 <a href="/compte/verification">
-                  <Button variant="default" className="bg-accent-orange text-white hover:bg-accent-orange-hover">Soumettre à nouveau</Button>
+                  <Button variant="default" className="bg-accent-orange text-[#0A0A0A] hover:bg-accent-orange-hover">Soumettre à nouveau</Button>
                 </a>
                 {profile.motif_rejet && (
                   <p className="text-sm text-public-text-muted">

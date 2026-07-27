@@ -6,6 +6,7 @@ import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui"
 import { LogoutButton } from "@/components/logout-button"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 type Vertical = "transport" | "livraison" | "immobilier" | "assistance" | "default"
 
@@ -109,6 +110,7 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
               </Link>
             ),
           )}
+          <ThemeToggle className="text-public-text-muted hover:text-public-text" />
           {session ? (
             <span className="flex items-center gap-3">
               {showServiceCta && (
@@ -147,8 +149,10 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
           )}
         </nav>
 
-        <button
-          className="flex h-11 w-11 items-center justify-center rounded-lg text-public-text-muted transition-colors hover:bg-white/5 hover:text-public-text md:hidden"
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle className="text-public-text-muted hover:text-public-text" />
+          <button
+          className="flex h-11 w-11 items-center justify-center rounded-lg text-public-text-muted transition-colors hover:bg-white/5 hover:text-public-text"
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
           aria-expanded={menuOpen}
@@ -168,7 +172,8 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
               </>
             )}
           </svg>
-        </button>
+          </button>
+        </div>
       </div>
 
       {menuOpen && (
