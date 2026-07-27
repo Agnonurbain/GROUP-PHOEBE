@@ -37,9 +37,13 @@ export const MODE_DESCRIPTIONS: Record<ModeLivraison, string> = {
   programmee: "Vous choisissez la date de livraison.",
 };
 
-// Grille de prix (FCFA) par zone × mode. Valeurs de départ cohérentes —
-// À CONFIRMER avec les tarifs réels de GROUP PHOEBE.
-export const TARIFS_LIVRAISON: Record<ZoneLivraison, Record<ModeLivraison, number>> = {
+export type GrilleTarifs = Record<ZoneLivraison, Record<ModeLivraison, number>>;
+
+// Grille de prix (FCFA) par zone × mode.
+// ⚠️ Ces valeurs sont désormais un REPLI : la source de vérité est la table
+// `tarifs_livraison`, éditable par le propriétaire (/admin/tarifs). Elles
+// servent de seed (migration 00042) et de secours si la base est injoignable.
+export const TARIFS_LIVRAISON: GrilleTarifs = {
   intracommunale: { standard: 1500, express: 2500, meme_jour: 3500, programmee: 2000 },
   intercommunale: { standard: 2500, express: 4000, meme_jour: 5500, programmee: 3000 },
   nationale: { standard: 5000, express: 8000, meme_jour: 11000, programmee: 6000 },
@@ -61,17 +65,28 @@ export type PalierPoids = {
   label: string;
 };
 
+// Repli, même logique que TARIFS_LIVRAISON : la source de vérité est la table
+// `paliers_poids`.
 export const PALIERS_POIDS: PalierPoids[] = [
   { maxKg: 5, multiplicateur: 1, label: "Jusqu'à 5 kg" },
   { maxKg: 15, multiplicateur: 1.5, label: "5 à 15 kg" },
   { maxKg: POIDS_MAX_KG, multiplicateur: 2.5, label: "15 à 50 kg" },
 ];
 
+/** Poids maximum accepté en ligne : borne haute du dernier palier. */
+export function poidsMax(paliers: PalierPoids[] = PALIERS_POIDS): number {
+  return paliers.length > 0 ? paliers[paliers.length - 1].maxKg : POIDS_MAX_KG;
+}
+
 /** Palier correspondant au poids, ou null au-delà du maximum accepté. */
-export function palierPoids(poidsKg: number | null | undefined): PalierPoids | null {
-  if (poidsKg === null || poidsKg === undefined) return PALIERS_POIDS[0];
+export function palierPoids(
+  poidsKg: number | null | undefined,
+  paliers: PalierPoids[] = PALIERS_POIDS
+): PalierPoids | null {
+  if (paliers.length === 0) return null;
+  if (poidsKg === null || poidsKg === undefined) return paliers[0];
   if (!Number.isFinite(poidsKg) || poidsKg <= 0) return null;
-  return PALIERS_POIDS.find((p) => poidsKg <= p.maxKg) ?? null;
+  return paliers.find((p) => poidsKg <= p.maxKg) ?? null;
 }
 
 export function isZoneLivraison(v: string): v is ZoneLivraison {
@@ -112,12 +127,16 @@ export function deriverZoneLivraison(
 export function computeLivraisonPrix(
   zone: string,
   mode: string,
-  poidsKg: number | null = null
+  poidsKg: number | null = null,
+  grille: GrilleTarifs = TARIFS_LIVRAISON,
+  paliers: PalierPoids[] = PALIERS_POIDS
 ): number | null {
   if (!isZoneLivraison(zone) || !isModeLivraison(mode)) return null;
-  const palier = palierPoids(poidsKg);
+  const palier = palierPoids(poidsKg, paliers);
   if (!palier) return null;
-  const brut = TARIFS_LIVRAISON[zone][mode] * palier.multiplicateur;
+  const base = grille[zone]?.[mode];
+  if (typeof base !== "number") return null;
+  const brut = base * palier.multiplicateur;
   // Arrondi à la centaine : des prix affichables, sans décimales parasites.
   return Math.round(brut / 100) * 100;
 }

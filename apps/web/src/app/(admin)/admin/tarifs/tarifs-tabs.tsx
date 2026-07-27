@@ -6,6 +6,7 @@ const TABS = [
   { key: "coefficients", label: "Coefficients & Caution" },
   { key: "cartographie", label: "Cartographie" },
   { key: "prix", label: "Prix & Communes" },
+  { key: "livraison", label: "Livraison" },
 ] as const;
 
 export type TabKey = (typeof TABS)[number]["key"];

@@ -16,11 +16,11 @@ import {
   STATUT_LIVRAISON,
   STATUT_LIVRAISON_LABELS,
   isModeLivraison,
-  POIDS_MAX_KG,
+  poidsMax,
   type CommuneMatch,
 } from "@/lib/livraison";
 import { logAudit } from "@/lib/audit";
-import { getCommunes } from "@/lib/public-cache";
+import { getCommunes, getTarifsLivraison } from "@/lib/public-cache";
 import { compressImage } from "@/lib/compress-image";
 import { validateImageUpload } from "@/lib/upload-validation";
 import { notifierClient } from "@/lib/notifications";
@@ -119,14 +119,19 @@ export async function creerExpedition(
   const adresseCollecte = `${detailCollecte} — ${communeCollecte}`;
   const adresseLivraison = `${detailLivraison} — ${communeLivraison}`;
 
+  // Grille et paliers pilotés depuis /admin/tarifs : même source que l'affichage
+  // client, donc montant affiché == montant facturé.
+  const { grille, paliers } = await getTarifsLivraison();
+  const maxKg = poidsMax(paliers);
+
   // Le poids détermine le palier tarifaire : il est désormais obligatoire.
   const poidsKg = poidsRaw ? Number(poidsRaw) : null;
   if (poidsKg === null || Number.isNaN(poidsKg) || poidsKg <= 0) {
     return { error: "Indiquez le poids du colis (en kg)." };
   }
-  if (poidsKg > POIDS_MAX_KG) {
+  if (poidsKg > maxKg) {
     return {
-      error: `Au-delà de ${POIDS_MAX_KG} kg, la livraison se fait sur devis. Contactez-nous pour organiser l'envoi.`,
+      error: `Au-delà de ${maxKg} kg, la livraison se fait sur devis. Contactez-nous pour organiser l'envoi.`,
     };
   }
   const valeurDeclaree = valeurRaw ? Number(valeurRaw) : null;
@@ -136,7 +141,7 @@ export async function creerExpedition(
 
   // Prix recalculé côté serveur (autoritaire) : grille zone × mode, pondérée
   // par le palier de poids.
-  const prix = computeLivraisonPrix(zone, mode, poidsKg);
+  const prix = computeLivraisonPrix(zone, mode, poidsKg, grille, paliers);
   if (prix === null) return { error: "Tarif indisponible pour cette combinaison." };
 
   const admin = getAdmin();

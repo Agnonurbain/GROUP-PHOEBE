@@ -10,10 +10,9 @@ import {
   ZONE_DESCRIPTIONS,
   MODE_LABELS,
   MODE_DESCRIPTIONS,
-  TARIFS_LIVRAISON,
-  PALIERS_POIDS,
-  POIDS_MAX_KG,
+  poidsMax,
 } from "@/lib/livraison"
+import { getTarifsLivraison } from "@/lib/public-cache"
 
 /* Hallmark · Editorial index (page service) — voir design.md.
    Quatre traitements distincts pour éviter le patron IA : hero biaisé →
@@ -53,6 +52,8 @@ export default async function Livraison({
   searchParams: Promise<{ echec?: string }>
 }) {
   const { echec } = await searchParams
+  const { grille, paliers } = await getTarifsLivraison()
+  const maxKg = poidsMax(paliers)
 
   return (
     <>
@@ -121,7 +122,7 @@ export default async function Livraison({
                     {MODES_LIVRAISON.map((mode) => (
                       <td key={mode} className="py-5 pr-6 align-top">
                         <span className="font-display text-xl font-medium text-accent-orange">
-                          {TARIFS_LIVRAISON[zone][mode].toLocaleString("fr-FR")}
+                          {grille[zone][mode].toLocaleString("fr-FR")}
                         </span>
                         <span className="ml-1 text-xs text-public-text-muted">FCFA</span>
                       </td>
@@ -137,7 +138,7 @@ export default async function Livraison({
               Les tarifs ci-dessus valent pour le premier palier. Au-delà, un coefficient s&apos;applique :
             </p>
             <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-              {PALIERS_POIDS.map((p) => (
+              {paliers.map((p) => (
                 <li key={p.label} className="text-sm text-public-text-muted">
                   {p.label}
                   <span className="ml-1.5 font-semibold text-accent-orange">
@@ -146,7 +147,7 @@ export default async function Livraison({
                 </li>
               ))}
               <li className="text-sm text-public-text-muted">
-                Au-delà de {POIDS_MAX_KG} kg
+                Au-delà de {maxKg} kg
                 <span className="ml-1.5 font-semibold text-accent-orange">sur devis</span>
               </li>
             </ul>
