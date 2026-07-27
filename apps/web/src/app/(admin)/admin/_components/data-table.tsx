@@ -20,15 +20,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/admin-ui/table"
-import { Button } from "@/components/admin-ui/button"
-import { Input } from "@/components/admin-ui/input"
+} from "@/components/shadcn/table"
+import { Button } from "@/components/shadcn/button"
+import { Input } from "@/components/shadcn/input"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/admin-ui/dropdown-menu"
+} from "@/components/shadcn/dropdown-menu"
 
 /**
  * Table générique : tri, filtre global, pagination, choix des colonnes.

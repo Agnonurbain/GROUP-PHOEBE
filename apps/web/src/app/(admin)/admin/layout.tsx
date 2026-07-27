@@ -2,10 +2,10 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { NotificationsDropdown } from "@/components/notifications-dropdown";
 import { getNotificationsAdmin } from "@/app/actions/notifications-admin";
-import { SidebarInset, SidebarProvider } from "@/components/admin-ui/sidebar";
+import { SidebarInset, SidebarProvider } from "@/components/shadcn/sidebar";
 import { AdminSidebar } from "./_components/admin-sidebar";
 import { AdminHeader } from "./_components/admin-header";
-import { AdminThemeProvider } from "./_components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default async function AdminShellLayout({
   children,
@@ -53,7 +53,7 @@ export default async function AdminShellLayout({
   ]);
 
   return (
-    <AdminThemeProvider>
+    <ThemeProvider>
       {/* `data-admin` délimite le sous-arbre du back-office : les jetons clairs
           hérités (phoebe-anthracite, phoebe-pearl…) y sont inversés en thème
           sombre, sans toucher au reste du site. Voir admin.css. */}
@@ -81,6 +81,6 @@ export default async function AdminShellLayout({
           <div className="flex-1 bg-muted/30 px-4 pb-8 pt-6 md:px-8">{children}</div>
         </SidebarInset>
       </SidebarProvider>
-    </AdminThemeProvider>
+    </ThemeProvider>
   );
 }

@@ -67,10 +67,16 @@ export default async function RootLayout({
   const contact = await getParametresContact();
 
   return (
+    // `suppressHydrationWarning` : next-themes pose la classe de thème sur
+    // <html> avant l'hydratation, ce qui diverge forcément du rendu serveur.
+    // `color-scheme` n'est plus figé ici : le public l'impose en sombre via
+    // [data-vertical], et next-themes le gère dans l'admin et l'auth — le figer
+    // laissait les contrôles natifs (barres de défilement, sélecteurs de date)
+    // en clair sur fond sombre.
     <html
       lang="fr"
       className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
-      style={{ colorScheme: "light" }}
+      suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">
         <CartProvider>

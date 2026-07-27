@@ -7,13 +7,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/admin-ui/card"
+} from "@/components/shadcn/card"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@/components/admin-ui/chart"
+} from "@/components/shadcn/chart"
 import type { PointSerie } from "../_lib/series"
 
 const config = {
