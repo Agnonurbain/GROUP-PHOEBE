@@ -24,6 +24,8 @@ const services = [
     href: "/transport/catalogue",
     logo: "/logos/logo-trans-livr.png",
     logoAlt: "Transport",
+    logoW: 407,
+    logoH: 345,
   },
   {
     title: "Immobilier",
@@ -32,6 +34,8 @@ const services = [
     href: "/immobilier",
     logo: "/logos/logo-imm.png",
     logoAlt: "Immobilier",
+    logoW: 308,
+    logoH: 278,
   },
   {
     title: "Assistance Voyages",
@@ -40,6 +44,8 @@ const services = [
     href: "/assistance",
     logo: "/logos/logo-assi-etud.png",
     logoAlt: "Assistance Voyages & Études",
+    logoW: 429,
+    logoH: 346,
   },
   {
     title: "Livraison",
@@ -48,6 +54,8 @@ const services = [
     href: "/livraison",
     logo: "/logos/logo_g-phoebe.png",
     logoAlt: "Livraison",
+    logoW: 334,
+    logoH: 303,
   },
 ]
 
@@ -218,8 +226,9 @@ export default function HomePage({
                     <Image
                       src={s.logo}
                       alt={s.logoAlt}
-                      width={429}
-                      height={346}
+                      width={s.logoW}
+                      height={s.logoH}
+                      sizes="128px"
                       className="h-16 w-auto object-contain opacity-80 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100"
                     />
                   </div>

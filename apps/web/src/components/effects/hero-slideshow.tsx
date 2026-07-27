@@ -14,8 +14,28 @@ const slides = [
 export function HeroSlideshow() {
   const [current, setCurrent] = useState(0);
 
+  /**
+   * Les six diapositives sont superposées dans le viewport : même marquées
+   * `lazy`, le navigateur les téléchargeait toutes au premier rendu — 390 Ko
+   * pour une seule image visible.
+   *
+   * On ne monte donc que les diapositives atteintes, plus la suivante (préchargée
+   * pendant l'affichage de la courante, ce qui évite tout scintillement).
+   * Premier rendu : 2 images au lieu de 6.
+   */
+  // Fenêtre = diapositive courante + la suivante (préchargée). Élargie dans les
+  // gestionnaires, jamais dans un effet : y poser un état déclenche des rendus
+  // en cascade (règle react-hooks/set-state-in-effect).
+  const [chargees, setChargees] = useState(2);
+
   const advance = useCallback(() => {
     setCurrent((c) => (c + 1) % slides.length);
+    setChargees((n) => Math.min(slides.length, n + 1));
+  }, []);
+
+  const aller = useCallback((i: number) => {
+    setCurrent(i);
+    setChargees((n) => Math.max(n, Math.min(slides.length, i + 2)));
   }, []);
 
   // Redémarre le minuteur après une sélection manuelle (dépendance sur current)
@@ -29,6 +49,8 @@ export function HeroSlideshow() {
       {slides.map((slide, i) => {
         const isActive = i === current;
         const dir = i % 2 === 0 ? 1 : -1;
+        // Pas encore atteinte : rien dans le DOM, donc aucun téléchargement.
+        if (i >= chargees) return null;
         return (
           <div
             key={slide.src}
@@ -42,6 +64,7 @@ export function HeroSlideshow() {
               sizes="100vw"
               quality={80}
               priority={i === 0}
+              loading={i === 0 ? undefined : "lazy"}
               className="object-cover brightness-[0.6]"
               style={{
                 animation: isActive
@@ -76,7 +99,7 @@ export function HeroSlideshow() {
             type="button"
             aria-label={`Afficher : ${slide.label}`}
             aria-current={i === current}
-            onClick={() => setCurrent(i)}
+            onClick={() => aller(i)}
             className={`h-2 rounded-full transition-all duration-300 ${
               i === current
                 ? "w-6 bg-accent-gold"
