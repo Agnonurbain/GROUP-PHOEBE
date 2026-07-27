@@ -1,9 +1,12 @@
 "use client";
 
-export function WhatsAppFloat() {
-  const phone = "2250778631983";
-  const msg = encodeURIComponent("Bonjour GROUP PHOEBE !");
-  const href = `https://wa.me/${phone}?text=${msg}`;
+import { whatsappHref } from "@/lib/contact";
+
+/** Numéro piloté depuis /admin/tarifs. Sans numéro configuré, le bouton ne
+ *  s'affiche pas : inutile d'envoyer un client vers un contact inexistant. */
+export function WhatsAppFloat({ whatsapp }: { whatsapp: string | null }) {
+  const href = whatsappHref(whatsapp, "Bonjour GROUP PHOEBE !");
+  if (!href) return null;
 
   return (
     <a

@@ -5,6 +5,7 @@ import { CartProvider } from "@/lib/cart-context";
 import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { PushNotificationSetup } from "@/components/push-notification-setup";
 import { OfflineBanner } from "@/components/offline-banner";
+import { getParametresContact } from "@/lib/public-cache";
 import "./globals.css";
 
 const inter = Inter({
@@ -58,11 +59,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const contact = await getParametresContact();
+
   return (
     <html
       lang="fr"
@@ -73,7 +76,7 @@ export default function RootLayout({
         <CartProvider>
           <OfflineBanner />
           {children}
-          <WhatsAppFloat />
+          <WhatsAppFloat whatsapp={contact.whatsapp} />
           <PushNotificationSetup />
         </CartProvider>
         <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? ""} />

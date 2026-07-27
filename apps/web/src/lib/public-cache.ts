@@ -9,6 +9,7 @@ import {
   type PalierPoids,
 } from "@/lib/livraison";
 import type { TarifsAssistance } from "@/lib/assistance";
+import { CONTACT_VIDE, type ParametresContact } from "@/lib/contact";
 
 // Transport catalogue
 export const getVehiculesCatalogue = unstable_cache(
@@ -234,6 +235,7 @@ export async function revalidatePublicCache() {
   (revalidateTag as (tag: string) => void)("assistance");
   (revalidateTag as (tag: string) => void)("tarifs_livraison");
   (revalidateTag as (tag: string) => void)("tarifs_assistance");
+  (revalidateTag as (tag: string) => void)("parametres_contact");
 }
 // Livraison — grille tarifaire et paliers de poids pilotés depuis /admin/tarifs.
 // Repli sur les constantes du module si la base ne répond pas : mieux vaut un
@@ -296,4 +298,22 @@ export const getTarifsAssistance = unstable_cache(
   },
   ["tarifs_assistance"],
   { revalidate: 3600, tags: ["tarifs_assistance"] }
+);
+
+// Coordonnées & réseaux sociaux — pilotés depuis /admin/tarifs.
+// Repli sur CONTACT_VIDE : sans base, aucune coordonnée n'est affichée, plutôt
+// qu'une valeur fictive.
+export const getParametresContact = unstable_cache(
+  async (): Promise<ParametresContact> => {
+    const supabase = createPublicClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase.from as any)("parametres_contact")
+      .select("telephone, email, adresse, horaires, whatsapp, facebook, instagram, linkedin, tiktok, youtube")
+      .maybeSingle();
+
+    if (!data) return CONTACT_VIDE;
+    return { ...CONTACT_VIDE, ...(data as Partial<ParametresContact>) };
+  },
+  ["parametres_contact"],
+  { revalidate: 3600, tags: ["parametres_contact"] }
 );
