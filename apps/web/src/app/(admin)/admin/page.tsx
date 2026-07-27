@@ -260,6 +260,7 @@ export default async function DashboardPage({
               size="sm"
               variant={periodeJours === p ? "default" : "outline"}
               render={<Link href={`/admin?periode=${p}`} />}
+              nativeButton={false}
             >
               {PERIODE_LABELS[p]}
             </Button>

@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback } from "@/components/admin-ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -111,8 +112,10 @@ export const colonnesClients: ColumnDef<LigneClient, unknown>[] = [
             <MoreHorizontal className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem render={<Link href="/admin/verifications" />}>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuItem render={<Link href="/admin/verifications" />} nativeButton={false}>
               Ouvrir les vérifications
             </DropdownMenuItem>
             <DropdownMenuSeparator />

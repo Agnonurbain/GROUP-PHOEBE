@@ -8,6 +8,7 @@ import { Button } from "@/components/admin-ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -124,8 +125,10 @@ export const colonnesDemandes: ColumnDef<LigneDemande, unknown>[] = [
             <MoreHorizontal className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem render={<Link href="/admin/demandes" />}>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuItem render={<Link href="/admin/demandes" />} nativeButton={false}>
               Ouvrir dans les demandes
             </DropdownMenuItem>
             <DropdownMenuSeparator />

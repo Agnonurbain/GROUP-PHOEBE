@@ -283,3 +283,16 @@
   --chart-4: #fb923c;
   --chart-5: #a3d9a8;
 }
+
+/* Quelques gris Tailwind littéraux subsistent (planning, disponibilités) pour
+   l'état « bloqué ». Comme `bg-white`, ce ne sont pas des jetons : ils sont
+   remappés sur les surfaces sémantiques en thème sombre. */
+.dark [data-admin] .bg-gray-50 {
+  background-color: var(--muted);
+}
+.dark [data-admin] .text-gray-600 {
+  color: var(--muted-foreground);
+}
+.dark [data-admin] .border-gray-200 {
+  border-color: var(--border);
+}

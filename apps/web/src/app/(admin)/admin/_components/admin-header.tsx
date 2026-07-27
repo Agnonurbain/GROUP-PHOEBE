@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback } from "@/components/admin-ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -104,19 +105,23 @@ export function AdminHeader({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="font-normal">
-              <span className="block text-sm font-medium">{nom}</span>
-              {email && (
-                <span className="block truncate text-xs text-muted-foreground">{email}</span>
-              )}
-              <span className="mt-1 block text-[10px] font-semibold uppercase tracking-wider text-phoebe-gold-dark">
-                {role === "proprietaire" ? "Propriétaire" : "Opérateur"}
-              </span>
-            </DropdownMenuLabel>
+            {/* Base UI exige que MenuGroupLabel vive dans un Menu.Group :
+                hors groupe, il lève « MenuGroupContext is missing ». */}
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="font-normal">
+                <span className="block text-sm font-medium">{nom}</span>
+                {email && (
+                  <span className="block truncate text-xs text-muted-foreground">{email}</span>
+                )}
+                <span className="mt-1 block text-[10px] font-semibold uppercase tracking-wider text-phoebe-gold-dark">
+                  {role === "proprietaire" ? "Propriétaire" : "Opérateur"}
+                </span>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              render={<Link href="/" />}
-            >
+            {/* `nativeButton={false}` : l'élément rendu est un <a>, pas un
+                <button> — sans ça Base UI avertit sur la sémantique. */}
+            <DropdownMenuItem render={<Link href="/" />} nativeButton={false}>
               Voir le site
             </DropdownMenuItem>
             <DropdownMenuSeparator />
