@@ -3,6 +3,8 @@ import { BackLink } from "@/components/public/back-link"
 import { Badge, Card } from "@/components/ui"
 import { MailIcon, PhoneIcon } from "@/components/icons"
 import { ContactForm } from "@/components/public/contact-form"
+import { getParametresContact } from "@/lib/public-cache"
+import { telHref, reseauxActifs } from "@/lib/contact"
 
 function mapSujet(raw: string): { category: string; message: string } {
   if (/estimation|bien|immobil/i.test(raw)) {
@@ -39,6 +41,23 @@ export default async function Contact({
   const { sujet } = await searchParams
   const { category, message } = mapSujet(sujet ?? "")
 
+  // Coordonnées pilotées depuis /admin/tarifs : seuls les champs renseignés
+  // s'affichent (pas de fausse coordonnée publique).
+  const contact = await getParametresContact()
+  const tel = telHref(contact.telephone)
+  const reseaux = reseauxActifs(contact)
+  const coordonnees = [
+    contact.email
+      ? { icon: MailIcon, label: "Email", value: contact.email, href: `mailto:${contact.email}` }
+      : null,
+    tel && contact.telephone
+      ? { icon: PhoneIcon, label: "Téléphone", value: contact.telephone, href: tel }
+      : null,
+    contact.adresse
+      ? { icon: null, label: "Adresse", value: contact.adresse, href: "#" }
+      : null,
+  ].filter((c): c is { icon: typeof MailIcon | null; label: string; value: string; href: string } => c !== null)
+
   return (
     <>
       <section className="px-6 py-16">
@@ -57,13 +76,9 @@ export default async function Contact({
 
         <div className="lg:col-span-2 space-y-8">
           <Card>
-            <h2 className="text-3xl font-semibold text-public-text">Nos coordonnées</h2>
+            <h2 className="font-display text-2xl font-medium text-public-text">Nos coordonnées</h2>
             <div className="mt-6 space-y-5">
-              {[
-                { icon: MailIcon, label: "Email", value: "info@groupphoebe.com", href: "mailto:info@groupphoebe.com" },
-                { icon: PhoneIcon, label: "Téléphone", value: "+225 01 02 03 04 05", href: "tel:+2250102030405" },
-                { icon: null, label: "Adresse", value: "Abidjan, Côte d'Ivoire", href: "#" },
-              ].map((c) => (
+              {coordonnees.map((c) => (
                 <a key={c.label} href={c.href} className="flex items-start gap-3 group">
                   {c.icon ? (
                     <c.icon size={20} className="mt-0.5 shrink-0 text-accent-gold" />
@@ -81,23 +96,33 @@ export default async function Contact({
             </div>
           </Card>
 
-          <Card>
-            <h2 className="text-3xl font-semibold text-public-text">Horaires</h2>
-            <div className="mt-4 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-public-text-muted">Lun – Ven</span>
-                <span className="text-public-text">08:00 – 18:00</span>
+          {contact.horaires && (
+            <Card>
+              <h2 className="font-display text-2xl font-medium text-public-text">Horaires</h2>
+              <p className="mt-3 whitespace-pre-line text-sm text-public-text-muted">
+                {contact.horaires}
+              </p>
+            </Card>
+          )}
+
+          {reseaux.length > 0 && (
+            <Card>
+              <h2 className="font-display text-2xl font-medium text-public-text">Suivez-nous</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {reseaux.map((r) => (
+                  <a
+                    key={r.key}
+                    href={r.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg border border-public-border px-3 py-2 text-sm font-medium text-public-text-muted transition-colors hover:border-accent-gold/40 hover:text-public-text"
+                  >
+                    {r.label}
+                  </a>
+                ))}
               </div>
-              <div className="flex justify-between">
-                <span className="text-public-text-muted">Sam</span>
-                <span className="text-public-text">09:00 – 13:00</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-public-text-muted">Dim</span>
-                <span className="text-public-text-muted">Fermé</span>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          )}
         </div>
       </div>
     </>

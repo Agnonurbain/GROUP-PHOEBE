@@ -1,39 +1,44 @@
 import Link from "next/link"
 import Image from "next/image"
+import { getParametresContact } from "@/lib/public-cache"
+import { telHref, reseauxActifs } from "@/lib/contact"
 
 /* Hallmark · chrome partagé — voir design.md (§ Ce que TOUTES les pages partagent).
    Footer éditorial : filets, colonnes alignées à gauche, eyebrow en petites
    capitales espacées. Pas de grille de cartes, pas de centrage. */
 
-const columns = [
-  {
-    title: "Services",
-    links: [
-      { href: "/livraison", label: "Livraison" },
-      { href: "/transport/catalogue", label: "Transport" },
-      { href: "/immobilier", label: "Immobilier" },
-      { href: "/assistance", label: "Assistance Voyages" },
-    ],
-  },
-  {
-    title: "Contact",
-    links: [
-      { href: "/contact", label: "Nous écrire" },
-      { href: "mailto:info@groupphoebe.com", label: "info@groupphoebe.com" },
-      { href: "tel:+2250102030405", label: "+225 01 02 03 04 05" },
-    ],
-  },
-  {
-    title: "Légal",
-    links: [
-      { href: "#", label: "Mentions légales" },
-      { href: "#", label: "CGV" },
-      { href: "#", label: "Politique de confidentialité" },
-    ],
-  },
+const servicesLinks = [
+  { href: "/livraison", label: "Livraison" },
+  { href: "/transport/catalogue", label: "Transport" },
+  { href: "/immobilier", label: "Immobilier" },
+  { href: "/assistance", label: "Assistance Voyages" },
 ]
 
-export function Footer() {
+const legalLinks = [
+  { href: "#", label: "Mentions légales" },
+  { href: "#", label: "CGV" },
+  { href: "#", label: "Politique de confidentialité" },
+]
+
+export async function Footer() {
+  const contact = await getParametresContact()
+  const tel = telHref(contact.telephone)
+  const reseaux = reseauxActifs(contact)
+
+  // Un champ non renseigné n'affiche rien : mieux vaut une absence qu'une
+  // fausse coordonnée sur laquelle un visiteur peut appeler.
+  const contactLinks = [
+    { href: "/contact", label: "Nous écrire" },
+    ...(contact.email ? [{ href: `mailto:${contact.email}`, label: contact.email }] : []),
+    ...(tel && contact.telephone ? [{ href: tel, label: contact.telephone }] : []),
+  ]
+
+  const columns = [
+    { title: "Services", links: servicesLinks },
+    { title: "Contact", links: contactLinks },
+    { title: "Légal", links: legalLinks },
+  ]
+
   return (
     <footer className="border-t border-public-border bg-public-bg">
       <div className="mx-auto max-w-6xl px-6 py-16 sm:px-10">
@@ -54,6 +59,27 @@ export function Footer() {
             <p className="mt-3 max-w-xs text-sm text-public-text-muted">
               Transport, immobilier, assistance voyages et livraison en Côte d&apos;Ivoire.
             </p>
+            {contact.adresse && (
+              <p className="mt-3 text-sm text-public-text-muted">{contact.adresse}</p>
+            )}
+            {contact.horaires && (
+              <p className="mt-1 text-sm text-public-text-faint">{contact.horaires}</p>
+            )}
+            {reseaux.length > 0 && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {reseaux.map((r) => (
+                  <a
+                    key={r.key}
+                    href={r.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg border border-public-border px-3 py-1.5 text-xs font-medium text-public-text-muted transition-colors hover:border-accent-gold/40 hover:text-public-text"
+                  >
+                    {r.label}
+                  </a>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid gap-10 sm:grid-cols-3">

@@ -11,6 +11,7 @@ import { Button, Card, Badge } from "@/components/ui"
 import { checkoutCart, type CheckoutState } from "@/app/actions/checkout"
 import { computeItemPricing, type ZonePricing } from "@/lib/pricing"
 import { trackBeginCheckout } from "@/lib/analytics"
+import { whatsappHref } from "@/lib/contact"
 
 type Commune = { id: string; nom: string; zone_id: string; zone_nom: string }
 type Zone = {
@@ -64,8 +65,13 @@ function MobileMoneyLogo({ name }: { name: string }) {
   )
 }
 
-export default function PaiementPage() {
+export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) {
   const { items, count } = useCart()
+  // Numéro piloté depuis /admin/tarifs : sans numéro, pas de lien.
+  const negocierHref = whatsappHref(
+    whatsapp,
+    "Bonjour, je souhaite négocier ma réservation chez GROUP PHOEBE."
+  )
   const [state, formAction, pending] = useActionState<CheckoutState, FormData>(checkoutCart, {})
 
   const [communes, setCommunes] = useState<Commune[]>([])
@@ -549,9 +555,10 @@ export default function PaiementPage() {
               </Button>
             </div>
 
+            {negocierHref && (
             <div className="mt-4 text-center">
               <a
-                href={`https://wa.me/2250707000000?text=${encodeURIComponent("Bonjour, je souhaite négocier ma réservation chez GROUP PHOEBE.")}`}
+                href={negocierHref}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-xs text-public-text-muted transition-colors hover:text-accent-green"
@@ -560,6 +567,7 @@ export default function PaiementPage() {
                 Négocier sur WhatsApp
               </a>
             </div>
+            )}
           </Card>
         </div>
       </form>

@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import PaiementClient from "./page-client"
+import { getParametresContact } from "@/lib/public-cache"
 
 export const metadata: Metadata = {
   title: "Paiement — Finaliser la réservation",
@@ -15,6 +16,7 @@ export const metadata: Metadata = {
   },
 }
 
-export default function PaiementPage() {
-  return <PaiementClient />
+export default async function PaiementPage() {
+  const contact = await getParametresContact()
+  return <PaiementClient whatsapp={contact.whatsapp} />
 }

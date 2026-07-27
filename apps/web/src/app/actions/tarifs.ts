@@ -615,3 +615,64 @@ export async function modifierTarifAssistance(
   (revalidateTag as (tag: string) => void)("tarifs_assistance");
   return { success: true };
 }
+
+// ─── Coordonnées & réseaux sociaux (propriétaire uniquement) ─────────────────
+// Table singleton parametres_contact. Un champ vidé repasse à null : le site
+// n'affiche alors plus la coordonnée du tout, plutôt qu'une valeur fictive.
+
+const CHAMPS_PARAMETRES_CONTACT = [
+  "telephone", "email", "adresse", "horaires",
+  "whatsapp", "facebook", "instagram", "linkedin", "tiktok", "youtube",
+] as const;
+
+export async function modifierParametresContact(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  const userId = await requireProprietaireAvecId();
+  const admin = getAdmin();
+
+  const valeurs: Record<string, string | null> = {};
+  for (const champ of CHAMPS_PARAMETRES_CONTACT) {
+    const brut = ((formData.get(champ) as string) || "").trim();
+    valeurs[champ] = brut === "" ? null : brut;
+  }
+
+  if (valeurs.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valeurs.email)) {
+    return { error: "Adresse e-mail invalide." };
+  }
+  for (const reseau of ["facebook", "instagram", "linkedin", "tiktok", "youtube"] as const) {
+    const url = valeurs[reseau];
+    if (url && !/^https?:\/\//i.test(url)) {
+      return { error: `Le lien ${reseau} doit commencer par https://` };
+    }
+  }
+  if (valeurs.whatsapp && !/^\d{8,15}$/.test(valeurs.whatsapp.replace(/\D/g, ""))) {
+    return { error: "Le WhatsApp doit être un numéro (indicatif compris, sans +)." };
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: ancien } = await (admin.from as any)("parametres_contact")
+    .select("*")
+    .maybeSingle();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (admin.from as any)("parametres_contact").upsert(
+    { id: true, ...valeurs, updated_at: new Date().toISOString() },
+    { onConflict: "id" }
+  );
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: "modifier_parametres_contact",
+    tableName: "parametres_contact",
+    oldValues: ancien ?? undefined,
+    newValues: valeurs,
+  });
+
+  revalidatePath("/admin/tarifs");
+  const { revalidateTag } = await import("next/cache");
+  (revalidateTag as (tag: string) => void)("parametres_contact");
+  return { success: true };
+}

@@ -13,9 +13,10 @@ import { IntervallesList } from "./intervalles-list";
 import { AjouterIntervalleForm } from "./ajouter-intervalle-form";
 import { LivraisonTarifsForm } from "./livraison-form";
 import { AssistanceTarifsForm } from "./assistance-form";
+import { ContactParamsForm } from "./contact-form";
 import { CAT_LABELS } from "@/lib/constants";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { getTarifsLivraison, getTarifsAssistance } from "@/lib/public-cache";
+import { getTarifsLivraison, getTarifsAssistance, getParametresContact } from "@/lib/public-cache";
 
 export const metadata: Metadata = {
   title: "Tarifs — Administration",
@@ -36,13 +37,14 @@ export default async function TarifsPage() {
     .single();
   if (profile?.role !== "proprietaire") redirect("/admin");
 
-  const [zones, communes, vehicules, intervalles, tarifsLivraison, tarifsAssistance] = await Promise.all([
+  const [zones, communes, vehicules, intervalles, tarifsLivraison, tarifsAssistance, parametresContact] = await Promise.all([
       getZonesTarifaires(),
       getCommunes(),
       getVehiculesPrixBase(),
       getIntervallesPrix(),
       getTarifsLivraison(),
       getTarifsAssistance(),
+      getParametresContact(),
     ]);
 
   // Les paliers sont édités par id : on lit les lignes brutes (getTarifsLivraison
@@ -314,6 +316,7 @@ export default async function TarifsPage() {
               <LivraisonTarifsForm grille={grilleLivraison} paliers={paliersPoidsRows} />
             ),
             assistance: <AssistanceTarifsForm tarifs={tarifsAssistance} />,
+            contact: <ContactParamsForm contact={parametresContact} />,
           }}
         </TarifsTabs>
       </ScrollReveal>
