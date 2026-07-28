@@ -303,6 +303,15 @@ textarea {
   50% { transform: translateY(-8px); }
 }
 
+@keyframes ken-burns-hero {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.08) translate(-1%, -0.5%); }
+}
+
+.animate-ken-burns-hero {
+  animation: ken-burns-hero 20s ease-out forwards;
+}
+
 .animate-service-logo {
   animation: float 5s ease-in-out infinite;
 }

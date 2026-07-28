@@ -63,6 +63,7 @@ export default async function Livraison({
         eyebrow="Livraison"
         title={<>Livraison de colis &amp; Coursier</>}
         lede="Envois rapides et sécurisés à Abidjan et partout en Côte d'Ivoire, livrés porte-à-porte."
+        bgImage={{ src: "/images/hero-livraison.webp", alt: "Livraison de colis" }}
         aside={
           <Image
             src="/logos/logo_g-phoebe.png"

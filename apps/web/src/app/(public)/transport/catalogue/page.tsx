@@ -298,6 +298,7 @@ export default async function TransportCatalogue({
         eyebrow="Transport"
         title="Notre Flotte"
         lede="Découvrez nos véhicules d'exception pour vos déplacements."
+        bgImage={{ src: "/images/hero-car.webp", alt: "Flotte de véhicules premium" }}
         aside={
           <Image
             src="/logos/logo-trans-livr.png"

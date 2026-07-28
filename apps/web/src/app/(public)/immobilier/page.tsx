@@ -93,6 +93,7 @@ export default async function Immobilier({
         eyebrow="Immobilier"
         title="Trouvez le bien de vos rêves"
         lede="Vente, location, estimation — nous vous accompagnons à chaque étape."
+        bgImage={{ src: "/images/hero-immobilier.webp", alt: "Bien immobilier" }}
         aside={
           <Image
             src="/logos/logo-imm.png"

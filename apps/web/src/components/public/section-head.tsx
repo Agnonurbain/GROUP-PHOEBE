@@ -4,6 +4,7 @@
    réinventer un titre à chaque section. */
 
 import type { ReactNode } from "react"
+import Image from "next/image"
 
 /** Filet + libellé en petites capitales espacées, à la couleur de la verticale. */
 export function Eyebrow({ children, className = "" }: { children: ReactNode; className?: string }) {
@@ -22,16 +23,31 @@ export function PageHero({
   lede,
   actions,
   aside,
+  bgImage,
 }: {
   eyebrow?: ReactNode
   title: ReactNode
   lede?: ReactNode
   actions?: ReactNode
   aside?: ReactNode
+  bgImage?: { src: string; alt: string }
 }) {
   return (
-    <section className="border-b border-public-border px-6 py-16 sm:px-10 md:py-20">
-      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-end lg:gap-16">
+    <section className="relative isolate overflow-hidden border-b border-public-border px-6 py-16 sm:px-10 md:py-20">
+      {bgImage && (
+        <>
+          <Image
+            src={bgImage.src}
+            alt={bgImage.alt}
+            fill
+            className="object-cover animate-ken-burns-hero"
+            sizes="100vw"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#141312]/95 via-[#141312]/80 to-[#141312]/60" />
+        </>
+      )}
+      <div className="relative z-10 mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-end lg:gap-16">
         <div>
           {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
           <h1 className="font-display mt-6 text-balance text-4xl font-medium leading-[1.05] tracking-tight text-public-text sm:text-5xl md:text-6xl">

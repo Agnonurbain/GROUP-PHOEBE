@@ -60,6 +60,7 @@ export default function Assistance({ tarifs }: { tarifs: TarifsAssistance }) {
         eyebrow="Assistance Voyages & Études"
         title="Votre visa, notre expertise"
         lede="Études en Chine, voyages en Europe — nous montons et suivons votre dossier de bout en bout."
+        bgImage={{ src: "/images/hero-voyages.webp", alt: "Voyages et études" }}
         aside={
           <Image
             src="/logos/logo-assi-etud.png"
