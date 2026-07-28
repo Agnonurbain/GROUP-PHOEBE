@@ -47,10 +47,47 @@ function StepCard({ num, title, desc, index }: { num: string; title: string; des
   )
 }
 
+function VisaCard({
+  prestation, paysSlug,
+}: {
+  prestation: { key: string; name: string; prix: number | null; description?: string; recommended?: boolean }
+  paysSlug: string
+}) {
+  const [state, formAction, pending] = useActionState<AssistanceState, FormData>(creerDossierVoyage, {})
+
+  return (
+    <div className={`relative rounded-2xl border p-6 transition-all ${prestation.recommended ? "border-accent-gold bg-accent-gold/5" : "border-public-border bg-public-bg-card"}`}>
+      {prestation.recommended && (
+        <Badge variant="gold" className="absolute -top-2.5 right-4">Recommandé</Badge>
+      )}
+      <h3 className="text-base font-semibold text-public-text">{prestation.name}</h3>
+      <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">{prixLabel(prestation.prix)}</p>
+      {prestation.description && (
+        <p className="mt-3 text-sm text-public-text-muted">{prestation.description}</p>
+      )}
+      {state?.error && (
+        <p role="alert" className="mt-3 text-sm text-error">{state.error}</p>
+      )}
+      <form action={formAction}>
+        <input type="hidden" name="pays_slug" value={paysSlug} />
+        <input type="hidden" name="prestation" value={prestation.key} />
+        <Button
+          type="submit"
+          variant={prestation.recommended ? "blue" : "ghost"}
+          size="sm"
+          disabled={pending}
+          className={`mt-4 w-full ${prestation.recommended ? "" : "border-accent-blue/60 text-accent-blue-on-dark hover:bg-accent-blue/10"}`}
+        >
+          {pending ? "Envoi..." : "Soumettre ma demande"}
+        </Button>
+      </form>
+    </div>
+  )
+}
+
 export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) {
   const params = useParams()
   const slug = params.slug as string
-  const [state, formAction, pending] = useActionState<AssistanceState, FormData>(creerDossierVoyage, {})
 
   // Prix issus de la base (éditables en /admin/tarifs).
   const pays = useMemo(() => getPays(slug, tarifs), [slug, tarifs])
@@ -80,12 +117,6 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
           <li aria-current="page" className="text-public-text-muted">{pays.name}</li>
         </ol>
       </nav>
-
-      {state?.error && (
-        <div role="alert" className="mx-6 mt-4 rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error">
-          {state.error}
-        </div>
-      )}
 
       {/* Hero */}
       <section className="relative mx-6 mt-6 flex min-h-[240px] flex-col items-center justify-center gap-4 overflow-hidden rounded-3xl px-6 py-10 text-center md:min-h-[280px]">
@@ -163,29 +194,7 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
           <p className="mt-1 text-sm text-public-text-muted">Sans engagement — l&apos;équipe vous recontacte après votre demande.</p>
           <div className="mt-6 space-y-4">
             {pays.prestations.map((prestation) => (
-              <div key={prestation.key} className={`relative rounded-2xl border p-6 transition-all ${prestation.recommended ? "border-accent-gold bg-accent-gold/5" : "border-public-border bg-public-bg-card"}`}>
-                {prestation.recommended && (
-                  <Badge variant="gold" className="absolute -top-2.5 right-4">Recommandé</Badge>
-                )}
-                <h3 className="text-base font-semibold text-public-text">{prestation.name}</h3>
-                <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">{prixLabel(prestation.prix)}</p>
-                {prestation.description && (
-                  <p className="mt-3 text-sm text-public-text-muted">{prestation.description}</p>
-                )}
-                <form action={formAction}>
-                  <input type="hidden" name="pays_slug" value={pays.slug} />
-                  <input type="hidden" name="prestation" value={prestation.key} />
-                  <Button
-                    type="submit"
-                    variant={prestation.recommended ? "blue" : "ghost"}
-                    size="sm"
-                    disabled={pending}
-                    className={`mt-4 w-full ${prestation.recommended ? "" : "border-accent-blue/60 text-accent-blue-on-dark hover:bg-accent-blue/10"}`}
-                  >
-                    {pending ? "Envoi..." : "Soumettre ma demande"}
-                  </Button>
-                </form>
-              </div>
+              <VisaCard key={prestation.key} prestation={prestation} paysSlug={pays.slug} />
             ))}
           </div>
         </div>
