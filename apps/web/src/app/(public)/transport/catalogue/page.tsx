@@ -187,12 +187,10 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
                 </div>
               ) : (
                 <div className="flex h-48 w-full items-center justify-center bg-public-bg-elevated">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-public-text-faint">
-                    <path d="M5 17h14M5 17a2 2 0 0 1-2-2v-3.5a2 2 0 0 1 .4-1.2l.9-1.2a4 4 0 0 1 3.2-1.6h8.6a4 4 0 0 1 3.2 1.6l.9 1.2a2 2 0 0 1 .4 1.2V15a2 2 0 0 1-2 2M5 17a2 2 0 1 0 4 0M19 17a2 2 0 1 0-4 0" />
-                    <circle cx="7" cy="15" r="1" fill="currentColor" />
-                    <circle cx="17" cy="15" r="1" fill="currentColor" />
-                    <path d="M9 17h6" />
-                    <path d="M8 6.5h8l-1 3H9l-1-3z" />
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-public-text-faint">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
                   </svg>
                 </div>
               )}

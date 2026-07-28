@@ -510,6 +510,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 - `getParametresContact()`, `getStatsAccueil()` : cache in-memory avec revalidation
 - Données peu changeantes (coordonnées, stats véhicules)
+- **Attention** : `unstable_cache` sérialise en JSON → les types non sérialisables (`Map`, `Set`) deviennent `{}`. Utiliser `Record<string, string>` à la place.
 
 ### 10.4 Back-office
 
@@ -540,6 +541,9 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 |---|---|
 | 2026-07-28 | Migration shadcn/ui : tous les composants `ui/` (Button, Badge, Card, Input) passés en shadcn base-nova avec `@base-ui/react` primitives. Variants de marque conservés via CVA. Pages services redesignées (Transport, Livraison, Immobilier, Assistance, Accueil) avec les nouveaux composants. Ajout Pagination, HoverCard, Command, Textarea, Dialog, InputGroup shadcn. |
 | 2026-07-28 | Fix auth : `bg-hex-pattern` défini dans `auth.css` (panneau gauche du layout connexion/inscription). Admin.css n'était pas chargé sur les pages auth, le fond devenait transparent et le tagline sous le logo était invisible. |
+| 2026-07-28 | Fix cache : `unstable_cache` sérialise en JSON → les objets `Map` perdent leur type. Remplacés par `Record<string, string>` dans `getVehiculesWithPhotos`, `getBiensWithPhotos`, `groupVehicles`. |
+| 2026-07-28 | Transport : cartes catalogue agrandies comme immobilier (grid `md:grid-cols-2`, image `h-48`, prix `text-3xl`, placeholder SVG identique). |
+| 2026-07-28 | Fix assistance : `useActionState` partagé entre les 3 cartes visa → extrait dans sous-composant `VisaCard` avec son propre state. |
 
 ## 13. ÉVOLUTION
 
