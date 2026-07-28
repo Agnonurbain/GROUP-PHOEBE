@@ -57,7 +57,7 @@ export default async function Immobilier({
         "@type": "Product",
         name: `${b.type} — ${b.localisation}`,
         description: b.description,
-        image: b.id ? photoMap.get(b.id) ?? undefined : undefined,
+        image: b.id ? photoMap[b.id] ?? undefined : undefined,
         sku: b.id,
         offers: {
           "@type": "Offer",
@@ -123,7 +123,7 @@ export default async function Immobilier({
         />
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           {biens && biens.length > 0 ? biens.map((b) => {
-            const photo = b.id ? photoMap.get(b.id) : null
+            const photo = b.id ? photoMap[b.id] : null
             return (
               <Link key={b.id} href={`/immobilier/${b.id}`} className="group block">
               <Card className="h-full border-accent-green/0 hover:border-accent-green/30">

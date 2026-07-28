@@ -65,7 +65,7 @@ export const getVehiculesWithPhotos = unstable_cache(
     const vehicules = await getVehiculesCatalogue(filters);
     const ids = vehicules.map((v) => v.id);
 
-    if (ids.length === 0) return { vehicules: [], photoMap: new Map() };
+    if (ids.length === 0) return { vehicules, photoMap: {} };
 
     const supabase = createPublicClient();
     const { data: allPhotos } = await supabase
@@ -74,9 +74,9 @@ export const getVehiculesWithPhotos = unstable_cache(
       .in("vehicule_id", ids)
       .order("ordre", { ascending: true });
 
-    const photoMap = new Map<string, string>();
+    const photoMap: Record<string, string> = {};
     for (const p of allPhotos ?? []) {
-      if (!photoMap.has(p.vehicule_id)) photoMap.set(p.vehicule_id, p.url);
+      if (!photoMap[p.vehicule_id]) photoMap[p.vehicule_id] = p.url;
     }
 
     return { vehicules, photoMap };
@@ -157,7 +157,7 @@ export const getBiensWithPhotos = unstable_cache(
     const biens = await getBiensImmobiliers(filters);
     const ids = biens.map((b) => b.id);
 
-    if (ids.length === 0) return { biens: [], photoMap: new Map() };
+    if (ids.length === 0) return { biens, photoMap: {} };
 
     const supabase = createPublicClient();
     const { data: allPhotos } = await supabase
@@ -167,9 +167,9 @@ export const getBiensWithPhotos = unstable_cache(
       .eq("type", "photo")
       .order("ordre", { ascending: true });
 
-    const photoMap = new Map<string, string>();
+    const photoMap: Record<string, string> = {};
     for (const p of allPhotos ?? []) {
-      if (!photoMap.has(p.bien_id)) photoMap.set(p.bien_id, p.url);
+      if (!photoMap[p.bien_id]) photoMap[p.bien_id] = p.url;
     }
 
     return { biens, photoMap };

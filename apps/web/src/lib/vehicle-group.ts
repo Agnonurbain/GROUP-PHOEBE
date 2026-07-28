@@ -65,7 +65,7 @@ type VehiculeRow = {
 
 export function groupVehicles(
   vehicules: VehiculeRow[],
-  photoMap?: Map<string, string>
+  photoMap?: Record<string, string>
 ): VehicleGroup[] {
   const map = new Map<string, VehiculeRow[]>();
 
@@ -85,7 +85,7 @@ export function groupVehicles(
     let photo: string | null = null;
     if (photoMap) {
       for (const v of items) {
-        const p = photoMap.get(v.id);
+        const p = photoMap[v.id];
         if (p) {
           photo = p;
           break;

@@ -123,9 +123,9 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
         .order("ordre", { ascending: true })
     : { data: [] }
 
-  const photoMap = new Map<string, string>()
+  const photoMap: Record<string, string> = {}
   for (const p of allPhotos ?? []) {
-    if (!photoMap.has(p.vehicule_id)) photoMap.set(p.vehicule_id, p.url)
+    if (!photoMap[p.vehicule_id]) photoMap[p.vehicule_id] = p.url
   }
 
   if (!vehicules || vehicules.length === 0) {
