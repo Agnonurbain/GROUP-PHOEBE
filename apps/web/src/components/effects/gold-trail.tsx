@@ -1,6 +1,8 @@
 "use client";
 import { useRef, useEffect, type ReactNode } from "react";
 
+const GOLD = "201, 168, 76";
+
 export function GoldTrail({ children }: { children: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -27,28 +29,54 @@ export function GoldTrail({ children }: { children: ReactNode }) {
         y: e.clientY - rect.top,
         life: 1,
       });
-      if (points.length > 60) points.shift();
+      if (points.length > 120) points.shift();
     };
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (points.length < 2) { animId = requestAnimationFrame(draw); return; }
+
+      for (let i = 1; i < points.length; i++) {
+        const p = points[i];
+        p.life -= 0.012;
+        if (p.life <= 0) continue;
+      }
+      points = points.filter((p) => p.life > 0);
+      if (points.length < 2) { animId = requestAnimationFrame(draw); return; }
+
+      // Glow pass (wide, blurry)
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
       for (let i = 1; i < points.length; i++) {
         const p = points[i];
         const prev = points[i - 1];
-        p.life -= 0.018;
-        if (p.life <= 0) continue;
+        const life = p.life;
 
         ctx.beginPath();
         ctx.moveTo(prev.x, prev.y);
         ctx.lineTo(p.x, p.y);
-        ctx.strokeStyle = `rgba(212, 175, 55, ${p.life * 0.5})`;
-        ctx.lineWidth = p.life * 3;
-        ctx.lineCap = "round";
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = `rgba(212, 175, 55, ${p.life * 0.3})`;
+        ctx.strokeStyle = `rgba(${GOLD}, ${life * 0.15})`;
+        ctx.lineWidth = life * 14;
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = `rgba(${GOLD}, ${life * 0.25})`;
         ctx.stroke();
       }
-      points = points.filter((p) => p.life > 0);
+
+      // Core pass (thin, bright)
+      ctx.shadowBlur = 0;
+      for (let i = 1; i < points.length; i++) {
+        const p = points[i];
+        const prev = points[i - 1];
+        const life = p.life;
+
+        ctx.beginPath();
+        ctx.moveTo(prev.x, prev.y);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = `rgba(${GOLD}, ${life * 0.7})`;
+        ctx.lineWidth = life * 2.5;
+        ctx.stroke();
+      }
+
       animId = requestAnimationFrame(draw);
     };
     draw();
