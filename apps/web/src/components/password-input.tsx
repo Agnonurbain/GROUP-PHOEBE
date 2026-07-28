@@ -27,7 +27,7 @@ export function PasswordInput({
   const inputClass =
     variant === "dark"
       ? "w-full rounded-xl border border-public-border bg-public-bg px-4 py-3 pr-11 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-gold focus:outline-none focus:ring-2 focus:ring-accent-gold/20"
-      : "w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 pr-11 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-white focus:outline-none focus:ring-2 focus:ring-phoebe-green/20";
+      : "w-full rounded-xl border border-phoebe-anthracite/15 bg-phoebe-pearl/30 px-4 py-3 pr-11 text-sm text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/20";
 
   const toggleClass =
     variant === "dark"

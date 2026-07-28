@@ -49,3 +49,12 @@
 .dark [data-auth] .border-phoebe-pearl {
   border-color: var(--border);
 }
+
+/* Autofill navigateur : harmoniser le fond avec le theme pour eviter le
+   blanc par defaut (illisible en sombre, decale en clair). */
+[data-auth] input:-webkit-autofill,
+[data-auth] input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-phoebe-pearl) inset !important;
+  -webkit-text-fill-color: var(--color-phoebe-anthracite) !important;
+  caret-color: var(--color-phoebe-anthracite);
+}
