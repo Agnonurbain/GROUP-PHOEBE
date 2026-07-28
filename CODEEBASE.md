@@ -551,7 +551,9 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 | 2026-07-28 | CODEEBASE.md ajouté au suivi des modifs. |
 | 2026-07-28 | Logos animés : ajout keyframe `float` dans globals.css + classe `animate-service-logo` sur les 4 services. Ajout des logos manquants (Transport, Livraison) dans le `PageHero`. |
 | 2026-07-28 | Fonds animés : nouveau prop `bgImage` sur `PageHero` avec zoom Ken Burns 20s + voile sombre. Appliqué aux 4 services (hero-car, hero-livraison, hero-immobilier, hero-voyages). |
+| 2026-07-28 | Fix hero light mode : texte forcé en `text-white`/`text-white/80` quand `bgImage` est présent (les tokens public-text deviennent sombres en light theme). |
 | 2026-07-28 | GoldTrail amélioré : double passe (glow large + core fin), trail plus long (120pts), vie plus lente (0.012), couleurs gold asset. |
+| 2026-07-28 | Fix auth dark mode : `focus:bg-white` → `focus:bg-phoebe-pearl` (s'adapte au thème). Ajout override `-webkit-autofill` dans `auth.css`. Même correctif appliqué dans l'admin (8 fichiers). |
 
 ## 13. ÉVOLUTION
 
