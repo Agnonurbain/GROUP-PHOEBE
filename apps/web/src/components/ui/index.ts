@@ -1,6 +1,15 @@
-export { Button } from "./button"
+export { Button, buttonVariants } from "./button"
 export { Input } from "./input"
 export { Select } from "./select"
-export { Badge } from "./badge"
-export { Card } from "./card"
+export { Badge, badgeVariants } from "./badge"
+export { Card, CardHeader, CardFooter, CardTitle, CardAction, CardDescription, CardContent } from "./card"
 export { Chip } from "./chip"
+export {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "./pagination"

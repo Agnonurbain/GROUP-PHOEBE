@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { ChevronRight } from "lucide-react"
 import { Badge } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
 import { PageHero, SectionHead } from "@/components/public/section-head"
@@ -13,13 +14,7 @@ import {
   type TarifsAssistance,
 } from "@/lib/assistance"
 
-/* Hallmark · Editorial index (page service) — voir design.md.
-   Les anciennes cartes à survol masquaient leur contenu tant qu'on ne survolait
-   pas : inaccessible au tactile. Remplacées par des blocs toujours lisibles. */
-
 const categorieLabel = (c: Pays["categorie"]) => (c === "etudes" ? "Études" : "Voyage")
-
-
 
 function ChoixBloc({
   titre,
@@ -51,7 +46,6 @@ function ChoixBloc({
 }
 
 export default function Assistance({ tarifs }: { tarifs: TarifsAssistance }) {
-  // Prix issus de la base (éditables en /admin/tarifs) appliqués au catalogue.
   const pays = appliquerTarifsListe(PAYS_LIST, tarifs)
   const etudesCountries = pays.filter((d) => d.categorie === "etudes")
   const voyageCountries = pays.filter((d) => d.categorie === "voyage")
@@ -78,7 +72,6 @@ export default function Assistance({ tarifs }: { tarifs: TarifsAssistance }) {
         }
       />
 
-      {/* Deux portes d'entrée — blocs éditoriaux, contenu toujours visible */}
       <section className="px-6 py-20 sm:px-10">
         <div className="mx-auto grid max-w-6xl gap-10 md:grid-cols-2 md:gap-16">
           <ChoixBloc
@@ -94,7 +87,6 @@ export default function Assistance({ tarifs }: { tarifs: TarifsAssistance }) {
         </div>
       </section>
 
-      {/* Destinations — liste éditoriale (traitement distinct des blocs ci-dessus) */}
       <section className="border-t border-public-border bg-public-bg-card px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
@@ -119,7 +111,7 @@ export default function Assistance({ tarifs }: { tarifs: TarifsAssistance }) {
                 </div>
                 <div className="col-span-2 flex items-center justify-between gap-4 sm:col-span-1 sm:justify-end">
                   <span className="text-sm font-semibold text-accent-blue-on-dark">{prixApartir(d)}</span>
-                  <span className="text-sm text-public-text-faint transition-all group-hover:text-accent-blue-on-dark" aria-hidden="true">→</span>
+                  <ChevronRight size={16} className="text-public-text-faint transition-all group-hover:text-accent-blue-on-dark" />
                 </div>
               </Link>
             ))}

@@ -2,21 +2,30 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import Image from "next/image"
 import { Suspense } from "react"
+import { SearchIcon, ChevronRightIcon } from "lucide-react"
 import { createClient } from "@/lib/supabase/server"
 import { groupVehicles } from "@/lib/vehicle-group"
 import Filtres from "./filtres"
 import { BackLink } from "@/components/public/back-link"
 import { PageHero, SectionHead } from "@/components/public/section-head"
-import { Badge, Card } from "@/components/ui"
-import { SearchIcon, ChevronRightIcon } from "@/components/icons"
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardFooter,
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from "@/components/ui"
 import { getZonesTarifaires } from "@/lib/public-cache"
 import { serializeJsonLd } from "@/lib/json-ld"
 
 const PAGE_SIZE = 12
 
-// CollectionPage plutôt qu'un ItemList vide : la grille est rendue en streaming
-// dans un enfant Suspense, les items ne sont donc pas disponibles ici. On décrit
-// honnêtement la page de collection sans lister d'éléments fantômes.
 const catalogueSchema = {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
@@ -42,15 +51,15 @@ function GridSkeleton() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="rounded-2xl border border-public-border bg-public-bg-card p-6">
-          <div className="mb-4 h-5 w-20 animate-pulse rounded-full bg-public-bg-elevated" />
+        <div key={i} className="rounded-xl border border-public-border bg-public-bg-card p-4">
+          <div className="mb-4 h-44 animate-pulse rounded-lg bg-public-bg-elevated" />
+          <div className="mb-2 h-5 w-20 animate-pulse rounded-full bg-public-bg-elevated" />
           <div className="mb-2 h-6 w-3/4 animate-pulse rounded bg-public-bg-elevated" />
           <div className="flex flex-wrap gap-2">
             <div className="h-5 w-16 animate-pulse rounded-md bg-public-bg-elevated" />
             <div className="h-5 w-12 animate-pulse rounded-md bg-public-bg-elevated" />
-            <div className="h-5 w-14 animate-pulse rounded-md bg-public-bg-elevated" />
           </div>
-          <div className="mt-6 flex items-center justify-between border-t border-public-border pt-4">
+          <div className="mt-5 flex items-center justify-between border-t border-public-border pt-4">
             <div className="h-5 w-32 animate-pulse rounded bg-public-bg-elevated" />
             <div className="h-5 w-20 animate-pulse rounded bg-public-bg-elevated" />
           </div>
@@ -121,7 +130,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
 
   if (!vehicules || vehicules.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-2xl border border-public-border bg-public-bg-card py-16 text-center">
+      <div className="flex flex-col items-center gap-4 rounded-xl border border-public-border bg-public-bg-card py-16 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-public-bg-elevated">
           <SearchIcon size={32} className="text-public-text-faint" />
         </div>
@@ -153,8 +162,6 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
         {paged.map((g) => {
           const hasLoc = g.prixJournalier > 0
           const hasVente = !!g.prixVente && g.prixVente > 0
-          // Les deux → page de choix ; vente seule → fiche en mode achat ;
-          // sinon → fiche en location (comportement par défaut).
           const href =
             hasLoc && hasVente
               ? `/transport/catalogue/groupe/${encodeURIComponent(g.groupKey)}/choix`
@@ -165,11 +172,11 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
           <Link
             key={g.groupKey}
             href={href}
-            className="group"
+            className="group block"
           >
-            <Card className="transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-accent-orange/30 hover:bg-public-bg-elevated hover:shadow-xl hover:shadow-black/20">
+            <Card className="h-full border-accent-orange/0 hover:border-accent-orange/30">
               {g.photoUrl ? (
-                <div className="relative mb-4 h-44 w-full overflow-hidden rounded-xl bg-public-bg-elevated">
+                <div className="relative h-44 w-full overflow-hidden">
                   <Image
                     src={g.photoUrl}
                     alt={`${g.marque} ${g.modele}`}
@@ -179,49 +186,41 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
                   />
                 </div>
               ) : (
-                <div className="mb-4 flex h-44 w-full items-center justify-center rounded-xl bg-public-bg-elevated">
+                <div className="flex h-44 w-full items-center justify-center bg-public-bg-elevated">
                   <SearchIcon size={32} className="text-public-text-faint" />
                 </div>
               )}
-              <div className="mb-3">
-                <Badge variant={g.totalCount > 0 ? "green" : "gold"}>
-                  {g.totalCount > 0 ? "Disponible" : "Sur demande"}
-                </Badge>
-              </div>
-              <h3 className="text-lg font-semibold text-public-text">{g.marque} {g.modele}</h3>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {[g.categorie, g.boite, g.climatisation && "Clim", g.gps && "GPS", g.chauffeurDisponible && "Chauffeur"]
-                  .filter((f): f is string => !!f)
-                  .map((f) => (
-                    <span key={f} className="rounded-md bg-public-bg-elevated px-2 py-0.5 text-[11px] text-public-text-muted">{f}</span>
-                  ))}
-              </div>
-              <div className="mt-5 flex items-center justify-between border-t border-public-border pt-4">
+              <CardContent className="px-(--card-spacing) pt-(--card-spacing)">
+                <div className="mb-3">
+                  <Badge variant={g.totalCount > 0 ? "green" : "default"}>
+                    {g.totalCount > 0 ? "Disponible" : "Sur demande"}
+                  </Badge>
+                </div>
+                <h3 className="text-lg font-semibold text-public-text">{g.marque} {g.modele}</h3>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {[g.categorie, g.boite, g.climatisation && "Clim", g.gps && "GPS", g.chauffeurDisponible && "Chauffeur"]
+                    .filter((f): f is string => !!f)
+                    .map((f) => (
+                      <span key={f} className="rounded-md bg-public-bg-elevated px-2 py-0.5 text-[11px] text-public-text-muted">{f}</span>
+                    ))}
+                </div>
+              </CardContent>
+              <CardFooter className="flex items-center justify-between gap-3">
                 {hasLoc ? (
-                  <span
-                    className="relative inline-block bg-accent-orange px-4 py-1.5 text-sm font-bold text-[#0A0A0A]"
-                    style={{
-                      clipPath: "polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)",
-                    }}
-                  >
+                  <span className="inline-block rounded-md bg-accent-orange px-3 py-1.5 text-sm font-bold text-[#0A0A0A]">
                     {g.prixJournalier.toLocaleString("fr-FR")} FCFA/j
                   </span>
                 ) : hasVente ? (
-                  <span
-                    className="relative inline-block bg-accent-gold px-4 py-1.5 text-sm font-bold text-[#0A0A0A]"
-                    style={{
-                      clipPath: "polygon(8px 0%, calc(100% - 8px) 0%, 100% 50%, calc(100% - 8px) 100%, 8px 100%, 0% 50%)",
-                    }}
-                  >
+                  <span className="inline-block rounded-md bg-accent-gold px-3 py-1.5 text-sm font-bold text-[#0A0A0A]">
                     {g.prixVente!.toLocaleString("fr-FR")} FCFA
                   </span>
                 ) : (
                   <span className="text-sm font-semibold text-public-text-muted">Prix sur demande</span>
                 )}
-                <span className={`inline-flex items-center gap-1 text-sm font-semibold transition-all duration-300 group-hover:gap-2 ${!hasLoc && hasVente ? "text-accent-gold" : "text-accent-orange"}`}>
+                <span className={`inline-flex items-center gap-1 text-sm font-semibold transition-all group-hover:gap-2 ${!hasLoc && hasVente ? "text-accent-gold" : "text-accent-orange"}`}>
                   {!hasLoc && hasVente ? "Acheter" : "Réserver"} <ChevronRightIcon size={14} />
                 </span>
-              </div>
+              </CardFooter>
             </Card>
           </Link>
           )
@@ -229,45 +228,47 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
       </div>
 
       {totalPages > 1 && (
-        <nav className="mt-12 flex items-center justify-center gap-3" aria-label="Pagination">
-          {page > 1 ? (
-            <Link
-              href={pageUrl(page - 1)}
-              className="flex items-center gap-1 rounded-lg border border-public-border bg-public-bg-card px-4 py-2 text-sm font-medium text-public-text transition-colors hover:bg-public-bg-elevated"
-            >
-              <ChevronRightIcon size={16} className="rotate-180" /> Précédent
-            </Link>
-          ) : (
-            <span className="flex items-center gap-1 rounded-lg border border-public-border bg-public-bg-card px-4 py-2 text-sm font-medium text-public-text-faint opacity-50">
-              <ChevronRightIcon size={16} className="rotate-180" /> Précédent
-            </span>
-          )}
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-            <Link
-              key={p}
-              href={pageUrl(p)}
-              className={`flex h-10 w-10 items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
-                p === page
-                  ? "bg-accent-orange text-[#0A0A0A]"
-                  : "border border-public-border bg-public-bg-card text-public-text-muted hover:bg-public-bg-elevated hover:text-public-text"
-              }`}
-            >
-              {p}
-            </Link>
-          ))}
-          {page < totalPages ? (
-            <Link
-              href={pageUrl(page + 1)}
-              className="flex items-center gap-1 rounded-lg border border-public-border bg-public-bg-card px-4 py-2 text-sm font-medium text-public-text transition-colors hover:bg-public-bg-elevated"
-            >
-              Suivant <ChevronRightIcon size={16} />
-            </Link>
-          ) : (
-            <span className="flex items-center gap-1 rounded-lg border border-public-border bg-public-bg-card px-4 py-2 text-sm font-medium text-public-text-faint opacity-50">
-              Suivant <ChevronRightIcon size={16} />
-            </span>
-          )}
-        </nav>
+        <Pagination className="mt-12">
+          <PaginationContent>
+            <PaginationItem>
+              {page > 1 ? (
+                <PaginationPrevious href={pageUrl(page - 1)} text="Précédent" />
+              ) : (
+                <span className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm text-public-text-faint opacity-50">
+                  <ChevronRightIcon size={16} className="rotate-180" />
+                  <span className="hidden sm:block">Précédent</span>
+                </span>
+              )}
+            </PaginationItem>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <PaginationItem key={p}>
+                {p === page ? (
+                  <PaginationLink href={pageUrl(p)} isActive>
+                    {p}
+                  </PaginationLink>
+                ) : Math.abs(p - page) <= 2 || p === 1 || p === totalPages ? (
+                  <PaginationLink href={pageUrl(p)}>
+                    {p}
+                  </PaginationLink>
+                ) : (
+                  <PaginationEllipsis />
+                )}
+              </PaginationItem>
+            ))}
+
+            <PaginationItem>
+              {page < totalPages ? (
+                <PaginationNext href={pageUrl(page + 1)} text="Suivant" />
+              ) : (
+                <span className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm text-public-text-faint opacity-50">
+                  <span className="hidden sm:block">Suivant</span>
+                  <ChevronRightIcon size={16} />
+                </span>
+              )}
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
     </>
   )

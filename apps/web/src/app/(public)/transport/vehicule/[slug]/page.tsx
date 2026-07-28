@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { parseGroupKey, makeGroupKey } from "@/lib/vehicle-group"
+import { parseGroupKey, makeGroupKey, photosDuGroupe } from "@/lib/vehicle-group"
 import { Badge } from "@/components/ui"
 import { VehicleGallery } from "@/components/public/vehicle-gallery"
 import { VehicleBooking } from "@/components/public/vehicle-booking"
@@ -71,11 +71,15 @@ export default async function VehicleDetail({
   const venteRep = vehicules.find((v) => Number(v.prix_vente) > 0) ?? rep
   const modeAchat = mode === "achat" && hasVente
 
-  const { data: photos } = await supabase
+  // Toutes les photos du GROUPE, pas seulement celles du premier exemplaire :
+  // c'est déjà ce que fait la carte du catalogue.
+  const { data: photosBrutes } = await supabase
     .from("vehicule_photos")
-    .select("url")
-    .eq("vehicule_id", rep.id)
+    .select("vehicule_id, url, ordre")
+    .in("vehicule_id", vehicules.map((v) => v.id))
     .order("ordre")
+
+  const photos = photosDuGroupe(vehicules.map((v) => v.id), photosBrutes)
 
   const { data: zones } = await supabase
     .from("zones_tarifaires")
@@ -126,7 +130,7 @@ export default async function VehicleDetail({
     "@type": "Product",
     name: `${rep.marque} ${rep.modele}`,
     description: rep.description || `Réservez un ${rep.marque} ${rep.modele} à Abidjan, Côte d'Ivoire.`,
-    image: photos?.map((p) => p.url) ?? [],
+    image: photos.map((p) => p.url),
     brand: {
       "@type": "Brand",
       name: rep.marque,
@@ -207,7 +211,7 @@ export default async function VehicleDetail({
 
       <div className="mx-auto grid max-w-6xl gap-12 px-6 py-8 sm:px-10 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <VehicleGallery photos={photos ?? []} alt={`${rep.marque} ${rep.modele}`} />
+          <VehicleGallery photos={photos} alt={`${rep.marque} ${rep.modele}`} />
 
           <div className="mt-6 flex items-start justify-between gap-4">
             <div>

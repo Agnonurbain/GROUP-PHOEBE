@@ -2,6 +2,8 @@
 
 import Link from "next/link"
 import Image from "next/image"
+import { ArrowRight } from "lucide-react"
+import { Button } from "@/components/ui"
 import {
   ScrollReveal,
   StaggerContainer,
@@ -10,11 +12,6 @@ import {
   GoldTrail,
   HeroSlideshow,
 } from "@/components/effects"
-
-/* Hallmark · Editorial index — hero biaisé bas-gauche, liste de services comme
-   colonne vertébrale, preuve en bande fine, engagement asymétrique, process en
-   ligne, close « statement ». Display serif (Fraunces) sur les titres, Inter au
-   corps. Aucune grille de cartes identiques répétée. */
 
 const services = [
   {
@@ -89,15 +86,6 @@ const etapes = [
   { title: "Profitez", desc: "Nous nous occupons du reste. Bonne route !" },
 ]
 
-function ArrowRight() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <line x1="5" y1="12" x2="19" y2="12" />
-      <polyline points="12 5 19 12 12 19" />
-    </svg>
-  )
-}
-
 export default function HomePage({
   role = null,
   vehiculeCount = 0,
@@ -118,8 +106,6 @@ export default function HomePage({
 
   return (
     <GoldTrail>
-      {/* Hero — bloc centré dans l'image (le texte reste composé au centre pour
-          tenir la symétrie du cadrage photo). */}
       <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden px-6 py-28 sm:px-10">
         <HeroSlideshow />
 
@@ -144,18 +130,16 @@ export default function HomePage({
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={0.3}>
               <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
-                <Link
-                  href="#services"
-                  className="btn-premium [--btn-glow:rgba(201,168,76,0.45)] inline-flex items-center justify-center gap-2 rounded-lg bg-accent-gold px-7 py-3.5 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover"
-                >
-                  Découvrir nos services
-                  <ArrowRight />
+                <Link href="#services">
+                  <Button size="lg" className="px-8 py-4 text-base">
+                    Découvrir nos services
+                    <ArrowRight className="size-4" />
+                  </Button>
                 </Link>
-                <Link
-                  href="/contact"
-                  className="btn-premium [--btn-glow:rgba(255,255,255,0.15)] inline-flex items-center justify-center rounded-lg border border-white/40 bg-black/40 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-sm hover:bg-black/60"
-                >
-                  Contactez-nous
+                <Link href="/contact">
+                  <Button variant="outline-white" size="lg" className="px-8 py-4 text-base">
+                    Contactez-nous
+                  </Button>
                 </Link>
               </div>
             </ScrollReveal>
@@ -163,12 +147,8 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* Preuve — bande fine, chiffres réels, alignés à gauche (pas de compteurs centrés) */}
       <section className="border-y border-public-border bg-public-bg-card">
         <div className="mx-auto flex max-w-6xl flex-col divide-y divide-public-border px-6 sm:flex-row sm:divide-x sm:divide-y-0 sm:px-10">
-          {/* Le padding vit sur le wrapper : `first:` doit se résoudre contre le
-              conteneur flex, pas contre le ScrollReveal (dont le div interne est
-              toujours « premier enfant », d'où un pl-0 appliqué partout). */}
           {stats.map((stat, i) => (
             <ScrollReveal key={stat.label} variant="fade-up" delay={i * 0.1} className="flex-1 sm:px-10 sm:first:pl-0">
               <div className="flex items-baseline gap-4 py-6 sm:flex-col sm:items-start sm:gap-2 sm:py-9">
@@ -182,7 +162,6 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* Services — pièce maîtresse : liste éditoriale pleine largeur */}
       <section id="services" className="scroll-mt-24 px-6 py-24 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <ScrollReveal variant="fade-up">
@@ -195,15 +174,12 @@ export default function HomePage({
           </ScrollReveal>
 
           <StaggerContainer>
-            {/* Lignes pleine largeur : pas d'inclinaison (bancale à cette échelle),
-                on ne garde que l'éclat qui suit le curseur. */}
             {services.map((s, i) => (
               <ServiceCard key={s.title} index={i} tilt={false}>
                 <Link
                   href={s.href}
                   className="group relative grid grid-cols-[3rem_1fr] items-center gap-5 overflow-hidden border-b border-public-border py-8 transition-colors duration-300 hover:bg-public-bg-card/60 sm:grid-cols-[6rem_1fr_auto] sm:gap-10 sm:px-4"
                 >
-                  {/* Filet d'accent qui s'allume à la couleur du métier */}
                   <span
                     aria-hidden="true"
                     className="absolute inset-y-0 left-0 w-px origin-top scale-y-0 transition-transform duration-500 ease-out group-hover:scale-y-100"
@@ -219,7 +195,7 @@ export default function HomePage({
                     </div>
                     <p className="mt-2 max-w-md text-sm text-public-text-muted sm:text-base">{s.desc}</p>
                     <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-gold transition-all group-hover:gap-3">
-                      Explorer <ArrowRight />
+                      Explorer <ArrowRight className="size-4" />
                     </span>
                   </div>
                   <div className="hidden h-20 w-32 shrink-0 items-center justify-end sm:flex">
@@ -239,7 +215,6 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* Engagement — layout asymétrique, icônes inline (pas de tuiles au-dessus) */}
       <section className="border-t border-public-border bg-public-bg-card px-6 py-24 sm:px-10">
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <ScrollReveal variant="slide-right">
@@ -274,7 +249,6 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* Comment ça marche — process en ligne (grands numéros serif, filet continu) */}
       <section className="px-6 py-24 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <ScrollReveal variant="fade-up">
@@ -302,7 +276,6 @@ export default function HomePage({
         </div>
       </section>
 
-      {/* Close — statement biaisé (pas de bande CTA centrée) — masqué pour le staff */}
       {!isStaff && (
         <ScrollReveal variant="fade-up">
           <section className="border-t border-public-border bg-public-bg-card px-6 py-28 sm:px-10">
@@ -315,18 +288,16 @@ export default function HomePage({
                 )}
               </h2>
               <div className="flex flex-col gap-4 sm:flex-row lg:shrink-0">
-                <Link
-                  href="#services"
-                  className="btn-premium [--btn-glow:rgba(201,168,76,0.45)] inline-flex items-center justify-center gap-2 rounded-lg bg-accent-gold px-8 py-3.5 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover"
-                >
-                  Découvrir nos services
-                  <ArrowRight />
+                <Link href="#services">
+                  <Button size="lg" className="px-8 py-4 text-base">
+                    Découvrir nos services
+                    <ArrowRight className="size-4" />
+                  </Button>
                 </Link>
-                <Link
-                  href={isGuest ? "/inscription" : "/contact"}
-                  className="btn-premium [--btn-glow:rgba(201,168,76,0.25)] inline-flex items-center justify-center rounded-lg border border-public-border px-8 py-3.5 text-sm font-semibold text-public-text hover:bg-public-bg-elevated"
-                >
-                  {isGuest ? "S'inscrire" : "Nous contacter"}
+                <Link href={isGuest ? "/inscription" : "/contact"}>
+                  <Button variant="outline" size="lg" className="px-8 py-4 text-base">
+                    {isGuest ? "S'inscrire" : "Nous contacter"}
+                  </Button>
                 </Link>
               </div>
             </div>

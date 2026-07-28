@@ -1,23 +1,21 @@
-import { InputHTMLAttributes } from "react"
+import * as React from "react"
+import { Input as InputPrimitive } from "@base-ui/react/input"
+import { cn } from "@/lib/utils"
 
-type Variant = "default" | "public" | "admin"
+type InputProps = React.ComponentProps<"input"> & { variant?: string }
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  variant?: Variant
-}
-
-// Placeholders : #4A4A4A (2.2:1) et #6B7280 (4.1:1) étaient sous le seuil AA.
-const VARIANTS: Record<Variant, string> = {
-  default: "bg-public-bg border-public-border text-public-text placeholder-public-text-muted focus:border-[#C9A84C]/50 rounded-lg",
-  public: "bg-public-bg border-public-border text-public-text placeholder:text-public-text-muted focus:border-accent-orange focus:ring-1 focus:ring-accent-orange/30 rounded-xl",
-  admin: "bg-white border-phoebe-anthracite/20 text-phoebe-anthracite placeholder-phoebe-anthracite/70 focus:border-phoebe-green rounded-lg",
-}
-
-export function Input({ variant = "default", className = "", ...props }: InputProps) {
+function Input({ className, type, ...props }: InputProps) {
   return (
-    <input
-      className={`w-full border px-4 py-2.5 text-sm outline-none transition-colors max-sm:min-h-11 ${VARIANTS[variant]} ${className}`}
+    <InputPrimitive
+      type={type}
+      data-slot="input"
+      className={cn(
+        "h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none file:inline-flex file:h-6 file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-input/50 disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:disabled:bg-input/80 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40",
+        className
+      )}
       {...props}
     />
   )
 }
+
+export { Input }

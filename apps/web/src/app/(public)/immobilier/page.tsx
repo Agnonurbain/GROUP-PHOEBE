@@ -1,17 +1,14 @@
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
-import { Badge, Button, Card } from "@/components/ui"
+import { ChevronRight } from "lucide-react"
+import { Badge, Button, Card, CardContent, CardFooter } from "@/components/ui"
 import ImmobilierFiltres from "./immobilier-filtres"
 import { BackLink } from "@/components/public/back-link"
 import { PageHero, SectionHead } from "@/components/public/section-head"
 import { getBiensWithPhotos } from "@/lib/public-cache"
 import { serializeJsonLd } from "@/lib/json-ld"
 import { statutBienLabel, statutBienBadgeVariant, typeBienLabel } from "@/lib/immobilier"
-
-/* Hallmark · Index + rail (page catalogue) — voir design.md.
-   Hero biaisé à gauche, grille de biens conservée (régularité fonctionnelle
-   pour un listing), close en « statement ». */
 
 export const metadata: Metadata = {
   title: "Immobilier — Achat, Vente & Location",
@@ -129,9 +126,9 @@ export default async function Immobilier({
             const photo = b.id ? photoMap.get(b.id) : null
             return (
               <Link key={b.id} href={`/immobilier/${b.id}`} className="group block">
-              <Card className="h-full transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-accent-green/30 hover:bg-public-bg-elevated hover:shadow-xl hover:shadow-black/20">
+              <Card className="h-full border-accent-green/0 hover:border-accent-green/30">
                 {photo ? (
-                  <div className="relative mb-4 h-48 w-full overflow-hidden rounded-xl bg-public-bg-elevated">
+                  <div className="relative h-48 w-full overflow-hidden">
                     <Image
                       src={photo}
                       alt={`${b.type} – ${b.localisation}`}
@@ -141,7 +138,7 @@ export default async function Immobilier({
                     />
                   </div>
                 ) : (
-                  <div className="mb-4 flex h-48 w-full items-center justify-center rounded-xl bg-public-bg-elevated">
+                  <div className="flex h-48 w-full items-center justify-center bg-public-bg-elevated">
                     <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-public-text-faint">
                       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
                       <circle cx="8.5" cy="8.5" r="1.5" />
@@ -149,23 +146,27 @@ export default async function Immobilier({
                     </svg>
                   </div>
                 )}
-                <div className="mb-3 flex flex-wrap gap-2">
-                  <Badge variant={statutBienBadgeVariant(b.statut)}>{statutBienLabel(b.statut)}</Badge>
-                  <Badge variant="green">{typeBienLabel(b.type)}</Badge>
-                </div>
-                <h3 className="text-lg font-semibold text-public-text">{typeBienLabel(b.type)} – {b.localisation}</h3>
-                <p className="font-display mt-1 text-3xl font-medium text-accent-green">{b.prix.toLocaleString("fr-FR")} <span className="text-base">FCFA</span></p>
-                <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-public-text-muted">
-                  {b.surface_m2 && <span>{b.surface_m2} m²</span>}
-                  {b.nb_chambres && <span>{b.nb_chambres} {b.nb_chambres > 1 ? "chambres" : "chambre"}</span>}
-                  <span>{b.localisation}</span>
-                </div>
-                <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-accent-green transition-all group-hover:gap-2">Voir le détail →</span>
+                <CardContent className="px-(--card-spacing) pt-(--card-spacing)">
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <Badge variant={statutBienBadgeVariant(b.statut)}>{statutBienLabel(b.statut)}</Badge>
+                    <Badge variant="green">{typeBienLabel(b.type)}</Badge>
+                  </div>
+                  <h3 className="text-lg font-semibold text-public-text">{typeBienLabel(b.type)} – {b.localisation}</h3>
+                  <p className="font-display mt-1 text-3xl font-medium text-accent-green">{b.prix.toLocaleString("fr-FR")} <span className="text-base">FCFA</span></p>
+                  <div className="mt-3 flex flex-wrap items-center gap-4 text-sm text-public-text-muted">
+                    {b.surface_m2 && <span>{b.surface_m2} m²</span>}
+                    {b.nb_chambres && <span>{b.nb_chambres} {b.nb_chambres > 1 ? "chambres" : "chambre"}</span>}
+                    <span>{b.localisation}</span>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-green transition-all group-hover:gap-2">Voir le détail <ChevronRight size={12} /></span>
+                </CardFooter>
               </Card>
               </Link>
             )
           }) : (
-            <div className="col-span-2 flex flex-col items-center gap-4 rounded-2xl border border-public-border bg-public-bg-card py-16 text-center">
+            <div className="col-span-2 flex flex-col items-center gap-4 rounded-xl border border-public-border bg-public-bg-card py-16 text-center">
               <p className="text-lg font-semibold text-public-text">Aucun bien trouvé</p>
               <p className="text-sm text-public-text-muted">Essayez d&apos;élargir vos critères de recherche.</p>
             </div>
@@ -173,7 +174,6 @@ export default async function Immobilier({
         </div>
       </section>
 
-      {/* Close — statement biaisé */}
       <section className="border-t border-public-border bg-public-bg-card px-6 py-24 sm:px-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
@@ -186,7 +186,7 @@ export default async function Immobilier({
           </div>
           <div className="lg:shrink-0">
             <Link href="/contact?sujet=estimation-bien">
-              <Button variant="default" size="lg" className="bg-accent-green text-white hover:bg-accent-green-hover">
+              <Button variant="green" size="lg">
                 Estimer mon bien
               </Button>
             </Link>

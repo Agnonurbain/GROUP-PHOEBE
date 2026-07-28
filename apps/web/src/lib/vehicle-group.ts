@@ -136,3 +136,31 @@ export function groupVehicles(
 
   return groups.sort((a, b) => b.totalCount - a.totalCount);
 }
+
+/**
+ * Photos d'un GROUPE de véhicules (même marque + modèle).
+ *
+ * La fiche véhicule ne chargeait que les photos du premier exemplaire : si
+ * l'admin les avait mises sur un autre véhicule du même modèle, la page
+ * n'affichait rien — alors que la carte du catalogue, elle, balaie tout le
+ * groupe. On clique sur une belle photo et on atterrit sur une page vide.
+ *
+ * Ordre : par position du véhicule dans le groupe, puis par `ordre` de la photo.
+ * Les URL en double (même cliché rattaché à deux exemplaires) sont retirées.
+ */
+export function photosDuGroupe(
+  vehiculeIds: string[],
+  photos: { vehicule_id: string; url: string; ordre: number | null }[] | null | undefined
+): { url: string }[] {
+  const rang = new Map(vehiculeIds.map((id, i) => [id, i]));
+  const triees = [...(photos ?? [])]
+    .filter((p) => rang.has(p.vehicule_id))
+    .sort(
+      (a, b) =>
+        rang.get(a.vehicule_id)! - rang.get(b.vehicule_id)! ||
+        (a.ordre ?? 0) - (b.ordre ?? 0)
+    );
+  const uniques = new Map<string, { url: string }>();
+  for (const p of triees) if (!uniques.has(p.url)) uniques.set(p.url, { url: p.url });
+  return [...uniques.values()];
+}

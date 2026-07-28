@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { AlertTriangle, ChevronRight } from "lucide-react"
 import { BackLink } from "@/components/public/back-link"
 import { Button } from "@/components/ui"
 import { PageHero, SectionHead } from "@/components/public/section-head"
@@ -13,10 +14,6 @@ import {
   poidsMax,
 } from "@/lib/livraison"
 import { getTarifsLivraison } from "@/lib/public-cache"
-
-/* Hallmark · Editorial index (page service) — voir design.md.
-   Quatre traitements distincts pour éviter le patron IA : hero biaisé →
-   grille tarifaire en tableau → process numéroté → listes éditoriales. */
 
 export const metadata: Metadata = {
   title: "Livraison de colis — Transport & Coursier",
@@ -74,7 +71,7 @@ export default async function Livraison({
               href="/suivi"
               className="text-sm font-semibold text-accent-orange transition-colors hover:text-accent-orange-hover"
             >
-              Suivre un colis →
+              Suivre un colis <ChevronRight className="inline size-3.5" />
             </Link>
           </>
         }
@@ -82,22 +79,22 @@ export default async function Livraison({
 
       {echec && (
         <div role="alert" className="mx-6 mt-8 max-w-2xl rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error sm:mx-10">
+          <AlertTriangle className="mr-2 inline size-4" />
           Le paiement a été annulé. Vous pouvez relancer votre commande à tout moment.
         </div>
       )}
 
-      {/* Tarifs — grille zones × modes (source unique lib/livraison) */}
       <section className="px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
             title="Nos tarifs"
             lede="Le prix dépend de la distance entre la collecte et la livraison, du mode d'envoi et du poids du colis."
           />
-          <div className="mt-8 overflow-x-auto">
+          <div className="mt-8 overflow-x-auto rounded-xl border border-public-border bg-public-bg-card">
             <table className="w-full min-w-[640px] border-collapse text-left">
               <thead>
                 <tr className="border-b border-public-border">
-                  <th scope="col" className="py-4 pr-6 text-xs font-medium uppercase tracking-[0.15em] text-public-text-muted">
+                  <th scope="col" className="py-4 pr-6 pl-4 text-xs font-medium uppercase tracking-[0.15em] text-public-text-muted">
                     Zone
                   </th>
                   {MODES_LIVRAISON.map((mode) => (
@@ -112,8 +109,8 @@ export default async function Livraison({
               </thead>
               <tbody>
                 {ZONES_LIVRAISON.map((zone) => (
-                  <tr key={zone} className="border-b border-public-border transition-colors hover:bg-public-bg-card/60">
-                    <th scope="row" className="py-5 pr-6 align-top">
+                  <tr key={zone} className="border-b border-public-border transition-colors hover:bg-public-bg-elevated/40">
+                    <th scope="row" className="py-5 pr-6 pl-4 align-top">
                       <span className="block text-sm font-semibold text-public-text">{ZONE_LABELS[zone]}</span>
                       <span className="mt-1 block max-w-[14rem] text-xs font-normal text-public-text-muted">
                         {ZONE_DESCRIPTIONS[zone]}
@@ -158,7 +155,6 @@ export default async function Livraison({
         </div>
       </section>
 
-      {/* Comment ça marche — process en ligne, grands numéros display */}
       <section className="border-t border-public-border bg-public-bg-card px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead title="Comment ça marche" className="border-b-0 pb-0" />
@@ -178,7 +174,6 @@ export default async function Livraison({
         </div>
       </section>
 
-      {/* Types de colis — liste éditoriale (traitement différent des sections voisines) */}
       <section className="px-6 py-20 sm:px-10">
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
@@ -199,7 +194,6 @@ export default async function Livraison({
         </div>
       </section>
 
-      {/* Close — statement biaisé */}
       <section className="border-t border-public-border bg-public-bg-card px-6 py-24 sm:px-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           <h2 className="font-display max-w-2xl text-3xl font-medium leading-[1.15] tracking-tight text-public-text sm:text-4xl">
