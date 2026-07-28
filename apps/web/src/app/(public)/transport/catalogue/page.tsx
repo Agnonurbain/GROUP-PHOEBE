@@ -298,6 +298,16 @@ export default async function TransportCatalogue({
         eyebrow="Transport"
         title="Notre Flotte"
         lede="Découvrez nos véhicules d'exception pour vos déplacements."
+        aside={
+          <Image
+            src="/logos/logo-trans-livr.png"
+            alt="Transport"
+            width={407}
+            height={345}
+            className="h-24 w-auto animate-service-logo opacity-90"
+            priority
+          />
+        }
       />
 
       <div className="mx-auto max-w-6xl px-6 py-10 sm:px-10">

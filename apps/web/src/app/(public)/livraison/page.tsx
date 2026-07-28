@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
 import { AlertTriangle, ChevronRight } from "lucide-react"
 import { BackLink } from "@/components/public/back-link"
 import { Button } from "@/components/ui"
@@ -62,6 +63,16 @@ export default async function Livraison({
         eyebrow="Livraison"
         title={<>Livraison de colis &amp; Coursier</>}
         lede="Envois rapides et sécurisés à Abidjan et partout en Côte d'Ivoire, livrés porte-à-porte."
+        aside={
+          <Image
+            src="/logos/logo_g-phoebe.png"
+            alt="Livraison"
+            width={334}
+            height={303}
+            className="h-24 w-auto animate-service-logo opacity-90"
+            priority
+          />
+        }
         actions={
           <>
             <Link href="/livraison/commander">

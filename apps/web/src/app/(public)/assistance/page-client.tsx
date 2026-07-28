@@ -66,7 +66,7 @@ export default function Assistance({ tarifs }: { tarifs: TarifsAssistance }) {
             alt="Assistance Voyages & Études"
             width={429}
             height={346}
-            className="h-24 w-auto opacity-90"
+            className="h-24 w-auto animate-service-logo opacity-90"
             priority
           />
         }

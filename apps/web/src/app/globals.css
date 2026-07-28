@@ -298,6 +298,15 @@ textarea {
   animation: fade-in 400ms ease-out;
 }
 
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+.animate-service-logo {
+  animation: float 5s ease-in-out infinite;
+}
+
 /* Le public est entièrement sombre : scrollbars, autofill et contrôles natifs
    doivent suivre, sinon ils s'affichent en clair sur #0A0A0A. */
 [data-vertical] {

@@ -99,7 +99,7 @@ export default async function Immobilier({
             alt="Immobilier"
             width={308}
             height={278}
-            className="h-24 w-auto opacity-90"
+            className="h-24 w-auto animate-service-logo opacity-90"
             priority
           />
         }
