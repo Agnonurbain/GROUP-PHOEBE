@@ -236,8 +236,11 @@ group-phoebe/
 
 ### 6.1 Composants publics (`components/public/`)
 
+`section-head.tsx` : `PageHero` accepte désormais un prop `bgImage` pour afficher une image de fond en plein écran avec animation Ken Burns (zoom lent 20s) et voile sombre dégradé. Utilisé sur les 4 services (Transport, Livraison, Immobilier, Assistance).
+
 | Composant | Rôle |
-|---|---|
+|---|---|---|
+| `section-head.tsx` (PageHero) | Hero de page service avec option `bgImage` (zoom Ken Burns), eyebrow, titre, lede, actions, aside logo |
 | `smart-header.tsx` | Header adaptatif (logo par verticale, menu mobile, auth, thème) |
 | `footer.tsx` | Footer avec colonnes services/contact/legal |
 | `section-head.tsx` | En-tête de section (eyebrow + h2 + lede) |
@@ -544,6 +547,10 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 | 2026-07-28 | Fix cache : `unstable_cache` sérialise en JSON → les objets `Map` perdent leur type. Remplacés par `Record<string, string>` dans `getVehiculesWithPhotos`, `getBiensWithPhotos`, `groupVehicles`. |
 | 2026-07-28 | Transport : cartes catalogue agrandies comme immobilier (grid `md:grid-cols-2`, image `h-48`, prix `text-3xl`, placeholder SVG identique). |
 | 2026-07-28 | Fix assistance : `useActionState` partagé entre les 3 cartes visa → extrait dans sous-composant `VisaCard` avec son propre state. |
+| 2026-07-28 | Transport : placeholder image remplacé par icône voiture SVG, puis par le même placeholder que l'immobilier (rectangle + paysage). |
+| 2026-07-28 | CODEEBASE.md ajouté au suivi des modifs. |
+| 2026-07-28 | Logos animés : ajout keyframe `float` dans globals.css + classe `animate-service-logo` sur les 4 services. Ajout des logos manquants (Transport, Livraison) dans le `PageHero`. |
+| 2026-07-28 | Fonds animés : nouveau prop `bgImage` sur `PageHero` avec zoom Ken Burns 20s + voile sombre. Appliqué aux 4 services (hero-car, hero-livraison, hero-immobilier, hero-voyages). |
 
 ## 13. ÉVOLUTION
 
