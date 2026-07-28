@@ -49,19 +49,19 @@ export const metadata: Metadata = {
 
 function GridSkeleton() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-6 md:grid-cols-2">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="rounded-xl border border-public-border bg-public-bg-card p-4">
-          <div className="mb-4 h-44 animate-pulse rounded-lg bg-public-bg-elevated" />
-          <div className="mb-2 h-5 w-20 animate-pulse rounded-full bg-public-bg-elevated" />
-          <div className="mb-2 h-6 w-3/4 animate-pulse rounded bg-public-bg-elevated" />
-          <div className="flex flex-wrap gap-2">
-            <div className="h-5 w-16 animate-pulse rounded-md bg-public-bg-elevated" />
-            <div className="h-5 w-12 animate-pulse rounded-md bg-public-bg-elevated" />
-          </div>
-          <div className="mt-5 flex items-center justify-between border-t border-public-border pt-4">
-            <div className="h-5 w-32 animate-pulse rounded bg-public-bg-elevated" />
-            <div className="h-5 w-20 animate-pulse rounded bg-public-bg-elevated" />
+        <div key={i} className="rounded-xl border border-public-border bg-public-bg-card overflow-hidden">
+          <div className="h-48 animate-pulse bg-public-bg-elevated" />
+          <div className="p-4">
+            <div className="mb-3 h-5 w-20 animate-pulse rounded-full bg-public-bg-elevated" />
+            <div className="mb-2 h-6 w-3/4 animate-pulse rounded bg-public-bg-elevated" />
+            <div className="mb-3 h-9 w-48 animate-pulse rounded bg-public-bg-elevated" />
+            <div className="flex flex-wrap gap-2">
+              <div className="h-5 w-16 animate-pulse rounded-md bg-public-bg-elevated" />
+              <div className="h-5 w-12 animate-pulse rounded-md bg-public-bg-elevated" />
+              <div className="h-5 w-14 animate-pulse rounded-md bg-public-bg-elevated" />
+            </div>
           </div>
         </div>
       ))}
@@ -158,7 +158,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
 
   return (
     <>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-6 md:grid-cols-2">
         {paged.map((g) => {
           const hasLoc = g.prixJournalier > 0
           const hasVente = !!g.prixVente && g.prixVente > 0
@@ -176,18 +176,22 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
           >
             <Card className="h-full border-accent-orange/0 hover:border-accent-orange/30">
               {g.photoUrl ? (
-                <div className="relative h-44 w-full overflow-hidden">
+                <div className="relative h-48 w-full overflow-hidden">
                   <Image
                     src={g.photoUrl}
                     alt={`${g.marque} ${g.modele}`}
                     fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-110"
                   />
                 </div>
               ) : (
-                <div className="flex h-44 w-full items-center justify-center bg-public-bg-elevated">
-                  <SearchIcon size={32} className="text-public-text-faint" />
+                <div className="flex h-48 w-full items-center justify-center bg-public-bg-elevated">
+                  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-public-text-faint">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <circle cx="8.5" cy="8.5" r="1.5" />
+                    <polyline points="21 15 16 10 5 21" />
+                  </svg>
                 </div>
               )}
               <CardContent className="px-(--card-spacing) pt-(--card-spacing)">
@@ -197,28 +201,25 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
                   </Badge>
                 </div>
                 <h3 className="text-lg font-semibold text-public-text">{g.marque} {g.modele}</h3>
-                <div className="mt-2 flex flex-wrap gap-1.5">
-                  {[g.categorie, g.boite, g.climatisation && "Clim", g.gps && "GPS", g.chauffeurDisponible && "Chauffeur"]
-                    .filter((f): f is string => !!f)
-                    .map((f) => (
-                      <span key={f} className="rounded-md bg-public-bg-elevated px-2 py-0.5 text-[11px] text-public-text-muted">{f}</span>
-                    ))}
+                <p className="font-display mt-2 text-3xl font-medium text-accent-orange">
+                  {hasLoc
+                    ? `${g.prixJournalier.toLocaleString("fr-FR")} FCFA`
+                    : hasVente
+                      ? `${g.prixVente!.toLocaleString("fr-FR")} FCFA`
+                      : "Prix sur demande"}
+                  {hasLoc && <span className="text-base font-normal text-public-text-muted"> /jour</span>}
+                </p>
+                <div className="mt-3 flex flex-wrap gap-4 text-sm text-public-text-muted">
+                  {g.categorie && <span>{g.categorie}</span>}
+                  {g.boite && <span>{g.boite}</span>}
+                  {g.climatisation && <span>Clim</span>}
+                  {g.gps && <span>GPS</span>}
+                  {g.chauffeurDisponible && <span>Chauffeur</span>}
                 </div>
               </CardContent>
-              <CardFooter className="flex items-center justify-between gap-3">
-                {hasLoc ? (
-                  <span className="inline-block rounded-md bg-accent-orange px-3 py-1.5 text-sm font-bold text-[#0A0A0A]">
-                    {g.prixJournalier.toLocaleString("fr-FR")} FCFA/j
-                  </span>
-                ) : hasVente ? (
-                  <span className="inline-block rounded-md bg-accent-gold px-3 py-1.5 text-sm font-bold text-[#0A0A0A]">
-                    {g.prixVente!.toLocaleString("fr-FR")} FCFA
-                  </span>
-                ) : (
-                  <span className="text-sm font-semibold text-public-text-muted">Prix sur demande</span>
-                )}
-                <span className={`inline-flex items-center gap-1 text-sm font-semibold transition-all group-hover:gap-2 ${!hasLoc && hasVente ? "text-accent-gold" : "text-accent-orange"}`}>
-                  {!hasLoc && hasVente ? "Acheter" : "Réserver"} <ChevronRightIcon size={14} />
+              <CardFooter>
+                <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-orange transition-all group-hover:gap-2">
+                  {!hasLoc && hasVente ? "Acheter" : "Réserver"} <ChevronRightIcon size={12} />
                 </span>
               </CardFooter>
             </Card>
