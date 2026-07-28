@@ -50,10 +50,10 @@ export function PageHero({
       <div className="relative z-10 mx-auto grid max-w-6xl gap-10 lg:grid-cols-[1.5fr_1fr] lg:items-end lg:gap-16">
         <div>
           {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-          <h1 className="font-display mt-6 text-balance text-4xl font-medium leading-[1.05] tracking-tight text-public-text sm:text-5xl md:text-6xl">
+          <h1 className={`font-display mt-6 text-balance text-4xl font-medium leading-[1.05] tracking-tight sm:text-5xl md:text-6xl ${bgImage ? "text-white" : "text-public-text"}`}>
             {title}
           </h1>
-          {lede && <p className="mt-5 max-w-xl text-lg text-public-text-muted">{lede}</p>}
+          {lede && <p className={`mt-5 max-w-xl text-lg ${bgImage ? "text-white/80" : "text-public-text-muted"}`}>{lede}</p>}
           {actions && <div className="mt-8 flex flex-wrap items-center gap-4">{actions}</div>}
         </div>
         {aside && <div className="lg:justify-self-end">{aside}</div>}
