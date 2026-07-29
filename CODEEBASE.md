@@ -119,6 +119,7 @@ group-phoebe/
 | `/contact` | `page.tsx` | Contact |
 | `/suivi` | `page.tsx` | Suivi expédition |
 | `/offline` | `page.tsx` | Page hors-ligne |
+| `/design-system` | `page.tsx` | Galerie des composants (hors groupe de routes) |
 
 ### 4.3 Routes authentification
 
@@ -146,7 +147,8 @@ group-phoebe/
 | `/admin/biens/nouveau` | Ajout bien |
 | `/admin/biens/[id]` | Édition bien |
 | `/admin/expeditions` | Gestion expéditions |
-| `/admin/demandes-immobilier` | Demandes immobilières |
+| `/admin/demandes-immobilier` | Demandes immobilières (statuts, visites, agent, contre-offre) |
+| `/admin/parametres-immobilier` | Paramétrage immobilier — propriétaire uniquement (caution visite, remise max, quota d'offres) |
 | `/admin/dossiers-voyage` | Dossiers voyage/études |
 | `/admin/propositions` | Propositions de prix |
 | `/admin/comptes` | Gestion utilisateurs |
@@ -172,7 +174,10 @@ group-phoebe/
 | `/api/cron/expirer-demandes-sans-reponse` | GET | Expiration propositions sans réponse (cron) |
 | `/api/cron/expirer-negociations` | GET | Expiration négociations (cron) |
 | `/api/cron/expirer-non-presentations` | GET | Expiration non-présentations (cron) |
+| `/api/cron/expirer-demandes-immobilier` | GET | Expiration demandes et contre-offres immobilières à 7 j (cron) |
 | `/api/test-login` | GET | Login de test (dev) |
+
+Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRET`.
 
 ---
 
@@ -180,7 +185,10 @@ group-phoebe/
 
 47 migrations Supabase (00001 → 00047).
 
-### 5.1 Tables principales
+### 5.1 Tables
+
+42 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
+qui est généré depuis la base — c'est la référence en cas de doute.
 
 | Table | Module | Description |
 |---|---|---|
@@ -189,46 +197,69 @@ group-phoebe/
 | `chauffeurs` | Transport | Chauffeurs avec permis |
 | `vehicules` | Transport | Catalogue avec prix, statut |
 | `vehicule_photos` | Transport | Photos par véhicule |
-| `disponibilites_vehicule` | Transport | Planning avec exclusion GiST |
-| `disponibilites_chauffeur` | Transport | Planning chauffeurs |
-| `demandes_transport` | Transport | Réservations + devis, cycle de vie complet |
+| `vehicule_chauffeurs` | Transport | Affectation chauffeur ↔ véhicule |
+| `disponibilites_vehicule` | Transport | Planning avec exclusion GiST, colonne `periode` (`tstzrange`) |
+| `disponibilites_chauffeur` | Transport | Planning chauffeurs, colonne `periode` (`tstzrange`) |
+| `demandes_transport` | Transport | Réservations + devis, cycle de vie complet. Porte la négociation (`prix_negocie`, `negociation_note`, statut `en_negociation`) |
 | `lignes_demande` | Transport | Lignes de demande (multi-véhicules) |
 | `conducteurs_secondaires` | Transport | Conducteurs additionnels |
 | `contrats_recurrents` | Transport | Abonnements scolaire/personnel |
-| `propositions_prix` | Transport | Propositions de prix |
-| `negociations` | Transport | Négociation prix |
+| `propositions_prix` | Transport | Propositions de prix (opérateur → propriétaire) |
 | `avis_transport` | Transport | Avis clients |
+| `intervalles_prix` | Transport | Grille de prix par intervalle |
+| `zones_tarifaires` | Transport | Zones et km inclus par jour |
+| `propositions_tarifs` | Transport | Propositions de modification tarifaire |
 | `livreurs` | Livraison | Livreurs avec zone |
 | `expeditions` | Livraison | Colis avec suivi |
 | `expedition_statut_historique` | Livraison | Timeline statuts |
-| `bien_medias` | Immobilier | Photos/vidéos |
+| `communes` | Livraison | Communes rattachées à une zone |
+| `propositions_zones_tarifaires` | Livraison | Propositions de modification de zone |
+| `tarifs_livraison` | Livraison | Grille zone × mode, pilotable |
+| `paliers_poids` | Livraison | Paliers de poids, pilotables |
 | `biens` | Immobilier | Types, transactions, géolocalisation |
-| `visites` | Immobilier | Visites programmées |
-| `demandes_immobilier` | Immobilier | Demandes info/visite/offre |
+| `bien_medias` | Immobilier | Photos/vidéos |
+| `agents_immobiliers` | Immobilier | Agents et zone de couverture |
+| `visites` | Immobilier | Visites programmées (proposée → confirmée → réalisée) |
+| `demandes_immobilier` | Immobilier | Demandes info/visite/offre + contre-offre (`montant_offre`, `montant_contre_offre`) |
+| `parametres_immobilier` | Immobilier | Singleton : caution visite, remise max, quota d'offres |
 | `dossiers_voyage` | Assistance | Dossiers études/visa |
 | `documents_dossier_voyage` | Assistance | Documents associés |
+| `tarifs_assistance` | Assistance | Tarifs pilotables |
 | `paiements` | Transverse | Multi-module, multi-méthode, remboursements |
+| `webhook_idempotency` | Transverse | Anti-rejeu des webhooks de paiement |
 | `notifications_log` | Transverse | Log multi-canal |
-| `audit_log` | Transverse | Journalisation |
+| `push_subscriptions` | Transverse | Subscriptions push |
+| `audit_log` | Transverse | Journalisation (`action`, `cible_table`, `cible_id`, `details`) |
+| `audit_logs` | Transverse | Seconde table d'audit (`table_name`, `record_id`, `old_values`/`new_values`) — les deux coexistent |
 | `favoris` | Transverse | Favoris utilisateur |
 | `paniers` | Transverse | Panier serveur |
-| `zones` | Livraison | Zones GeoJSON |
-| `communes` | Livraison | Communes |
-| `propositions_zones` | Livraison | Propositions modification zones |
-| `tarifs_livraison` | Livraison | Tarifs pilotables |
-| `tarifs_assistance` | Assistance | Tarifs pilotables |
-| `push_subscriptions` | Transverse | Subscriptions push |
 | `parametres_contact` | Transverse | Coordonnées (WhatsApp, tel, email, réseau) |
 
 ### 5.2 RLS et sécurité
 
 - RLS activée sur toutes les tables
 - Politiques par rôle (`client`, `operateur`, `proprietaire`, etc.)
+- Helpers `security definer` pour éviter la récursion des policies qui
+  interrogent `public.users` : `is_staff()`, `is_proprietaire()`, `own_role()`,
+  `own_statut_verification()`
 - Trigger `handle_new_user()` pour création auto profil + assignation rôle
 - Trigger `lock_role_on_insert()` pour sécuriser le rôle
+- Trigger `garde_montants` sur `demandes_immobilier` : refuse l'écriture d'un
+  montant par un non-propriétaire. Ne s'applique qu'aux rôles `anon` et
+  `authenticated`, c'est-à-dire l'appel REST direct avec la clé publique — les
+  server actions écrivent en `service_role` et sont gardées côté application.
+  Volontairement en `security invoker` : en `security definer`, `current_user`
+  vaudrait le propriétaire de la fonction et la garde bloquerait tous les chemins.
 - Politiques storage pour uploads photos/documents
-- Webhooks sécurisés avec signature HMAC
+- Webhooks sécurisés avec signature HMAC + table d'idempotence
 - Rate limiting sur certaines routes API
+
+**Garde « prix = propriétaire seul »** — aucune écriture de montant facturé par
+un opérateur. Elle est double : `requireProprietaireAvecId()` dans les server
+actions (verrouillé par `__tests__/prix-proprietaire.test.ts`, qui lit le source
+et casse si une garde est relâchée), et le trigger ci-dessus pour le chemin REST.
+Une garde purement applicative serait contournable : les policies `*_staff_manage`
+sont `for all using (is_staff())` et la clé anon est publique par nature.
 
 ---
 
@@ -239,7 +270,7 @@ group-phoebe/
 `section-head.tsx` : `PageHero` accepte désormais un prop `bgImage` pour afficher une image de fond en plein écran avec animation Ken Burns (zoom lent 20s) et voile sombre dégradé. Utilisé sur les 4 services (Transport, Livraison, Immobilier, Assistance).
 
 | Composant | Rôle |
-|---|---|---|
+|---|---|
 | `section-head.tsx` (PageHero) | Hero de page service avec option `bgImage` (zoom Ken Burns), eyebrow, titre, lede, actions, aside logo |
 | `smart-header.tsx` | Header adaptatif (logo par verticale, menu mobile, auth, thème) |
 | `footer.tsx` | Footer avec colonnes services/contact/legal |
@@ -318,6 +349,7 @@ Les composants `ui/` sont basés sur **shadcn/ui** (base-nova) avec `@base-ui/re
 | `payments/webhook-utils.ts` | Utilitaires webhook (signature, parsing) |
 | `payments/expiration.ts` | Gestion expiration paiements |
 | `payments/expiration-demandes.ts` | Expiration demandes impayées |
+| `payments/expiration-immobilier.ts` | Expiration demandes et contre-offres immobilières (7 j) |
 
 ### 7.3 Notifications
 
@@ -333,7 +365,7 @@ Les composants `ui/` sont basés sur **shadcn/ui** (base-nova) avec `@base-ui/re
 | `auth.ts` | Fonctions auth (vérification téléphone, OTP) |
 | `pricing.ts` | Calcul tarifs (location, livraison, assistance) |
 | `livraison.ts` | Logique livraison (tarifs zones, communes) |
-| `immobilier.ts` | Logique immobilière |
+| `immobilier.ts` | Logique immobilière : libellés, statuts, validation de contre-offre (`plancherContreOffre`, `validerContreOffre`) |
 | `assistance.ts` | Logique assistance voyage |
 | `contact.ts` | Fonctions contact |
 | `analytics.ts` | Tracking GA4 (page_view, add_to_cart, purchase, etc.) |
@@ -346,6 +378,12 @@ Les composants `ui/` sont basés sur **shadcn/ui** (base-nova) avec `@base-ui/re
 | `json-ld.ts` | Génération JSON-LD structured data |
 | `upload-validation.ts` | Validation fichiers upload |
 | `compress-image.ts` | Compression images (compressorjs) |
+| `audit.ts` | Écriture dans `audit_log` (action, cible, valeurs avant/après, IP) |
+| `storage.ts` | Upload et URLs Supabase Storage |
+| `constants.ts` | Délais et seuils métier (expiration, non-présentation, négociation) |
+| `fetch-with-timeout.ts` | `fetch` avec `AbortSignal.timeout` |
+| `vehicle-group.ts` | Regroupement des véhicules par modèle pour le catalogue |
+| `utils.ts` | `cn()` (clsx + tailwind-merge) |
 
 ### 7.5 Server Actions (`app/actions/`)
 
@@ -534,9 +572,20 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest (configuré dans apps/web)
+- **Unitaires** : Vitest — 301 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
+
+Tests qui verrouillent une règle métier plutôt qu'une implémentation — les
+casser doit être un choix conscient, pas un effet de bord :
+
+| Test | Ce qu'il verrouille |
+|---|---|
+| `prix-proprietaire.test.ts` | Aucune écriture de montant par un opérateur. Lit le source des server actions et le SQL de la migration 00047 : casse si une garde est relâchée ou si le trigger repasse en `security definer` |
+| `contre-offre.test.ts` | Bornes de la contre-offre (plancher de remise, offre client, prix affiché) et statuts du cycle |
+| `role-guards.test.ts`, `permissions.test.ts` | Cloisonnement des rôles |
+| `exclusion.test.ts` | Non-chevauchement des périodes (contrainte GiST) |
+| `annulation-48h.test.ts` | Rétention de caution sous 48 h |
 
 ---
 
@@ -548,6 +597,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 | 2026-07-29 | Sécurité montants : la garde « prix = propriétaire seul » était applicative uniquement, donc contournable — `demandes_immobilier_staff_manage` est `for all using (is_staff())`, un opérateur pouvait écrire un montant via l'API REST avec la clé anon (publique). Le trigger `garde_montants` ferme ce chemin. `modifierParametresImmobilier` exigeait `requireStaff()` alors qu'il écrit `caution_visite` : passé à propriétaire. |
 | 2026-07-29 | Fix build Vercel : les colonnes `periode` sont des `tstzrange`, que `supabase gen types` émet en `unknown`. 7 fichiers les traitaient comme `string` → échec `tsc`. Nouveau helper `lib/periode.ts` (`parsePeriodeRange`, `parsePeriodeDebut`), les 2 parsers dupliqués supprimés. Au passage : une période illisible ne provoque plus d'expiration + remboursement à tort dans `expiration-demandes.ts`. |
 | 2026-07-29 | `CRON_SECRET` ajouté en `passThroughEnv` dans `turbo.json` (lu au runtime seulement, donc hors hash de cache). Blocs Sentry et cron ajoutés à `.env.example`. |
+| 2026-07-29 | Immobilier, cycle de base (commits `d6c611b`, `54e97c2`, `44dd136`, non journalisés à l'époque) : visites programmées avec agent obligatoire, agents immobiliers et zone de couverture, cron d'expiration des demandes, mise à jour automatique du statut du bien selon la demande, page de paramétrage propriétaire, filtres catalogue et galerie photo. |
 | 2026-07-28 | Migration shadcn/ui : tous les composants `ui/` (Button, Badge, Card, Input) passés en shadcn base-nova avec `@base-ui/react` primitives. Variants de marque conservés via CVA. Pages services redesignées (Transport, Livraison, Immobilier, Assistance, Accueil) avec les nouveaux composants. Ajout Pagination, HoverCard, Command, Textarea, Dialog, InputGroup shadcn. |
 | 2026-07-28 | Fix auth : `bg-hex-pattern` défini dans `auth.css` (panneau gauche du layout connexion/inscription). Admin.css n'était pas chargé sur les pages auth, le fond devenait transparent et le tagline sous le logo était invisible. |
 | 2026-07-28 | Fix cache : `unstable_cache` sérialise en JSON → les objets `Map` perdent leur type. Remplacés par `Record<string, string>` dans `getVehiculesWithPhotos`, `getBiensWithPhotos`, `groupVehicles`. |
