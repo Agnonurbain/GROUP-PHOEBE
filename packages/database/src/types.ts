@@ -1808,6 +1808,7 @@ export type Database = {
       expirer_demandes_sans_reponse: { Args: never; Returns: number }
       expirer_non_presentations: { Args: never; Returns: number }
       expirer_reservations_abandonnees: { Args: never; Returns: number }
+      is_proprietaire: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       own_role: { Args: never; Returns: string }
       own_statut_verification: { Args: never; Returns: string }
