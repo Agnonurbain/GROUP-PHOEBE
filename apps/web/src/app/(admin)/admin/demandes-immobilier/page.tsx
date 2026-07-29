@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { DemandeImmoActions } from "./demandes-immo-actions"
+import { VisiteSection } from "./visite-section"
 import {
   STATUTS_DEMANDE,
   STATUT_DEMANDE_LABELS,
@@ -11,7 +12,7 @@ import {
 
 export const metadata: Metadata = {
   title: "Demandes immobilier — Administration",
-  description: "Gérez les demandes immobilières : statuts et affectation des agents.",
+  description: "Gérez les demandes immobilières : statuts, visites et affectation des agents.",
 }
 
 const STATUT_COLORS: Record<string, string> = {
@@ -52,7 +53,6 @@ export default async function DemandesImmobilierAdminPage() {
     : { data: [] }
   const clientNom = new Map((clients ?? []).map((c) => [c.id, c.nom]))
 
-  // Agents (pour le nom affecté + le menu d'affectation).
   const { data: agentsRaw } = await db.from("agents_immobiliers").select("id, user_id")
   const agentUserIds = [...new Set((agentsRaw ?? []).map((a) => a.user_id))]
   const { data: agentUsers } = agentUserIds.length
@@ -64,12 +64,24 @@ export default async function DemandesImmobilierAdminPage() {
 
   const statuts = STATUTS_DEMANDE.map((value) => ({ value, label: STATUT_DEMANDE_LABELS[value] }))
 
+  // Visites (liées par bien_id + client_id)
+  const { data: visitesRaw } = await db
+    .from("visites")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(200)
+  const visitesParDemande = new Map<string, typeof visitesRaw>()
+  for (const d of demandes ?? []) {
+    const match = (visitesRaw ?? []).filter((v) => v.bien_id === d.bien_id && v.client_id === d.client_id)
+    if (match.length > 0) visitesParDemande.set(d.id, match)
+  }
+
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-phoebe-anthracite">Demandes immobilier</h1>
         <p className="mt-1 text-sm text-phoebe-anthracite/70">
-          Informations, visites et offres — faites évoluer les statuts et affectez un agent.
+          Informations, visites et offres — faites évoluer les statuts, gérez les visites et affectez un agent.
         </p>
       </div>
 
@@ -110,6 +122,14 @@ export default async function DemandesImmobilierAdminPage() {
                 currentAgent={d.agent_id}
                 agents={agents}
                 statuts={statuts}
+              />
+
+              <VisiteSection
+                demandeId={d.id}
+                bienId={d.bien_id}
+                clientId={d.client_id}
+                agentId={d.agent_id}
+                visites={visitesParDemande.get(d.id) ?? []}
               />
             </div>
           ))}

@@ -19,7 +19,7 @@ export default async function AdminLayout({
     .eq("id", user.sub)
     .single();
 
-  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+  if (!profile || !["operateur", "proprietaire", "agent_immobilier"].includes(profile.role)) {
     redirect("/compte/profil");
   }
 

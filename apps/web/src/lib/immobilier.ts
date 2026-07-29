@@ -77,3 +77,32 @@ export const STATUT_DEMANDE_LABELS: Record<string, string> = {
 export function isStatutDemande(v: string): v is StatutDemande {
   return (STATUTS_DEMANDE as readonly string[]).includes(v);
 }
+
+// ─── Visites (table visites) ─────────────────────────────────────────────────
+
+export const STATUTS_VISITE = [
+  "proposee",
+  "confirmee",
+  "realisee",
+  "annulee",
+] as const;
+
+export type StatutVisite = (typeof STATUTS_VISITE)[number];
+
+export const STATUT_VISITE_LABELS: Record<string, string> = {
+  proposee: "Proposée",
+  confirmee: "Confirmée",
+  realisee: "Réalisée",
+  annulee: "Annulée",
+};
+
+export const STATUT_VISITE_COLORS: Record<string, string> = {
+  proposee: "bg-blue-50 text-blue-700",
+  confirmee: "bg-phoebe-green/10 text-phoebe-green-deep",
+  realisee: "bg-phoebe-anthracite/10 text-phoebe-anthracite",
+  annulee: "bg-error/10 text-error",
+};
+
+export function isStatutVisite(v: string): v is StatutVisite {
+  return (STATUTS_VISITE as readonly string[]).includes(v);
+}

@@ -3,8 +3,10 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { compressImage } from "@/lib/compress-image";
 import { validateImageUpload } from "@/lib/upload-validation";
+import type { Database } from "@group-phoebe/database/types";
 
 async function requireStaff() {
   const supabase = await createClient();
@@ -17,10 +19,31 @@ async function requireStaff() {
     .select("role")
     .eq("id", user.sub)
     .single();
-  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+  if (!profile || !["operateur", "proprietaire", "agent_immobilier"].includes(profile.role)) {
     throw new Error("Accès refusé");
   }
   return supabase;
+}
+
+function getAdmin() {
+  return createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
+/** Trouve un agent immobilier dont la zone_couverture correspond à la localisation. */
+async function autoAssignAgent(localisation: string): Promise<string | null> {
+  const admin = getAdmin();
+  const { data: agents } = await admin
+    .from("agents_immobiliers")
+    .select("id, zone_couverture")
+    .not("zone_couverture", "is", null);
+  if (!agents || agents.length === 0) return null;
+
+  const loc = localisation.toLowerCase();
+  const match = agents.find((a) => a.zone_couverture && loc.includes(a.zone_couverture.toLowerCase()));
+  return match?.id ?? null;
 }
 
 function num(val: FormDataEntryValue | null): number | null {
@@ -89,9 +112,17 @@ export async function creerBien(
   const parsed = parseBien(formData);
   if ("error" in parsed) return { error: parsed.error };
 
+  const row = { ...parsed.row };
+
+  // Auto-assignation par zone si aucun agent explicite
+  if (!row.agent_id && typeof row.localisation === "string") {
+    const agentId = await autoAssignAgent(row.localisation);
+    if (agentId) row.agent_id = agentId;
+  }
+
   const { data, error } = await supabase
     .from("biens")
-    .insert({ ...parsed.row, statut: "disponible" } as never)
+    .insert({ ...row, statut: "disponible" } as never)
     .select("id")
     .single();
 

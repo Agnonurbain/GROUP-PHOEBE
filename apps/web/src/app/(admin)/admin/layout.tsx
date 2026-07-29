@@ -25,11 +25,12 @@ export default async function AdminShellLayout({
     : { data: null };
 
   const role = profile?.role;
-  if (!role || (role !== "operateur" && role !== "proprietaire")) {
+  if (!role || (role !== "operateur" && role !== "proprietaire" && role !== "agent_immobilier")) {
     notFound();
   }
 
   const isProprietaire = role === "proprietaire";
+  const isAgent = role === "agent_immobilier";
 
   const [
     { count: nbRemboursements },
@@ -60,6 +61,7 @@ export default async function AdminShellLayout({
       <SidebarProvider data-admin>
         <AdminSidebar
           isProprietaire={isProprietaire}
+          isAgent={isAgent}
           counts={{
             demandes: nbDemandesEnAttente ?? null,
             remboursements: nbRemboursements ?? null,

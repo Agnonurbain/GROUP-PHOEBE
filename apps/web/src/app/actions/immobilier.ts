@@ -8,6 +8,7 @@ import type { Database } from "@group-phoebe/database/types";
 import {
   isTypeDemande,
   isStatutDemande,
+  isStatutVisite,
   TYPE_DEMANDE_LABELS,
   STATUT_DEMANDE_LABELS,
   typeBienLabel,
@@ -41,10 +42,16 @@ async function requireStaff() {
     .select("role")
     .eq("id", user.sub)
     .single();
-  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+  if (!profile || !["operateur", "proprietaire", "agent_immobilier"].includes(profile.role)) {
     throw new Error("Accès refusé");
   }
-  return user;
+  return { user, role: profile.role as string };
+}
+
+async function requireAgent() {
+  const staff = await requireStaff();
+  if (staff.role !== "agent_immobilier") throw new Error("Action réservée aux agents immobiliers");
+  return staff.user;
 }
 
 // Demande d'interaction sur un bien (information / visite / offre), SANS paiement
@@ -151,6 +158,19 @@ export async function changerStatutDemandeImmobilier(
     .eq("id", demandeId);
   if (error) return { error: error.message };
 
+  if (statut === "acceptee" && demande?.bien_id) {
+    await admin.from("biens").update({ statut: "reserve", updated_at: new Date().toISOString() }).eq("id", demande.bien_id);
+  } else if (statut === "finalisee" && demande?.bien_id) {
+    const { data: bien } = await admin.from("biens").select("transaction").eq("id", demande.bien_id).single();
+    const statutBien = bien?.transaction === "location" ? "loue" : "vendu";
+    await admin.from("biens").update({ statut: statutBien, updated_at: new Date().toISOString() }).eq("id", demande.bien_id);
+  } else if (["refusee", "annulee"].includes(statut) && demande?.bien_id) {
+    const { data: bien } = await admin.from("biens").select("statut").eq("id", demande.bien_id).single();
+    if (bien?.statut === "reserve") {
+      await admin.from("biens").update({ statut: "disponible", updated_at: new Date().toISOString() }).eq("id", demande.bien_id);
+    }
+  }
+
   if (demande) {
     await notifierClient(
       demande.client_id,
@@ -181,6 +201,75 @@ export async function affecterAgentImmobilier(
     .from("demandes_immobilier")
     .update({ agent_id: agentId, updated_at: new Date().toISOString() })
     .eq("id", demandeId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/admin/demandes-immobilier");
+  return { success: true };
+}
+
+// ─── Visites ──────────────────────────────────────────────────────────────────
+
+export type VisiteState = {
+  error?: string;
+  success?: boolean;
+};
+
+export async function creerVisite(
+  _prev: VisiteState,
+  formData: FormData
+): Promise<VisiteState> {
+  try {
+    await requireStaff();
+  } catch {
+    return { error: "Session expirée ou accès refusé." };
+  }
+  const admin = getAdmin();
+  const demandeId = formData.get("demande_id") as string;
+  const bienId = formData.get("bien_id") as string;
+  const clientId = formData.get("client_id") as string;
+  const agentId = formData.get("agent_id") as string;
+  const creneau = formData.get("creneau") as string;
+
+  if (!bienId || !clientId || !agentId || !creneau) {
+    return { error: "Champs obligatoires manquants (agent requis)." };
+  }
+
+  const { error } = await admin.from("visites").insert({
+    bien_id: bienId,
+    client_id: clientId,
+    agent_id: agentId,
+    creneau: new Date(creneau).toISOString(),
+    statut: "proposee",
+  });
+  if (error) return { error: error.message };
+
+  if (demandeId) {
+    await admin.from("demandes_immobilier").update({ statut: "visite_programmee", updated_at: new Date().toISOString() }).eq("id", demandeId);
+  }
+
+  revalidatePath("/admin/demandes-immobilier");
+  return { success: true };
+}
+
+export async function changerStatutVisite(
+  _prev: VisiteState,
+  formData: FormData
+): Promise<VisiteState> {
+  try {
+    await requireStaff();
+  } catch {
+    return { error: "Session expirée ou accès refusé." };
+  }
+  const admin = getAdmin();
+  const visiteId = formData.get("visite_id") as string;
+  const statut = formData.get("statut") as string;
+
+  if (!visiteId || !isStatutVisite(statut)) return { error: "Visite ou statut invalide." };
+
+  const { error } = await admin
+    .from("visites")
+    .update({ statut })
+    .eq("id", visiteId);
   if (error) return { error: error.message };
 
   revalidatePath("/admin/demandes-immobilier");

@@ -23,12 +23,16 @@ export type NavCounts = Record<BadgeKey, number | null>
 
 export function AdminSidebar({
   isProprietaire,
+  isAgent,
   counts,
 }: {
   isProprietaire: boolean
+  isAgent: boolean
   counts: NavCounts
 }) {
   const pathname = usePathname()
+
+  const roleLabel = isProprietaire ? "Propriétaire" : isAgent ? "Agent Immo" : "Opérateur"
 
   return (
     <Sidebar collapsible="icon">
@@ -47,14 +51,20 @@ export function AdminSidebar({
             GP
           </span>
           <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-phoebe-gold-dark group-data-[collapsible=icon]:hidden">
-            {isProprietaire ? "Propriétaire" : "Opérateur"}
+            {roleLabel}
           </span>
         </Link>
       </SidebarHeader>
 
       <SidebarContent>
-        {NAV_GROUPS.filter((g) => !g.proprietaireOnly || isProprietaire).map((group, i) => {
-          const items = group.items.filter((it) => !it.proprietaireOnly || isProprietaire)
+        {NAV_GROUPS.filter((g) => {
+          if (isAgent) return g.title === "Immobilier"
+          return !g.proprietaireOnly || isProprietaire
+        }).map((group, i) => {
+          const items = group.items.filter((it) => {
+            if (isAgent) return true
+            return !it.proprietaireOnly || isProprietaire
+          })
           if (items.length === 0) return null
 
           return (
