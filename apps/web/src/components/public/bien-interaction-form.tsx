@@ -12,14 +12,18 @@ export function BienInteractionForm({
   bienId,
   isLoggedIn,
   fraisVisite,
+  estLocation,
 }: {
   bienId: string
   isLoggedIn: boolean
   /** Frais de visite dus et non remboursables : annoncés avant tout paiement. */
   fraisVisite: number
+  /** Une location se négocie avec une période : loyer mensuel, début, durée. */
+  estLocation: boolean
 }) {
   const [state, action, pending] = useActionState<ImmobilierState, FormData>(creerDemandeImmobilier, {})
   const [type, setType] = useState<string>("information")
+  const [methode, setMethode] = useState<"cinetpay" | "stripe">("cinetpay")
 
   if (!isLoggedIn) {
     return (
@@ -83,6 +87,34 @@ export function BienInteractionForm({
               />
             </div>
 
+            <div>
+              <span className="mb-1.5 block text-sm font-medium text-public-text">
+                Moyen de paiement
+              </span>
+              <input type="hidden" name="methode_paiement" value={methode} />
+              <div className="grid grid-cols-2 gap-2">
+                {([
+                  { v: "cinetpay", label: "Mobile Money", detail: "Wave, Orange, MTN" },
+                  { v: "stripe", label: "Carte bancaire", detail: "Visa, Mastercard" },
+                ] as const).map((m) => (
+                  <button
+                    key={m.v}
+                    type="button"
+                    onClick={() => setMethode(m.v)}
+                    aria-pressed={methode === m.v}
+                    className={`rounded-xl border px-3 py-2.5 text-left transition-all ${
+                      methode === m.v
+                        ? "border-accent-green bg-accent-green/10"
+                        : "border-public-border hover:border-accent-green/40"
+                    }`}
+                  >
+                    <span className="block text-xs font-semibold text-public-text">{m.label}</span>
+                    <span className="block text-[11px] text-public-text-muted">{m.detail}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Le bouton mène droit au paiement : le client doit connaître le
                 montant et son caractère définitif avant de cliquer. */}
             <div className="rounded-xl border border-accent-gold/30 bg-accent-gold/5 p-4">
@@ -98,12 +130,56 @@ export function BienInteractionForm({
         )}
 
         {type === "offre" && (
-          <div>
-            <label htmlFor="montant" className="mb-1.5 block text-sm font-medium text-public-text">
-              Votre offre (FCFA) *
-            </label>
-            <input id="montant" name="montant" type="number" inputMode="numeric" min="0" required placeholder="Ex : 25 000 000" className={inputClass} />
-          </div>
+          <>
+            <div>
+              <label htmlFor="montant" className="mb-1.5 block text-sm font-medium text-public-text">
+                {estLocation ? "Votre offre de loyer mensuel (FCFA) *" : "Votre offre (FCFA) *"}
+              </label>
+              <input
+                id="montant"
+                name="montant"
+                type="number"
+                inputMode="numeric"
+                min="0"
+                required
+                placeholder={estLocation ? "Ex : 250 000" : "Ex : 25 000 000"}
+                className={inputClass}
+              />
+            </div>
+
+            {estLocation && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="location_debut" className="mb-1.5 block text-sm font-medium text-public-text">
+                    Début souhaité *
+                  </label>
+                  <input
+                    id="location_debut"
+                    name="location_debut"
+                    type="date"
+                    required
+                    min={new Date().toISOString().slice(0, 10)}
+                    className={`${inputClass} [color-scheme:dark]`}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="location_duree_mois" className="mb-1.5 block text-sm font-medium text-public-text">
+                    Durée (mois) *
+                  </label>
+                  <input
+                    id="location_duree_mois"
+                    name="location_duree_mois"
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    required
+                    placeholder="Ex : 12"
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         <div>

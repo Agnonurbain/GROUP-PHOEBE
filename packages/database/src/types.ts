@@ -429,12 +429,16 @@ export type Database = {
           client_id: string
           created_at: string
           date_souhaitee: string | null
+          location_debut: string | null
+          location_duree_mois: number | null
           id: string
           message: string | null
           montant_contre_offre: number | null
+          montant_commission: number | null
           montant_convenu: number | null
           montant_offre: number | null
           statut: string
+          taux_commission: number | null
           type: string
           updated_at: string
         }
@@ -444,12 +448,16 @@ export type Database = {
           client_id: string
           created_at?: string
           date_souhaitee?: string | null
+          location_debut?: string | null
+          location_duree_mois?: number | null
           id?: string
           message?: string | null
           montant_contre_offre?: number | null
+          montant_commission?: number | null
           montant_convenu?: number | null
           montant_offre?: number | null
           statut?: string
+          taux_commission?: number | null
           type: string
           updated_at?: string
         }
@@ -459,12 +467,16 @@ export type Database = {
           client_id?: string
           created_at?: string
           date_souhaitee?: string | null
+          location_debut?: string | null
+          location_duree_mois?: number | null
           id?: string
           message?: string | null
           montant_contre_offre?: number | null
+          montant_commission?: number | null
           montant_convenu?: number | null
           montant_offre?: number | null
           statut?: string
+          taux_commission?: number | null
           type?: string
           updated_at?: string
         }
@@ -1216,6 +1228,7 @@ export type Database = {
           frais_visite: number
           id: number
           max_offres_client: number
+          taux_commission: number
           taux_max_reduction: number
           updated_at: string
         }
@@ -1223,6 +1236,7 @@ export type Database = {
           frais_visite?: number
           id?: number
           max_offres_client?: number
+          taux_commission?: number
           taux_max_reduction?: number
           updated_at?: string
         }
@@ -1230,6 +1244,7 @@ export type Database = {
           frais_visite?: number
           id?: number
           max_offres_client?: number
+          taux_commission?: number
           taux_max_reduction?: number
           updated_at?: string
         }

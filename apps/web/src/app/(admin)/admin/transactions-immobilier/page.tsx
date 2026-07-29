@@ -4,7 +4,12 @@ import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { createClient } from "@/lib/supabase/server"
 import { ScrollReveal } from "@/components/effects"
-import { typeBienLabel, TRANSACTION_LABELS, STATUT_DEMANDE_LABELS } from "@/lib/immobilier"
+import {
+  typeBienLabel,
+  TRANSACTION_LABELS,
+  STATUT_DEMANDE_LABELS,
+  formaterPeriodeLocation,
+} from "@/lib/immobilier"
 
 export const metadata: Metadata = {
   title: "Transactions immobilier — Administration",
@@ -43,7 +48,7 @@ export default async function TransactionsImmobilierPage() {
 
   const { data: demandes } = await db
     .from("demandes_immobilier")
-    .select("id, statut, type, montant_convenu, montant_offre, updated_at, created_at, bien_id, client_id, agent_id")
+    .select("id, statut, type, montant_convenu, montant_offre, montant_commission, taux_commission, location_debut, location_duree_mois, updated_at, created_at, bien_id, client_id, agent_id")
     .in("statut", ["acceptee", "finalisee"])
     .order("updated_at", { ascending: false })
 
@@ -75,6 +80,10 @@ export default async function TransactionsImmobilierPage() {
     d.montant_convenu != null ? Number(d.montant_convenu) : null
 
   const total = lignes.reduce((somme, d) => somme + (montant(d) ?? 0), 0)
+  const totalCommission = lignes.reduce(
+    (somme, d) => somme + (d.montant_commission != null ? Number(d.montant_commission) : 0),
+    0
+  )
   const nbVentes = lignes.filter((d) => bienById.get(d.bien_id)?.transaction === "vente").length
   const nbLocations = lignes.length - nbVentes
   const nbFinalisees = lignes.filter((d) => d.statut === "finalisee").length
@@ -109,10 +118,15 @@ export default async function TransactionsImmobilierPage() {
             {estProprietaire && (
               <div className="rounded-2xl border border-phoebe-green/30 bg-phoebe-green/5 p-5 shadow-sm">
                 <p className="text-xs uppercase tracking-widest text-phoebe-anthracite/60">
-                  Total convenu
+                  Commission GROUP PHOEBE
                 </p>
                 <p className="mt-1 text-2xl font-bold text-phoebe-green-deep">
-                  {total.toLocaleString("fr-FR")} FCFA
+                  {totalCommission.toLocaleString("fr-FR")} FCFA
+                </p>
+                {/* Les biens appartiennent à des tiers : le volume transigé n'est
+                    pas le revenu de la plateforme, la commission l'est. */}
+                <p className="text-xs text-phoebe-anthracite/60">
+                  sur {total.toLocaleString("fr-FR")} FCFA transigés
                 </p>
               </div>
             )}
@@ -130,7 +144,7 @@ export default async function TransactionsImmobilierPage() {
           </div>
         ) : (
           <div className="overflow-x-auto rounded-2xl border border-phoebe-pearl bg-white shadow-sm">
-            <table className="w-full min-w-[900px] text-sm">
+            <table className="w-full min-w-[1050px] text-sm">
               <thead className="border-b border-phoebe-pearl bg-phoebe-pearl/30">
                 <tr>
                   <th scope="col" className={th}>Date</th>
@@ -138,6 +152,7 @@ export default async function TransactionsImmobilierPage() {
                   <th scope="col" className={th}>Bien</th>
                   <th scope="col" className={th}>Opération</th>
                   <th scope="col" className={th}>Montant convenu</th>
+                  <th scope="col" className={th}>Commission</th>
                   <th scope="col" className={th}>Agent</th>
                   <th scope="col" className={th}>État</th>
                 </tr>
@@ -174,11 +189,19 @@ export default async function TransactionsImmobilierPage() {
                       </td>
                       <td className="px-5 py-3.5 text-phoebe-anthracite/80">
                         {bien ? TRANSACTION_LABELS[bien.transaction] ?? bien.transaction : "—"}
+                        {formaterPeriodeLocation(d.location_debut, d.location_duree_mois) && (
+                          <span className="block text-xs text-phoebe-anthracite/60">
+                            {formaterPeriodeLocation(d.location_debut, d.location_duree_mois)}
+                          </span>
+                        )}
                       </td>
                       <td className="px-5 py-3.5">
                         {m != null ? (
                           <span className="font-semibold text-phoebe-green-deep">
                             {m.toLocaleString("fr-FR")} FCFA
+                            {bien?.transaction === "location" && (
+                              <span className="font-normal text-phoebe-anthracite/60"> / mois</span>
+                            )}
                           </span>
                         ) : (
                           // Accords antérieurs à 00053 : le montant n'a pas été figé.
@@ -188,6 +211,22 @@ export default async function TransactionsImmobilierPage() {
                               ? ` (offre : ${Number(d.montant_offre).toLocaleString("fr-FR")} FCFA)`
                               : ""}
                           </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        {d.montant_commission != null ? (
+                          <>
+                            <span className="font-semibold text-phoebe-anthracite">
+                              {Number(d.montant_commission).toLocaleString("fr-FR")} FCFA
+                            </span>
+                            {d.taux_commission != null && (
+                              <span className="block text-xs text-phoebe-anthracite/60">
+                                {Number(d.taux_commission)} %
+                              </span>
+                            )}
+                          </>
+                        ) : (
+                          <span className="text-xs text-phoebe-anthracite/60">—</span>
                         )}
                       </td>
                       <td className="px-5 py-3.5 text-phoebe-anthracite/80">

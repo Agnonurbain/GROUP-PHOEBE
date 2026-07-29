@@ -131,12 +131,58 @@ export type ParametresImmobilier = {
   frais_visite: number
   taux_max_reduction: number
   max_offres_client: number
+  /** Commission GROUP PHOEBE en %, appliquée au montant convenu. */
+  taux_commission: number
 }
 
 export const PARAMETRES_IMMO_DEFAUT: ParametresImmobilier = {
   frais_visite: 50000,
   taux_max_reduction: 10,
   max_offres_client: 3,
+  taux_commission: 10,
+}
+
+// ─── Commission d'intermédiation ─────────────────────────────────────────────
+
+/**
+ * Part GROUP PHOEBE sur une transaction. Les biens appartiennent à des
+ * propriétaires tiers : la plateforme prélève un pourcentage du montant convenu,
+ * dû dès l'acceptation de l'offre.
+ *
+ * Arrondi à l'unité : le FCFA n'a pas de subdivision en circulation.
+ */
+export function calculerCommission(montantConvenu: number, tauxCommission: number): number {
+  if (!Number.isFinite(montantConvenu) || montantConvenu <= 0) return 0
+  if (!Number.isFinite(tauxCommission) || tauxCommission <= 0) return 0
+  return Math.round(montantConvenu * (tauxCommission / 100))
+}
+
+// ─── Location ────────────────────────────────────────────────────────────────
+
+/**
+ * Pour un bien en location, `montant_convenu` s'entend comme le loyer mensuel.
+ * Cette distinction n'existait pas : le registre affichait un montant sans dire
+ * s'il s'agissait d'un loyer ou d'un prix de vente.
+ */
+export function estLocation(transaction: string): boolean {
+  return transaction === "location"
+}
+
+/** Libellé de la période de location, ou null si elle n'est pas renseignée. */
+export function formaterPeriodeLocation(
+  debut: string | null,
+  dureeMois: number | null
+): string | null {
+  if (!debut && !dureeMois) return null
+  const parts: string[] = []
+  if (debut) {
+    const d = new Date(debut)
+    if (!Number.isNaN(d.getTime())) {
+      parts.push(`à partir du ${d.toLocaleDateString("fr-FR")}`)
+    }
+  }
+  if (dureeMois) parts.push(`${dureeMois} mois`)
+  return parts.length > 0 ? parts.join(" · ") : null
 }
 
 export const STATUTS_DEMANDE_VISITE_ACTIFS = ["en_attente", "en_cours_traitement", "visite_programmee", "acceptee"] as const

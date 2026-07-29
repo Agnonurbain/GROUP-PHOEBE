@@ -10,6 +10,7 @@ import {
   STATUTS_DEMANDE,
   STATUT_DEMANDE_LABELS,
   STATUTS_CONTRE_OFFRE_POSSIBLE,
+  formaterPeriodeLocation,
   TYPE_DEMANDE_LABELS,
   typeBienLabel,
 } from "@/lib/immobilier"
@@ -58,11 +59,12 @@ export default async function DemandesImmobilierAdminPage() {
 
   const bienIds = [...new Set((demandes ?? []).map((d) => d.bien_id))]
   const { data: biens } = bienIds.length
-    ? await db.from("biens").select("id, type, localisation, prix, statut").in("id", bienIds)
+    ? await db.from("biens").select("id, type, localisation, prix, statut, transaction").in("id", bienIds)
     : { data: [] }
   const bienLabel = new Map((biens ?? []).map((b) => [b.id, `${typeBienLabel(b.type)} — ${b.localisation}`]))
   const bienPrix = new Map((biens ?? []).map((b) => [b.id, Number(b.prix)]))
   const bienStatut = new Map((biens ?? []).map((b) => [b.id, b.statut]))
+  const bienTransaction = new Map((biens ?? []).map((b) => [b.id, b.transaction]))
 
   const clientIds = [...new Set((demandes ?? []).map((d) => d.client_id))]
   const { data: clients } = clientIds.length
@@ -124,6 +126,9 @@ export default async function DemandesImmobilierAdminPage() {
                     {d.date_souhaitee && (
                       <> · souhaite le {new Date(d.date_souhaitee).toLocaleDateString("fr-FR")}</>
                     )}
+                    {formaterPeriodeLocation(d.location_debut, d.location_duree_mois) && (
+                      <> · location {formaterPeriodeLocation(d.location_debut, d.location_duree_mois)}</>
+                    )}
                   </p>
                   {d.message && (
                     <p className="mt-2 max-w-prose rounded-lg bg-phoebe-pearl/50 px-3 py-2 text-xs italic text-phoebe-anthracite/80">
@@ -143,7 +148,14 @@ export default async function DemandesImmobilierAdminPage() {
                   {d.montant_convenu != null && (
                     <p className="text-xs font-semibold text-phoebe-green-deep">
                       Convenu : {Number(d.montant_convenu).toLocaleString("fr-FR")} FCFA
+                      {bienTransaction.get(d.bien_id) === "location" ? " / mois" : ""}
                       <span className="ml-1 font-normal text-phoebe-anthracite/60">(figé)</span>
+                    </p>
+                  )}
+                  {d.montant_commission != null && (
+                    <p className="text-xs text-phoebe-anthracite/70">
+                      Commission {d.taux_commission != null ? `${Number(d.taux_commission)} %` : ""} :{" "}
+                      {Number(d.montant_commission).toLocaleString("fr-FR")} FCFA
                     </p>
                   )}
                   <p className="text-xs text-phoebe-anthracite/70">

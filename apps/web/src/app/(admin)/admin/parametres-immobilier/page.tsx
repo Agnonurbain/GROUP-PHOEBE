@@ -41,6 +41,7 @@ export default async function ParametresImmobilierPage() {
         <ParametresImmoForm
           initial={{
             frais_visite: params.frais_visite,
+            taux_commission: params.taux_commission,
             taux_max_reduction: params.taux_max_reduction,
             max_offres_client: params.max_offres_client,
           }}

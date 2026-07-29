@@ -68,7 +68,7 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 53 migrations SQL
+├── supabase/migrations/         # 54 migrations SQL
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -184,7 +184,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-53 migrations Supabase (00001 → 00053).
+54 migrations Supabase (00001 → 00054).
 
 ### 5.1 Tables
 
@@ -222,7 +222,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `agents_immobiliers` | Immobilier | Agents et zone de couverture |
 | `visites` | Immobilier | Visites programmées (proposée → confirmée → réalisée) |
 | `demandes_immobilier` | Immobilier | Demandes info/visite/offre + contre-offre (`montant_offre`, `montant_contre_offre`) et prix arrêté (`montant_convenu`, figé à l'acceptation). Chaque ligne acceptée est une entrée du registre des transactions |
-| `parametres_immobilier` | Immobilier | Singleton : frais de visite, remise max, quota d'offres |
+| `parametres_immobilier` | Immobilier | Singleton : frais de visite, remise max, quota d'offres, **taux de commission** |
 | `dossiers_voyage` | Assistance | Dossiers études/visa |
 | `documents_dossier_voyage` | Assistance | Documents associés |
 | `tarifs_assistance` | Assistance | Tarifs pilotables |
@@ -279,7 +279,7 @@ Champs couverts, et par quoi :
 | `vehicules.prix_*`, `taux_caution`, `caution_base_fcfa` | `retirerChampsPrix` (vehicules.ts) | — |
 | `tarifs_livraison`, `paliers_poids`, `tarifs_assistance`, `parametres_contact` | `requireProprietaireAvecId` (tarifs.ts) | — |
 | `parametres_immobilier.frais_visite` | `requireProprietaireAvecId` (immobilier.ts) | policy `is_proprietaire()` |
-| `demandes_immobilier.montant_offre`, `montant_contre_offre`, `montant_convenu` | `proposerContreOffre` | `garde_montants` (00047, gel ajouté en 00053) |
+| `demandes_immobilier.montant_offre`, `montant_contre_offre`, `montant_convenu`, `montant_commission` | `proposerContreOffre` | `garde_montants` (00047, gel en 00053, commission en 00054) |
 | `biens.prix` | `retirerChampsPrix` + création propriétaire (biens.ts) | `garde_prix` (00049) |
 
 Créer un bien est réservé au propriétaire : `biens.prix` est NOT NULL, il n'y a
@@ -598,7 +598,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 320 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 332 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -620,6 +620,10 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | **Commission d'intermédiation** (00054). Les biens appartiennent à des propriétaires tiers : GROUP PHOEBE prélève un pourcentage du montant convenu, pilotable par le propriétaire (`parametres_immobilier.taux_commission`, usuellement 10 à 12 %) et **dû dès l'acceptation de l'offre**. Taux et montant sont figés sur la demande au moment de l'accord — le barème peut changer ensuite sans réécrire l'histoire — et protégés par le même gel que `montant_convenu`. Le registre affiche la commission par ligne et son cumul, en précisant que le volume transigé n'est pas le revenu de la plateforme. Piège évité de justesse : la contrainte de cohérence taux/montant ne bloquait rien, `taux >= 0` sur un taux NULL valant NULL et Postgres n'invalidant un CHECK que sur FALSE. |
+| 2026-07-29 | **La location a une période** (00054) : `location_debut` et `location_duree_mois`, exigées sur une offre portant sur un bien à louer. Pour ces demandes, `montant_convenu` s'entend comme le **loyer mensuel** — la distinction n'existait pas et le registre affichait un montant sans dire s'il s'agissait d'un loyer ou d'un prix de vente. |
+| 2026-07-29 | **CinetPay branché sur l'immobilier.** Les frais de visite n'étaient payables que par carte : `creerSessionCinetPay` était importé sans jamais être appelé, alors que les trois autres modules l'utilisaient. En Côte d'Ivoire, cela excluait du seul parcours payant du module tous les clients sans carte. Le formulaire propose désormais Mobile Money (Wave, Orange, MTN) ou carte, Mobile Money par défaut. |
+| 2026-07-29 | Trois gardes de cohérence sur l'acceptation : les **offres concurrentes** du même bien sont refusées et leurs auteurs prévenus (elles restaient ouvertes jusqu'au cron à 7 jours, sans que ces clients apprennent jamais que le bien leur échappait) ; **un bien déjà pris** ne peut plus faire l'objet d'un second accord ; **une seule demande de visite active** par client et par bien, sinon le client payait les frais deux fois. `requireAgent`, morte depuis toujours, est supprimée. |
 | 2026-07-29 | Le prix convenu devient un fait daté (00053). Il vivait dans `montant_contre_offre`, qui restait modifiable après l'acceptation : un UPDATE plus tard, la seule trace de l'accord disait autre chose sans que rien ne le signale. Nouvelle colonne `montant_convenu`, écrite dans le même UPDATE que le passage à `acceptee`, et le trigger `garde_montants` refuse ensuite toute écriture de montant — **pour tous les rôles, `service_role` compris**, sans quoi le gel n'en serait pas un puisque les server actions écrivent avec la clé de service. La comparaison porte sur `OLD.statut` : la transition doit pouvoir écrire le montant, ce sont les écritures suivantes qui sont refusées. Vérifié en base : 8 cas, dont le gel face à service_role et la non-régression sur l'évolution du statut. |
 | 2026-07-29 | Registre des transactions immobilières (`/admin/transactions-immobilier`) : qui a loué ou acheté quel bien, à quel prix, quand, avec quel agent. Aucune table dédiée — chaque demande acceptée **est** une ligne d'historique, et un bien revendu donne une nouvelle demande ; un registre séparé aurait créé deux vérités à tenir d'accord. Le cumul des sommes n'est visible que par le propriétaire ; les opérateurs voient le détail ligne à ligne. |
 | 2026-07-29 | Garantie documentaire sur chaque bien : les pièces sont en règle et prêtes à inspection devant notaire lors de la finalisation. Volontairement statique et non paramétrable par bien — c'est un engagement d'ensemble ; s'il devait un jour souffrir une exception, il faudrait un indicateur en base plutôt qu'un retrait au cas par cas. |

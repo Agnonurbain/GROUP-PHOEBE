@@ -414,7 +414,7 @@ export const getParametresImmobilier = unstable_cache(
     const supabase = createPublicClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase.from as any)("parametres_immobilier")
-      .select("frais_visite, taux_max_reduction, max_offres_client")
+      .select("frais_visite, taux_max_reduction, max_offres_client, taux_commission")
       .maybeSingle();
 
     if (!data) return PARAMETRES_IMMO_DEFAUT;
@@ -432,6 +432,7 @@ export const getParametresImmobilier = unstable_cache(
       frais_visite: ou(data.frais_visite, PARAMETRES_IMMO_DEFAUT.frais_visite),
       taux_max_reduction: ou(data.taux_max_reduction, PARAMETRES_IMMO_DEFAUT.taux_max_reduction),
       max_offres_client: ou(data.max_offres_client, PARAMETRES_IMMO_DEFAUT.max_offres_client),
+      taux_commission: ou(data.taux_commission, PARAMETRES_IMMO_DEFAUT.taux_commission),
     };
   },
   ["parametres_immobilier"],

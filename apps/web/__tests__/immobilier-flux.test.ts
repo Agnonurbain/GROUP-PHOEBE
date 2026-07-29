@@ -6,6 +6,9 @@ import {
   STATUTS_CONTRE_OFFRE_POSSIBLE,
   STATUTS_DEMANDE_OFFRE_ACTIFS,
   formaterCreneau,
+  calculerCommission,
+  estLocation,
+  formaterPeriodeLocation,
 } from "@/lib/immobilier";
 
 const src = (p: string) => readFileSync(join(process.cwd(), "src", p), "utf8");
@@ -48,7 +51,10 @@ describe("cohérence des statuts de demande", () => {
     // agent à la main sur chaque demande avant de pouvoir programmer une visite.
     const source = src("app/actions/immobilier.ts");
     expect(source).toContain("agent_id: bien.agent_id");
-    expect(source).toContain('.select("type, localisation, statut, agent_id")');
+    // Sur la colonne, pas sur la liste entière : ajouter un champ au select ne
+    // doit pas casser un test qui parle de l'héritage de l'agent.
+    const selectBien = source.match(/\.from\("biens"\)\s*\n\s*\.select\("([^"]+)"\)/);
+    expect(selectBien?.[1]).toContain("agent_id");
   });
 });
 
@@ -132,5 +138,82 @@ describe("le client est informé de sa visite", () => {
 
   it("un créneau passé est refusé", () => {
     expect(source).toContain("Le créneau doit être dans le futur.");
+  });
+});
+
+describe("commission d'intermédiation", () => {
+  it("applique le taux au montant convenu", () => {
+    expect(calculerCommission(50_000_000, 10)).toBe(5_000_000);
+    expect(calculerCommission(50_000_000, 12)).toBe(6_000_000);
+  });
+
+  it("arrondit à l'unité — le FCFA n'a pas de subdivision", () => {
+    expect(calculerCommission(333_333, 12)).toBe(40_000);
+    expect(Number.isInteger(calculerCommission(1_234_567, 11.5))).toBe(true);
+  });
+
+  it("rend 0 sur un taux ou un montant inexploitable", () => {
+    for (const [m, t] of [[0, 10], [-1, 10], [1000, 0], [1000, -5], [Number.NaN, 10]] as const) {
+      expect(calculerCommission(m, t)).toBe(0);
+    }
+  });
+
+  it("est figée à l'acceptation, taux compris", () => {
+    // Le taux vit dans les paramètres et peut changer : la ligne doit rester
+    // lisible après un changement de barème, d'où le taux conservé.
+    const source = src("app/actions/immobilier.ts");
+    expect(source).toContain("taux_commission: commission.taux");
+    expect(source).toContain("montant_commission: commission.montant");
+  });
+});
+
+describe("location", () => {
+  it("distingue location et vente", () => {
+    expect(estLocation("location")).toBe(true);
+    expect(estLocation("vente")).toBe(false);
+  });
+
+  it("formate la période, ou rien si elle est vide", () => {
+    expect(formaterPeriodeLocation(null, null)).toBeNull();
+    expect(formaterPeriodeLocation("2026-09-01", 12)).toContain("12 mois");
+    expect(formaterPeriodeLocation(null, 6)).toBe("6 mois");
+  });
+
+  it("exige début et durée sur une offre de location", () => {
+    const source = src("app/actions/immobilier.ts");
+    expect(source).toContain("Indiquez la durée de location souhaitée");
+    expect(source).toContain("Indiquez la date de début de location souhaitée");
+  });
+});
+
+describe("gardes de l'acceptation", () => {
+  const source = src("app/actions/immobilier.ts");
+
+  it("les offres concurrentes du bien sont refusées et notifiées", () => {
+    expect(source).toContain("cloturerConcurrentes");
+    expect(source).toContain("Votre offre n'a pas été retenue");
+  });
+
+  it("un bien déjà pris ne peut pas faire l'objet d'un second accord", () => {
+    expect(source).toContain("un accord a été conclu entre-temps");
+  });
+
+  it("une seule demande de visite active par client et par bien", () => {
+    expect(source).toContain("Vous avez déjà une demande de visite en cours sur ce bien");
+  });
+});
+
+describe("paiement des frais de visite", () => {
+  const source = src("app/actions/immobilier.ts");
+
+  it("accepte Mobile Money comme la carte", () => {
+    // CinetPay était importé sans jamais être appelé : les clients sans carte
+    // étaient exclus du seul parcours payant du module.
+    expect(source).toContain("creerSessionCinetPay");
+    expect(source).toContain('["stripe", "cinetpay"].includes(methode)');
+  });
+
+  it("refuse un moyen de paiement inconnu", () => {
+    expect(source).toContain("Moyen de paiement invalide.");
   });
 });

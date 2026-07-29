@@ -13,7 +13,10 @@ import {
   STATUT_DEMANDE_LABELS,
   typeBienLabel,
   formaterCreneau,
+  estLocation,
+  calculerCommission,
   STATUTS_DEMANDE_OFFRE_ACTIFS,
+  STATUTS_DEMANDE_VISITE_ACTIFS,
   STATUTS_CONTRE_OFFRE_POSSIBLE,
   validerContreOffre,
 } from "@/lib/immobilier";
@@ -59,12 +62,6 @@ async function requireStaff() {
   return { user, role: profile.role as string };
 }
 
-async function requireAgent() {
-  const staff = await requireStaff();
-  if (staff.role !== "agent_immobilier") throw new Error("Action réservée aux agents immobiliers");
-  return staff.user;
-}
-
 // Écrire un montant facturé est réservé au propriétaire : un opérateur ne
 // négocie pas les prix. Cf. __tests__/prix-proprietaire.test.ts.
 async function requireProprietaireAvecId() {
@@ -106,6 +103,9 @@ export async function creerDemandeImmobilier(
   const message = ((formData.get("message") as string) || "").trim();
   const dateSouhaitee = ((formData.get("date_souhaitee") as string) || "").trim();
   const montantRaw = formData.get("montant") as string;
+  const methode = ((formData.get("methode_paiement") as string) || "stripe").trim();
+  const locationDebut = ((formData.get("location_debut") as string) || "").trim();
+  const locationDureeRaw = ((formData.get("location_duree_mois") as string) || "").trim();
 
   if (!bienId) return { error: "Bien invalide." };
   if (!isTypeDemande(type)) return { error: "Type de demande invalide." };
@@ -114,11 +114,46 @@ export async function creerDemandeImmobilier(
 
   const { data: bien } = await admin
     .from("biens")
-    .select("type, localisation, statut, agent_id")
+    .select("type, localisation, statut, agent_id, transaction")
     .eq("id", bienId)
     .single();
   if (!bien) return { error: "Bien introuvable." };
   if (bien.statut !== "disponible") return { error: "Ce bien n'est plus disponible." };
+
+  if (!["stripe", "cinetpay"].includes(methode)) {
+    return { error: "Moyen de paiement invalide." };
+  }
+
+  // Une seule demande de visite active par client et par bien : sans cette
+  // garde, le client pouvait relancer une visite et payer les frais deux fois.
+  if (type === "visite") {
+    const { count: visitesEnCours } = await admin
+      .from("demandes_immobilier")
+      .select("id", { count: "exact", head: true })
+      .eq("client_id", user.sub)
+      .eq("bien_id", bienId)
+      .eq("type", "visite")
+      .in("statut", STATUTS_DEMANDE_VISITE_ACTIFS as unknown as string[]);
+
+    if ((visitesEnCours ?? 0) > 0) {
+      return {
+        error: "Vous avez déjà une demande de visite en cours sur ce bien. Retrouvez-la dans « Mes réservations ».",
+      };
+    }
+  }
+
+  // Location : la période fait partie de l'offre. Sans elle, le montant convenu
+  // ne dirait pas s'il s'agit d'un loyer ou d'un total.
+  let locationDureeMois: number | null = null;
+  if (type === "offre" && estLocation(bien.transaction)) {
+    locationDureeMois = Number(locationDureeRaw);
+    if (!Number.isFinite(locationDureeMois) || locationDureeMois < 1) {
+      return { error: "Indiquez la durée de location souhaitée, en mois." };
+    }
+    if (!locationDebut) {
+      return { error: "Indiquez la date de début de location souhaitée." };
+    }
+  }
 
   let montantOffre: number | null = null;
   if (type === "offre") {
@@ -152,6 +187,8 @@ export async function creerDemandeImmobilier(
       // vivaient que dans le texte de la notification admin.
       message: message || null,
       date_souhaitee: type === "visite" && dateSouhaitee ? dateSouhaitee : null,
+      location_debut: locationDureeMois != null && locationDebut ? locationDebut : null,
+      location_duree_mois: locationDureeMois,
       // L'agent référent du bien suit la demande. Sans cet héritage, il fallait
       // l'affecter à la main sur chaque demande avant de pouvoir programmer une
       // visite — `visites.agent_id` est NOT NULL — alors que le bien avait déjà
@@ -195,25 +232,46 @@ export async function creerDemandeImmobilier(
         reference_id: demande.id,
         type: "frais",
         montant: montantFrais,
-        methode: "stripe",
+        methode: methode as "cinetpay" | "stripe",
         statut: "en_attente",
       })
       .select("id")
       .single();
     if (paiementErr) return { error: "Impossible de créer le paiement." };
 
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+    const description = `Frais de visite — ${typeBienLabel(bien.type)} à ${bien.localisation}`;
+
+    // Mobile Money (Wave, Orange Money, MTN) via CinetPay, ou carte via Stripe.
+    // L'immobilier n'offrait que la carte, alors que CinetPay était déjà branché
+    // sur les trois autres modules — les clients sans carte étaient exclus du
+    // seul parcours payant du module.
+    let paymentUrl: string;
     try {
-      const url = await creerSessionStripe({
-        montantCFA: montantFrais,
-        description: `Frais de visite — ${typeBienLabel(bien.type)} à ${bien.localisation}`,
-        paiementId: paiement.id,
-        successUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/immobilier/confirmation?type=visite`,
-        cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/immobilier/${bienId}`,
-      });
-      redirect(url);
-    } catch {
-      return { error: "Impossible de contacter la plateforme de paiement. Veuillez réessayer." };
+      if (methode === "cinetpay") {
+        paymentUrl = await creerSessionCinetPay({
+          montantCFA: montantFrais,
+          description,
+          paiementId: paiement.id,
+          returnUrl: `${baseUrl}/immobilier/confirmation?type=visite`,
+          notifyUrl: `${baseUrl}/api/webhooks/cinetpay`,
+        });
+      } else {
+        paymentUrl = await creerSessionStripe({
+          montantCFA: montantFrais,
+          description,
+          paiementId: paiement.id,
+          successUrl: `${baseUrl}/immobilier/confirmation?type=visite`,
+          cancelUrl: `${baseUrl}/immobilier/${bienId}`,
+        });
+      }
+    } catch (err) {
+      return {
+        error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
+      };
     }
+
+    redirect(paymentUrl);
   }
 
   redirect(`/immobilier/confirmation?type=${type}`);
@@ -257,19 +315,47 @@ export async function changerStatutDemandeImmobilier(
   const montantConvenu = figerMontant
     ? (demande.montant_contre_offre ?? demande.montant_offre)
     : null;
+  const commission =
+    montantConvenu != null ? await commissionDue(Number(montantConvenu)) : null;
+
+  // Un bien déjà réservé ou vendu ne peut plus faire l'objet d'un second accord.
+  if (statut === "acceptee" && demande?.bien_id) {
+    const { data: bienActuel } = await admin
+      .from("biens")
+      .select("statut")
+      .eq("id", demande.bien_id)
+      .single();
+
+    if (bienActuel && !["disponible", "reserve"].includes(bienActuel.statut)) {
+      return { error: `Bien ${bienActuel.statut} : impossible d'accepter une offre dessus.` };
+    }
+  }
 
   const { error } = await admin
     .from("demandes_immobilier")
     .update({
       statut,
-      ...(figerMontant && montantConvenu != null ? { montant_convenu: montantConvenu } : {}),
+      ...(figerMontant && montantConvenu != null
+        ? {
+            montant_convenu: montantConvenu,
+            ...(commission
+              ? { taux_commission: commission.taux, montant_commission: commission.montant }
+              : {}),
+          }
+        : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", demandeId);
   if (error) return { error: error.message };
 
   if (statut === "acceptee" && demande?.bien_id) {
-    await admin.from("biens").update({ statut: "reserve", updated_at: new Date().toISOString() }).eq("id", demande.bien_id);
+    await admin
+      .from("biens")
+      .update({ statut: "reserve", updated_at: new Date().toISOString() })
+      .eq("id", demande.bien_id)
+      .eq("statut", "disponible");
+
+    await cloturerConcurrentes(admin, demandeId, demande.bien_id);
   } else if (statut === "finalisee" && demande?.bien_id) {
     const { data: bien } = await admin.from("biens").select("transaction").eq("id", demande.bien_id).single();
     const statutBien = bien?.transaction === "location" ? "loue" : "vendu";
@@ -315,6 +401,53 @@ export async function affecterAgentImmobilier(
 
   revalidatePath("/admin/demandes-immobilier");
   return { success: true };
+}
+
+
+/**
+ * Effets de bord d'une acceptation d'offre, communs au client qui accepte une
+ * contre-offre et au staff qui accepte depuis la liste :
+ *   · les offres concurrentes du même bien sont refusées et leurs auteurs
+ *     prévenus — sans quoi elles restaient ouvertes jusqu'au cron à 7 jours, et
+ *     ces clients n'apprenaient jamais que le bien leur échappait ;
+ *   · le bien passe en réservé, seulement s'il était encore disponible.
+ */
+async function cloturerConcurrentes(
+  admin: ReturnType<typeof getAdmin>,
+  demandeId: string,
+  bienId: string
+) {
+  const { data: concurrentes } = await admin
+    .from("demandes_immobilier")
+    .select("id, client_id")
+    .eq("bien_id", bienId)
+    .eq("type", "offre")
+    .neq("id", demandeId)
+    .in("statut", STATUTS_CONTRE_OFFRE_POSSIBLE as unknown as string[]);
+
+  for (const c of concurrentes ?? []) {
+    await admin
+      .from("demandes_immobilier")
+      .update({ statut: "refusee", updated_at: new Date().toISOString() })
+      .eq("id", c.id);
+
+    await notifierClient(
+      c.client_id,
+      "Votre offre n'a pas été retenue",
+      "Le bien qui vous intéressait a fait l'objet d'un accord avec un autre acquéreur. Votre offre est close — d'autres biens sont disponibles au catalogue."
+    );
+  }
+
+  return (concurrentes ?? []).length;
+}
+
+/** Calcule la commission due sur un montant convenu, au taux courant. */
+async function commissionDue(montantConvenu: number) {
+  const params = await getParametresImmobilier();
+  return {
+    taux: params.taux_commission,
+    montant: calculerCommission(montantConvenu, params.taux_commission),
+  };
 }
 
 // ─── Contre-offre ─────────────────────────────────────────────────────────────
@@ -439,14 +572,41 @@ export async function repondreContreOffre(
 
   const accepte = reponse === "accepter";
 
+  // Le bien a pu être réservé ou vendu entre la contre-offre et cette réponse :
+  // sans cette garde, deux accords pouvaient coexister sur le même bien.
+  if (accepte) {
+    const { data: bienActuel } = await admin
+      .from("biens")
+      .select("statut")
+      .eq("id", demande.bien_id)
+      .single();
+
+    if (bienActuel?.statut !== "disponible") {
+      return {
+        error: "Ce bien n'est plus disponible : un accord a été conclu entre-temps. Votre offre est close.",
+      };
+    }
+  }
+
+  const commission = accepte && demande.montant_contre_offre != null
+    ? await commissionDue(Number(demande.montant_contre_offre))
+    : null;
+
   const { error } = await admin
     .from("demandes_immobilier")
     .update({
       statut: accepte ? "acceptee" : "refusee",
-      // Le prix convenu est arrêté ici, dans le même UPDATE que le statut : le
-      // trigger `garde_montants` (00053) refuse toute écriture de montant sur une
-      // demande déjà acceptée, service_role compris.
-      ...(accepte ? { montant_convenu: demande.montant_contre_offre } : {}),
+      // Prix convenu ET commission sont arrêtés ici, dans le même UPDATE que le
+      // statut : le trigger `garde_montants` refuse toute écriture de montant sur
+      // une demande déjà acceptée, service_role compris (00053, 00054).
+      ...(accepte
+        ? {
+            montant_convenu: demande.montant_contre_offre,
+            ...(commission
+              ? { taux_commission: commission.taux, montant_commission: commission.montant }
+              : {}),
+          }
+        : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", demandeId);
@@ -458,6 +618,8 @@ export async function repondreContreOffre(
       .update({ statut: "reserve", updated_at: new Date().toISOString() })
       .eq("id", demande.bien_id)
       .eq("statut", "disponible");
+
+    await cloturerConcurrentes(admin, demandeId, demande.bien_id);
   } else {
     await admin
       .from("biens")

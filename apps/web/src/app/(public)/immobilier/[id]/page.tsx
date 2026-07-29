@@ -13,6 +13,7 @@ import { BackLink } from "@/components/public/back-link"
 import { Badge } from "@/components/ui"
 import { serializeJsonLd } from "@/lib/json-ld"
 import {
+  estLocation,
   statutBienLabel,
   statutBienBadgeVariant,
   typeBienLabel,
@@ -162,7 +163,12 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
               )}
             </div>
             {disponible ? (
-              <BienInteractionForm bienId={bien.id} isLoggedIn={isLoggedIn} fraisVisite={paramsImmo.frais_visite} />
+              <BienInteractionForm
+                bienId={bien.id}
+                isLoggedIn={isLoggedIn}
+                fraisVisite={paramsImmo.frais_visite}
+                estLocation={estLocation(bien.transaction)}
+              />
             ) : (
               /* Le formulaire échouait après soumission sur un bien non
                  disponible : autant le dire avant que le client ne le remplisse. */

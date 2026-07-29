@@ -12,6 +12,7 @@ export function ParametresImmoForm({
 }: {
   initial: {
     frais_visite: number;
+    taux_commission: number;
     taux_max_reduction: number;
     max_offres_client: number;
   };
@@ -45,6 +46,28 @@ export function ParametresImmoForm({
         <p className="text-xs text-phoebe-anthracite/60">
           Frais dus par le client pour programmer une visite. Non remboursables, et
           annoncés sur la fiche du bien avant paiement.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        <label htmlFor="taux_commission" className="block text-sm font-medium text-phoebe-anthracite">
+          Commission GROUP PHOEBE (%)
+        </label>
+        <input
+          id="taux_commission"
+          name="taux_commission"
+          type="number"
+          min={0}
+          max={100}
+          step={0.5}
+          defaultValue={initial.taux_commission}
+          className={inputClass}
+          required
+        />
+        <p className="text-xs text-phoebe-anthracite/60">
+          Part prélevée sur le montant convenu, les biens appartenant à des
+          propriétaires tiers. Usuellement 10 à 12 %. Due dès l&apos;acceptation de
+          l&apos;offre, et figée sur la transaction au taux du jour.
         </p>
       </div>
 
