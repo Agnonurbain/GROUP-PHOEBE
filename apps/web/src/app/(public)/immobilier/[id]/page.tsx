@@ -36,7 +36,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
   const result = await getBienById(id)
   if (!result) notFound()
 
-  const { bien, photos } = result
+  const { bien, photos, offreCount } = result
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
   const supabase = await createClient()
@@ -129,6 +129,11 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
             <div className="rounded-2xl border border-public-border bg-public-bg-card p-6">
               <p className="text-sm text-public-text-muted">Prix</p>
               <p className="mt-1 text-2xl font-bold text-accent-green">{Number(bien.prix).toLocaleString("fr-FR")} FCFA</p>
+              {offreCount > 0 && (
+                <p className="mt-2 text-xs text-public-text-muted">
+                  {offreCount} personne{offreCount > 1 ? "s" : ""} a/ont fait une offre sur ce bien
+                </p>
+              )}
             </div>
             <BienInteractionForm bienId={bien.id} isLoggedIn={isLoggedIn} />
           </div>

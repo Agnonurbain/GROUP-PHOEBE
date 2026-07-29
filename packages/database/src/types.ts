@@ -99,6 +99,47 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          new_values: Json | null
+          old_values: Json | null
+          record_id: string | null
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          new_values?: Json | null
+          old_values?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       avis_transport: {
         Row: {
           commentaire: string | null
@@ -461,7 +502,7 @@ export type Database = {
           methode_paiement: string | null
           montant: number | null
           negociation_note: string | null
-          periode: string | null
+          periode: unknown
           prix_negocie: number | null
           statut: string
           type: string
@@ -490,7 +531,7 @@ export type Database = {
           methode_paiement?: string | null
           montant?: number | null
           negociation_note?: string | null
-          periode?: string | null
+          periode?: unknown
           prix_negocie?: number | null
           statut?: string
           type: string
@@ -519,7 +560,7 @@ export type Database = {
           methode_paiement?: string | null
           montant?: number | null
           negociation_note?: string | null
-          periode?: string | null
+          periode?: unknown
           prix_negocie?: number | null
           statut?: string
           type?: string
@@ -555,17 +596,17 @@ export type Database = {
         Row: {
           chauffeur_id: string
           id: string
-          periode: string | null
+          periode: unknown
         }
         Insert: {
           chauffeur_id: string
           id?: string
-          periode: string | null
+          periode: unknown
         }
         Update: {
           chauffeur_id?: string
           id?: string
-          periode?: string | null
+          periode?: unknown
         }
         Relationships: [
           {
@@ -580,19 +621,19 @@ export type Database = {
       disponibilites_vehicule: {
         Row: {
           id: string
-          periode: string | null
+          periode: unknown
           type: string
           vehicule_id: string
         }
         Insert: {
           id?: string
-          periode: string | null
+          periode: unknown
           type?: string
           vehicule_id: string
         }
         Update: {
           id?: string
-          periode?: string | null
+          periode?: unknown
           type?: string
           vehicule_id?: string
         }
@@ -647,7 +688,9 @@ export type Database = {
           conseiller_id: string | null
           created_at: string
           id: string
+          montant_estime: number | null
           pays_cible: string
+          prestation: string | null
           statut: string
           type: string
           updated_at: string
@@ -657,7 +700,9 @@ export type Database = {
           conseiller_id?: string | null
           created_at?: string
           id?: string
+          montant_estime?: number | null
           pays_cible: string
+          prestation?: string | null
           statut?: string
           type: string
           updated_at?: string
@@ -667,7 +712,9 @@ export type Database = {
           conseiller_id?: string | null
           created_at?: string
           id?: string
+          montant_estime?: number | null
           pays_cible?: string
+          prestation?: string | null
           statut?: string
           type?: string
           updated_at?: string
@@ -734,6 +781,7 @@ export type Database = {
           mode: string
           nature_colis: string | null
           numero_suivi: string
+          photos: string[]
           poids_kg: number | null
           prix: number | null
           statut: string
@@ -756,6 +804,7 @@ export type Database = {
           mode: string
           nature_colis?: string | null
           numero_suivi: string
+          photos?: string[]
           poids_kg?: number | null
           prix?: number | null
           statut?: string
@@ -778,6 +827,7 @@ export type Database = {
           mode?: string
           nature_colis?: string | null
           numero_suivi?: string
+          photos?: string[]
           poids_kg?: number | null
           prix?: number | null
           statut?: string
@@ -1004,35 +1054,6 @@ export type Database = {
           },
         ]
       }
-      paniers: {
-        Row: {
-          client_id: string
-          created_at: string
-          items: unknown
-          updated_at: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          items?: unknown
-          updated_at?: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          items?: unknown
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "paniers_client_id_fkey"
-            columns: ["client_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       paiements: {
         Row: {
           commande_id: string | null
@@ -1072,6 +1093,123 @@ export type Database = {
           statut?: string
           type?: string
           webhook_reference?: string | null
+        }
+        Relationships: []
+      }
+      paliers_poids: {
+        Row: {
+          id: string
+          label: string
+          max_kg: number
+          multiplicateur: number
+          ordre: number
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          label: string
+          max_kg: number
+          multiplicateur: number
+          ordre: number
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          label?: string
+          max_kg?: number
+          multiplicateur?: number
+          ordre?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      paniers: {
+        Row: {
+          client_id: string
+          created_at: string
+          items: Json
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          items?: Json
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          items?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      parametres_contact: {
+        Row: {
+          adresse: string | null
+          email: string | null
+          facebook: string | null
+          horaires: string | null
+          id: boolean
+          instagram: string | null
+          linkedin: string | null
+          telephone: string | null
+          tiktok: string | null
+          updated_at: string
+          whatsapp: string | null
+          youtube: string | null
+        }
+        Insert: {
+          adresse?: string | null
+          email?: string | null
+          facebook?: string | null
+          horaires?: string | null
+          id?: boolean
+          instagram?: string | null
+          linkedin?: string | null
+          telephone?: string | null
+          tiktok?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+          youtube?: string | null
+        }
+        Update: {
+          adresse?: string | null
+          email?: string | null
+          facebook?: string | null
+          horaires?: string | null
+          id?: boolean
+          instagram?: string | null
+          linkedin?: string | null
+          telephone?: string | null
+          tiktok?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+          youtube?: string | null
+        }
+        Relationships: []
+      }
+      parametres_immobilier: {
+        Row: {
+          caution_visite: number
+          id: number
+          max_offres_client: number
+          taux_max_reduction: number
+          updated_at: string
+        }
+        Insert: {
+          caution_visite?: number
+          id?: number
+          max_offres_client?: number
+          taux_max_reduction?: number
+          updated_at?: string
+        }
+        Update: {
+          caution_visite?: number
+          id?: number
+          max_offres_client?: number
+          taux_max_reduction?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1129,34 +1267,185 @@ export type Database = {
           },
         ]
       }
+      propositions_tarifs: {
+        Row: {
+          champ: string | null
+          commentaire: string | null
+          created_at: string
+          id: string
+          operateur_id: string
+          statut: string
+          type: string
+          updated_at: string
+          valeur_actuelle: Json | null
+          valeur_proposee: Json
+          zone_id: string
+        }
+        Insert: {
+          champ?: string | null
+          commentaire?: string | null
+          created_at?: string
+          id?: string
+          operateur_id: string
+          statut?: string
+          type: string
+          updated_at?: string
+          valeur_actuelle?: Json | null
+          valeur_proposee: Json
+          zone_id: string
+        }
+        Update: {
+          champ?: string | null
+          commentaire?: string | null
+          created_at?: string
+          id?: string
+          operateur_id?: string
+          statut?: string
+          type?: string
+          updated_at?: string
+          valeur_actuelle?: Json | null
+          valeur_proposee?: Json
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propositions_tarifs_operateur_id_fkey"
+            columns: ["operateur_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propositions_tarifs_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_tarifaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      propositions_zones_tarifaires: {
+        Row: {
+          champ: string
+          commentaire: string | null
+          created_at: string
+          id: string
+          operateur_id: string
+          statut: string
+          updated_at: string
+          valeur_actuelle: string | null
+          valeur_proposee: string
+          zone_id: string
+        }
+        Insert: {
+          champ: string
+          commentaire?: string | null
+          created_at?: string
+          id?: string
+          operateur_id: string
+          statut?: string
+          updated_at?: string
+          valeur_actuelle?: string | null
+          valeur_proposee: string
+          zone_id: string
+        }
+        Update: {
+          champ?: string
+          commentaire?: string | null
+          created_at?: string
+          id?: string
+          operateur_id?: string
+          statut?: string
+          updated_at?: string
+          valeur_actuelle?: string | null
+          valeur_proposee?: string
+          zone_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "propositions_zones_tarifaires_operateur_id_fkey"
+            columns: ["operateur_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "propositions_zones_tarifaires_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones_tarifaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       push_subscriptions: {
         Row: {
           created_at: string
           id: string
-          subscription: unknown
+          subscription: Json
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          subscription: unknown
+          subscription: Json
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          subscription?: unknown
+          subscription?: Json
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "push_subscriptions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          }
-        ]
+        Relationships: []
+      }
+      tarifs_assistance: {
+        Row: {
+          id: string
+          pays_slug: string
+          prestation_key: string
+          prix: number | null
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          pays_slug: string
+          prestation_key: string
+          prix?: number | null
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          pays_slug?: string
+          prestation_key?: string
+          prix?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tarifs_livraison: {
+        Row: {
+          id: string
+          mode: string
+          prix: number
+          updated_at: string
+          zone: string
+        }
+        Insert: {
+          id?: string
+          mode: string
+          prix: number
+          updated_at?: string
+          zone: string
+        }
+        Update: {
+          id?: string
+          mode?: string
+          prix?: number
+          updated_at?: string
+          zone?: string
+        }
+        Relationships: []
       }
       users: {
         Row: {
@@ -1296,6 +1585,7 @@ export type Database = {
           carburant: string | null
           carte_grise_url: string | null
           categorie: string
+          caution_base_fcfa: number | null
           certificat_non_gage_url: string | null
           chauffeur_disponible: boolean
           climatisation: boolean
@@ -1328,6 +1618,7 @@ export type Database = {
           carburant?: string | null
           carte_grise_url?: string | null
           categorie: string
+          caution_base_fcfa?: number | null
           certificat_non_gage_url?: string | null
           chauffeur_disponible?: boolean
           climatisation?: boolean
@@ -1360,6 +1651,7 @@ export type Database = {
           carburant?: string | null
           carte_grise_url?: string | null
           categorie?: string
+          caution_base_fcfa?: number | null
           certificat_non_gage_url?: string | null
           chauffeur_disponible?: boolean
           climatisation?: boolean
@@ -1462,25 +1754,46 @@ export type Database = {
       }
       zones_tarifaires: {
         Row: {
+          caution_multiplicateur: number
+          chauffeur_statut: string
+          coefficient_majoration: number
           created_at: string
           description: string | null
+          geojson: Json | null
           id: string
+          km_inclus_par_jour: number
           nom: string
           ordre: number
+          supplement_km_fcfa: number
+          tarif_chauffeur_journalier: number
         }
         Insert: {
+          caution_multiplicateur?: number
+          chauffeur_statut?: string
+          coefficient_majoration?: number
           created_at?: string
           description?: string | null
+          geojson?: Json | null
           id?: string
+          km_inclus_par_jour?: number
           nom: string
           ordre?: number
+          supplement_km_fcfa?: number
+          tarif_chauffeur_journalier?: number
         }
         Update: {
+          caution_multiplicateur?: number
+          chauffeur_statut?: string
+          coefficient_majoration?: number
           created_at?: string
           description?: string | null
+          geojson?: Json | null
           id?: string
+          km_inclus_par_jour?: number
           nom?: string
           ordre?: number
+          supplement_km_fcfa?: number
+          tarif_chauffeur_journalier?: number
         }
         Relationships: []
       }
@@ -1495,6 +1808,8 @@ export type Database = {
       is_staff: { Args: never; Returns: boolean }
       own_role: { Args: never; Returns: string }
       own_statut_verification: { Args: never; Returns: string }
+      owns_paiement: { Args: { ref_id: string }; Returns: boolean }
+      stored_role: { Args: { target: string }; Returns: string }
       sync_vehicule_chauffeurs: {
         Args: { p_chauffeur_ids: string[]; p_vehicule_id: string }
         Returns: undefined

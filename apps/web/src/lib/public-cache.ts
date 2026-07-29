@@ -10,6 +10,7 @@ import {
 } from "@/lib/livraison";
 import type { TarifsAssistance } from "@/lib/assistance";
 import { CONTACT_VIDE, type ParametresContact } from "@/lib/contact";
+import { PARAMETRES_IMMO_DEFAUT, type ParametresImmobilier } from "@/lib/immobilier";
 import { makeGroupKey } from "@/lib/vehicle-group";
 
 // Transport catalogue
@@ -126,6 +127,34 @@ export const getCommunes = unstable_cache(
 );
 
 // Immobilier
+async function getBienIdsAvecVisiteActive(supabase: ReturnType<typeof createPublicClient>): Promise<string[]> {
+  const { data } = await supabase
+    .from("demandes_immobilier")
+    .select("bien_id")
+    .eq("type", "visite")
+    .neq("statut", "refusee")
+    .neq("statut", "annulee")
+    .neq("statut", "finalisee");
+  return [...new Set((data ?? []).map((d) => d.bien_id))];
+}
+
+async function getCompteurOffres(supabase: ReturnType<typeof createPublicClient>, ids: string[]): Promise<Record<string, number>> {
+  if (ids.length === 0) return {};
+  const { data } = await supabase
+    .from("demandes_immobilier")
+    .select("bien_id")
+    .in("bien_id", ids)
+    .eq("type", "offre")
+    .neq("statut", "refusee")
+    .neq("statut", "annulee")
+    .neq("statut", "finalisee");
+  const map: Record<string, number> = {};
+  for (const d of data ?? []) {
+    map[d.bien_id] = (map[d.bien_id] ?? 0) + 1;
+  }
+  return map;
+}
+
 export const getBiensImmobiliers = unstable_cache(
   async (filters: Record<string, string | undefined> = {}) => {
     const supabase = createPublicClient();
@@ -147,7 +176,15 @@ export const getBiensImmobiliers = unstable_cache(
     if (filters.transaction) query = query.eq("transaction", filters.transaction);
 
     const { data } = await query;
-    return data ?? [];
+    let biens = data ?? [];
+
+    // Exclure les biens avec une visite active (caution payée, visite en cours)
+    const idsExclus = await getBienIdsAvecVisiteActive(supabase);
+    if (idsExclus.length > 0) {
+      biens = biens.filter((b) => !idsExclus.includes(b.id));
+    }
+
+    return biens;
   },
   ["biens_immobiliers"],
   { revalidate: 3600, tags: ["biens"] }
@@ -158,22 +195,25 @@ export const getBiensWithPhotos = unstable_cache(
     const biens = await getBiensImmobiliers(filters);
     const ids = biens.map((b) => b.id);
 
-    if (ids.length === 0) return { biens, photoMap: {} };
+    if (ids.length === 0) return { biens, photoMap: {}, offreCountMap: {} };
 
     const supabase = createPublicClient();
-    const { data: allPhotos } = await supabase
-      .from("bien_medias")
-      .select("bien_id, url")
-      .in("bien_id", ids)
-      .eq("type", "photo")
-      .order("ordre", { ascending: true });
+    const [allPhotos, offreCountMap] = await Promise.all([
+      supabase
+        .from("bien_medias")
+        .select("bien_id, url")
+        .in("bien_id", ids)
+        .eq("type", "photo")
+        .order("ordre", { ascending: true }),
+      getCompteurOffres(supabase, ids),
+    ]);
 
     const photoMap: Record<string, string> = {};
-    for (const p of allPhotos ?? []) {
+    for (const p of allPhotos.data ?? []) {
       if (!photoMap[p.bien_id]) photoMap[p.bien_id] = p.url;
     }
 
-    return { biens, photoMap };
+    return { biens, photoMap, offreCountMap };
   },
   ["biens_with_photos"],
   { revalidate: 3600, tags: ["biens"] }
@@ -185,14 +225,17 @@ export const getBienById = unstable_cache(
     const { data: bien } = await supabase.from("biens").select("*").eq("id", id).single();
     if (!bien) return null;
 
-    const { data: medias } = await supabase
-      .from("bien_medias")
-      .select("url, type, ordre")
-      .eq("bien_id", id)
-      .eq("type", "photo")
-      .order("ordre", { ascending: true });
+    const [medias, offreCountMap] = await Promise.all([
+      supabase
+        .from("bien_medias")
+        .select("url, type, ordre")
+        .eq("bien_id", id)
+        .eq("type", "photo")
+        .order("ordre", { ascending: true }),
+      getCompteurOffres(supabase, [id]),
+    ]);
 
-    return { bien, photos: (medias ?? []).map((m) => ({ url: m.url })) };
+    return { bien, photos: (medias.data ?? []).map((m) => ({ url: m.url })), offreCount: offreCountMap[id] ?? 0 };
   },
   ["bien_by_id"],
   { revalidate: 3600, tags: ["biens"] }
@@ -318,6 +361,27 @@ export const getParametresContact = unstable_cache(
   },
   ["parametres_contact"],
   { revalidate: 3600, tags: ["parametres_contact"] }
+);
+
+// Paramétrage immobilier (caution visite, taux réduction, limite offres).
+// Repli sur les valeurs par défaut si la table est absente (pré-migration).
+export const getParametresImmobilier = unstable_cache(
+  async (): Promise<ParametresImmobilier> => {
+    const supabase = createPublicClient();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase.from as any)("parametres_immobilier")
+      .select("caution_visite, taux_max_reduction, max_offres_client")
+      .maybeSingle();
+
+    if (!data) return PARAMETRES_IMMO_DEFAUT;
+    return {
+      caution_visite: Number(data.caution_visite) || PARAMETRES_IMMO_DEFAUT.caution_visite,
+      taux_max_reduction: Number(data.taux_max_reduction) || PARAMETRES_IMMO_DEFAUT.taux_max_reduction,
+      max_offres_client: Number(data.max_offres_client) || PARAMETRES_IMMO_DEFAUT.max_offres_client,
+    };
+  },
+  ["parametres_immobilier"],
+  { revalidate: 3600, tags: ["parametres_immobilier"] }
 );
 
 // Chiffres affichés sur l'accueil (bande de preuve).

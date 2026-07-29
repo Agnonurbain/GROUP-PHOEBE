@@ -142,6 +142,11 @@ async function confirmerUnPaiement(
     }
   }
 
+  // Immobilier : la caution visite est déjà créée, on laisse la demande en l'état
+  if (paiement.reference_table === "demandes_immobilier") {
+    console.log("Paiement immobilier confirmé:", paiement.id);
+  }
+
   // Livraison (expeditions) : aucun changement de statut à la capture — l'état
   // de paiement est porté par la table paiements ; la gestion du cycle de vie
   // (prise_en_charge → en_transit → livree) se fait côté admin.
@@ -253,6 +258,28 @@ export async function annulerCommande(
         .eq("id", paiement.reference_id)
         .eq("statut", "en_attente_paiement");
     }
+
+    if (paiement.reference_table === "demandes_immobilier") {
+      const { data: demande } = await admin
+        .from("demandes_immobilier")
+        .select("bien_id")
+        .eq("id", paiement.reference_id)
+        .single();
+
+      if (demande) {
+        await admin
+          .from("demandes_immobilier")
+          .update({ statut: "annulee", updated_at: new Date().toISOString() })
+          .eq("id", paiement.reference_id)
+          .eq("statut", "en_attente");
+
+        await admin
+          .from("biens")
+          .update({ statut: "disponible", updated_at: new Date().toISOString() })
+          .eq("id", demande.bien_id);
+      }
+    }
+
     // Livraison : le paiement échoué reste tracé dans paiements ; l'expédition
     // non payée demeure au statut "creee" (ignorée côté admin).
   }

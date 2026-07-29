@@ -42,7 +42,7 @@ export default async function Immobilier({
     zone_id: sp.zone,
   }
 
-  const { biens, photoMap } = await getBiensWithPhotos(filters)
+  const { biens, photoMap, offreCountMap } = await getBiensWithPhotos(filters)
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
@@ -159,6 +159,9 @@ export default async function Immobilier({
                     {b.surface_m2 && <span>{b.surface_m2} m²</span>}
                     {b.nb_chambres && <span>{b.nb_chambres} {b.nb_chambres > 1 ? "chambres" : "chambre"}</span>}
                     <span>{b.localisation}</span>
+                    {offreCountMap[b.id] > 0 && (
+                      <span className="text-accent-green">{offreCountMap[b.id]} intéressé{offreCountMap[b.id] > 1 ? "s" : ""}</span>
+                    )}
                   </div>
                 </CardContent>
                 <CardFooter>
