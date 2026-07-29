@@ -87,6 +87,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/biens", label: "Biens", icon: Building2 },
       { href: "/admin/demandes-immobilier", label: "Demandes immobilier", icon: FileText },
+      { href: "/admin/transactions-immobilier", label: "Transactions", icon: ScrollText },
       { href: "/admin/parametres-immobilier", label: "Paramètres", icon: Settings, proprietaireOnly: true },
     ],
   },

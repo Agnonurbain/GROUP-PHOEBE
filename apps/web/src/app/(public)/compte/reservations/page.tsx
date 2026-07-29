@@ -84,7 +84,7 @@ export default async function CompteReservations({
       .order("created_at", { ascending: false }),
     supabase
       .from("demandes_immobilier")
-      .select("id, created_at, statut, type, montant_offre, montant_contre_offre, date_souhaitee, bien_id, biens(localisation, type)")
+      .select("id, created_at, statut, type, montant_offre, montant_contre_offre, montant_convenu, date_souhaitee, bien_id, biens(localisation, type)")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -182,7 +182,12 @@ export default async function CompteReservations({
     category: "Immobilier",
     detailHref: `/reservation/confirmation?demande=${d.id}`,
     period: periodeImmo(d),
-    price: d.montant_offre ? `${d.montant_offre.toLocaleString("fr-FR")} FCFA` : "—",
+    // Le montant convenu prime : c'est le prix arrêté, pas l'offre initiale.
+    price: d.montant_convenu
+      ? `${Number(d.montant_convenu).toLocaleString("fr-FR")} FCFA`
+      : d.montant_offre
+        ? `${Number(d.montant_offre).toLocaleString("fr-FR")} FCFA`
+        : "—",
     status: d.statut,
     photoUrl: null,
     aPayer: null,

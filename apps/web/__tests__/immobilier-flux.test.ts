@@ -91,6 +91,34 @@ describe("exclusion du catalogue", () => {
   });
 });
 
+describe("le montant convenu est un fait figé", () => {
+  const source = src("app/actions/immobilier.ts");
+
+  it("l'acceptation d'une contre-offre fige le montant", () => {
+    // Écrit dans le même UPDATE que le statut : le trigger refuse toute écriture
+    // de montant sur une demande DÉJÀ acceptée (comparaison sur OLD.statut).
+    expect(source).toContain("montant_convenu: demande.montant_contre_offre");
+  });
+
+  it("l'acceptation par l'admin fige le montant, contre-offre ou offre", () => {
+    expect(source).toContain("demande.montant_contre_offre ?? demande.montant_offre");
+  });
+
+  it("le gel en base s'applique à tous les rôles, service_role compris", () => {
+    const migration = readFileSync(
+      join(process.cwd(), "..", "..", "supabase", "migrations", "00053_montant_convenu.sql"),
+      "utf8"
+    );
+    // Le gel doit précéder la sortie anticipée sur le rôle : sinon les server
+    // actions, qui écrivent en service_role, passeraient outre.
+    const posGel = migration.indexOf("old.statut in ('acceptee', 'finalisee')");
+    const posSortieRole = migration.indexOf("current_user not in ('anon', 'authenticated')");
+    expect(posGel).toBeGreaterThan(-1);
+    expect(posSortieRole).toBeGreaterThan(-1);
+    expect(posGel).toBeLessThan(posSortieRole);
+  });
+});
+
 describe("le client est informé de sa visite", () => {
   const source = src("app/actions/immobilier.ts");
 

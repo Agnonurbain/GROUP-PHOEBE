@@ -432,6 +432,7 @@ export type Database = {
           id: string
           message: string | null
           montant_contre_offre: number | null
+          montant_convenu: number | null
           montant_offre: number | null
           statut: string
           type: string
@@ -446,6 +447,7 @@ export type Database = {
           id?: string
           message?: string | null
           montant_contre_offre?: number | null
+          montant_convenu?: number | null
           montant_offre?: number | null
           statut?: string
           type: string
@@ -460,6 +462,7 @@ export type Database = {
           id?: string
           message?: string | null
           montant_contre_offre?: number | null
+          montant_convenu?: number | null
           montant_offre?: number | null
           statut?: string
           type?: string

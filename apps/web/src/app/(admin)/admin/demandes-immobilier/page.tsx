@@ -135,9 +135,15 @@ export default async function DemandesImmobilierAdminPage() {
                   {d.montant_offre != null && (
                     <p className="text-lg font-bold text-phoebe-green-deep">{Number(d.montant_offre).toLocaleString("fr-FR")} FCFA</p>
                   )}
-                  {d.montant_contre_offre != null && (
+                  {d.montant_contre_offre != null && d.montant_convenu == null && (
                     <p className="text-xs font-semibold text-phoebe-gold-dark">
                       Contre-offre : {Number(d.montant_contre_offre).toLocaleString("fr-FR")} FCFA
+                    </p>
+                  )}
+                  {d.montant_convenu != null && (
+                    <p className="text-xs font-semibold text-phoebe-green-deep">
+                      Convenu : {Number(d.montant_convenu).toLocaleString("fr-FR")} FCFA
+                      <span className="ml-1 font-normal text-phoebe-anthracite/60">(figé)</span>
                     </p>
                   )}
                   <p className="text-xs text-phoebe-anthracite/70">

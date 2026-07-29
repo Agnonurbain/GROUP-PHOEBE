@@ -245,13 +245,26 @@ export async function changerStatutDemandeImmobilier(
 
   const { data: demande } = await admin
     .from("demandes_immobilier")
-    .select("client_id, bien_id")
+    .select("client_id, bien_id, statut, montant_offre, montant_contre_offre, montant_convenu")
     .eq("id", demandeId)
     .single();
 
+  // Accepter arrête le prix. Après une contre-offre c'est elle qui fait foi ;
+  // sinon c'est l'offre du client. Écrit dans le même UPDATE que le statut, car
+  // le trigger `garde_montants` (00053) gèle les montants dès l'acceptation.
+  const figerMontant =
+    statut === "acceptee" && demande != null && demande.montant_convenu == null;
+  const montantConvenu = figerMontant
+    ? (demande.montant_contre_offre ?? demande.montant_offre)
+    : null;
+
   const { error } = await admin
     .from("demandes_immobilier")
-    .update({ statut, updated_at: new Date().toISOString() })
+    .update({
+      statut,
+      ...(figerMontant && montantConvenu != null ? { montant_convenu: montantConvenu } : {}),
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", demandeId);
   if (error) return { error: error.message };
 
@@ -430,13 +443,16 @@ export async function repondreContreOffre(
     .from("demandes_immobilier")
     .update({
       statut: accepte ? "acceptee" : "refusee",
+      // Le prix convenu est arrêté ici, dans le même UPDATE que le statut : le
+      // trigger `garde_montants` (00053) refuse toute écriture de montant sur une
+      // demande déjà acceptée, service_role compris.
+      ...(accepte ? { montant_convenu: demande.montant_contre_offre } : {}),
       updated_at: new Date().toISOString(),
     })
     .eq("id", demandeId);
   if (error) return { error: error.message };
 
   if (accepte) {
-    // Le montant retenu reste `montant_contre_offre` : c'est le prix convenu.
     await admin
       .from("biens")
       .update({ statut: "reserve", updated_at: new Date().toISOString() })

@@ -68,7 +68,7 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 52 migrations SQL
+├── supabase/migrations/         # 53 migrations SQL
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -148,6 +148,7 @@ group-phoebe/
 | `/admin/biens/[id]` | Édition bien |
 | `/admin/expeditions` | Gestion expéditions |
 | `/admin/demandes-immobilier` | Demandes immobilières (statuts, visites, agent, contre-offre) |
+| `/admin/transactions-immobilier` | Registre : qui a loué / acheté quel bien, à quel prix et quand (cumul des sommes réservé au propriétaire) |
 | `/admin/parametres-immobilier` | Paramétrage immobilier — propriétaire uniquement (frais de visite, remise max, quota d'offres) |
 | `/admin/dossiers-voyage` | Dossiers voyage/études |
 | `/admin/propositions` | Propositions de prix |
@@ -183,7 +184,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-52 migrations Supabase (00001 → 00052).
+53 migrations Supabase (00001 → 00053).
 
 ### 5.1 Tables
 
@@ -220,7 +221,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `bien_medias` | Immobilier | Photos/vidéos |
 | `agents_immobiliers` | Immobilier | Agents et zone de couverture |
 | `visites` | Immobilier | Visites programmées (proposée → confirmée → réalisée) |
-| `demandes_immobilier` | Immobilier | Demandes info/visite/offre + contre-offre (`montant_offre`, `montant_contre_offre`) |
+| `demandes_immobilier` | Immobilier | Demandes info/visite/offre + contre-offre (`montant_offre`, `montant_contre_offre`) et prix arrêté (`montant_convenu`, figé à l'acceptation). Chaque ligne acceptée est une entrée du registre des transactions |
 | `parametres_immobilier` | Immobilier | Singleton : frais de visite, remise max, quota d'offres |
 | `dossiers_voyage` | Assistance | Dossiers études/visa |
 | `documents_dossier_voyage` | Assistance | Documents associés |
@@ -278,7 +279,7 @@ Champs couverts, et par quoi :
 | `vehicules.prix_*`, `taux_caution`, `caution_base_fcfa` | `retirerChampsPrix` (vehicules.ts) | — |
 | `tarifs_livraison`, `paliers_poids`, `tarifs_assistance`, `parametres_contact` | `requireProprietaireAvecId` (tarifs.ts) | — |
 | `parametres_immobilier.frais_visite` | `requireProprietaireAvecId` (immobilier.ts) | policy `is_proprietaire()` |
-| `demandes_immobilier.montant_offre`, `montant_contre_offre` | `proposerContreOffre` | `garde_montants` (00047) |
+| `demandes_immobilier.montant_offre`, `montant_contre_offre`, `montant_convenu` | `proposerContreOffre` | `garde_montants` (00047, gel ajouté en 00053) |
 | `biens.prix` | `retirerChampsPrix` + création propriétaire (biens.ts) | `garde_prix` (00049) |
 
 Créer un bien est réservé au propriétaire : `biens.prix` est NOT NULL, il n'y a
@@ -597,7 +598,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 301 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 320 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -619,6 +620,8 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | Le prix convenu devient un fait daté (00053). Il vivait dans `montant_contre_offre`, qui restait modifiable après l'acceptation : un UPDATE plus tard, la seule trace de l'accord disait autre chose sans que rien ne le signale. Nouvelle colonne `montant_convenu`, écrite dans le même UPDATE que le passage à `acceptee`, et le trigger `garde_montants` refuse ensuite toute écriture de montant — **pour tous les rôles, `service_role` compris**, sans quoi le gel n'en serait pas un puisque les server actions écrivent avec la clé de service. La comparaison porte sur `OLD.statut` : la transition doit pouvoir écrire le montant, ce sont les écritures suivantes qui sont refusées. Vérifié en base : 8 cas, dont le gel face à service_role et la non-régression sur l'évolution du statut. |
+| 2026-07-29 | Registre des transactions immobilières (`/admin/transactions-immobilier`) : qui a loué ou acheté quel bien, à quel prix, quand, avec quel agent. Aucune table dédiée — chaque demande acceptée **est** une ligne d'historique, et un bien revendu donne une nouvelle demande ; un registre séparé aurait créé deux vérités à tenir d'accord. Le cumul des sommes n'est visible que par le propriétaire ; les opérateurs voient le détail ligne à ligne. |
 | 2026-07-29 | Garantie documentaire sur chaque bien : les pièces sont en règle et prêtes à inspection devant notaire lors de la finalisation. Volontairement statique et non paramétrable par bien — c'est un engagement d'ensemble ; s'il devait un jour souffrir une exception, il faudrait un indicateur en base plutôt qu'un retrait au cas par cas. |
 | 2026-07-29 | Fin du flux immobilier. **Favoris sur les biens** (00052) : la table ne portait que `vehicule_id` NOT NULL — une ligne cible désormais un véhicule ou un bien, jamais les deux ni aucun, avec index uniques partiels (NULL n'étant jamais égal à NULL, une contrainte unique classique aurait laissé passer les doublons) et cascade des deux côtés. À noter : `FavoriButton` n'existait que sur `/compte/favoris` pour retirer, nulle part pour ajouter — les favoris étaient inertes, y compris pour les véhicules ; le bouton est maintenant sur la fiche et les cartes immobilier. **Pagination** du catalogue (12 par page), appliquée après l'exclusion des biens en visite, sinon les pages seraient incomplètes. **`latitude`/`longitude`** cessent d'être mortes : saisies en admin, elles ajoutent un lien « Situer le bien » sur la fiche. Le **formulaire d'interaction est masqué** sur un bien non disponible, au lieu d'échouer après soumission. Les **filtres** passent en `replace` + debounce : ils créaient une entrée d'historique et un rendu serveur par caractère tapé. |
 | 2026-07-29 | Parcours visite immobilier terminé (points 1, 4, 5, 6 de l'audit). Le client apprend enfin son créneau : notification à la programmation et à la confirmation, et créneau affiché dans « Mes réservations » — jusqu'ici il payait des frais et la date n'apparaissait nulle part. Le libellé y disait « Visite : <date de création> » pour **toutes** les demandes immobilières, information comprise ; il reflète maintenant le type et l'avancement. La demande hérite de l'agent référent du bien (`visites.agent_id` est NOT NULL : il fallait l'affecter à la main sur chaque demande alors que le bien avait déjà le sien). `offre_soumise` cesse d'être un statut fantôme — posé à la création d'une offre, et ajouté au cron d'expiration, sans quoi les offres ne se seraient jamais fermées. Enfin l'exclusion du catalogue est bornée par le créneau : un agent oubliant de clôturer une visite retirait le bien de la vitrine définitivement. Nouveau `__tests__/immobilier-flux.test.ts`, dont un test qui casse si un statut d'attente est ajouté sans être couvert par le cron — la classe de bug rencontrée deux fois. |
