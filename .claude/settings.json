@@ -140,7 +140,10 @@
       "Bash(rm -rf test-results)",
       "Bash(/usr/bin/find \"apps/web/src/app/\\(public\\)/transport\" -type f)",
       "Bash(/usr/bin/find src/app/api -type d)",
-      "Bash(rm -f e2e/__veh.spec.ts)"
+      "Bash(rm -f e2e/__veh.spec.ts)",
+      "Bash(pnpm turbo *)",
+      "Bash(git commit *)",
+      "Bash(git merge *)"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
