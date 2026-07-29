@@ -62,6 +62,7 @@ export function AdminSidebar({
           return !g.proprietaireOnly || isProprietaire
         }).map((group, i) => {
           const items = group.items.filter((it) => {
+            if (it.masquePourAgent && isAgent) return false
             return !it.proprietaireOnly || isProprietaire
           })
           if (items.length === 0) return null

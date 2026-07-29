@@ -152,7 +152,7 @@ group-phoebe/
 | `/admin/parametres-immobilier` | Paramétrage immobilier — propriétaire uniquement (frais de visite, remise max, quota d'offres) |
 | `/admin/dossiers-voyage` | Dossiers voyage/études |
 | `/admin/propositions` | Propositions de prix |
-| `/admin/comptes` | Gestion utilisateurs |
+| `/admin/comptes` | Comptes internes — propriétaire seul : opérateur, livreur, agent immobilier (avec sa zone de couverture) |
 | `/admin/verifications` | Vérifications documents |
 | `/admin/verifications/historique` | Historique vérifications |
 | `/admin/tarifs` | Tarifs et zones |
@@ -598,7 +598,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 332 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 335 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -620,6 +620,8 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | Les **agents immobiliers se créent depuis `/admin/comptes`**, comme les opérateurs et livreurs, avec leur zone de couverture — obligatoire, sinon l'agent existe sans jamais recevoir de bien (`autoAssignAgent` en dépend). Ils sont aussi désactivables. Trois agents de test créés en base (Cocody, Marcory, Yopougon) et les 14 biens dont la localisation correspond à une zone ont reçu leur agent : l'affectation automatique ne joue qu'à la création d'un bien, les 30 biens existants avaient `agent_id` à null. |
+| 2026-07-29 | **Refus explicite pour un agent immobilier sur le catalogue.** `requireStaff()` l'acceptait alors que `biens_staff_manage` et `bien_medias_staff_manage` reposent sur `is_staff()`, qui ne le couvre pas. La RLS filtrait la ligne : l'UPDATE touchait zéro ligne, sans erreur, et l'action répondait « Bien enregistré » sans rien avoir enregistré — un succès mensonger, pire qu'une erreur brute. Nouveau `requireGestionBiens()` sur les cinq écritures du catalogue, et l'entrée « Biens » masquée dans la navigation d'un agent (`masquePourAgent`) pour ne plus l'y conduire. |
 | 2026-07-29 | **Commission d'intermédiation** (00054). Les biens appartiennent à des propriétaires tiers : GROUP PHOEBE prélève un pourcentage du montant convenu, pilotable par le propriétaire (`parametres_immobilier.taux_commission`, usuellement 10 à 12 %) et **dû dès l'acceptation de l'offre**. Taux et montant sont figés sur la demande au moment de l'accord — le barème peut changer ensuite sans réécrire l'histoire — et protégés par le même gel que `montant_convenu`. Le registre affiche la commission par ligne et son cumul, en précisant que le volume transigé n'est pas le revenu de la plateforme. Piège évité de justesse : la contrainte de cohérence taux/montant ne bloquait rien, `taux >= 0` sur un taux NULL valant NULL et Postgres n'invalidant un CHECK que sur FALSE. |
 | 2026-07-29 | **La location a une période** (00054) : `location_debut` et `location_duree_mois`, exigées sur une offre portant sur un bien à louer. Pour ces demandes, `montant_convenu` s'entend comme le **loyer mensuel** — la distinction n'existait pas et le registre affichait un montant sans dire s'il s'agissait d'un loyer ou d'un prix de vente. |
 | 2026-07-29 | **CinetPay branché sur l'immobilier.** Les frais de visite n'étaient payables que par carte : `creerSessionCinetPay` était importé sans jamais être appelé, alors que les trois autres modules l'utilisaient. En Côte d'Ivoire, cela excluait du seul parcours payant du module tous les clients sans carte. Le formulaire propose désormais Mobile Money (Wave, Orange, MTN) ou carte, Mobile Money par défaut. |

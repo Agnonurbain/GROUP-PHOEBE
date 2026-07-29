@@ -28,7 +28,7 @@ export default async function ComptesPage() {
   const { data: staff } = await supabase
     .from("users")
     .select("id, nom, role, telephone, email, created_at")
-    .in("role", ["operateur", "proprietaire", "livreur", "desactive"])
+    .in("role", ["operateur", "proprietaire", "livreur", "agent_immobilier", "desactive"])
     .order("role")
     .order("nom");
 
@@ -49,6 +49,7 @@ export default async function ComptesPage() {
     proprietaire: "Propriétaire",
     operateur: "Opérateur",
     livreur: "Livreur",
+    agent_immobilier: "Agent immobilier",
     desactive: "Désactivé",
   };
 
@@ -59,7 +60,7 @@ export default async function ComptesPage() {
           Comptes internes
         </h1>
         <p className="mt-1.5 text-sm text-phoebe-anthracite/70">
-          Gérez les opérateurs et livreurs de la plateforme.
+          Gérez les opérateurs, livreurs et agents immobiliers de la plateforme.
         </p>
       </div>
 

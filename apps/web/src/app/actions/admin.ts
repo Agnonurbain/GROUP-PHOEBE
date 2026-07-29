@@ -129,15 +129,22 @@ export async function creerCompteInterne(
 
   const nom = formData.get("nom") as string;
   const telephone = formData.get("telephone") as string;
-  const role = formData.get("role") as "operateur" | "livreur";
+  const role = formData.get("role") as "operateur" | "livreur" | "agent_immobilier";
   const password = formData.get("password") as string;
+  const zoneCouverture = ((formData.get("zone_couverture") as string) || "").trim();
 
   if (!nom || !telephone || !role || !password) {
     return { error: "Tous les champs sont obligatoires." };
   }
 
-  if (!["operateur", "livreur"].includes(role)) {
+  if (!["operateur", "livreur", "agent_immobilier"].includes(role)) {
     return { error: "Rôle invalide." };
+  }
+
+  // La zone sert à l'affectation automatique d'un bien à sa création
+  // (autoAssignAgent) : sans elle, l'agent existe mais ne reçoit jamais de bien.
+  if (role === "agent_immobilier" && !zoneCouverture) {
+    return { error: "La zone de couverture est obligatoire pour un agent immobilier." };
   }
 
   if (password.length < 8) {
@@ -182,15 +189,27 @@ export async function creerCompteInterne(
     }
   }
 
+  if (role === "agent_immobilier") {
+    const { error: agentError } = await admin
+      .from("agents_immobiliers")
+      .insert({ user_id: data.user.id, zone_couverture: zoneCouverture });
+
+    if (agentError) {
+      await rollbackUser(admin, data.user.id);
+      return { error: agentError.message };
+    }
+  }
+
   await logAudit({
     userId: staff.userId,
     action: "creer",
     tableName: "users",
     recordId: data.user.id,
-    newValues: { nom, telephone, role },
+    newValues: { nom, telephone, role, ...(zoneCouverture ? { zone_couverture: zoneCouverture } : {}) },
   });
 
   revalidatePath("/admin/comptes");
+  revalidatePath("/admin/demandes-immobilier");
   return { success: true, createdLogin: telephone, createdPassword: password };
 }
 
@@ -214,7 +233,7 @@ export async function desactiverCompteInterne(
     .eq("id", userId)
     .single();
 
-  if (!target || !["operateur", "livreur"].includes(target.role)) {
+  if (!target || !["operateur", "livreur", "agent_immobilier"].includes(target.role)) {
     return { error: "Ce compte ne peut pas être désactivé." };
   }
 

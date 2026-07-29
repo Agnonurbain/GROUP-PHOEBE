@@ -217,3 +217,31 @@ describe("paiement des frais de visite", () => {
     expect(source).toContain("Moyen de paiement invalide.");
   });
 });
+
+describe("rôle agent_immobilier", () => {
+  it("la gestion du catalogue lui est refusée explicitement", () => {
+    // Les policies biens_staff_manage / bien_medias_staff_manage reposent sur
+    // is_staff(), qui ne couvre pas agent_immobilier. Sans garde applicative, la
+    // RLS filtrait la ligne : l'UPDATE touchait zéro ligne et l'action répondait
+    // « Bien enregistré » sans rien avoir enregistré.
+    const source = src("app/actions/biens.ts");
+    expect(source).toContain("requireGestionBiens");
+    expect(source).toContain("La gestion du catalogue est réservée aux opérateurs et au propriétaire");
+    // Plus aucune écriture du catalogue ne doit se contenter de requireStaff().
+    expect(source).not.toMatch(/const \{ supabase \} = await requireStaff\(\)/);
+  });
+
+  it("l'entrée Biens lui est masquée dans la navigation", () => {
+    const nav = src("app/(admin)/admin/_lib/nav.ts");
+    expect(nav).toContain("masquePourAgent: true");
+    const sidebar = src("app/(admin)/admin/_components/admin-sidebar.tsx");
+    expect(sidebar).toContain("it.masquePourAgent && isAgent");
+  });
+
+  it("son compte se crée depuis l'admin, zone obligatoire", () => {
+    const source = src("app/actions/admin.ts");
+    expect(source).toContain('["operateur", "livreur", "agent_immobilier"].includes(role)');
+    expect(source).toContain("La zone de couverture est obligatoire pour un agent immobilier");
+    expect(source).toContain('.from("agents_immobiliers")');
+  });
+});

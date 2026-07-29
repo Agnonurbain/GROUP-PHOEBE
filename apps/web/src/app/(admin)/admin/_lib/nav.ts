@@ -34,6 +34,12 @@ export type NavItem = {
   /** Correspondance stricte : sans ça, /admin/verifications resterait actif sur son historique. */
   exact?: boolean
   proprietaireOnly?: boolean
+  /**
+   * Masqué pour un agent immobilier. La gestion du catalogue lui est fermée par
+   * les policies `biens_staff_manage` / `bien_medias_staff_manage` : lui laisser
+   * l'entrée le conduisait à un formulaire qui n'enregistrait rien.
+   */
+  masquePourAgent?: boolean
   badge?: BadgeKey
   /** Un badge rouge signale une action urgente (remboursement à traiter). */
   badgeUrgent?: boolean
@@ -85,7 +91,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: "Immobilier",
     items: [
-      { href: "/admin/biens", label: "Biens", icon: Building2 },
+      { href: "/admin/biens", label: "Biens", icon: Building2, masquePourAgent: true },
       { href: "/admin/demandes-immobilier", label: "Demandes immobilier", icon: FileText },
       { href: "/admin/transactions-immobilier", label: "Transactions", icon: ScrollText },
       { href: "/admin/parametres-immobilier", label: "Paramètres", icon: Settings, proprietaireOnly: true },

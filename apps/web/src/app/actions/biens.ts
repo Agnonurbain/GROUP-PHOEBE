@@ -43,6 +43,28 @@ async function requireProprietaireAvecId() {
   return supabase;
 }
 
+/**
+ * Gérer le catalogue (biens et photos) est réservé à l'opérateur et au
+ * propriétaire : c'est ce que disent les policies `biens_staff_manage` et
+ * `bien_medias_staff_manage`, toutes deux fondées sur `is_staff()`, qui ne
+ * couvre pas `agent_immobilier`.
+ *
+ * Sans cette garde, un agent passait `requireStaff()` puis écrivait avec sa
+ * propre session : la RLS filtrait la ligne, l'UPDATE touchait zéro ligne, et
+ * l'action répondait « Bien enregistré » sans avoir rien enregistré. Un refus
+ * explicite vaut mieux qu'un succès mensonger — et mieux qu'une erreur Postgres
+ * brute sur les chemins où la policy lève au lieu de filtrer.
+ */
+async function requireGestionBiens() {
+  const { supabase, role } = await requireStaff();
+  if (!["operateur", "proprietaire"].includes(role)) {
+    throw new Error(
+      "La gestion du catalogue est réservée aux opérateurs et au propriétaire. Un agent immobilier suit les demandes et les visites."
+    );
+  }
+  return { supabase, role };
+}
+
 function getAdmin() {
   return createAdminClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -175,7 +197,13 @@ export async function modifierBien(
   _prev: BienState,
   formData: FormData
 ): Promise<BienState> {
-  const { supabase, role } = await requireStaff();
+  let supabase: Awaited<ReturnType<typeof createClient>>;
+  let role: string;
+  try {
+    ({ supabase, role } = await requireGestionBiens());
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Accès refusé." };
+  }
   const estProprietaire = role === "proprietaire";
 
   const id = formData.get("id") as string;
@@ -211,7 +239,12 @@ export async function modifierBien(
 }
 
 export async function supprimerBien(id: string): Promise<BienState> {
-  const { supabase } = await requireStaff();
+  let supabase: Awaited<ReturnType<typeof createClient>>;
+  try {
+    ({ supabase } = await requireGestionBiens());
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Accès refusé." };
+  }
 
   // Retire d'abord les fichiers du bucket (les lignes bien_medias partent en
   // cascade avec le bien).
@@ -251,7 +284,12 @@ export async function ajouterPhotosBien(
   _prev: BienState,
   formData: FormData
 ): Promise<BienState> {
-  const { supabase } = await requireStaff();
+  let supabase: Awaited<ReturnType<typeof createClient>>;
+  try {
+    ({ supabase } = await requireGestionBiens());
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Accès refusé." };
+  }
 
   const bienId = formData.get("bien_id") as string;
   const files = formData.getAll("photos") as File[];
@@ -305,7 +343,12 @@ export async function ajouterPhotosBien(
 }
 
 export async function supprimerPhotoBien(mediaId: string): Promise<BienState> {
-  const { supabase } = await requireStaff();
+  let supabase: Awaited<ReturnType<typeof createClient>>;
+  try {
+    ({ supabase } = await requireGestionBiens());
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Accès refusé." };
+  }
 
   const { data: media } = await supabase
     .from("bien_medias")
@@ -329,7 +372,12 @@ export async function reordonnerPhotoBien(
   mediaId: string,
   direction: "up" | "down"
 ): Promise<BienState> {
-  const { supabase } = await requireStaff();
+  let supabase: Awaited<ReturnType<typeof createClient>>;
+  try {
+    ({ supabase } = await requireGestionBiens());
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Accès refusé." };
+  }
 
   const { data: media } = await supabase
     .from("bien_medias")

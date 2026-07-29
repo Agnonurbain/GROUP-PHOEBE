@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { creerCompteInterne, type AdminState } from "@/app/actions/admin";
 import { SubmitButton } from "@/components/submit-button";
 
@@ -9,6 +9,7 @@ export function ComptesForm() {
     creerCompteInterne,
     {}
   );
+  const [role, setRole] = useState("");
 
   return (
     <div className="max-w-lg space-y-4" role="alert">
@@ -65,13 +66,37 @@ export function ComptesForm() {
             id="role"
             name="role"
             required
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
             className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
           >
             <option value="">Choisir un rôle</option>
             <option value="operateur">Opérateur</option>
             <option value="livreur">Livreur</option>
+            <option value="agent_immobilier">Agent immobilier</option>
           </select>
         </div>
+
+        {role === "agent_immobilier" && (
+          <div>
+            <label htmlFor="zone_couverture" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+              Zone de couverture
+            </label>
+            <input
+              id="zone_couverture"
+              name="zone_couverture"
+              type="text"
+              required
+              placeholder="Ex. Cocody"
+              className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
+            />
+            <p className="mt-1.5 text-xs text-phoebe-anthracite/60">
+              Un bien créé dont la localisation contient cette zone lui est affecté
+              automatiquement. Évitez les zones qui se recouvrent entre agents :
+              c&apos;est le premier agent correspondant qui est retenu.
+            </p>
+          </div>
+        )}
 
         <div>
           <label htmlFor="password" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
