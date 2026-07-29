@@ -36,7 +36,8 @@ export default async function Immobilier({
     prix_min: sp.prix_min,
     prix_max: sp.prix_max,
     localisation: sp.localisation,
-    pieces: sp.pieces,
+    surface_min: sp.surface_min,
+    chambres_min: sp.pieces,
     transaction: sp.transaction,
     zone_id: sp.zone,
   }

@@ -87,7 +87,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
       <div className="grid gap-10 px-6 py-8 lg:grid-cols-5">
         <div className="lg:col-span-3">
           {photos.length > 0 ? (
-            <VehicleGallery photos={photos} alt={`${typeBienLabel(bien.type)} à ${bien.localisation}`} />
+            <VehicleGallery photos={photos} alt={`${typeBienLabel(bien.type)} à ${bien.localisation}`} accentColor="green" />
           ) : (
             <div className="flex h-72 w-full items-center justify-center rounded-2xl bg-public-bg-elevated">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" className="text-public-text-faint">

@@ -39,12 +39,28 @@ export function DemandeImmoActions({
           {erreur}
         </p>
       )}
+      {statutState.success && (
+        <p className="mb-3 rounded-lg border border-phoebe-green/20 bg-phoebe-green/5 px-3 py-2 text-xs text-phoebe-green-deep">
+          Statut mis à jour.
+        </p>
+      )}
+      {agentState.success && (
+        <p className="mb-3 rounded-lg border border-phoebe-green/20 bg-phoebe-green/5 px-3 py-2 text-xs text-phoebe-green-deep">
+          Agent affecté.
+        </p>
+      )}
       <div className="flex flex-wrap items-end gap-4">
         {/* Statut */}
         <form action={statutAction} className="flex items-center gap-2">
           <input type="hidden" name="demande_id" value={demandeId} />
           <label htmlFor={`stat-${demandeId}`} className="sr-only">Statut</label>
-          <select id={`stat-${demandeId}`} name="statut" defaultValue={currentStatut} className={selectClass}>
+          <select
+            id={`stat-${demandeId}`}
+            name="statut"
+            defaultValue={currentStatut}
+            key={`${demandeId}-stat-${currentStatut}`}
+            className={selectClass}
+          >
             {statuts.map((s) => (
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
@@ -58,7 +74,13 @@ export function DemandeImmoActions({
         <form action={agentAction} className="flex items-center gap-2">
           <input type="hidden" name="demande_id" value={demandeId} />
           <label htmlFor={`agent-${demandeId}`} className="sr-only">Agent</label>
-          <select id={`agent-${demandeId}`} name="agent_id" defaultValue={currentAgent ?? ""} className={selectClass}>
+          <select
+            id={`agent-${demandeId}`}
+            name="agent_id"
+            defaultValue={currentAgent ?? ""}
+            key={`${demandeId}-agent-${currentAgent ?? "null"}`}
+            className={selectClass}
+          >
             <option value="">Aucun agent</option>
             {agents.map((a) => (
               <option key={a.id} value={a.id}>{a.nom}</option>

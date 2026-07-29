@@ -144,6 +144,7 @@ export const getBiensImmobiliers = unstable_cache(
     if (filters.prix_max) query = query.lte("prix", Number(filters.prix_max));
     if (filters.surface_min) query = query.gte("surface_m2", Number(filters.surface_min));
     if (filters.chambres_min) query = query.gte("nb_chambres", Number(filters.chambres_min));
+    if (filters.transaction) query = query.eq("transaction", filters.transaction);
 
     const { data } = await query;
     return data ?? [];

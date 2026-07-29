@@ -33,10 +33,10 @@ export default function ImmobilierFiltres() {
             className="w-full rounded-lg border border-public-border bg-public-bg px-3 py-2 text-sm text-public-text transition-all focus:border-accent-green focus:outline-none focus:ring-2 focus:ring-accent-green/15"
           >
             <option value="">Tous types</option>
-            <option value="Appartement">Appartement</option>
-            <option value="Villa">Villa</option>
-            <option value="Terrain">Terrain</option>
-            <option value="Local commercial">Local commercial</option>
+            <option value="appartement">Appartement</option>
+            <option value="maison">Villa</option>
+            <option value="terrain">Terrain</option>
+            <option value="bureau">Local commercial</option>
           </select>
         </div>
         <div>

@@ -126,7 +126,11 @@ export async function changerStatutDemandeImmobilier(
   _prev: DemandeImmoActionState,
   formData: FormData
 ): Promise<DemandeImmoActionState> {
-  await requireStaff();
+  try {
+    await requireStaff();
+  } catch {
+    return { error: "Session expirée ou accès refusé." };
+  }
   const admin = getAdmin();
   const demandeId = formData.get("demande_id") as string;
   const statut = formData.get("statut") as string;
@@ -162,7 +166,11 @@ export async function affecterAgentImmobilier(
   _prev: DemandeImmoActionState,
   formData: FormData
 ): Promise<DemandeImmoActionState> {
-  await requireStaff();
+  try {
+    await requireStaff();
+  } catch {
+    return { error: "Session expirée ou accès refusé." };
+  }
   const admin = getAdmin();
   const demandeId = formData.get("demande_id") as string;
   const agentId = (formData.get("agent_id") as string) || null;

@@ -12,9 +12,10 @@ import {
 interface VehicleGalleryProps {
   photos: { url: string }[]
   alt: string
+  accentColor?: "orange" | "green" | "gold" | "blue"
 }
 
-export function VehicleGallery({ photos, alt }: VehicleGalleryProps) {
+export function VehicleGallery({ photos, alt, accentColor = "orange" }: VehicleGalleryProps) {
   const [selected, setSelected] = useState(0)
   const [zoomOpen, setZoomOpen] = useState(false)
 
@@ -31,6 +32,13 @@ export function VehicleGallery({ photos, alt }: VehicleGalleryProps) {
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
   }, [zoomOpen, next, prev])
+
+  const borderAccent = {
+    orange: "border-accent-orange",
+    green: "border-accent-green",
+    gold: "border-accent-gold",
+    blue: "border-accent-blue",
+  }[accentColor]
 
   // Sans photo, l'ancienne version ne rendait RIEN : la fiche avait un trou.
   // Un cadre explicite vaut mieux qu'une absence inexpliquée.
@@ -73,7 +81,7 @@ export function VehicleGallery({ photos, alt }: VehicleGalleryProps) {
                 aria-current={i === selected}
                 className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
                   i === selected
-                    ? "border-accent-orange opacity-100"
+                    ? `${borderAccent} opacity-100`
                     : "border-transparent opacity-60 hover:opacity-90"
                 }`}
               >
