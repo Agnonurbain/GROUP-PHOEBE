@@ -22,6 +22,24 @@ async function requireStaff() {
   if (!profile || !["operateur", "proprietaire", "agent_immobilier"].includes(profile.role)) {
     throw new Error("Accès refusé");
   }
+  return { supabase, role: profile.role as string };
+}
+
+// `prix` est un montant facturé : seul le propriétaire le fixe, comme les champs
+// tarifaires des véhicules (cf. CHAMPS_PRIX dans vehicules.ts). Verrouillé par
+// __tests__/prix-proprietaire.test.ts et, pour l'accès REST direct, par le
+// trigger garde_prix_biens (migration 00049).
+const CHAMPS_PRIX = ["prix"] as const;
+
+function retirerChampsPrix<T extends Record<string, unknown>>(row: T): T {
+  const copie = { ...row };
+  for (const champ of CHAMPS_PRIX) delete copie[champ];
+  return copie;
+}
+
+async function requireProprietaireAvecId() {
+  const { supabase, role } = await requireStaff();
+  if (role !== "proprietaire") throw new Error("Accès refusé : propriétaire requis");
   return supabase;
 }
 
@@ -78,38 +96,55 @@ function revalidateImmobilier(id?: string) {
   revalidatePath("/immobilier");
 }
 
-function parseBien(formData: FormData): { row: Record<string, unknown> } | { error: string } {
+// `avecPrix` distingue les deux cas : le propriétaire soumet un prix qu'il faut
+// valider ; l'opérateur n'en soumet pas (champ désactivé côté formulaire) et il
+// ne faut alors ni l'exiger ni l'écrire.
+function parseBien(
+  formData: FormData,
+  { avecPrix }: { avecPrix: boolean }
+): { row: Record<string, unknown> } | { error: string } {
   const type = formData.get("type") as string;
   const transaction = formData.get("transaction") as string;
   const localisation = str(formData.get("localisation"));
-  const prix = num(formData.get("prix"));
 
   if (!TYPES.includes(type as BienType)) return { error: "Type de bien invalide." };
   if (!TRANSACTIONS.includes(transaction as BienTransaction)) return { error: "Type de transaction invalide." };
   if (!localisation) return { error: "La localisation est obligatoire." };
-  if (prix === null || prix <= 0) return { error: "Le prix doit être un montant positif." };
 
-  return {
-    row: {
-      type: type as BienType,
-      transaction: transaction as BienTransaction,
-      prix,
-      localisation,
-      nb_chambres: num(formData.get("nb_chambres")),
-      surface_m2: num(formData.get("surface_m2")),
-      description: str(formData.get("description")),
-      agent_id: str(formData.get("agent_id")),
-    },
+  const row: Record<string, unknown> = {
+    type: type as BienType,
+    transaction: transaction as BienTransaction,
+    localisation,
+    nb_chambres: num(formData.get("nb_chambres")),
+    surface_m2: num(formData.get("surface_m2")),
+    description: str(formData.get("description")),
+    agent_id: str(formData.get("agent_id")),
   };
+
+  if (avecPrix) {
+    const prix = num(formData.get("prix"));
+    if (prix === null || prix <= 0) return { error: "Le prix doit être un montant positif." };
+    row.prix = prix;
+  }
+
+  return { row };
 }
 
+// Créer un bien, c'est en fixer le prix : `biens.prix` est NOT NULL, il n'y a
+// pas de création « sans montant » comme pour un véhicule. La création revient
+// donc au propriétaire ; l'opérateur édite ensuite tout sauf le prix.
 export async function creerBien(
   _prev: BienState,
   formData: FormData
 ): Promise<BienState> {
-  const supabase = await requireStaff();
+  let supabase: Awaited<ReturnType<typeof createClient>>;
+  try {
+    supabase = await requireProprietaireAvecId();
+  } catch {
+    return { error: "Seul le propriétaire peut créer un bien (il en fixe le prix)." };
+  }
 
-  const parsed = parseBien(formData);
+  const parsed = parseBien(formData, { avecPrix: true });
   if ("error" in parsed) return { error: parsed.error };
 
   const row = { ...parsed.row };
@@ -136,24 +171,31 @@ export async function modifierBien(
   _prev: BienState,
   formData: FormData
 ): Promise<BienState> {
-  const supabase = await requireStaff();
+  const { supabase, role } = await requireStaff();
+  const estProprietaire = role === "proprietaire";
 
   const id = formData.get("id") as string;
   if (!id) return { error: "Bien introuvable." };
 
-  const parsed = parseBien(formData);
+  const parsed = parseBien(formData, { avecPrix: estProprietaire });
   if ("error" in parsed) return { error: parsed.error };
 
+  // Ceinture et bretelles : le champ est désactivé côté formulaire, mais un
+  // `prix` forgé dans la requête ne doit pas passer pour autant.
+  const row = estProprietaire ? parsed.row : retirerChampsPrix(parsed.row);
+
+  // Un statut hors liste était silencieusement remplacé par « disponible », ce
+  // qui pouvait remettre en vente un bien déjà vendu. On refuse désormais.
   const statut = formData.get("statut") as string;
-  const statutValide = STATUTS.includes(statut as BienStatut)
-    ? (statut as BienStatut)
-    : "disponible";
+  if (statut && !STATUTS.includes(statut as BienStatut)) {
+    return { error: "Statut de bien invalide." };
+  }
 
   const { error } = await supabase
     .from("biens")
     .update({
-      ...parsed.row,
-      statut: statutValide,
+      ...row,
+      ...(statut ? { statut: statut as BienStatut } : {}),
       updated_at: new Date().toISOString(),
     } as never)
     .eq("id", id);
@@ -165,7 +207,7 @@ export async function modifierBien(
 }
 
 export async function supprimerBien(id: string): Promise<BienState> {
-  const supabase = await requireStaff();
+  const { supabase } = await requireStaff();
 
   // Retire d'abord les fichiers du bucket (les lignes bien_medias partent en
   // cascade avec le bien).
@@ -205,7 +247,7 @@ export async function ajouterPhotosBien(
   _prev: BienState,
   formData: FormData
 ): Promise<BienState> {
-  const supabase = await requireStaff();
+  const { supabase } = await requireStaff();
 
   const bienId = formData.get("bien_id") as string;
   const files = formData.getAll("photos") as File[];
@@ -259,7 +301,7 @@ export async function ajouterPhotosBien(
 }
 
 export async function supprimerPhotoBien(mediaId: string): Promise<BienState> {
-  const supabase = await requireStaff();
+  const { supabase } = await requireStaff();
 
   const { data: media } = await supabase
     .from("bien_medias")
@@ -283,7 +325,7 @@ export async function reordonnerPhotoBien(
   mediaId: string,
   direction: "up" | "down"
 ): Promise<BienState> {
-  const supabase = await requireStaff();
+  const { supabase } = await requireStaff();
 
   const { data: media } = await supabase
     .from("bien_medias")

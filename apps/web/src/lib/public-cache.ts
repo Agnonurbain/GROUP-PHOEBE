@@ -127,14 +127,22 @@ export const getCommunes = unstable_cache(
 );
 
 // Immobilier
+// Biens retirés du catalogue parce qu'une visite y est réellement engagée.
+//
+// « Réellement » : seuls comptent les statuts atteints après encaissement de la
+// caution — `en_cours_traitement` (posé par le webhook de paiement) et
+// `visite_programmee`. Auparavant la requête retenait toute demande de visite
+// non close, `en_attente` comprise : un tunnel de paiement abandonné, ou une
+// simple demande jamais payée, suffisait à faire disparaître le bien du
+// catalogue public. Une demande de visite sur chaque bien vidait la vitrine.
+const STATUTS_VISITE_ENGAGEE = ["en_cours_traitement", "visite_programmee"] as const;
+
 async function getBienIdsAvecVisiteActive(supabase: ReturnType<typeof createPublicClient>): Promise<string[]> {
   const { data } = await supabase
     .from("demandes_immobilier")
     .select("bien_id")
     .eq("type", "visite")
-    .neq("statut", "refusee")
-    .neq("statut", "annulee")
-    .neq("statut", "finalisee");
+    .in("statut", STATUTS_VISITE_ENGAGEE as unknown as string[]);
   return [...new Set((data ?? []).map((d) => d.bien_id))];
 }
 

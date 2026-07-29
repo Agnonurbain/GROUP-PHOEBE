@@ -68,6 +68,31 @@ describe("les prix ne sont modifiables que par le propriétaire", () => {
     expect(corpsTrigger).not.toContain("security definer");
   });
 
+  it("creerBien exige le propriétaire (biens.prix est NOT NULL)", () => {
+    const corps = corpsDeFonction(src("app/actions/biens.ts"), "creerBien");
+    expect(corps).toContain("requireProprietaireAvecId()");
+  });
+
+  it("modifierBien retire le prix pour un opérateur", () => {
+    const corps = corpsDeFonction(src("app/actions/biens.ts"), "modifierBien");
+    expect(corps).toContain("retirerChampsPrix");
+    expect(corps).toContain('estProprietaire = role === "proprietaire"');
+    // Le prix ne doit pas être exigé d'un opérateur : il ne le soumet pas.
+    expect(corps).toContain("avecPrix: estProprietaire");
+  });
+
+  it("la garde base sur le prix des biens existe", () => {
+    const migration = readFileSync(
+      join(process.cwd(), "..", "..", "supabase", "migrations", "00049_biens_garde_prix.sql"),
+      "utf8"
+    );
+    expect(migration).toContain("create trigger garde_prix");
+    expect(migration).toContain("public.is_proprietaire()");
+    expect(migration).toContain("current_user not in ('anon', 'authenticated')");
+    const debut = migration.indexOf("function public.garde_prix_biens()");
+    expect(migration.slice(debut, migration.indexOf("$$;", debut))).not.toContain("security definer");
+  });
+
   it("les champs tarifaires du véhicule sont retirés pour un opérateur", () => {
     const source = src("app/actions/vehicules.ts");
     // Le filtre existe et couvre tous les champs monétaires.

@@ -142,9 +142,22 @@ async function confirmerUnPaiement(
     }
   }
 
-  // Immobilier : la caution visite est déjà créée, on laisse la demande en l'état
+  // Immobilier : la caution de visite est encaissée → la demande passe en
+  // traitement. Auparavant la demande restait à « en_attente » et rien ne
+  // distinguait une caution payée d'un tunnel de paiement abandonné : l'équipe
+  // programmait des visites à l'aveugle, et le catalogue masquait le bien dès
+  // la simple création de la demande, payée ou non.
   if (paiement.reference_table === "demandes_immobilier") {
-    console.log("Paiement immobilier confirmé:", paiement.id);
+    const { error } = await admin
+      .from("demandes_immobilier")
+      .update({ statut: "en_cours_traitement", updated_at: new Date().toISOString() })
+      .eq("id", paiement.reference_id)
+      .eq("statut", "en_attente");
+
+    if (error) {
+      console.error("Erreur mise à jour demande_immobilier:", error.message);
+      return { ok: false, raison: error.message };
+    }
   }
 
   // Livraison (expeditions) : aucun changement de statut à la capture — l'état
@@ -273,10 +286,13 @@ export async function annulerCommande(
           .eq("id", paiement.reference_id)
           .eq("statut", "en_attente");
 
+        // Ne libérer que ce qui était réservé : sans ce garde, un paiement
+        // échoué remettait « disponible » un bien entre-temps vendu ou loué.
         await admin
           .from("biens")
           .update({ statut: "disponible", updated_at: new Date().toISOString() })
-          .eq("id", demande.bien_id);
+          .eq("id", demande.bien_id)
+          .eq("statut", "reserve");
       }
     }
 

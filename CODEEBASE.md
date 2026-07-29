@@ -68,7 +68,7 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 47 migrations SQL
+├── supabase/migrations/         # 50 migrations SQL
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -183,7 +183,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-47 migrations Supabase (00001 → 00047).
+50 migrations Supabase (00001 → 00050).
 
 ### 5.1 Tables
 
@@ -237,7 +237,17 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 
 ### 5.2 RLS et sécurité
 
-- RLS activée sur toutes les tables
+- RLS activée sur les 42 tables. Ce n'était pas le cas avant la migration 00048 :
+  10 tables en étaient dépourvues tout en portant `GRANT ALL TO anon`, donc
+  lisibles et modifiables par quiconque détenait la clé anon (`visites`,
+  `agents_immobiliers`, `audit_log`, `notifications_log`, `chauffeurs`,
+  `livreurs`, `agences`, `conducteurs_secondaires`, `contrats_recurrents`,
+  `webhook_idempotency`). **Vérifier l'état réel avec `supabase db dump`, pas le
+  SQL versionné : les deux avaient divergé.**
+- `webhook_idempotency` a la RLS activée et **aucune** policy : c'est voulu,
+  seule la clé de service doit toucher l'anti-rejeu.
+- `audit_log` n'a qu'une policy de lecture staff. Aucune policy d'écriture :
+  la piste n'est donc pas altérable depuis l'API REST.
 - Politiques par rôle (`client`, `operateur`, `proprietaire`, etc.)
 - Helpers `security definer` pour éviter la récursion des policies qui
   interrogent `public.users` : `is_staff()`, `is_proprietaire()`, `own_role()`,
@@ -257,9 +267,23 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 **Garde « prix = propriétaire seul »** — aucune écriture de montant facturé par
 un opérateur. Elle est double : `requireProprietaireAvecId()` dans les server
 actions (verrouillé par `__tests__/prix-proprietaire.test.ts`, qui lit le source
-et casse si une garde est relâchée), et le trigger ci-dessus pour le chemin REST.
+et casse si une garde est relâchée), et un trigger en base pour le chemin REST.
 Une garde purement applicative serait contournable : les policies `*_staff_manage`
 sont `for all using (is_staff())` et la clé anon est publique par nature.
+
+Champs couverts, et par quoi :
+
+| Champ | Garde applicative | Trigger base |
+|---|---|---|
+| `vehicules.prix_*`, `taux_caution`, `caution_base_fcfa` | `retirerChampsPrix` (vehicules.ts) | — |
+| `tarifs_livraison`, `paliers_poids`, `tarifs_assistance`, `parametres_contact` | `requireProprietaireAvecId` (tarifs.ts) | — |
+| `parametres_immobilier.caution_visite` | `requireProprietaireAvecId` (immobilier.ts) | policy `is_proprietaire()` |
+| `demandes_immobilier.montant_offre`, `montant_contre_offre` | `proposerContreOffre` | `garde_montants` (00047) |
+| `biens.prix` | `retirerChampsPrix` + création propriétaire (biens.ts) | `garde_prix` (00049) |
+
+Créer un bien est réservé au propriétaire : `biens.prix` est NOT NULL, il n'y a
+pas de création « sans montant » comme pour un véhicule. Un opérateur édite tout
+le reste, prix en lecture seule dans le formulaire.
 
 ---
 
@@ -593,6 +617,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | Audit immobilier — 4 correctifs de fond. (1) RLS activée sur 10 tables qui en étaient dépourvues avec `GRANT ALL TO anon` : `visites` et `audit_log` étaient modifiables et effaçables par n'importe qui (00048). (2) `biens.prix` réservé au propriétaire, côté app et par trigger (00049) — un opérateur pouvait changer le prix affiché d'un bien. (3) Les notifieurs admin listaient le staff avec la session du client, que `users_select_own` limite à sa propre ligne : la requête renvoyait zéro ligne et **aucune notification n'était jamais créée** pour une demande client (réservation, immobilier, dossier voyage). Passés en clé de service et factorisés dans `notifierStaff`. `message` et `date_souhaitee` du client, qui n'existaient que dans ce texte perdu, ont désormais des colonnes (00050). (4) Un bien disparaissait du catalogue dès l'ouverture d'une demande de visite, caution payée ou non, et `visite_programmee` n'expirant jamais, il n'y revenait plus — une demande par bien vidait la vitrine. L'exclusion ne retient plus que les cautions encaissées, et la fin de visite referme la demande. |
 | 2026-07-29 | Contre-offre immobilière : cycle complet. Le propriétaire (seul) contre-offre sur une offre client → statut `contre_offre` → le client accepte (bien réservé) ou refuse (bien libéré). `taux_max_reduction` sert enfin de plancher (`validerContreOffre` dans `lib/immobilier.ts`). Expiration à 7 j incluse dans le cron immobilier, sinon un bien restait bloqué. Migration 00047 : helper `is_proprietaire()`, statut élargi, trigger `garde_montants`, policy `parametres_immobilier` corrigée (elle s'appelait « proprietaire » mais vérifiait `is_staff()`). |
 | 2026-07-29 | Sécurité montants : la garde « prix = propriétaire seul » était applicative uniquement, donc contournable — `demandes_immobilier_staff_manage` est `for all using (is_staff())`, un opérateur pouvait écrire un montant via l'API REST avec la clé anon (publique). Le trigger `garde_montants` ferme ce chemin. `modifierParametresImmobilier` exigeait `requireStaff()` alors qu'il écrit `caution_visite` : passé à propriétaire. |
 | 2026-07-29 | Fix build Vercel : les colonnes `periode` sont des `tstzrange`, que `supabase gen types` émet en `unknown`. 7 fichiers les traitaient comme `string` → échec `tsc`. Nouveau helper `lib/periode.ts` (`parsePeriodeRange`, `parsePeriodeDebut`), les 2 parsers dupliqués supprimés. Au passage : une période illisible ne provoque plus d'expiration + remboursement à tort dans `expiration-demandes.ts`. |

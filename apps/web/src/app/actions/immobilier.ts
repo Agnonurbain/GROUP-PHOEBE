@@ -147,6 +147,10 @@ export async function creerDemandeImmobilier(
       client_id: user.sub,
       type,
       montant_offre: montantOffre,
+      // Message et date souhaitée sont désormais persistés (00050) : ils ne
+      // vivaient que dans le texte de la notification admin.
+      message: message || null,
+      date_souhaitee: type === "visite" && dateSouhaitee ? dateSouhaitee : null,
       statut: "en_attente",
     })
     .select("id")
@@ -514,11 +518,57 @@ export async function changerStatutVisite(
 
   if (!visiteId || !isStatutVisite(statut)) return { error: "Visite ou statut invalide." };
 
+  const { data: visite } = await admin
+    .from("visites")
+    .select("bien_id, client_id, creneau")
+    .eq("id", visiteId)
+    .single();
+
   const { error } = await admin
     .from("visites")
     .update({ statut })
     .eq("id", visiteId);
   if (error) return { error: error.message };
+
+  // Une visite terminée doit refermer la demande qui la portait. Sans cela la
+  // demande restait à « visite_programmee » — statut que le cron d'expiration ne
+  // traite pas — et le bien restait masqué du catalogue indéfiniment.
+  if (visite && (statut === "realisee" || statut === "annulee")) {
+    const statutDemande = statut === "realisee" ? "finalisee" : "annulee";
+
+    const { data: demandes } = await admin
+      .from("demandes_immobilier")
+      .select("id")
+      .eq("bien_id", visite.bien_id)
+      .eq("client_id", visite.client_id)
+      .eq("type", "visite")
+      .in("statut", ["en_cours_traitement", "visite_programmee"]);
+
+    for (const d of demandes ?? []) {
+      await admin
+        .from("demandes_immobilier")
+        .update({ statut: statutDemande, updated_at: new Date().toISOString() })
+        .eq("id", d.id);
+    }
+
+    if (statut === "annulee") {
+      await admin
+        .from("biens")
+        .update({ statut: "disponible", updated_at: new Date().toISOString() })
+        .eq("id", visite.bien_id)
+        .eq("statut", "reserve");
+    }
+
+    await notifierClient(
+      visite.client_id,
+      statut === "realisee" ? "Visite réalisée" : "Visite annulée",
+      statut === "realisee"
+        ? "Votre visite a bien été enregistrée comme réalisée. Vous pouvez désormais faire une offre sur ce bien."
+        : "Votre visite a été annulée. Vous pouvez reprogrammer une visite à tout moment."
+    );
+
+    (revalidateTag as (tag: string) => void)("biens");
+  }
 
   revalidatePath("/admin/demandes-immobilier");
   return { success: true };

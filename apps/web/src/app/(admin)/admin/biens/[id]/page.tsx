@@ -77,7 +77,7 @@ export default async function EditBienPage({
       </ScrollReveal>
 
       <ScrollReveal variant="fade-up" delay={0.15}>
-        <BienForm bien={bien} agents={agents} action={modifierBien} />
+        <BienForm bien={bien} agents={agents} action={modifierBien} estProprietaire={isProprietaire} />
       </ScrollReveal>
 
       {isProprietaire && (

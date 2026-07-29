@@ -16,13 +16,15 @@ type Props = {
   bien?: Tables<"biens">;
   agents?: Agent[];
   action: (prev: BienState, formData: FormData) => Promise<BienState>;
+  /** Le prix n'est modifiable que par le propriétaire (cf. actions/biens.ts). */
+  estProprietaire: boolean;
 };
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
 const labelClass = "mb-1.5 block text-sm font-medium text-phoebe-anthracite";
 
-export default function BienForm({ bien, agents = [], action }: Props) {
+export default function BienForm({ bien, agents = [], action, estProprietaire }: Props) {
   const [state, formAction] = useActionState<BienState, FormData>(action, {});
 
   return (
@@ -80,17 +82,26 @@ export default function BienForm({ bien, agents = [], action }: Props) {
 
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label htmlFor="prix" className={labelClass}>Prix (FCFA) *</label>
+              <label htmlFor="prix" className={labelClass}>
+                Prix (FCFA) {estProprietaire && "*"}
+              </label>
               <input
                 id="prix"
                 name="prix"
                 type="number"
                 min="0"
                 step="1000"
-                required
+                required={estProprietaire}
+                disabled={!estProprietaire}
                 defaultValue={bien?.prix ?? ""}
-                className={inputClass}
+                className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-60`}
+                aria-describedby={estProprietaire ? undefined : "prix-lecture-seule"}
               />
+              {!estProprietaire && (
+                <p id="prix-lecture-seule" className="mt-1.5 text-xs text-phoebe-anthracite/60">
+                  Seul le propriétaire fixe le prix.
+                </p>
+              )}
             </div>
             <div>
               <label htmlFor="surface_m2" className={labelClass}>Surface (m²)</label>

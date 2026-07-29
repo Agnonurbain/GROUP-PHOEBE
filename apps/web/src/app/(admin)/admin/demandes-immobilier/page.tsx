@@ -121,7 +121,15 @@ export default async function DemandesImmobilierAdminPage() {
                   <p className="mt-1 text-xs text-phoebe-anthracite/70">
                     Client : {clientNom.get(d.client_id) ?? "—"} · {TYPE_DEMANDE_LABELS[d.type] ?? d.type} ·{" "}
                     {new Date(d.created_at).toLocaleDateString("fr-FR")}
+                    {d.date_souhaitee && (
+                      <> · souhaite le {new Date(d.date_souhaitee).toLocaleDateString("fr-FR")}</>
+                    )}
                   </p>
+                  {d.message && (
+                    <p className="mt-2 max-w-prose rounded-lg bg-phoebe-pearl/50 px-3 py-2 text-xs italic text-phoebe-anthracite/80">
+                      « {d.message} »
+                    </p>
+                  )}
                 </div>
                 <div className="text-right">
                   {d.montant_offre != null && (

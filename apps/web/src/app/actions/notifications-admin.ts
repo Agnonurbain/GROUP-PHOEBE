@@ -14,34 +14,65 @@ export type NotifAdmin = {
   lue: boolean;
 };
 
+function getAdmin() {
+  return createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
+/**
+ * Notifie tout le staff. Écrit avec la clé de service, et c'est le fond du
+ * sujet : ces notifieurs sont appelés depuis la session d'un client (une
+ * réservation, une demande immobilière, un dossier voyage). Or la policy
+ * `users_select_own` limite un client à sa propre ligne, donc le `select` du
+ * staff renvoyait zéro ligne et la fonction sortait sans rien écrire — aucune
+ * notification n'était jamais créée pour une demande client. Depuis 00048,
+ * `notifications_log` n'a de surcroît aucune policy d'insertion : seule la clé
+ * de service peut écrire ici.
+ */
+async function notifierStaff(params: {
+  evenement: string;
+  titre: string;
+  message: string;
+  lien: string;
+}) {
+  const admin = getAdmin();
+
+  const { data: destinataires } = await admin
+    .from("users")
+    .select("id")
+    .in("role", ["operateur", "proprietaire"]);
+
+  if (!destinataires || destinataires.length === 0) return;
+
+  const rows = destinataires.map((d) => ({
+    user_id: d.id,
+    canal: "push" as const,
+    evenement: params.evenement,
+    contenu: JSON.stringify({
+      titre: params.titre,
+      message: params.message,
+      lien: params.lien,
+    }),
+    statut_envoi: "envoye" as const,
+  }));
+
+  await admin.from("notifications_log").insert(rows as never[]);
+}
+
 export async function notifierAdminNouvelleReservation(
   demandeId: string,
   clientNom: string,
   nbVehicules: number,
   montant: number
 ) {
-  const supabase = await createClient();
-
-  const { data: admins } = await supabase
-    .from("users")
-    .select("id")
-    .in("role", ["operateur", "proprietaire"]);
-
-  if (!admins || admins.length === 0) return;
-
-  const rows = admins.map((a) => ({
-    user_id: a.id,
-    canal: "push" as const,
+  await notifierStaff({
     evenement: "nouvelle_reservation",
-    contenu: JSON.stringify({
-      titre: "Nouvelle réservation",
-      message: `${clientNom} · ${nbVehicules} véhicule${nbVehicules > 1 ? "s" : ""} · ${montant.toLocaleString("fr-FR")} FCFA`,
-      lien: `/admin/demandes`,
-    }),
-    statut_envoi: "envoye" as const,
-  }));
-
-  await supabase.from("notifications_log").insert(rows as never[]);
+    titre: "Nouvelle réservation",
+    message: `${clientNom} · ${nbVehicules} véhicule${nbVehicules > 1 ? "s" : ""} · ${montant.toLocaleString("fr-FR")} FCFA`,
+    lien: `/admin/demandes`,
+  });
 }
 
 export async function notifierAdminNouveauDossierVoyage(
@@ -51,28 +82,12 @@ export async function notifierAdminNouveauDossierVoyage(
   offre: string,
   montantEstime: number | null
 ) {
-  const supabase = await createClient();
-
-  const { data: admins } = await supabase
-    .from("users")
-    .select("id")
-    .in("role", ["operateur", "proprietaire"]);
-
-  if (!admins || admins.length === 0) return;
-
-  const rows = admins.map((a) => ({
-    user_id: a.id,
-    canal: "push" as const,
+  await notifierStaff({
     evenement: "nouveau_dossier_voyage",
-    contenu: JSON.stringify({
-      titre: "Nouveau dossier visa",
-      message: `${clientNom} · Visa ${pays} · ${offre} · ${montantEstime === null ? "Sur devis" : `~${montantEstime.toLocaleString("fr-FR")} FCFA`}`,
-      lien: `/admin`,
-    }),
-    statut_envoi: "envoye" as const,
-  }));
-
-  await supabase.from("notifications_log").insert(rows as never[]);
+    titre: "Nouveau dossier visa",
+    message: `${clientNom} · Visa ${pays} · ${offre} · ${montantEstime === null ? "Sur devis" : `~${montantEstime.toLocaleString("fr-FR")} FCFA`}`,
+    lien: `/admin`,
+  });
 }
 
 export async function notifierAdminNouvelleDemandeImmobilier(
@@ -82,65 +97,26 @@ export async function notifierAdminNouvelleDemandeImmobilier(
   typeLabel: string,
   detail: string
 ) {
-  const supabase = await createClient();
-
-  const { data: admins } = await supabase
-    .from("users")
-    .select("id")
-    .in("role", ["operateur", "proprietaire"]);
-
-  if (!admins || admins.length === 0) return;
-
-  const rows = admins.map((a) => ({
-    user_id: a.id,
-    canal: "push" as const,
+  await notifierStaff({
     evenement: "nouvelle_demande_immobilier",
-    contenu: JSON.stringify({
-      titre: "Nouvelle demande immobilier",
-      message: `${clientNom} · ${typeLabel} · ${bien}${detail ? ` · ${detail}` : ""}`,
-      lien: `/admin/demandes-immobilier`,
-    }),
-    statut_envoi: "envoye" as const,
-  }));
-
-  await supabase.from("notifications_log").insert(rows as never[]);
+    titre: "Nouvelle demande immobilier",
+    message: `${clientNom} · ${typeLabel} · ${bien}${detail ? ` · ${detail}` : ""}`,
+    lien: `/admin/demandes-immobilier`,
+  });
 }
 
-// Réponse du client à une contre-offre. Contrairement aux notifieurs
-// ci-dessus, celui-ci écrit avec la clé de service : il est appelé depuis la
-// session d'un client, qui n'a pas le droit de lister le staff ni d'insérer
-// une notification destinée à autrui.
 export async function notifierAdminReponseContreOffre(
   clientNom: string,
   bien: string,
   accepte: boolean,
   montant: number
 ) {
-  const admin = createAdminClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-
-  const { data: destinataires } = await admin
-    .from("users")
-    .select("id")
-    .in("role", ["operateur", "proprietaire"]);
-
-  if (!destinataires || destinataires.length === 0) return;
-
-  const rows = destinataires.map((a) => ({
-    user_id: a.id,
-    canal: "push" as const,
+  await notifierStaff({
     evenement: "reponse_contre_offre_immobilier",
-    contenu: JSON.stringify({
-      titre: accepte ? "Contre-offre acceptée" : "Contre-offre refusée",
-      message: `${clientNom} · ${bien} · ${montant.toLocaleString("fr-FR")} FCFA`,
-      lien: `/admin/demandes-immobilier`,
-    }),
-    statut_envoi: "envoye" as const,
-  }));
-
-  await admin.from("notifications_log").insert(rows as never[]);
+    titre: accepte ? "Contre-offre acceptée" : "Contre-offre refusée",
+    message: `${clientNom} · ${bien} · ${montant.toLocaleString("fr-FR")} FCFA`,
+    lien: `/admin/demandes-immobilier`,
+  });
 }
 
 export async function getNotificationsAdmin(): Promise<{
