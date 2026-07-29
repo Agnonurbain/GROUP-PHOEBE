@@ -450,14 +450,40 @@ Trois règles qui ne se devinent pas :
 3. **Pour une location**, `montant_convenu` est le **loyer mensuel**, et la période
    vit dans `location_debut` / `location_duree_mois`.
 
-### 7.6 Server Actions (`app/actions/`)
+### 7.6 Cycle d'un billet d'avion
 
-25+ fichiers : `auth.ts`, `cart.ts`, `vehicules.ts`, `reservation.ts`, `livraison.ts`,
+Il n'y a **aucune connexion GDS** : rien n'est cherché en direct. Le client décrit
+son besoin, l'équipe cherche puis chiffre. L'interface le dit — « Demander mon
+billet », pas « Rechercher » — et le vocabulaire du code suit : `demandes_billet`,
+jamais « réservations ».
+
+| Statut | Posé par | Effets |
+|---|---|---|
+| `soumise` | `creerDemandeBillet` | Frais de service figés au barème du jour, staff notifié |
+| `en_cours_traitement` | sélecteur admin | L'équipe cherche le vol |
+| `devis_envoye` | `proposerDevisBillet` — **propriétaire seul** | `montant_propose` écrit, client notifié du total (vol + frais) |
+| `emise` | sélecteur admin | Billet émis, demande close |
+| `annulee` | sélecteur admin | Demande close |
+
+Deux règles portées par la validation applicative, pas par la base :
+
+1. **La validité du passeport se juge après la date de départ**, pas à la date de
+   la demande — le nombre de mois exigé est piloté depuis `/admin/tarifs`.
+   L'admin signale en rouge une validité insuffisante avant l'émission.
+2. **Un bébé ne voyage pas sans adulte** pour le porter : pas plus de bébés que
+   d'adultes.
+
+Et deux règles portées par la base : un aller simple n'a pas de date de retour,
+un aller-retour en a une postérieure au départ.
+
+### 7.7 Server Actions (`app/actions/`)
+
+26 fichiers : `auth.ts`, `cart.ts`, `vehicules.ts`, `reservation.ts`, `livraison.ts`,
 `immobilier.ts`, `assistance.ts`, `biens.ts`, `demandes.ts`, `disponibilites.ts`,
 `propositions.ts`, `favoris.ts`, `contact.ts`, `admin.ts`, `verification.ts`,
 `etat-lieux.ts`, `achat.ts`, `checkout.ts`, `tarifs.ts`, `negociation.ts`,
 `propositions-zones.ts`, `vehicle-assignment.ts`, `remboursements.ts`,
-`notifications-admin.ts`, `reservation-operateur.ts`.
+`notifications-admin.ts`, `reservation-operateur.ts`, `billets.ts`.
 
 ---
 
