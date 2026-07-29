@@ -7,30 +7,43 @@
 | David | +2250508090666 | `TestPhoebe2026!` | client | Téléphone |
 | Opérateur | operateur@test.phoebe.ci | `TestPhoebe2025!` | operateur | Email+Phone |
 | Propriétaire | proprietaire@test.phoebe.ci | `TestPhoebe2025!` | proprietaire | Email+Phone |
-| Awa Koné | agent.cocody@test.phoebe.ci | `TestPhoebe2025!` | agent_immobilier | Email+Phone |
-| Ibrahim Traoré | agent.marcory@test.phoebe.ci | `TestPhoebe2025!` | agent_immobilier | Email+Phone |
-| Fatou Diallo | agent.yopougon@test.phoebe.ci | `TestPhoebe2025!` | agent_immobilier | Email+Phone |
+| *10 agents immobiliers* | `agent.<zone>@test.phoebe.ci` | `TestPhoebe2025!` | agent_immobilier | Email+Phone |
 
 ## Agents immobiliers
 
 Créés le 2026-07-29. Sans au moins un agent, **aucune visite n'est programmable** :
 `visites.agent_id` est NOT NULL et le formulaire exige un agent sur la demande.
+Ils se créent désormais depuis `/admin/comptes` (propriétaire seul), avec leur zone.
 
-| Agent | Zone de couverture | Biens du catalogue concernés |
-|---|---|---|
-| Awa Koné | `Cocody` | Cocody, Abidjan (6) + Cocody Angré, Abidjan (2) |
-| Ibrahim Traoré | `Marcory` | Marcory, Abidjan (2) + Zone 4, Marcory (2) |
-| Fatou Diallo | `Yopougon` | Yopougon, Abidjan (2) |
+Mot de passe commun : `TestPhoebe2025!`
 
-Zones volontairement **disjointes** : `autoAssignAgent()` retient le premier agent
-dont la zone est contenue dans la localisation, sans ordre défini — des zones qui
-se recouvrent rendraient l'affectation automatique non déterministe.
+| Agent | Identifiant | Zone de couverture | Biens |
+|---|---|---|---|
+| Awa Koné | agent.cocody@… | `Cocody` | 10 |
+| Ibrahim Traoré | agent.marcory@… | `Marcory` | 4 |
+| Fatou Diallo | agent.yopougon@… | `Yopougon` | 2 |
+| Koffi N'Guessan | agent.plateau@… | `Plateau, Abidjan` | 2 |
+| Aya Bamba | agent.deuxplateaux@… | `II Plateaux` | 2 |
+| Serge Kouassi | agent.riviera@… | `Riviera` | 2 |
+| Mariam Ouattara | agent.treichville@… | `Treichville` | 2 |
+| Yao Adjoua | agent.abobo@… | `Abobo` | 2 |
+| Lucien Gbagbo | agent.bingerville@… | `Bingerville` | 2 |
+| Nadège Assi | agent.bassam@… | `Grand-Bassam` | 2 |
 
-L'affectation automatique ne joue qu'à la **création** d'un bien. Les 30 biens
-déjà en base ont `agent_id` à null : sur une demande les concernant, il faut
-passer par « Affecter » dans `/admin/demandes-immobilier` (la liste déroulante est
-désormais alimentée).
+**Les 30 biens du catalogue ont un agent.**
 
-## OTP de test
+### Pourquoi ces libellés de zone précisément
 
-- Numéro : `+2250508090666` → Code OTP : `123456` (configuré dans Supabase, valide jusqu'au 31 juillet 2026)
+`autoAssignAgent()` retient le premier agent dont la zone est **contenue** dans la
+localisation du bien, sans ordre défini : deux zones qui correspondent au même bien
+rendraient l'affectation non déterministe. Deux pièges contournés :
+
+- **`Plateau, Abidjan` et non `Plateau`** — la chaîne « Plateau » est contenue dans
+  « II Plateaux, Abidjan », un même bien aurait donc eu deux agents candidats. Le
+  libellé complet lève l'ambiguïté.
+- **Aucun agent « Angré »** — « Angré » est contenu dans « Cocody Angré, Abidjan »,
+  et aucun sous-libellé ne permet de viser « Angré, Abidjan » sans attraper l'autre.
+  Angré étant un quartier de Cocody, ses 2 biens sont rattachés à l'agent Cocody.
+
+Vérifier toute nouvelle zone contre les localisations existantes avant de la créer :
+si un bien correspond à deux zones, l'agent retenu est arbitraire.
