@@ -142,9 +142,9 @@ async function confirmerUnPaiement(
     }
   }
 
-  // Immobilier : la caution de visite est encaissée → la demande passe en
+  // Immobilier : les frais de visite sont encaissés → la demande passe en
   // traitement. Auparavant la demande restait à « en_attente » et rien ne
-  // distinguait une caution payée d'un tunnel de paiement abandonné : l'équipe
+  // distinguait des frais payés d'un tunnel de paiement abandonné : l'équipe
   // programmait des visites à l'aveugle, et le catalogue masquait le bien dès
   // la simple création de la demande, payée ou non.
   if (paiement.reference_table === "demandes_immobilier") {

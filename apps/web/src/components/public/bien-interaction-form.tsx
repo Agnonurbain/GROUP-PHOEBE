@@ -11,9 +11,12 @@ const inputClass =
 export function BienInteractionForm({
   bienId,
   isLoggedIn,
+  fraisVisite,
 }: {
   bienId: string
   isLoggedIn: boolean
+  /** Frais de visite dus et non remboursables : annoncés avant tout paiement. */
+  fraisVisite: number
 }) {
   const [state, action, pending] = useActionState<ImmobilierState, FormData>(creerDemandeImmobilier, {})
   const [type, setType] = useState<string>("information")
@@ -66,12 +69,32 @@ export function BienInteractionForm({
 
       <div className="mt-4 space-y-4">
         {type === "visite" && (
-          <div>
-            <label htmlFor="date_souhaitee" className="mb-1.5 block text-sm font-medium text-public-text">
-              Date souhaitée
-            </label>
-            <input id="date_souhaitee" name="date_souhaitee" type="date" className={`${inputClass} [color-scheme:dark]`} />
-          </div>
+          <>
+            <div>
+              <label htmlFor="date_souhaitee" className="mb-1.5 block text-sm font-medium text-public-text">
+                Date souhaitée
+              </label>
+              <input
+                id="date_souhaitee"
+                name="date_souhaitee"
+                type="date"
+                min={new Date().toISOString().slice(0, 10)}
+                className={`${inputClass} [color-scheme:dark]`}
+              />
+            </div>
+
+            {/* Le bouton mène droit au paiement : le client doit connaître le
+                montant et son caractère définitif avant de cliquer. */}
+            <div className="rounded-xl border border-accent-gold/30 bg-accent-gold/5 p-4">
+              <p className="text-sm font-semibold text-public-text">
+                Frais de visite : {fraisVisite.toLocaleString("fr-FR")} FCFA
+              </p>
+              <p className="mt-1 text-xs text-public-text-muted">
+                À régler maintenant pour réserver votre visite. Ces frais couvrent
+                l&apos;organisation de la visite et ne sont pas remboursables.
+              </p>
+            </div>
+          </>
         )}
 
         {type === "offre" && (
@@ -108,10 +131,16 @@ export function BienInteractionForm({
         disabled={pending}
         className="mt-5 w-full rounded-xl bg-accent-green px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-accent-green-hover active:scale-[0.98] disabled:opacity-50"
       >
-        {pending ? "Envoi…" : `Envoyer ma ${TYPE_DEMANDE_LABELS[type].toLowerCase()}`}
+        {pending
+          ? "Envoi…"
+          : type === "visite"
+            ? `Payer ${fraisVisite.toLocaleString("fr-FR")} FCFA et demander la visite`
+            : `Envoyer ma ${TYPE_DEMANDE_LABELS[type].toLowerCase()}`}
       </button>
       <p className="mt-3 text-center text-xs text-public-text-faint">
-        Sans engagement — notre équipe vous recontacte.
+        {type === "visite"
+          ? "Paiement sécurisé. Notre équipe vous confirme le créneau."
+          : "Sans engagement — notre équipe vous recontacte."}
       </p>
     </form>
   )

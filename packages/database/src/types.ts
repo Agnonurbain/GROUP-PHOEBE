@@ -1200,21 +1200,21 @@ export type Database = {
       }
       parametres_immobilier: {
         Row: {
-          caution_visite: number
+          frais_visite: number
           id: number
           max_offres_client: number
           taux_max_reduction: number
           updated_at: string
         }
         Insert: {
-          caution_visite?: number
+          frais_visite?: number
           id?: number
           max_offres_client?: number
           taux_max_reduction?: number
           updated_at?: string
         }
         Update: {
-          caution_visite?: number
+          frais_visite?: number
           id?: number
           max_offres_client?: number
           taux_max_reduction?: number

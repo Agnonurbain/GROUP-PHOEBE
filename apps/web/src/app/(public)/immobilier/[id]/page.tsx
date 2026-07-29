@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
-import { getBienById } from "@/lib/public-cache"
+import { getBienById, getParametresImmobilier } from "@/lib/public-cache"
 import { VehicleGallery } from "@/components/public/vehicle-gallery"
 import { BienInteractionForm } from "@/components/public/bien-interaction-form"
 import { BackLink } from "@/components/public/back-link"
@@ -42,6 +42,9 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
   const isLoggedIn = !!claimsData?.claims
+
+  // Annoncé dans le formulaire : demander une visite déclenche un paiement.
+  const paramsImmo = await getParametresImmobilier()
 
   const specs: { label: string; value: string }[] = [
     { label: "Type", value: typeBienLabel(bien.type) },
@@ -135,7 +138,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
                 </p>
               )}
             </div>
-            <BienInteractionForm bienId={bien.id} isLoggedIn={isLoggedIn} />
+            <BienInteractionForm bienId={bien.id} isLoggedIn={isLoggedIn} fraisVisite={paramsImmo.frais_visite} />
           </div>
         </div>
       </div>

@@ -68,7 +68,7 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 50 migrations SQL
+├── supabase/migrations/         # 51 migrations SQL
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -148,7 +148,7 @@ group-phoebe/
 | `/admin/biens/[id]` | Édition bien |
 | `/admin/expeditions` | Gestion expéditions |
 | `/admin/demandes-immobilier` | Demandes immobilières (statuts, visites, agent, contre-offre) |
-| `/admin/parametres-immobilier` | Paramétrage immobilier — propriétaire uniquement (caution visite, remise max, quota d'offres) |
+| `/admin/parametres-immobilier` | Paramétrage immobilier — propriétaire uniquement (frais de visite, remise max, quota d'offres) |
 | `/admin/dossiers-voyage` | Dossiers voyage/études |
 | `/admin/propositions` | Propositions de prix |
 | `/admin/comptes` | Gestion utilisateurs |
@@ -183,7 +183,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-50 migrations Supabase (00001 → 00050).
+51 migrations Supabase (00001 → 00051).
 
 ### 5.1 Tables
 
@@ -221,7 +221,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `agents_immobiliers` | Immobilier | Agents et zone de couverture |
 | `visites` | Immobilier | Visites programmées (proposée → confirmée → réalisée) |
 | `demandes_immobilier` | Immobilier | Demandes info/visite/offre + contre-offre (`montant_offre`, `montant_contre_offre`) |
-| `parametres_immobilier` | Immobilier | Singleton : caution visite, remise max, quota d'offres |
+| `parametres_immobilier` | Immobilier | Singleton : frais de visite, remise max, quota d'offres |
 | `dossiers_voyage` | Assistance | Dossiers études/visa |
 | `documents_dossier_voyage` | Assistance | Documents associés |
 | `tarifs_assistance` | Assistance | Tarifs pilotables |
@@ -277,7 +277,7 @@ Champs couverts, et par quoi :
 |---|---|---|
 | `vehicules.prix_*`, `taux_caution`, `caution_base_fcfa` | `retirerChampsPrix` (vehicules.ts) | — |
 | `tarifs_livraison`, `paliers_poids`, `tarifs_assistance`, `parametres_contact` | `requireProprietaireAvecId` (tarifs.ts) | — |
-| `parametres_immobilier.caution_visite` | `requireProprietaireAvecId` (immobilier.ts) | policy `is_proprietaire()` |
+| `parametres_immobilier.frais_visite` | `requireProprietaireAvecId` (immobilier.ts) | policy `is_proprietaire()` |
 | `demandes_immobilier.montant_offre`, `montant_contre_offre` | `proposerContreOffre` | `garde_montants` (00047) |
 | `biens.prix` | `retirerChampsPrix` + création propriétaire (biens.ts) | `garde_prix` (00049) |
 
@@ -617,6 +617,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | **Règle métier** : demander une visite donne lieu à des **frais de visite**, dus et non remboursables — ce n'est pas une caution. Rien n'était d'ailleurs jamais restitué : aucun chemin de code ne mettait ce paiement en `remboursement_requis`, le mot promettait au client une restitution inexistante. `parametres_immobilier.caution_visite` → `frais_visite`, nouveau type de paiement `frais` (les `paiements` immobiliers historiques sont reclassés, ceux des autres modules intacts), montant désormais **annoncé sur la fiche du bien avant paiement** et « Sans engagement » retiré du parcours visite (00051). Une caution pourra apparaître plus tard à sa place logique : après accord sur une offre, adossée au paiement qui s'ensuit. Corrige au passage `taux_max_reduction = 0` que `Number(x) \|\| defaut` écrasait en 10 % — 0 est légitime (aucune remise autorisée) et faussait le plancher de contre-offre. |
 | 2026-07-29 | Audit immobilier — 4 correctifs de fond. (1) RLS activée sur 10 tables qui en étaient dépourvues avec `GRANT ALL TO anon` : `visites` et `audit_log` étaient modifiables et effaçables par n'importe qui (00048). (2) `biens.prix` réservé au propriétaire, côté app et par trigger (00049) — un opérateur pouvait changer le prix affiché d'un bien. (3) Les notifieurs admin listaient le staff avec la session du client, que `users_select_own` limite à sa propre ligne : la requête renvoyait zéro ligne et **aucune notification n'était jamais créée** pour une demande client (réservation, immobilier, dossier voyage). Passés en clé de service et factorisés dans `notifierStaff`. `message` et `date_souhaitee` du client, qui n'existaient que dans ce texte perdu, ont désormais des colonnes (00050). (4) Un bien disparaissait du catalogue dès l'ouverture d'une demande de visite, caution payée ou non, et `visite_programmee` n'expirant jamais, il n'y revenait plus — une demande par bien vidait la vitrine. L'exclusion ne retient plus que les cautions encaissées, et la fin de visite referme la demande. |
 | 2026-07-29 | Contre-offre immobilière : cycle complet. Le propriétaire (seul) contre-offre sur une offre client → statut `contre_offre` → le client accepte (bien réservé) ou refuse (bien libéré). `taux_max_reduction` sert enfin de plancher (`validerContreOffre` dans `lib/immobilier.ts`). Expiration à 7 j incluse dans le cron immobilier, sinon un bien restait bloqué. Migration 00047 : helper `is_proprietaire()`, statut élargi, trigger `garde_montants`, policy `parametres_immobilier` corrigée (elle s'appelait « proprietaire » mais vérifiait `is_staff()`). |
 | 2026-07-29 | Sécurité montants : la garde « prix = propriétaire seul » était applicative uniquement, donc contournable — `demandes_immobilier_staff_manage` est `for all using (is_staff())`, un opérateur pouvait écrire un montant via l'API REST avec la clé anon (publique). Le trigger `garde_montants` ferme ce chemin. `modifierParametresImmobilier` exigeait `requireStaff()` alors qu'il écrit `caution_visite` : passé à propriétaire. |

@@ -172,10 +172,12 @@ export async function creerDemandeImmobilier(
     detail
   );
 
-  // Pour une visite : paiement de la caution obligatoire
+  // Pour une visite : paiement des frais de visite, dus et non remboursables.
+  // Ce n'est pas une caution : rien n'est restitué au client. Le montant lui est
+  // annoncé sur le formulaire du bien avant qu'il ne s'engage.
   if (type === "visite") {
     const params = await getParametresImmobilier();
-    const montantCaution = params.caution_visite;
+    const montantFrais = params.frais_visite;
 
     const { data: paiement, error: paiementErr } = await admin
       .from("paiements")
@@ -183,8 +185,8 @@ export async function creerDemandeImmobilier(
         module: "immobilier",
         reference_table: "demandes_immobilier",
         reference_id: demande.id,
-        type: "caution",
-        montant: montantCaution,
+        type: "frais",
+        montant: montantFrais,
         methode: "stripe",
         statut: "en_attente",
       })
@@ -194,8 +196,8 @@ export async function creerDemandeImmobilier(
 
     try {
       const url = await creerSessionStripe({
-        montantCFA: montantCaution,
-        description: `Caution visite — ${typeBienLabel(bien.type)} à ${bien.localisation}`,
+        montantCFA: montantFrais,
+        description: `Frais de visite — ${typeBienLabel(bien.type)} à ${bien.localisation}`,
         paiementId: paiement.id,
         successUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/immobilier/confirmation?type=visite`,
         cancelUrl: `${process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"}/immobilier/${bienId}`,
@@ -585,7 +587,7 @@ export async function modifierParametresImmobilier(
   _prev: ParametresImmoState,
   formData: FormData
 ): Promise<ParametresImmoState> {
-  // caution_visite est un montant facturé au client : propriétaire uniquement.
+  // frais_visite est un montant facturé au client : propriétaire uniquement.
   try {
     await requireProprietaireAvecId();
   } catch {
@@ -593,19 +595,23 @@ export async function modifierParametresImmobilier(
   }
   const admin = getAdmin();
 
-  const caution_visite = Number(formData.get("caution_visite"));
+  const frais_visite = Number(formData.get("frais_visite"));
   const taux_max_reduction = Number(formData.get("taux_max_reduction"));
   const max_offres_client = Number(formData.get("max_offres_client"));
 
-  if (!caution_visite || caution_visite <= 0) return { error: "La caution visite doit être un montant positif." };
-  if (taux_max_reduction < 0 || taux_max_reduction > 100) return { error: "Le taux de réduction doit être entre 0 et 100." };
+  if (!frais_visite || frais_visite <= 0) return { error: "Les frais de visite doivent être un montant positif." };
+  // 0 est une valeur légitime : aucune remise autorisée. Ne pas tester la
+  // vérité de la valeur, sinon 0 est rejeté comme absent.
+  if (!Number.isFinite(taux_max_reduction) || taux_max_reduction < 0 || taux_max_reduction > 100) {
+    return { error: "Le taux de réduction doit être entre 0 et 100." };
+  }
   if (!max_offres_client || max_offres_client < 1) return { error: "Le nombre max d'offres doit être au moins 1." };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (admin.from as any)("parametres_immobilier")
     .upsert({
       id: 1,
-      caution_visite,
+      frais_visite,
       taux_max_reduction,
       max_offres_client,
       updated_at: new Date().toISOString(),

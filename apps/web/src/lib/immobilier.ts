@@ -112,13 +112,13 @@ export function isStatutVisite(v: string): v is StatutVisite {
 // ─── Paramètres immobilier (table parametres_immobilier) ─────────────────────
 
 export type ParametresImmobilier = {
-  caution_visite: number
+  frais_visite: number
   taux_max_reduction: number
   max_offres_client: number
 }
 
 export const PARAMETRES_IMMO_DEFAUT: ParametresImmobilier = {
-  caution_visite: 50000,
+  frais_visite: 50000,
   taux_max_reduction: 10,
   max_offres_client: 3,
 }

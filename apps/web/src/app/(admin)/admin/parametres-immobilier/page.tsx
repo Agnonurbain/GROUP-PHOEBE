@@ -40,7 +40,7 @@ export default async function ParametresImmobilierPage() {
       <ScrollReveal variant="fade-up" delay={0.1}>
         <ParametresImmoForm
           initial={{
-            caution_visite: params.caution_visite,
+            frais_visite: params.frais_visite,
             taux_max_reduction: params.taux_max_reduction,
             max_offres_client: params.max_offres_client,
           }}

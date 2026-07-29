@@ -129,8 +129,8 @@ export const getCommunes = unstable_cache(
 // Immobilier
 // Biens retirés du catalogue parce qu'une visite y est réellement engagée.
 //
-// « Réellement » : seuls comptent les statuts atteints après encaissement de la
-// caution — `en_cours_traitement` (posé par le webhook de paiement) et
+// « Réellement » : seuls comptent les statuts atteints après encaissement des
+// frais de visite — `en_cours_traitement` (posé par le webhook de paiement) et
 // `visite_programmee`. Auparavant la requête retenait toute demande de visite
 // non close, `en_attente` comprise : un tunnel de paiement abandonné, ou une
 // simple demande jamais payée, suffisait à faire disparaître le bien du
@@ -186,7 +186,7 @@ export const getBiensImmobiliers = unstable_cache(
     const { data } = await query;
     let biens = data ?? [];
 
-    // Exclure les biens avec une visite active (caution payée, visite en cours)
+    // Exclure les biens dont la visite est engagée (frais payés, visite en cours)
     const idsExclus = await getBienIdsAvecVisiteActive(supabase);
     if (idsExclus.length > 0) {
       biens = biens.filter((b) => !idsExclus.includes(b.id));
@@ -371,21 +371,31 @@ export const getParametresContact = unstable_cache(
   { revalidate: 3600, tags: ["parametres_contact"] }
 );
 
-// Paramétrage immobilier (caution visite, taux réduction, limite offres).
+// Paramétrage immobilier (frais de visite, taux réduction, limite offres).
 // Repli sur les valeurs par défaut si la table est absente (pré-migration).
 export const getParametresImmobilier = unstable_cache(
   async (): Promise<ParametresImmobilier> => {
     const supabase = createPublicClient();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase.from as any)("parametres_immobilier")
-      .select("caution_visite, taux_max_reduction, max_offres_client")
+      .select("frais_visite, taux_max_reduction, max_offres_client")
       .maybeSingle();
 
     if (!data) return PARAMETRES_IMMO_DEFAUT;
+
+    // `Number(x) || defaut` écrasait 0, or 0 est légitime pour
+    // taux_max_reduction : « aucune remise autorisée ». Le propriétaire réglait
+    // 0 et le système appliquait 10 %, faussant le plancher de contre-offre.
+    // Seules une valeur absente ou non numérique justifient le repli.
+    const ou = (valeur: unknown, defaut: number) => {
+      const n = Number(valeur);
+      return valeur === null || valeur === undefined || !Number.isFinite(n) ? defaut : n;
+    };
+
     return {
-      caution_visite: Number(data.caution_visite) || PARAMETRES_IMMO_DEFAUT.caution_visite,
-      taux_max_reduction: Number(data.taux_max_reduction) || PARAMETRES_IMMO_DEFAUT.taux_max_reduction,
-      max_offres_client: Number(data.max_offres_client) || PARAMETRES_IMMO_DEFAUT.max_offres_client,
+      frais_visite: ou(data.frais_visite, PARAMETRES_IMMO_DEFAUT.frais_visite),
+      taux_max_reduction: ou(data.taux_max_reduction, PARAMETRES_IMMO_DEFAUT.taux_max_reduction),
+      max_offres_client: ou(data.max_offres_client, PARAMETRES_IMMO_DEFAUT.max_offres_client),
     };
   },
   ["parametres_immobilier"],

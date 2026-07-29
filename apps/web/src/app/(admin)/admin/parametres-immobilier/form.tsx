@@ -11,7 +11,7 @@ export function ParametresImmoForm({
   initial,
 }: {
   initial: {
-    caution_visite: number;
+    frais_visite: number;
     taux_max_reduction: number;
     max_offres_client: number;
   };
@@ -30,20 +30,21 @@ export function ParametresImmoForm({
       )}
 
       <div className="space-y-2">
-        <label htmlFor="caution_visite" className="block text-sm font-medium text-phoebe-anthracite">
-          Caution visite (FCFA)
+        <label htmlFor="frais_visite" className="block text-sm font-medium text-phoebe-anthracite">
+          Frais de visite (FCFA)
         </label>
         <input
-          id="caution_visite"
-          name="caution_visite"
+          id="frais_visite"
+          name="frais_visite"
           type="number"
           min={1}
-          defaultValue={initial.caution_visite}
+          defaultValue={initial.frais_visite}
           className={inputClass}
           required
         />
         <p className="text-xs text-phoebe-anthracite/60">
-          Montant de la caution demandée à l&apos;acheteur pour programmer une visite.
+          Frais dus par le client pour programmer une visite. Non remboursables, et
+          annoncés sur la fiche du bien avant paiement.
         </p>
       </div>
 
