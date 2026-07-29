@@ -12,6 +12,7 @@ import {
   TYPE_DEMANDE_LABELS,
   STATUT_DEMANDE_LABELS,
   typeBienLabel,
+  formaterCreneau,
   STATUTS_DEMANDE_OFFRE_ACTIFS,
   STATUTS_CONTRE_OFFRE_POSSIBLE,
   validerContreOffre,
@@ -113,7 +114,7 @@ export async function creerDemandeImmobilier(
 
   const { data: bien } = await admin
     .from("biens")
-    .select("type, localisation, statut")
+    .select("type, localisation, statut, agent_id")
     .eq("id", bienId)
     .single();
   if (!bien) return { error: "Bien introuvable." };
@@ -151,7 +152,14 @@ export async function creerDemandeImmobilier(
       // vivaient que dans le texte de la notification admin.
       message: message || null,
       date_souhaitee: type === "visite" && dateSouhaitee ? dateSouhaitee : null,
-      statut: "en_attente",
+      // L'agent référent du bien suit la demande. Sans cet héritage, il fallait
+      // l'affecter à la main sur chaque demande avant de pouvoir programmer une
+      // visite — `visites.agent_id` est NOT NULL — alors que le bien avait déjà
+      // le sien, posé à sa création par autoAssignAgent().
+      agent_id: bien.agent_id,
+      // Une offre s'annonce comme telle. « en_attente » ne distinguait pas une
+      // offre chiffrée d'une simple demande d'information dans la liste admin.
+      statut: type === "offre" ? "offre_soumise" : "en_attente",
     })
     .select("id")
     .single();
@@ -488,11 +496,18 @@ export async function creerVisite(
     return { error: "Champs obligatoires manquants (agent requis)." };
   }
 
+  const dateCreneau = new Date(creneau);
+  if (Number.isNaN(dateCreneau.getTime())) return { error: "Créneau invalide." };
+  // Un créneau passé ne veut rien dire pour le client qu'on va prévenir.
+  if (dateCreneau.getTime() < Date.now()) {
+    return { error: "Le créneau doit être dans le futur." };
+  }
+
   const { error } = await admin.from("visites").insert({
     bien_id: bienId,
     client_id: clientId,
     agent_id: agentId,
-    creneau: new Date(creneau).toISOString(),
+    creneau: dateCreneau.toISOString(),
     statut: "proposee",
   });
   if (error) return { error: error.message };
@@ -501,6 +516,22 @@ export async function creerVisite(
     await admin.from("demandes_immobilier").update({ statut: "visite_programmee", updated_at: new Date().toISOString() }).eq("id", demandeId);
   }
 
+  // Le client a payé des frais de visite : il doit apprendre le créneau. Rien ne
+  // partait jusqu'ici, et aucun écran ne le lui montrait non plus.
+  const { data: bienVisite } = await admin
+    .from("biens")
+    .select("type, localisation")
+    .eq("id", bienId)
+    .single();
+
+  await notifierClient(
+    clientId,
+    "Votre visite est programmée",
+    `${bienVisite ? `${typeBienLabel(bienVisite.type)} à ${bienVisite.localisation}` : "Votre visite"} — ${formaterCreneau(dateCreneau)}. Retrouvez le détail dans « Mes réservations ».`
+  );
+
+  (revalidateTag as (tag: string) => void)("biens");
+  revalidatePath("/compte/reservations");
   revalidatePath("/admin/demandes-immobilier");
   return { success: true };
 }
@@ -531,6 +562,16 @@ export async function changerStatutVisite(
     .update({ statut })
     .eq("id", visiteId);
   if (error) return { error: error.message };
+
+  // Le créneau devient ferme : le client doit le savoir.
+  if (visite && statut === "confirmee") {
+    await notifierClient(
+      visite.client_id,
+      "Votre visite est confirmée",
+      `Votre visite est confirmée pour le ${formaterCreneau(visite.creneau as string)}.`
+    );
+    revalidatePath("/compte/reservations");
+  }
 
   // Une visite terminée doit refermer la demande qui la portait. Sans cela la
   // demande restait à « visite_programmee » — statut que le cron d'expiration ne

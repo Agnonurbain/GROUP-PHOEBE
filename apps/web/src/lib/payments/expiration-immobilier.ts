@@ -17,12 +17,17 @@ export async function expirerDemandesImmobilierSansReponse(): Promise<number> {
   const admin = getAdmin();
   const seuil = new Date(Date.now() - DELAI_MS).toISOString();
 
-  // « contre_offre » incluse : sans réponse du client, le bien resterait
-  // réservé indéfiniment.
+  // Tous les statuts d'attente sont couverts :
+  //   · en_attente / offre_soumise  → personne n'a repris la demande
+  //   · en_cours_traitement         → frais de visite payés, visite non programmée
+  //   · contre_offre                → le client n'a pas répondu
+  // `visite_programmee` est volontairement absent : la visite a une date propre,
+  // et l'échéance se juge sur le créneau, pas sur updated_at (cf. le bornage de
+  // l'exclusion catalogue dans public-cache.ts).
   const { data: expirees } = await admin
     .from("demandes_immobilier")
     .select("id, client_id, bien_id, statut")
-    .in("statut", ["en_attente", "en_cours_traitement", "contre_offre"])
+    .in("statut", ["en_attente", "offre_soumise", "en_cours_traitement", "contre_offre"])
     .lt("updated_at", seuil);
 
   if (!expirees || expirees.length === 0) return 0;

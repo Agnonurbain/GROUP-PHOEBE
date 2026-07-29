@@ -8,6 +8,7 @@ import { Card } from "@/components/ui"
 import { annulerParClient } from "@/app/actions/demandes"
 import { PayerAcompte } from "@/components/public/payer-acompte"
 import { ContreOffreReponse } from "@/components/public/contre-offre-reponse"
+import { formaterCreneau } from "@/lib/immobilier"
 
 export const metadata: Metadata = {
   title: "Mes Réservations",
@@ -83,7 +84,7 @@ export default async function CompteReservations({
       .order("created_at", { ascending: false }),
     supabase
       .from("demandes_immobilier")
-      .select("id, created_at, statut, type, montant_offre, montant_contre_offre, bien_id, biens(localisation, type)")
+      .select("id, created_at, statut, type, montant_offre, montant_contre_offre, date_souhaitee, bien_id, biens(localisation, type)")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -97,6 +98,28 @@ export default async function CompteReservations({
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
   ])
+
+  // Créneaux de visite du client. La policy visites_select_own (00048) autorise
+  // cette lecture avec sa session. Sans cela, un client payait des frais de
+  // visite sans jamais voir la date nulle part.
+  const bienIdsImmo = [...new Set(immobilierRes.data?.map((d) => d.bien_id) ?? [])]
+  const { data: visitesClient } = bienIdsImmo.length > 0
+    ? await supabase
+        .from("visites")
+        .select("bien_id, creneau, statut")
+        .eq("client_id", user.id)
+        .in("bien_id", bienIdsImmo)
+        .neq("statut", "annulee")
+        .order("creneau", { ascending: false })
+    : { data: null }
+
+  // Un seul créneau retenu par bien : le plus récent non annulé.
+  const creneauParBien = new Map<string, { creneau: string; statut: string }>()
+  for (const v of visitesClient ?? []) {
+    if (!creneauParBien.has(v.bien_id)) {
+      creneauParBien.set(v.bien_id, { creneau: v.creneau, statut: v.statut })
+    }
+  }
 
   const vehiculeIds = [...new Set(transportRes.data?.map((d) => d.vehicule_id).filter(Boolean) as string[] ?? [])]
   const { data: allPhotos } = vehiculeIds.length > 0
@@ -129,13 +152,36 @@ export default async function CompteReservations({
     contreOffre: null,
   })) ?? []
 
+  // Le libellé disait « Visite: <date de création> » pour toutes les demandes
+  // immobilières, y compris une demande d'information. Il dit maintenant ce qui
+  // s'est réellement passé, selon le type et l'avancement.
+  const periodeImmo = (d: {
+    type: string
+    created_at: string
+    date_souhaitee: string | null
+    bien_id: string
+  }): string => {
+    const creation = new Date(d.created_at).toLocaleDateString("fr-FR")
+    if (d.type !== "visite") {
+      return `${d.type === "offre" ? "Offre" : "Demande"} du ${creation}`
+    }
+    const visite = creneauParBien.get(d.bien_id)
+    if (visite) {
+      return `Visite ${visite.statut === "confirmee" ? "confirmée" : visite.statut === "realisee" ? "réalisée" : "proposée"} — ${formaterCreneau(visite.creneau)}`
+    }
+    if (d.date_souhaitee) {
+      return `Visite souhaitée le ${new Date(d.date_souhaitee).toLocaleDateString("fr-FR")} — créneau à confirmer`
+    }
+    return `Visite demandée le ${creation} — créneau à confirmer`
+  }
+
   const immobilierReservations: ReservationItem[] = immobilierRes.data?.map((d) => ({
     id: d.id,
     created_at: d.created_at,
     title: d.biens?.localisation ?? "Bien immobilier",
     category: "Immobilier",
     detailHref: `/reservation/confirmation?demande=${d.id}`,
-    period: `Visite: ${new Date(d.created_at).toLocaleDateString("fr-FR")}`,
+    period: periodeImmo(d),
     price: d.montant_offre ? `${d.montant_offre.toLocaleString("fr-FR")} FCFA` : "—",
     status: d.statut,
     photoUrl: null,

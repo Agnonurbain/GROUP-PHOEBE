@@ -129,21 +129,57 @@ export const getCommunes = unstable_cache(
 // Immobilier
 // Biens retirés du catalogue parce qu'une visite y est réellement engagée.
 //
-// « Réellement » : seuls comptent les statuts atteints après encaissement des
-// frais de visite — `en_cours_traitement` (posé par le webhook de paiement) et
-// `visite_programmee`. Auparavant la requête retenait toute demande de visite
-// non close, `en_attente` comprise : un tunnel de paiement abandonné, ou une
-// simple demande jamais payée, suffisait à faire disparaître le bien du
-// catalogue public. Une demande de visite sur chaque bien vidait la vitrine.
+// Deux bornes, apprises de deux défauts successifs :
+//   · payé — seuls comptent les statuts atteints après encaissement des frais
+//     (`en_cours_traitement`, posé par le webhook, et `visite_programmee`).
+//     Avant, toute demande de visite non close comptait, `en_attente` incluse :
+//     un tunnel de paiement abandonné suffisait à masquer le bien, et une
+//     demande par bien vidait la vitrine.
+//   · daté — une visite programmée ne masque le bien que tant que son créneau
+//     est à venir. Avant, un agent oubliant de clôturer la visite retirait le
+//     bien du catalogue définitivement.
 const STATUTS_VISITE_ENGAGEE = ["en_cours_traitement", "visite_programmee"] as const;
 
+// Délai de grâce après un créneau passé. Au-delà, le bien retourne au catalogue
+// même si personne n'a clôturé la visite côté admin.
+const GRACE_APRES_CRENEAU_MS = 2 * 24 * 60 * 60 * 1000;
+
 async function getBienIdsAvecVisiteActive(supabase: ReturnType<typeof createPublicClient>): Promise<string[]> {
-  const { data } = await supabase
+  const { data: demandes } = await supabase
     .from("demandes_immobilier")
-    .select("bien_id")
+    .select("bien_id, statut")
     .eq("type", "visite")
     .in("statut", STATUTS_VISITE_ENGAGEE as unknown as string[]);
-  return [...new Set((data ?? []).map((d) => d.bien_id))];
+
+  if (!demandes || demandes.length === 0) return [];
+
+  // `en_cours_traitement` : frais payés, aucune visite programmée encore. Le bien
+  // reste masqué, et le cron d'expiration à 7 jours borne cette attente.
+  const enAttenteDeCreneau = demandes
+    .filter((d) => d.statut === "en_cours_traitement")
+    .map((d) => d.bien_id);
+
+  // `visite_programmee` : masquer seulement tant que le créneau est à venir (ou
+  // vient de passer). Sans cette borne, un agent qui oublie de passer la visite à
+  // « réalisée » retirait le bien du catalogue définitivement — le cron ne traite
+  // pas ce statut, et la clôture ne vient que de la visite elle-même.
+  const bienIdsProgrammes = demandes
+    .filter((d) => d.statut === "visite_programmee")
+    .map((d) => d.bien_id);
+
+  let programmesEncoreActifs: string[] = [];
+  if (bienIdsProgrammes.length > 0) {
+    const seuil = new Date(Date.now() - GRACE_APRES_CRENEAU_MS).toISOString();
+    const { data: visites } = await supabase
+      .from("visites")
+      .select("bien_id")
+      .in("bien_id", bienIdsProgrammes)
+      .in("statut", ["proposee", "confirmee"])
+      .gte("creneau", seuil);
+    programmesEncoreActifs = (visites ?? []).map((v) => v.bien_id);
+  }
+
+  return [...new Set([...enAttenteDeCreneau, ...programmesEncoreActifs])];
 }
 
 async function getCompteurOffres(supabase: ReturnType<typeof createPublicClient>, ids: string[]): Promise<Record<string, number>> {

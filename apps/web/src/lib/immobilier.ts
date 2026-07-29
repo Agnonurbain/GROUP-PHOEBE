@@ -109,6 +109,22 @@ export function isStatutVisite(v: string): v is StatutVisite {
   return (STATUTS_VISITE as readonly string[]).includes(v);
 }
 
+/**
+ * Créneau de visite en français, date et heure. Source unique : le même libellé
+ * part dans la notification au client et s'affiche dans « Mes réservations ».
+ */
+export function formaterCreneau(creneau: string | Date): string {
+  const d = typeof creneau === "string" ? new Date(creneau) : creneau
+  if (Number.isNaN(d.getTime())) return "—"
+  return d.toLocaleString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
 // ─── Paramètres immobilier (table parametres_immobilier) ─────────────────────
 
 export type ParametresImmobilier = {
