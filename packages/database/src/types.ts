@@ -885,6 +885,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "favoris_bien_id_fkey"
+            columns: ["bien_id"]
+            isOneToOne: false
+            referencedRelation: "biens"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "favoris_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
