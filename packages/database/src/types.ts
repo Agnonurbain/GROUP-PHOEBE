@@ -429,6 +429,7 @@ export type Database = {
           client_id: string
           created_at: string
           id: string
+          montant_contre_offre: number | null
           montant_offre: number | null
           statut: string
           type: string
@@ -440,6 +441,7 @@ export type Database = {
           client_id: string
           created_at?: string
           id?: string
+          montant_contre_offre?: number | null
           montant_offre?: number | null
           statut?: string
           type: string
@@ -451,6 +453,7 @@ export type Database = {
           client_id?: string
           created_at?: string
           id?: string
+          montant_contre_offre?: number | null
           montant_offre?: number | null
           statut?: string
           type?: string

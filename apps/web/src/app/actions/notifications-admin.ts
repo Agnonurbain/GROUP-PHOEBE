@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import type { Database } from "@group-phoebe/database/types";
 
 export type NotifAdmin = {
   id: string;
@@ -102,6 +104,43 @@ export async function notifierAdminNouvelleDemandeImmobilier(
   }));
 
   await supabase.from("notifications_log").insert(rows as never[]);
+}
+
+// Réponse du client à une contre-offre. Contrairement aux notifieurs
+// ci-dessus, celui-ci écrit avec la clé de service : il est appelé depuis la
+// session d'un client, qui n'a pas le droit de lister le staff ni d'insérer
+// une notification destinée à autrui.
+export async function notifierAdminReponseContreOffre(
+  clientNom: string,
+  bien: string,
+  accepte: boolean,
+  montant: number
+) {
+  const admin = createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: destinataires } = await admin
+    .from("users")
+    .select("id")
+    .in("role", ["operateur", "proprietaire"]);
+
+  if (!destinataires || destinataires.length === 0) return;
+
+  const rows = destinataires.map((a) => ({
+    user_id: a.id,
+    canal: "push" as const,
+    evenement: "reponse_contre_offre_immobilier",
+    contenu: JSON.stringify({
+      titre: accepte ? "Contre-offre acceptée" : "Contre-offre refusée",
+      message: `${clientNom} · ${bien} · ${montant.toLocaleString("fr-FR")} FCFA`,
+      lien: `/admin/demandes-immobilier`,
+    }),
+    statut_envoi: "envoye" as const,
+  }));
+
+  await admin.from("notifications_log").insert(rows as never[]);
 }
 
 export async function getNotificationsAdmin(): Promise<{

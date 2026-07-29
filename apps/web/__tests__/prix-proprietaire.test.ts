@@ -32,6 +32,42 @@ describe("les prix ne sont modifiables que par le propriétaire", () => {
     expect(corps).toContain("requireProprietaireAvecId()");
   });
 
+  it.each([
+    "proposerContreOffre",
+    "modifierParametresImmobilier",
+  ])("%s exige le propriétaire", (nom) => {
+    const corps = corpsDeFonction(src("app/actions/immobilier.ts"), nom);
+    expect(corps).toContain("requireProprietaireAvecId()");
+    expect(corps).not.toContain("await requireStaff()");
+  });
+
+  it("le statut contre_offre n'est pas atteignable par le sélecteur générique", () => {
+    // Sinon un opérateur poserait le statut sans montant : le client verrait
+    // une contre-offre vide.
+    const corps = corpsDeFonction(src("app/actions/immobilier.ts"), "changerStatutDemandeImmobilier");
+    expect(corps).toContain('statut === "contre_offre"');
+  });
+
+  it("la garde base sur les montants immobiliers existe", () => {
+    const migration = readFileSync(
+      join(process.cwd(), "..", "..", "supabase", "migrations", "00047_contre_offre_garde_montants.sql"),
+      "utf8"
+    );
+    // La policy staff_manage laisse un opérateur écrire via l'API REST : le
+    // trigger est le seul rempart sur ce chemin.
+    expect(migration).toContain("create trigger garde_montants");
+    expect(migration).toContain("public.is_proprietaire()");
+
+    // La garde ne cible que les rôles PostgREST de bout de chaîne, et doit
+    // rester en security invoker : en security definer, `current_user` vaudrait
+    // le propriétaire de la fonction et la garde bloquerait tous les chemins,
+    // server actions incluses.
+    const debut = migration.indexOf("function public.garde_montants_demandes_immobilier()");
+    const corpsTrigger = migration.slice(debut, migration.indexOf("$$;", debut));
+    expect(corpsTrigger).toContain("current_user not in ('anon', 'authenticated')");
+    expect(corpsTrigger).not.toContain("security definer");
+  });
+
   it("les champs tarifaires du véhicule sont retirés pour un opérateur", () => {
     const source = src("app/actions/vehicules.ts");
     // Le filtre existe et couvre tous les champs monétaires.

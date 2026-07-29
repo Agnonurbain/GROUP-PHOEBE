@@ -17,10 +17,12 @@ export async function expirerDemandesImmobilierSansReponse(): Promise<number> {
   const admin = getAdmin();
   const seuil = new Date(Date.now() - DELAI_MS).toISOString();
 
+  // « contre_offre » incluse : sans réponse du client, le bien resterait
+  // réservé indéfiniment.
   const { data: expirees } = await admin
     .from("demandes_immobilier")
-    .select("id, client_id, bien_id")
-    .in("statut", ["en_attente", "en_cours_traitement"])
+    .select("id, client_id, bien_id, statut")
+    .in("statut", ["en_attente", "en_cours_traitement", "contre_offre"])
     .lt("updated_at", seuil);
 
   if (!expirees || expirees.length === 0) return 0;
@@ -42,7 +44,9 @@ export async function expirerDemandesImmobilierSansReponse(): Promise<number> {
     await notifierClient(
       d.client_id,
       "Demande immobilière expirée",
-      `Votre demande a été automatiquement refusée faute de réponse sous ${DELAI_EXPIRATION_JOURS} jours. Vous pouvez soumettre une nouvelle demande à tout moment.`
+      d.statut === "contre_offre"
+        ? `La contre-offre du propriétaire a expiré faute de réponse sous ${DELAI_EXPIRATION_JOURS} jours. Vous pouvez soumettre une nouvelle offre à tout moment.`
+        : `Votre demande a été automatiquement refusée faute de réponse sous ${DELAI_EXPIRATION_JOURS} jours. Vous pouvez soumettre une nouvelle demande à tout moment.`
     );
 
     nb++;

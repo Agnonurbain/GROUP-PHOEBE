@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Card } from "@/components/ui"
 import { annulerParClient } from "@/app/actions/demandes"
 import { PayerAcompte } from "@/components/public/payer-acompte"
+import { ContreOffreReponse } from "@/components/public/contre-offre-reponse"
 
 export const metadata: Metadata = {
   title: "Mes Réservations",
@@ -31,6 +32,8 @@ type ReservationItem = {
   isAchat: boolean
   /** Lien « Voir le détail » (diffère selon le type : confirmation, suivi…). */
   detailHref: string
+  /** Contre-offre immobilière en attente de réponse du client, le cas échéant. */
+  contreOffre: number | null
 }
 
 const TABS = [
@@ -80,7 +83,7 @@ export default async function CompteReservations({
       .order("created_at", { ascending: false }),
     supabase
       .from("demandes_immobilier")
-      .select("id, created_at, statut, type, montant_offre, bien_id, biens(localisation, type)")
+      .select("id, created_at, statut, type, montant_offre, montant_contre_offre, bien_id, biens(localisation, type)")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -123,6 +126,7 @@ export default async function CompteReservations({
         ? Number(d.prix_negocie)
         : null,
     isAchat: d.type === "achat",
+    contreOffre: null,
   })) ?? []
 
   const immobilierReservations: ReservationItem[] = immobilierRes.data?.map((d) => ({
@@ -137,6 +141,10 @@ export default async function CompteReservations({
     photoUrl: null,
     aPayer: null,
     isAchat: false,
+    contreOffre:
+      d.statut === "contre_offre" && d.montant_contre_offre != null
+        ? Number(d.montant_contre_offre)
+        : null,
   })) ?? []
 
   const assistanceReservations: ReservationItem[] = assistanceRes.data?.map((d) => ({
@@ -151,6 +159,7 @@ export default async function CompteReservations({
     photoUrl: null,
     aPayer: null,
     isAchat: false,
+    contreOffre: null,
   })) ?? []
 
   const livraisonReservations: ReservationItem[] = livraisonRes.data?.map((d) => ({
@@ -165,6 +174,7 @@ export default async function CompteReservations({
     photoUrl: null,
     aPayer: null,
     isAchat: false,
+    contreOffre: null,
   })) ?? []
 
   const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations]
@@ -180,6 +190,8 @@ export default async function CompteReservations({
   const statusStyle = (status: string) => {
     if (["terminee", "termine", "finalise"].includes(status)) return { color: "text-public-text-muted", label: "Terminé" }
     if (["annulee", "annule", "refusee", "refuse"].includes(status)) return { color: "text-[#EF4444]", label: "Annulé" }
+    // Le client doit agir : le libellé le dit plutôt que « En attente ».
+    if (status === "contre_offre") return { color: "text-accent-gold", label: "Réponse attendue" }
     return { color: "text-accent-orange", label: "En attente" }
   }
 
@@ -248,6 +260,9 @@ export default async function CompteReservations({
               <div className="flex items-center gap-3 shrink-0">
                 <span className={`text-sm font-semibold ${st.color}`}>{st.label}</span>
                 <div className="flex flex-col items-end gap-1.5">
+                  {r.contreOffre != null && (
+                    <ContreOffreReponse demandeId={r.id} montant={r.contreOffre} />
+                  )}
                   {r.aPayer != null && (
                     <PayerAcompte demandeId={r.id} montant={r.aPayer} isAchat={r.isAchat} />
                   )}

@@ -1,11 +1,15 @@
 import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
+import { createClient } from "@/lib/supabase/server"
+import { getParametresImmobilier } from "@/lib/public-cache"
 import { DemandeImmoActions } from "./demandes-immo-actions"
+import { ContreOffreForm } from "./contre-offre-form"
 import { VisiteSection } from "./visite-section"
 import {
   STATUTS_DEMANDE,
   STATUT_DEMANDE_LABELS,
+  STATUTS_CONTRE_OFFRE_POSSIBLE,
   TYPE_DEMANDE_LABELS,
   typeBienLabel,
 } from "@/lib/immobilier"
@@ -20,6 +24,7 @@ const STATUT_COLORS: Record<string, string> = {
   en_cours_traitement: "bg-phoebe-gold/10 text-phoebe-gold-dark",
   visite_programmee: "bg-phoebe-gold/10 text-phoebe-gold-dark",
   offre_soumise: "bg-phoebe-gold/10 text-phoebe-gold-dark",
+  contre_offre: "bg-phoebe-gold/20 text-phoebe-gold-dark",
   acceptee: "bg-phoebe-green/10 text-phoebe-green-deep",
   finalisee: "bg-phoebe-green/10 text-phoebe-green-deep",
   refusee: "bg-error/10 text-error",
@@ -36,6 +41,16 @@ function getAdmin() {
 export default async function DemandesImmobilierAdminPage() {
   const db = getAdmin()
 
+  // Le formulaire de contre-offre écrit un montant : réservé au propriétaire.
+  const supabase = await createClient()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const { data: profile } = claimsData?.claims
+    ? await supabase.from("users").select("role").eq("id", claimsData.claims.sub).single()
+    : { data: null }
+  const estProprietaire = profile?.role === "proprietaire"
+
+  const params = await getParametresImmobilier()
+
   const { data: demandes } = await db
     .from("demandes_immobilier")
     .select("*")
@@ -43,9 +58,11 @@ export default async function DemandesImmobilierAdminPage() {
 
   const bienIds = [...new Set((demandes ?? []).map((d) => d.bien_id))]
   const { data: biens } = bienIds.length
-    ? await db.from("biens").select("id, type, localisation").in("id", bienIds)
+    ? await db.from("biens").select("id, type, localisation, prix, statut").in("id", bienIds)
     : { data: [] }
   const bienLabel = new Map((biens ?? []).map((b) => [b.id, `${typeBienLabel(b.type)} — ${b.localisation}`]))
+  const bienPrix = new Map((biens ?? []).map((b) => [b.id, Number(b.prix)]))
+  const bienStatut = new Map((biens ?? []).map((b) => [b.id, b.statut]))
 
   const clientIds = [...new Set((demandes ?? []).map((d) => d.client_id))]
   const { data: clients } = clientIds.length
@@ -110,6 +127,11 @@ export default async function DemandesImmobilierAdminPage() {
                   {d.montant_offre != null && (
                     <p className="text-lg font-bold text-phoebe-green-deep">{Number(d.montant_offre).toLocaleString("fr-FR")} FCFA</p>
                   )}
+                  {d.montant_contre_offre != null && (
+                    <p className="text-xs font-semibold text-phoebe-gold-dark">
+                      Contre-offre : {Number(d.montant_contre_offre).toLocaleString("fr-FR")} FCFA
+                    </p>
+                  )}
                   <p className="text-xs text-phoebe-anthracite/70">
                     {d.agent_id ? `Agent : ${agentNom.get(d.agent_id) ?? "—"}` : "Non affecté"}
                   </p>
@@ -123,6 +145,21 @@ export default async function DemandesImmobilierAdminPage() {
                 agents={agents}
                 statuts={statuts}
               />
+
+              {estProprietaire
+                && d.type === "offre"
+                && d.montant_offre != null
+                && (STATUTS_CONTRE_OFFRE_POSSIBLE as readonly string[]).includes(d.statut)
+                && ["disponible", "reserve"].includes(bienStatut.get(d.bien_id) ?? "")
+                && bienPrix.get(d.bien_id) != null && (
+                <ContreOffreForm
+                  demandeId={d.id}
+                  montantOffre={Number(d.montant_offre)}
+                  prixBien={bienPrix.get(d.bien_id)!}
+                  tauxMaxReduction={params.taux_max_reduction}
+                  montantContreOffre={d.montant_contre_offre != null ? Number(d.montant_contre_offre) : null}
+                />
+              )}
 
               <VisiteSection
                 demandeId={d.id}

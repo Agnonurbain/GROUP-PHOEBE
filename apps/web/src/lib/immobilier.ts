@@ -55,6 +55,7 @@ export const STATUTS_DEMANDE = [
   "en_cours_traitement",
   "visite_programmee",
   "offre_soumise",
+  "contre_offre",
   "acceptee",
   "refusee",
   "annulee",
@@ -68,6 +69,7 @@ export const STATUT_DEMANDE_LABELS: Record<string, string> = {
   en_cours_traitement: "En cours de traitement",
   visite_programmee: "Visite programmée",
   offre_soumise: "Offre soumise",
+  contre_offre: "Contre-offre envoyée",
   acceptee: "Acceptée",
   refusee: "Refusée",
   annulee: "Annulée",
@@ -123,4 +125,57 @@ export const PARAMETRES_IMMO_DEFAUT: ParametresImmobilier = {
 
 export const STATUTS_DEMANDE_VISITE_ACTIFS = ["en_attente", "en_cours_traitement", "visite_programmee", "acceptee"] as const
 
-export const STATUTS_DEMANDE_OFFRE_ACTIFS = ["en_attente", "offre_soumise", "en_cours_traitement", "acceptee"] as const
+// Une offre en attente de réponse du client compte toujours dans son quota.
+export const STATUTS_DEMANDE_OFFRE_ACTIFS = ["en_attente", "offre_soumise", "en_cours_traitement", "contre_offre", "acceptee"] as const
+
+// ─── Contre-offre (propriétaire → acheteur) ──────────────────────────────────
+
+// Statuts depuis lesquels le propriétaire peut encore contre-offrir : une
+// demande déjà acceptée, refusée ou finalisée est close.
+export const STATUTS_CONTRE_OFFRE_POSSIBLE = ["en_attente", "en_cours_traitement", "offre_soumise", "contre_offre"] as const
+
+/**
+ * Plancher d'une contre-offre : le propriétaire fixe librement son prix, mais
+ * `taux_max_reduction` borne la remise qu'il s'autorise sur le prix affiché.
+ * Le paramètre n'avait aucun effet avant la contre-offre — c'est ici qu'il agit.
+ */
+export function plancherContreOffre(prixBien: number, tauxMaxReduction: number): number {
+  return Math.ceil(prixBien * (1 - tauxMaxReduction / 100))
+}
+
+/**
+ * Valide un montant de contre-offre. Fonction pure : la server action s'en sert
+ * pour refuser, l'admin pour afficher la fourchette autorisée.
+ */
+export function validerContreOffre(params: {
+  montant: number
+  montantOffre: number
+  prixBien: number
+  tauxMaxReduction: number
+}): { error: string } | { plancher: number } {
+  const { montant, montantOffre, prixBien, tauxMaxReduction } = params
+  const plancher = plancherContreOffre(prixBien, tauxMaxReduction)
+
+  if (!Number.isFinite(montant) || montant <= 0) {
+    return { error: "Le montant de la contre-offre doit être un montant positif." }
+  }
+  if (montantOffre >= prixBien) {
+    return { error: "L'offre du client atteint déjà le prix affiché : acceptez-la plutôt que de contre-offrir." }
+  }
+  if (montant <= montantOffre) {
+    return {
+      error: `La contre-offre doit dépasser l'offre du client (${montantOffre.toLocaleString("fr-FR")} FCFA). En dessous, acceptez l'offre.`,
+    }
+  }
+  if (montant > prixBien) {
+    return {
+      error: `La contre-offre ne peut pas dépasser le prix affiché (${prixBien.toLocaleString("fr-FR")} FCFA).`,
+    }
+  }
+  if (montant < plancher) {
+    return {
+      error: `Remise trop forte : avec un maximum de ${tauxMaxReduction} %, la contre-offre ne peut pas descendre sous ${plancher.toLocaleString("fr-FR")} FCFA.`,
+    }
+  }
+  return { plancher }
+}

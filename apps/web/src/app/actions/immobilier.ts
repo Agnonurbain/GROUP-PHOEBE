@@ -13,9 +13,15 @@ import {
   STATUT_DEMANDE_LABELS,
   typeBienLabel,
   STATUTS_DEMANDE_OFFRE_ACTIFS,
+  STATUTS_CONTRE_OFFRE_POSSIBLE,
+  validerContreOffre,
 } from "@/lib/immobilier";
 import { notifierClient } from "@/lib/notifications";
-import { notifierAdminNouvelleDemandeImmobilier } from "./notifications-admin";
+import { logAudit } from "@/lib/audit";
+import {
+  notifierAdminNouvelleDemandeImmobilier,
+  notifierAdminReponseContreOffre,
+} from "./notifications-admin";
 import { getParametresImmobilier } from "@/lib/public-cache";
 import { creerSessionStripe } from "@/lib/payments/stripe";
 import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
@@ -56,6 +62,22 @@ async function requireAgent() {
   const staff = await requireStaff();
   if (staff.role !== "agent_immobilier") throw new Error("Action réservée aux agents immobiliers");
   return staff.user;
+}
+
+// Écrire un montant facturé est réservé au propriétaire : un opérateur ne
+// négocie pas les prix. Cf. __tests__/prix-proprietaire.test.ts.
+async function requireProprietaireAvecId() {
+  const { user, role } = await requireStaff();
+  if (role !== "proprietaire") throw new Error("Accès refusé : propriétaire requis");
+  return user.sub as string;
+}
+
+async function requireClient() {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) throw new Error("Non authentifié");
+  return user.sub as string;
 }
 
 // Demande d'interaction sur un bien (information / visite / offre), SANS paiement
@@ -201,6 +223,11 @@ export async function changerStatutDemandeImmobilier(
   if (!demandeId || !isStatutDemande(statut)) {
     return { error: "Statut invalide." };
   }
+  // « contre_offre » implique un montant : il ne s'obtient que via
+  // proposerContreOffre, sinon le client verrait une contre-offre sans prix.
+  if (statut === "contre_offre") {
+    return { error: "Passez par le formulaire de contre-offre pour ce statut." };
+  }
 
   const { data: demande } = await admin
     .from("demandes_immobilier")
@@ -259,6 +286,171 @@ export async function affecterAgentImmobilier(
     .eq("id", demandeId);
   if (error) return { error: error.message };
 
+  revalidatePath("/admin/demandes-immobilier");
+  return { success: true };
+}
+
+// ─── Contre-offre ─────────────────────────────────────────────────────────────
+// Cycle : le client fait une offre sous le prix affiché → le propriétaire
+// contre-offre (statut « contre_offre ») → le client accepte (bien réservé) ou
+// refuse (bien libéré). Un opérateur ne peut pas contre-offrir : il écrirait un
+// montant. Le trigger `garde_montants` (00047) verrouille aussi l'accès direct
+// à l'API REST, que la garde applicative ne couvre pas.
+
+export type ContreOffreState = {
+  error?: string;
+  success?: boolean;
+};
+
+export async function proposerContreOffre(
+  _prev: ContreOffreState,
+  formData: FormData
+): Promise<ContreOffreState> {
+  let proprietaireId: string;
+  try {
+    proprietaireId = await requireProprietaireAvecId();
+  } catch {
+    return { error: "Seul le propriétaire peut proposer une contre-offre." };
+  }
+
+  const demandeId = formData.get("demande_id") as string;
+  const montant = Number(formData.get("montant"));
+  if (!demandeId) return { error: "Demande invalide." };
+
+  const admin = getAdmin();
+
+  const { data: demande } = await admin
+    .from("demandes_immobilier")
+    .select("id, type, statut, montant_offre, montant_contre_offre, client_id, bien_id")
+    .eq("id", demandeId)
+    .single();
+  if (!demande) return { error: "Demande introuvable." };
+
+  if (demande.type !== "offre") {
+    return { error: "Une contre-offre ne s'applique qu'à une demande de type offre." };
+  }
+  if (!(STATUTS_CONTRE_OFFRE_POSSIBLE as readonly string[]).includes(demande.statut)) {
+    return { error: `Demande ${STATUT_DEMANDE_LABELS[demande.statut] ?? demande.statut} : la négociation est close.` };
+  }
+  if (demande.montant_offre == null) {
+    return { error: "Cette demande ne porte aucune offre chiffrée." };
+  }
+
+  const { data: bien } = await admin
+    .from("biens")
+    .select("prix, statut, type, localisation")
+    .eq("id", demande.bien_id)
+    .single();
+  if (!bien) return { error: "Bien introuvable." };
+  if (!["disponible", "reserve"].includes(bien.statut)) {
+    return { error: "Ce bien n'est plus négociable." };
+  }
+
+  const params = await getParametresImmobilier();
+  const validation = validerContreOffre({
+    montant,
+    montantOffre: Number(demande.montant_offre),
+    prixBien: Number(bien.prix),
+    tauxMaxReduction: params.taux_max_reduction,
+  });
+  if ("error" in validation) return { error: validation.error };
+
+  const { error } = await admin
+    .from("demandes_immobilier")
+    .update({
+      montant_contre_offre: montant,
+      statut: "contre_offre",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", demandeId);
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId: proprietaireId,
+    action: "contre_offre_immobilier",
+    tableName: "demandes_immobilier",
+    recordId: demandeId,
+    oldValues: { montant_contre_offre: demande.montant_contre_offre, statut: demande.statut },
+    newValues: { montant_contre_offre: montant, statut: "contre_offre" },
+  });
+
+  await notifierClient(
+    demande.client_id,
+    "Contre-offre sur votre offre immobilière",
+    `${typeBienLabel(bien.type)} à ${bien.localisation} : le propriétaire vous propose ${montant.toLocaleString("fr-FR")} FCFA. Retrouvez la contre-offre dans « Mes réservations » pour l'accepter ou la refuser.`
+  );
+
+  revalidatePath("/admin/demandes-immobilier");
+  return { success: true };
+}
+
+export async function repondreContreOffre(
+  demandeId: string,
+  reponse: "accepter" | "refuser"
+): Promise<ContreOffreState> {
+  let clientId: string;
+  try {
+    clientId = await requireClient();
+  } catch {
+    return { error: "Vous devez être connecté." };
+  }
+  if (!demandeId) return { error: "Demande invalide." };
+
+  const admin = getAdmin();
+
+  const { data: demande } = await admin
+    .from("demandes_immobilier")
+    .select("id, statut, client_id, bien_id, montant_contre_offre")
+    .eq("id", demandeId)
+    .single();
+  if (!demande) return { error: "Demande introuvable." };
+  // La demande est lue avec la clé de service : l'appartenance se vérifie ici.
+  if (demande.client_id !== clientId) return { error: "Cette demande n'est pas la vôtre." };
+  if (demande.statut !== "contre_offre") {
+    return { error: "Aucune contre-offre en attente sur cette demande." };
+  }
+
+  const accepte = reponse === "accepter";
+
+  const { error } = await admin
+    .from("demandes_immobilier")
+    .update({
+      statut: accepte ? "acceptee" : "refusee",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", demandeId);
+  if (error) return { error: error.message };
+
+  if (accepte) {
+    // Le montant retenu reste `montant_contre_offre` : c'est le prix convenu.
+    await admin
+      .from("biens")
+      .update({ statut: "reserve", updated_at: new Date().toISOString() })
+      .eq("id", demande.bien_id)
+      .eq("statut", "disponible");
+  } else {
+    await admin
+      .from("biens")
+      .update({ statut: "disponible", updated_at: new Date().toISOString() })
+      .eq("id", demande.bien_id)
+      .eq("statut", "reserve");
+  }
+
+  const { data: profile } = await admin.from("users").select("nom").eq("id", clientId).single();
+  const { data: bien } = await admin
+    .from("biens")
+    .select("type, localisation")
+    .eq("id", demande.bien_id)
+    .single();
+
+  await notifierAdminReponseContreOffre(
+    profile?.nom ?? "Client",
+    bien ? `${typeBienLabel(bien.type)} à ${bien.localisation}` : "Bien",
+    accepte,
+    Number(demande.montant_contre_offre ?? 0)
+  );
+
+  revalidatePath("/compte/reservations");
   revalidatePath("/admin/demandes-immobilier");
   return { success: true };
 }
@@ -343,10 +535,11 @@ export async function modifierParametresImmobilier(
   _prev: ParametresImmoState,
   formData: FormData
 ): Promise<ParametresImmoState> {
+  // caution_visite est un montant facturé au client : propriétaire uniquement.
   try {
-    await requireStaff();
+    await requireProprietaireAvecId();
   } catch {
-    return { error: "Session expirée ou accès refusé." };
+    return { error: "Seul le propriétaire peut modifier ces paramètres." };
   }
   const admin = getAdmin();
 

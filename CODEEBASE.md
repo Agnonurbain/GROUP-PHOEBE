@@ -68,7 +68,7 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 44 migrations SQL
+├── supabase/migrations/         # 47 migrations SQL
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -178,7 +178,7 @@ group-phoebe/
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-44 migrations Supabase (00001 → 00044).
+47 migrations Supabase (00001 → 00047).
 
 ### 5.1 Tables principales
 
@@ -250,6 +250,7 @@ group-phoebe/
 | `contact-form.tsx` | Formulaire de contact |
 | `bien-interaction-form.tsx` | Interaction bien immobilier |
 | `payer-acompte.tsx` | Paiement acompte |
+| `contre-offre-reponse.tsx` | Réponse du client à une contre-offre (accepter / refuser, refus confirmé) |
 | `back-link.tsx` | Lien retour |
 
 ### 6.2 Composants effets (`components/effects/`)
@@ -543,6 +544,8 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | Contre-offre immobilière : cycle complet. Le propriétaire (seul) contre-offre sur une offre client → statut `contre_offre` → le client accepte (bien réservé) ou refuse (bien libéré). `taux_max_reduction` sert enfin de plancher (`validerContreOffre` dans `lib/immobilier.ts`). Expiration à 7 j incluse dans le cron immobilier, sinon un bien restait bloqué. Migration 00047 : helper `is_proprietaire()`, statut élargi, trigger `garde_montants`, policy `parametres_immobilier` corrigée (elle s'appelait « proprietaire » mais vérifiait `is_staff()`). |
+| 2026-07-29 | Sécurité montants : la garde « prix = propriétaire seul » était applicative uniquement, donc contournable — `demandes_immobilier_staff_manage` est `for all using (is_staff())`, un opérateur pouvait écrire un montant via l'API REST avec la clé anon (publique). Le trigger `garde_montants` ferme ce chemin. `modifierParametresImmobilier` exigeait `requireStaff()` alors qu'il écrit `caution_visite` : passé à propriétaire. |
 | 2026-07-29 | Fix build Vercel : les colonnes `periode` sont des `tstzrange`, que `supabase gen types` émet en `unknown`. 7 fichiers les traitaient comme `string` → échec `tsc`. Nouveau helper `lib/periode.ts` (`parsePeriodeRange`, `parsePeriodeDebut`), les 2 parsers dupliqués supprimés. Au passage : une période illisible ne provoque plus d'expiration + remboursement à tort dans `expiration-demandes.ts`. |
 | 2026-07-29 | `CRON_SECRET` ajouté en `passThroughEnv` dans `turbo.json` (lu au runtime seulement, donc hors hash de cache). Blocs Sentry et cron ajoutés à `.env.example`. |
 | 2026-07-28 | Migration shadcn/ui : tous les composants `ui/` (Button, Badge, Card, Input) passés en shadcn base-nova avec `@base-ui/react` primitives. Variants de marque conservés via CVA. Pages services redesignées (Transport, Livraison, Immobilier, Assistance, Accueil) avec les nouveaux composants. Ajout Pagination, HoverCard, Command, Textarea, Dialog, InputGroup shadcn. |
