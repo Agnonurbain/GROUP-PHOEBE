@@ -219,14 +219,14 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `paliers_poids` | Livraison | Paliers de poids, pilotables |
 | `biens` | Immobilier | Types, transactions, géolocalisation |
 | `bien_medias` | Immobilier | Photos/vidéos |
-| `agents_immobiliers` | Immobilier | Agents et zone de couverture |
+| `agents_immobiliers` | Immobilier | Agents et `zone_couverture`. La zone pilote `autoAssignAgent()` : **correspondance par sous-chaîne**, premier agent trouvé, sans ordre défini — deux zones qui matchent un même bien rendent l'affectation arbitraire (cf. TEST_ACCOUNTS.md) |
 | `visites` | Immobilier | Visites programmées (proposée → confirmée → réalisée) |
-| `demandes_immobilier` | Immobilier | Demandes info/visite/offre + contre-offre (`montant_offre`, `montant_contre_offre`) et prix arrêté (`montant_convenu`, figé à l'acceptation). Chaque ligne acceptée est une entrée du registre des transactions |
+| `demandes_immobilier` | Immobilier | Demandes info/visite/offre. Négociation (`montant_offre`, `montant_contre_offre`), prix arrêté (`montant_convenu`) et part GROUP PHOEBE (`taux_commission`, `montant_commission`) — ces quatre montants sont **figés dès l'acceptation**. Plus `message` et `date_souhaitee` du client, `location_debut` / `location_duree_mois` pour une location, `agent_id` hérité du bien. Chaque ligne acceptée est une entrée du registre des transactions |
 | `parametres_immobilier` | Immobilier | Singleton : frais de visite, remise max, quota d'offres, **taux de commission** |
 | `dossiers_voyage` | Assistance | Dossiers études/visa |
 | `documents_dossier_voyage` | Assistance | Documents associés |
 | `tarifs_assistance` | Assistance | Tarifs pilotables |
-| `paiements` | Transverse | Multi-module, multi-méthode, remboursements |
+| `paiements` | Transverse | Multi-module, multi-méthode (`stripe` \| `cinetpay`), remboursements. Types : `montant`, `caution`, `acompte`, `commission`, `frais` — `frais` porte les frais de visite immobiliers, non remboursables |
 | `webhook_idempotency` | Transverse | Anti-rejeu des webhooks de paiement |
 | `notifications_log` | Transverse | Log multi-canal |
 | `push_subscriptions` | Transverse | Subscriptions push |
@@ -411,7 +411,39 @@ Les composants `ui/` sont basés sur **shadcn/ui** (base-nova) avec `@base-ui/re
 | `vehicle-group.ts` | Regroupement des véhicules par modèle pour le catalogue |
 | `utils.ts` | `cn()` (clsx + tailwind-merge) |
 
-### 7.5 Server Actions (`app/actions/`)
+### 7.5 Cycle immobilier
+
+Le module ayant le cycle le plus long, voici qui écrit quoi. Reconstituer cette
+table depuis le code coûte cher — elle est la référence.
+
+| Statut de la demande | Posé par | Effets |
+|---|---|---|
+| `en_attente` | `creerDemandeImmobilier` (info, visite) | Agent hérité du bien, staff notifié |
+| `offre_soumise` | `creerDemandeImmobilier` (offre) | Compte dans le quota `max_offres_client` |
+| `en_cours_traitement` | webhook de paiement, frais de visite encaissés | Le bien sort du catalogue |
+| `visite_programmee` | `creerVisite` | Visite créée, **client notifié du créneau** |
+| `contre_offre` | `proposerContreOffre` — **propriétaire seul** | Client notifié ; borné par `taux_max_reduction` |
+| `acceptee` | `repondreContreOffre` (client) ou sélecteur admin | Bien réservé, **montants figés**, commission calculée, **offres concurrentes refusées et notifiées** |
+| `refusee` | cron 7 j, refus client, ou acceptation d'un concurrent | Bien libéré s'il était réservé |
+| `finalisee` | sélecteur admin, ou visite passée à « réalisée » | Bien `vendu` / `loue` |
+| `annulee` | paiement échoué, visite annulée | Bien libéré s'il était réservé |
+
+Trois règles qui ne se devinent pas :
+
+1. **Le catalogue masque un bien** tant qu'une visite y est engagée — mais seulement
+   sur des frais **encaissés**, et seulement tant que le créneau est à venir
+   (`GRACE_APRES_CRENEAU_MS`). Les deux bornes viennent de deux défauts réels :
+   sans la première, un tunnel de paiement abandonné suffisait à vider la vitrine ;
+   sans la seconde, un agent oubliant de clôturer masquait le bien définitivement.
+2. **Le cron d'expiration à 7 j** couvre tous les statuts d'attente
+   (`en_attente`, `offre_soumise`, `en_cours_traitement`, `contre_offre`) mais **pas**
+   `visite_programmee`, dont l'échéance se juge sur le créneau. Ajouter un statut
+   d'attente sans l'ajouter au cron laisse la demande en suspens : le cas est
+   verrouillé par `immobilier-flux.test.ts`.
+3. **Pour une location**, `montant_convenu` est le **loyer mensuel**, et la période
+   vit dans `location_debut` / `location_duree_mois`.
+
+### 7.6 Server Actions (`app/actions/`)
 
 25+ fichiers : `auth.ts`, `cart.ts`, `vehicules.ts`, `reservation.ts`, `livraison.ts`,
 `immobilier.ts`, `assistance.ts`, `biens.ts`, `demandes.ts`, `disponibilites.ts`,
@@ -620,6 +652,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | Dix agents immobiliers couvrent désormais **les 30 biens du catalogue** (détail dans TEST_ACCOUNTS.md). Deux libellés de zone y sont contre-intuitifs, et pour une raison durable : `autoAssignAgent()` retient le **premier** agent dont la zone est contenue dans la localisation, sans ordre défini. D'où `Plateau, Abidjan` plutôt que `Plateau` — « Plateau » est contenu dans « II Plateaux, Abidjan » — et aucun agent « Angré », cette chaîne étant contenue dans « Cocody Angré, Abidjan » sans qu'aucun sous-libellé ne permette de viser l'un sans l'autre. **Simuler toute nouvelle zone contre les localisations existantes avant de la créer.** |
 | 2026-07-29 | Les **agents immobiliers se créent depuis `/admin/comptes`**, comme les opérateurs et livreurs, avec leur zone de couverture — obligatoire, sinon l'agent existe sans jamais recevoir de bien (`autoAssignAgent` en dépend). Ils sont aussi désactivables. Trois agents de test créés en base (Cocody, Marcory, Yopougon) et les 14 biens dont la localisation correspond à une zone ont reçu leur agent : l'affectation automatique ne joue qu'à la création d'un bien, les 30 biens existants avaient `agent_id` à null. |
 | 2026-07-29 | **Refus explicite pour un agent immobilier sur le catalogue.** `requireStaff()` l'acceptait alors que `biens_staff_manage` et `bien_medias_staff_manage` reposent sur `is_staff()`, qui ne le couvre pas. La RLS filtrait la ligne : l'UPDATE touchait zéro ligne, sans erreur, et l'action répondait « Bien enregistré » sans rien avoir enregistré — un succès mensonger, pire qu'une erreur brute. Nouveau `requireGestionBiens()` sur les cinq écritures du catalogue, et l'entrée « Biens » masquée dans la navigation d'un agent (`masquePourAgent`) pour ne plus l'y conduire. |
 | 2026-07-29 | **Commission d'intermédiation** (00054). Les biens appartiennent à des propriétaires tiers : GROUP PHOEBE prélève un pourcentage du montant convenu, pilotable par le propriétaire (`parametres_immobilier.taux_commission`, usuellement 10 à 12 %) et **dû dès l'acceptation de l'offre**. Taux et montant sont figés sur la demande au moment de l'accord — le barème peut changer ensuite sans réécrire l'histoire — et protégés par le même gel que `montant_convenu`. Le registre affiche la commission par ligne et son cumul, en précisant que le volume transigé n'est pas le revenu de la plateforme. Piège évité de justesse : la contrainte de cohérence taux/montant ne bloquait rien, `taux >= 0` sur un taux NULL valant NULL et Postgres n'invalidant un CHECK que sur FALSE. |
