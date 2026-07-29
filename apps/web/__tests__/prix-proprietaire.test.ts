@@ -93,6 +93,12 @@ describe("les prix ne sont modifiables que par le propriétaire", () => {
     expect(migration.slice(debut, migration.indexOf("$$;", debut))).not.toContain("security definer");
   });
 
+  it("proposerDevisBillet exige le propriétaire", () => {
+    // Chiffrer un billet écrit un montant facturé : même règle que partout.
+    const corps = corpsDeFonction(src("app/actions/billets.ts"), "proposerDevisBillet");
+    expect(corps).toContain("requireProprietaireAvecId()");
+  });
+
   it("les champs tarifaires du véhicule sont retirés pour un opérateur", () => {
     const source = src("app/actions/vehicules.ts");
     // Le filtre existe et couvre tous les champs monétaires.

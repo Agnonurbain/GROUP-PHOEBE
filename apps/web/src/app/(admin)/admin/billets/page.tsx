@@ -1,0 +1,159 @@
+import type { Metadata } from "next"
+import { createClient as createAdminClient } from "@supabase/supabase-js"
+import type { Database } from "@group-phoebe/database/types"
+import { createClient } from "@/lib/supabase/server"
+import { BilletActions } from "./billet-actions"
+import {
+  STATUT_BILLET_LABELS,
+  STATUT_BILLET_COLORS,
+  STATUTS_BILLET_OUVERTS,
+  TYPE_TRAJET_LABELS,
+  CLASSE_LABELS,
+  libelleVoyageurs,
+  MOIS_VALIDITE_PASSEPORT_REQUIS,
+} from "@/lib/billets"
+
+export const metadata: Metadata = {
+  title: "Billets d'avion — Administration",
+  description: "Demandes de réservation de billets : recherche, devis et émission.",
+}
+
+function getAdmin() {
+  return createAdminClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
+
+const dateFr = (v: string) => new Date(v).toLocaleDateString("fr-FR")
+
+export default async function BilletsAdminPage() {
+  const db = getAdmin()
+
+  const supabase = await createClient()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const { data: profile } = claimsData?.claims
+    ? await supabase.from("users").select("role").eq("id", claimsData.claims.sub).single()
+    : { data: null }
+  const estProprietaire = profile?.role === "proprietaire"
+
+  const { data: demandes } = await db
+    .from("demandes_billet")
+    .select("*")
+    .order("created_at", { ascending: false })
+
+  const lignes = demandes ?? []
+
+  const clientIds = [...new Set(lignes.map((d) => d.client_id))]
+  const { data: clients } = clientIds.length
+    ? await db.from("users").select("id, nom, telephone, email").in("id", clientIds)
+    : { data: [] }
+  const clientById = new Map((clients ?? []).map((c) => [c.id, c]))
+
+  const { data: staff } = await db
+    .from("users")
+    .select("id, nom")
+    .in("role", ["operateur", "proprietaire"])
+  const conseillers = (staff ?? []).map((s) => ({ id: s.id, nom: s.nom }))
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-phoebe-anthracite">Billets d&apos;avion</h1>
+        <p className="mt-1 text-sm text-phoebe-anthracite/70">
+          Demandes de réservation — cherchez le vol, envoyez un devis, puis marquez le
+          billet comme émis.
+        </p>
+      </div>
+
+      {lignes.length === 0 ? (
+        <div className="rounded-2xl border border-phoebe-pearl bg-white p-10 text-center">
+          <p className="text-sm text-phoebe-anthracite/70">Aucune demande de billet pour le moment.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {lignes.map((d) => {
+            const client = clientById.get(d.client_id)
+            const ouverte = (STATUTS_BILLET_OUVERTS as readonly string[]).includes(d.statut)
+
+            // Un passeport doit rester valable après le départ : le signaler ici
+            // évite un billet émis sur un document qui ne passera pas.
+            const limite = new Date(d.date_depart)
+            limite.setMonth(limite.getMonth() + MOIS_VALIDITE_PASSEPORT_REQUIS)
+            const passeportJuste = new Date(d.passeport_expiration) < limite
+
+            return (
+              <div key={d.id} className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-base font-semibold text-phoebe-anthracite">
+                        {d.depart} → {d.destination}
+                      </span>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUT_BILLET_COLORS[d.statut] ?? "bg-phoebe-pearl text-phoebe-anthracite"}`}>
+                        {STATUT_BILLET_LABELS[d.statut] ?? d.statut}
+                      </span>
+                      <span className="rounded-full bg-phoebe-pearl px-2.5 py-0.5 text-[11px] font-medium text-phoebe-anthracite/80">
+                        {TYPE_TRAJET_LABELS[d.type_trajet] ?? d.type_trajet}
+                      </span>
+                    </div>
+
+                    <p className="mt-1 text-xs text-phoebe-anthracite/70">
+                      Client : {client?.nom ?? "—"}
+                      {client?.telephone ? ` · ${client.telephone}` : ""}
+                      {" · "}
+                      Départ le {dateFr(d.date_depart)}
+                      {d.date_retour ? ` · retour le ${dateFr(d.date_retour)}` : ""}
+                      {" · "}
+                      {libelleVoyageurs({ adultes: d.nb_adultes, enfants: d.nb_enfants, bebes: d.nb_bebes })}
+                      {" · "}
+                      {CLASSE_LABELS[d.classe] ?? d.classe}
+                    </p>
+
+                    <p className="mt-2 text-xs text-phoebe-anthracite/70">
+                      Passeport : <span className="font-medium text-phoebe-anthracite">{d.passeport_nom}</span>
+                      {" · "}n° {d.passeport_numero}
+                      {" · "}expire le {dateFr(d.passeport_expiration)}
+                      {passeportJuste && (
+                        <span className="ml-2 rounded-md bg-error/10 px-2 py-0.5 text-[11px] font-semibold text-error">
+                          validité insuffisante après le départ
+                        </span>
+                      )}
+                    </p>
+
+                    {d.message && (
+                      <p className="mt-2 max-w-prose rounded-lg bg-phoebe-pearl/50 px-3 py-2 text-xs italic text-phoebe-anthracite/80">
+                        « {d.message} »
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="text-right">
+                    {d.montant_propose != null && (
+                      <p className="text-lg font-bold text-phoebe-green-deep">
+                        {Number(d.montant_propose).toLocaleString("fr-FR")} FCFA
+                      </p>
+                    )}
+                    <p className="text-xs text-phoebe-anthracite/70">
+                      Demandé le {dateFr(d.created_at)}
+                    </p>
+                  </div>
+                </div>
+
+                <BilletActions
+                  demandeId={d.id}
+                  statut={d.statut}
+                  conseillerId={d.conseiller_id}
+                  conseillers={conseillers}
+                  montantPropose={d.montant_propose != null ? Number(d.montant_propose) : null}
+                  estProprietaire={estProprietaire}
+                  ouverte={ouverte}
+                />
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}

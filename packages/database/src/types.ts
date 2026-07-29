@@ -422,6 +422,90 @@ export type Database = {
           },
         ]
       }
+      demandes_billet: {
+        Row: {
+          classe: string
+          client_id: string
+          conseiller_id: string | null
+          created_at: string
+          date_depart: string
+          date_retour: string | null
+          depart: string
+          destination: string
+          id: string
+          message: string | null
+          montant_propose: number | null
+          nb_adultes: number
+          nb_bebes: number
+          nb_enfants: number
+          passeport_expiration: string
+          passeport_nom: string
+          passeport_numero: string
+          statut: string
+          type_trajet: string
+          updated_at: string
+        }
+        Insert: {
+          classe?: string
+          client_id: string
+          conseiller_id?: string | null
+          created_at?: string
+          date_depart: string
+          date_retour?: string | null
+          depart: string
+          destination: string
+          id?: string
+          message?: string | null
+          montant_propose?: number | null
+          nb_adultes?: number
+          nb_bebes?: number
+          nb_enfants?: number
+          passeport_expiration: string
+          passeport_nom: string
+          passeport_numero: string
+          statut?: string
+          type_trajet: string
+          updated_at?: string
+        }
+        Update: {
+          classe?: string
+          client_id?: string
+          conseiller_id?: string | null
+          created_at?: string
+          date_depart?: string
+          date_retour?: string | null
+          depart?: string
+          destination?: string
+          id?: string
+          message?: string | null
+          montant_propose?: number | null
+          nb_adultes?: number
+          nb_bebes?: number
+          nb_enfants?: number
+          passeport_expiration?: string
+          passeport_nom?: string
+          passeport_numero?: string
+          statut?: string
+          type_trajet?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demandes_billet_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demandes_billet_conseiller_id_fkey"
+            columns: ["conseiller_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       demandes_immobilier: {
         Row: {
           agent_id: string | null

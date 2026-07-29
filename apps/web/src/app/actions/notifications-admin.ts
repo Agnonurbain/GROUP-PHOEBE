@@ -119,6 +119,20 @@ export async function notifierAdminReponseContreOffre(
   });
 }
 
+export async function notifierAdminNouvelleDemandeBillet(
+  clientNom: string,
+  trajet: string,
+  typeTrajet: string,
+  voyageurs: string
+) {
+  await notifierStaff({
+    evenement: "nouvelle_demande_billet",
+    titre: "Nouvelle demande de billet",
+    message: `${clientNom} · ${trajet} · ${typeTrajet} · ${voyageurs}`,
+    lien: `/admin/billets`,
+  });
+}
+
 export async function getNotificationsAdmin(): Promise<{
   nonLues: number;
   recentes: NotifAdmin[];

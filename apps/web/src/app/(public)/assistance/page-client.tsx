@@ -6,6 +6,7 @@ import { ChevronRight } from "lucide-react"
 import { Badge } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
 import { PageHero, SectionHead } from "@/components/public/section-head"
+import { BilletForm } from "@/components/public/billet-form"
 import {
   PAYS_LIST,
   appliquerTarifsListe,
@@ -45,7 +46,7 @@ function ChoixBloc({
   )
 }
 
-export default function Assistance({ tarifs }: { tarifs: TarifsAssistance }) {
+export default function Assistance({ tarifs, isLoggedIn }: { tarifs: TarifsAssistance; isLoggedIn: boolean }) {
   const pays = appliquerTarifsListe(PAYS_LIST, tarifs)
   const etudesCountries = pays.filter((d) => d.categorie === "etudes")
   const voyageCountries = pays.filter((d) => d.categorie === "voyage")
@@ -85,6 +86,19 @@ export default function Assistance({ tarifs }: { tarifs: TarifsAssistance }) {
             desc="Visa Schengen pour la Norvège, la France, l'Italie, le Portugal et la Grèce."
             countries={voyageCountries}
           />
+        </div>
+      </section>
+
+      <section id="billet" className="border-t border-public-border px-6 py-20 sm:px-10">
+        <div className="mx-auto max-w-6xl">
+          <SectionHead
+            title="Billets d'avion"
+            lede="Dites-nous où et quand vous voulez partir : nous cherchons le vol et vous envoyons un devis."
+            className="border-b-0 pb-0"
+          />
+          <div className="mt-10">
+            <BilletForm isLoggedIn={isLoggedIn} />
+          </div>
         </div>
       </section>
 

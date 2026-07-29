@@ -13,6 +13,7 @@ import {
   Building2,
   FileText,
   Plane,
+  Ticket,
   Users,
   ScrollText,
   Settings,
@@ -99,7 +100,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "Assistance",
-    items: [{ href: "/admin/dossiers-voyage", label: "Dossiers visa", icon: Plane }],
+    items: [
+      { href: "/admin/dossiers-voyage", label: "Dossiers visa", icon: Plane },
+      { href: "/admin/billets", label: "Billets d'avion", icon: Ticket },
+    ],
   },
   {
     title: "Administration",

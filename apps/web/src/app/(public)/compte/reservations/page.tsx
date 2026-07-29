@@ -9,6 +9,7 @@ import { annulerParClient } from "@/app/actions/demandes"
 import { PayerAcompte } from "@/components/public/payer-acompte"
 import { ContreOffreReponse } from "@/components/public/contre-offre-reponse"
 import { formaterCreneau } from "@/lib/immobilier"
+import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
 
 export const metadata: Metadata = {
   title: "Mes Réservations",
@@ -47,7 +48,7 @@ function isActive(s: string) {
   return !["terminee", "termine", "finalise", "annulee", "annule", "refusee", "refuse"].includes(s)
 }
 function isTerminee(s: string) {
-  return ["terminee", "termine", "finalise", "livree"].includes(s)
+  return ["terminee", "termine", "finalise", "livree", "emise"].includes(s)
 }
 function isAnnulee(s: string) {
   return ["annulee", "annule", "refusee", "refuse", "echec_livraison"].includes(s)
@@ -76,7 +77,7 @@ export default async function CompteReservations({
     )
   }
 
-  const [transportRes, immobilierRes, assistanceRes, livraisonRes] = await Promise.all([
+  const [transportRes, immobilierRes, assistanceRes, livraisonRes, billetsRes] = await Promise.all([
     supabase
       .from("demandes_transport")
       .select("id, created_at, statut, montant, categorie, type, prix_negocie, vehicule_id, vehicules!inner(marque, modele)")
@@ -95,6 +96,11 @@ export default async function CompteReservations({
     supabase
       .from("expeditions")
       .select("id, created_at, statut, prix, numero_suivi, mode")
+      .eq("client_id", user.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("demandes_billet")
+      .select("id, created_at, statut, type_trajet, depart, destination, date_depart, date_retour, nb_adultes, nb_enfants, nb_bebes, montant_propose")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
   ])
@@ -228,7 +234,27 @@ export default async function CompteReservations({
     contreOffre: null,
   })) ?? []
 
-  const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations]
+  const billetReservations: ReservationItem[] = billetsRes.data?.map((d) => ({
+    id: d.id,
+    created_at: d.created_at,
+    title: `${d.depart} → ${d.destination}`,
+    category: "Billet",
+    detailHref: "/assistance#billet",
+    period: `${TYPE_TRAJET_LABELS[d.type_trajet] ?? d.type_trajet} · ${new Date(d.date_depart).toLocaleDateString("fr-FR")}${
+      d.date_retour ? ` → ${new Date(d.date_retour).toLocaleDateString("fr-FR")}` : ""
+    } · ${libelleVoyageurs({ adultes: d.nb_adultes, enfants: d.nb_enfants, bebes: d.nb_bebes })}`,
+    // Le devis prime : c'est le prix que l'équipe a proposé.
+    price: d.montant_propose != null
+      ? `${Number(d.montant_propose).toLocaleString("fr-FR")} FCFA`
+      : "Devis en cours",
+    status: d.statut,
+    photoUrl: null,
+    aPayer: null,
+    isAchat: false,
+    contreOffre: null,
+  })) ?? []
+
+  const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations, ...billetReservations]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const filtered =
@@ -243,6 +269,9 @@ export default async function CompteReservations({
     if (["annulee", "annule", "refusee", "refuse"].includes(status)) return { color: "text-[#EF4444]", label: "Annulé" }
     // Le client doit agir : le libellé le dit plutôt que « En attente ».
     if (status === "contre_offre") return { color: "text-accent-gold", label: "Réponse attendue" }
+    if (status === "devis_envoye") return { color: "text-accent-gold", label: "Devis reçu" }
+    if (status === "emise") return { color: "text-accent-green", label: "Billet émis" }
+    if (STATUT_BILLET_LABELS[status]) return { color: "text-accent-orange", label: STATUT_BILLET_LABELS[status] }
     return { color: "text-accent-orange", label: "En attente" }
   }
 

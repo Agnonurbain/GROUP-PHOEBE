@@ -68,7 +68,7 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 54 migrations SQL
+├── supabase/migrations/         # 55 migrations SQL
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -151,6 +151,7 @@ group-phoebe/
 | `/admin/transactions-immobilier` | Registre : qui a loué / acheté quel bien, à quel prix et quand (cumul des sommes réservé au propriétaire) |
 | `/admin/parametres-immobilier` | Paramétrage immobilier — propriétaire uniquement (frais de visite, remise max, quota d'offres) |
 | `/admin/dossiers-voyage` | Dossiers voyage/études |
+| `/admin/billets` | Demandes de billet d'avion : recherche, devis (propriétaire), émission |
 | `/admin/propositions` | Propositions de prix |
 | `/admin/comptes` | Comptes internes — propriétaire seul : opérateur, livreur, agent immobilier (avec sa zone de couverture) |
 | `/admin/verifications` | Vérifications documents |
@@ -184,11 +185,11 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-54 migrations Supabase (00001 → 00054).
+55 migrations Supabase (00001 → 00055).
 
 ### 5.1 Tables
 
-42 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
+43 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
 qui est généré depuis la base — c'est la référence en cas de doute.
 
 | Table | Module | Description |
@@ -224,6 +225,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `demandes_immobilier` | Immobilier | Demandes info/visite/offre. Négociation (`montant_offre`, `montant_contre_offre`), prix arrêté (`montant_convenu`) et part GROUP PHOEBE (`taux_commission`, `montant_commission`) — ces quatre montants sont **figés dès l'acceptation**. Plus `message` et `date_souhaitee` du client, `location_debut` / `location_duree_mois` pour une location, `agent_id` hérité du bien. Chaque ligne acceptée est une entrée du registre des transactions |
 | `parametres_immobilier` | Immobilier | Singleton : frais de visite, remise max, quota d'offres, **taux de commission** |
 | `dossiers_voyage` | Assistance | Dossiers études/visa |
+| `demandes_billet` | Assistance | Demandes de billet d'avion : trajet, dates, ventilation des voyageurs, passeport, devis (`montant_propose`) |
 | `documents_dossier_voyage` | Assistance | Documents associés |
 | `tarifs_assistance` | Assistance | Tarifs pilotables |
 | `paiements` | Transverse | Multi-module, multi-méthode (`stripe` \| `cinetpay`), remboursements. Types : `montant`, `caution`, `acompte`, `commission`, `frais` — `frais` porte les frais de visite immobiliers, non remboursables |
@@ -238,7 +240,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 
 ### 5.2 RLS et sécurité
 
-- RLS activée sur les 42 tables. Ce n'était pas le cas avant la migration 00048 :
+- RLS activée sur les 43 tables. Ce n'était pas le cas avant la migration 00048 :
   10 tables en étaient dépourvues tout en portant `GRANT ALL TO anon`, donc
   lisibles et modifiables par quiconque détenait la clé anon (`visites`,
   `agents_immobiliers`, `audit_log`, `notifications_log`, `chauffeurs`,
@@ -280,6 +282,7 @@ Champs couverts, et par quoi :
 | `tarifs_livraison`, `paliers_poids`, `tarifs_assistance`, `parametres_contact` | `requireProprietaireAvecId` (tarifs.ts) | — |
 | `parametres_immobilier.frais_visite` | `requireProprietaireAvecId` (immobilier.ts) | policy `is_proprietaire()` |
 | `demandes_immobilier.montant_offre`, `montant_contre_offre`, `montant_convenu`, `montant_commission` | `proposerContreOffre` | `garde_montants` (00047, gel en 00053, commission en 00054) |
+| `demandes_billet.montant_propose` | `proposerDevisBillet` | `garde_montant` (00055) |
 | `biens.prix` | `retirerChampsPrix` + création propriétaire (biens.ts) | `garde_prix` (00049) |
 
 Créer un bien est réservé au propriétaire : `biens.prix` est NOT NULL, il n'y a
@@ -307,6 +310,7 @@ le reste, prix en lecture seule dans le formulaire.
 | `bien-interaction-form.tsx` | Interaction bien immobilier |
 | `payer-acompte.tsx` | Paiement acompte |
 | `contre-offre-reponse.tsx` | Réponse du client à une contre-offre (accepter / refuser, refus confirmé) |
+| `billet-form.tsx` | Demande de billet d'avion : trajet, dates, voyageurs par tranche d'âge, classe, passeport |
 | `garantie-documents.tsx` | Garantie documentaire affichée sur chaque bien : pièces en règle, présentables devant notaire à la finalisation. Variantes bloc (fiche) et ligne (carte catalogue) |
 | `back-link.tsx` | Lien retour |
 
@@ -391,6 +395,7 @@ Les composants `ui/` sont basés sur **shadcn/ui** (base-nova) avec `@base-ui/re
 | `auth.ts` | Fonctions auth (vérification téléphone, OTP) |
 | `pricing.ts` | Calcul tarifs (location, livraison, assistance) |
 | `livraison.ts` | Logique livraison (tarifs zones, communes) |
+| `billets.ts` | Billets d'avion : types de trajet, classes, statuts, `validerDemandeBillet` (dates, voyageurs, validité du passeport) |
 | `immobilier.ts` | Logique immobilière : libellés, statuts, validation de contre-offre (`plancherContreOffre`, `validerContreOffre`) |
 | `assistance.ts` | Logique assistance voyage |
 | `contact.ts` | Fonctions contact |
@@ -630,7 +635,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 335 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 361 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -640,6 +645,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | Test | Ce qu'il verrouille |
 |---|---|
 | `prix-proprietaire.test.ts` | Aucune écriture de montant par un opérateur. Lit le source des server actions et le SQL de la migration 00047 : casse si une garde est relâchée ou si le trigger repasse en `security definer` |
+| `billets.test.ts` | Validation d'une demande de billet : cohérence aller simple / aller-retour, dates passées, bébés vs adultes, validité du passeport jugée **après le départ** |
 | `contre-offre.test.ts` | Bornes de la contre-offre (plancher de remise, offre client, prix affiché) et statuts du cycle |
 | `immobilier-flux.test.ts` | Cohérence du parcours immobilier : statuts d'attente tous couverts par le cron, exclusion catalogue bornée, client notifié de son créneau |
 | `role-guards.test.ts`, `permissions.test.ts` | Cloisonnement des rôles |
@@ -652,6 +658,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | **Vente de billets d'avion** dans le module Assistance (00055). Zone de demande sur `/assistance#billet`, inspirée des comparateurs de vols : aller simple / aller-retour, origine et destination (avec liste d'aéroports en aide, champ libre), dates, ventilation adultes / enfants / bébés, classe, et le passeport du voyageur principal — nom exact, numéro, expiration. Table `demandes_billet` distincte de `dossiers_voyage` : ni les mêmes champs, ni les mêmes statuts, les fondre aurait donné une table à moitié nulle selon le cas. **Pas de recherche de vol en direct** (aucune connexion GDS) : le client décrit son besoin, l'équipe cherche et répond par un devis depuis `/admin/billets`. Le vocabulaire de l'interface le dit — « Demander mon billet », pas « Rechercher ». Le chiffrage (`montant_propose`) suit la règle du projet : propriétaire seul, garde applicative **et** trigger `garde_montant`. Contraintes en base : un aller simple n'a pas de retour, un aller-retour en a un postérieur au départ. Validation applicative : la validité du passeport se juge **après la date de départ** (6 mois), pas à la date de la demande, et un bébé ne voyage pas sans adulte. |
 | 2026-07-29 | Dix agents immobiliers couvrent désormais **les 30 biens du catalogue** (détail dans TEST_ACCOUNTS.md). Deux libellés de zone y sont contre-intuitifs, et pour une raison durable : `autoAssignAgent()` retient le **premier** agent dont la zone est contenue dans la localisation, sans ordre défini. D'où `Plateau, Abidjan` plutôt que `Plateau` — « Plateau » est contenu dans « II Plateaux, Abidjan » — et aucun agent « Angré », cette chaîne étant contenue dans « Cocody Angré, Abidjan » sans qu'aucun sous-libellé ne permette de viser l'un sans l'autre. **Simuler toute nouvelle zone contre les localisations existantes avant de la créer.** |
 | 2026-07-29 | Les **agents immobiliers se créent depuis `/admin/comptes`**, comme les opérateurs et livreurs, avec leur zone de couverture — obligatoire, sinon l'agent existe sans jamais recevoir de bien (`autoAssignAgent` en dépend). Ils sont aussi désactivables. Trois agents de test créés en base (Cocody, Marcory, Yopougon) et les 14 biens dont la localisation correspond à une zone ont reçu leur agent : l'affectation automatique ne joue qu'à la création d'un bien, les 30 biens existants avaient `agent_id` à null. |
 | 2026-07-29 | **Refus explicite pour un agent immobilier sur le catalogue.** `requireStaff()` l'acceptait alors que `biens_staff_manage` et `bien_medias_staff_manage` reposent sur `is_staff()`, qui ne le couvre pas. La RLS filtrait la ligne : l'UPDATE touchait zéro ligne, sans erreur, et l'action répondait « Bien enregistré » sans rien avoir enregistré — un succès mensonger, pire qu'une erreur brute. Nouveau `requireGestionBiens()` sur les cinq écritures du catalogue, et l'entrée « Biens » masquée dans la navigation d'un agent (`masquePourAgent`) pour ne plus l'y conduire. |
