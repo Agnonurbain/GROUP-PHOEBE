@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { notifierClient } from "@/lib/notifications";
 import { getStripe } from "@/lib/payments/stripe";
+import { parsePeriodeDebut } from "@/lib/periode";
 import { DELAI_SANS_REPONSE_HEURES, DELAI_NON_PRESENTATION_HEURES, DELAI_NEGOCIATION_MS } from "@/lib/constants";
 
 type AdminClient = ReturnType<typeof getAdminClient>;
@@ -126,8 +127,8 @@ export async function expirerNonPresentations(): Promise<number> {
   let nb = 0;
   for (const d of expirees) {
     if (!d.periode) continue;
-    const debut = new Date(d.periode.replace("[", "").split(",")[0]);
-    if (new Date(seuil) <= debut) continue;
+    const debut = parsePeriodeDebut(d.periode);
+    if (!debut || new Date(seuil) <= debut) continue;
 
     if (d.vehicule_id) {
       await admin

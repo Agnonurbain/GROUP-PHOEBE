@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { parsePeriodeRange } from "@/lib/periode";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 async function embedImage(pdf: PDFDocument, url: string | null): Promise<{ img: Awaited<ReturnType<typeof pdf.embedPng>>; w: number; h: number } | null> {
@@ -108,10 +109,10 @@ export async function GET(request: NextRequest) {
   drawText(demandeId.slice(0, 8) + "…", 150, { color: gray });
   y -= 18;
 
-  if (demande.periode) {
-    const parts = demande.periode.replace(/[\[\]()]/g, "").split(",");
-    const d0 = new Date(parts[0]?.trim());
-    const d1 = new Date(parts[1]?.trim());
+  const periode = parsePeriodeRange(demande.periode);
+  if (periode) {
+    const d0 = new Date(periode.debut);
+    const d1 = new Date(periode.fin);
     const fmt = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric" });
     drawText("Période :", 50, { bold: true });
     drawText(`${fmt(d0)} → ${fmt(d1)}`, 150);

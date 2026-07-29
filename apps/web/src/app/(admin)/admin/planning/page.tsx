@@ -1,20 +1,13 @@
 import type { Metadata } from "next"
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { parsePeriodeRange } from "@/lib/periode";
 import { ScrollReveal } from "@/components/effects";
 import { CalendrierMensuel, type EvenementCalendrier } from "../vehicules/[id]/disponibilites/calendrier";
 
 export const metadata: Metadata = {
   title: "Planning — Administration",
   description: "Vue calendaire globale de tous les véhicules GROUP PHOEBE.",
-}
-
-function parsePeriodeRange(raw: string | null): { debut: string; fin: string } | null {
-  if (!raw) return null;
-  const cleaned = raw.replace(/[\[\]()]/g, "");
-  const [debut, fin] = cleaned.split(",");
-  if (!debut || !fin) return null;
-  return { debut: debut.trim(), fin: fin.trim() };
 }
 
 export default async function PlanningPage() {

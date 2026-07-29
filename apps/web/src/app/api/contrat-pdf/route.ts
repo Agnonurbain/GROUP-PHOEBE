@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { parsePeriodeRange } from "@/lib/periode";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 export async function GET(request: NextRequest) {
@@ -112,12 +113,12 @@ export async function GET(request: NextRequest) {
   line();
 
   // Period
-  if (demande.periode) {
+  const periode = parsePeriodeRange(demande.periode);
+  if (periode) {
     t("PÉRIODE DE LOCATION", 50, { bold: true, size: 12, color: gold });
     y -= 22;
-    const parts = demande.periode.replace(/[\[\]()]/g, "").split(",");
-    const d0 = new Date(parts[0]?.trim());
-    const d1 = new Date(parts[1]?.trim());
+    const d0 = new Date(periode.debut);
+    const d1 = new Date(periode.fin);
     const fmt = (d: Date) => d.toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
     t("Du :", 60, { bold: true, size: 10 });
     t(fmt(d0), 150, { size: 10 });

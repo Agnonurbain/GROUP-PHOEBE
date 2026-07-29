@@ -337,6 +337,7 @@ Les composants `ui/` sont basés sur **shadcn/ui** (base-nova) avec `@base-ui/re
 | `contact.ts` | Fonctions contact |
 | `analytics.ts` | Tracking GA4 (page_view, add_to_cart, purchase, etc.) |
 | `telephone.ts` | Formatage téléphone (Côte d'Ivoire) |
+| `periode.ts` | Parsing des ranges Postgres `tstzrange` (colonnes `periode`, typées `unknown` par `supabase gen types`) |
 | `cache.ts` | Cache simple in-memory |
 | `public-cache.ts` | Cache public avec revalidation |
 | `tarifs-cache.ts` | Cache tarifs |
@@ -542,6 +543,8 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | Fix build Vercel : les colonnes `periode` sont des `tstzrange`, que `supabase gen types` émet en `unknown`. 7 fichiers les traitaient comme `string` → échec `tsc`. Nouveau helper `lib/periode.ts` (`parsePeriodeRange`, `parsePeriodeDebut`), les 2 parsers dupliqués supprimés. Au passage : une période illisible ne provoque plus d'expiration + remboursement à tort dans `expiration-demandes.ts`. |
+| 2026-07-29 | `CRON_SECRET` ajouté en `passThroughEnv` dans `turbo.json` (lu au runtime seulement, donc hors hash de cache). Blocs Sentry et cron ajoutés à `.env.example`. |
 | 2026-07-28 | Migration shadcn/ui : tous les composants `ui/` (Button, Badge, Card, Input) passés en shadcn base-nova avec `@base-ui/react` primitives. Variants de marque conservés via CVA. Pages services redesignées (Transport, Livraison, Immobilier, Assistance, Accueil) avec les nouveaux composants. Ajout Pagination, HoverCard, Command, Textarea, Dialog, InputGroup shadcn. |
 | 2026-07-28 | Fix auth : `bg-hex-pattern` défini dans `auth.css` (panneau gauche du layout connexion/inscription). Admin.css n'était pas chargé sur les pages auth, le fond devenait transparent et le tagline sous le logo était invisible. |
 | 2026-07-28 | Fix cache : `unstable_cache` sérialise en JSON → les objets `Map` perdent leur type. Remplacés par `Record<string, string>` dans `getVehiculesWithPhotos`, `getBiensWithPhotos`, `groupVehicles`. |

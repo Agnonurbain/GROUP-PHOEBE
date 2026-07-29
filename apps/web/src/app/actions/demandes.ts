@@ -6,6 +6,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { notifierClient } from "@/lib/notifications";
 import { rembourserPaiement } from "@/lib/payments/expiration-demandes";
+import { parsePeriodeDebut } from "@/lib/periode";
 import { logAudit } from "@/lib/audit";
 
 function getAdmin() {
@@ -184,8 +185,8 @@ export async function annulerParClient(
 
   let montantCautionRetenu = 0;
 
-  if (demande.periode) {
-    const debut = new Date(demande.periode.replace("[", "").split(",")[0]);
+  const debut = parsePeriodeDebut(demande.periode);
+  if (debut) {
     const heuresAvantDepart = (debut.getTime() - Date.now()) / (1000 * 60 * 60);
     if (heuresAvantDepart < 48) {
       montantCautionRetenu = demande.caution ? Number(demande.caution) : 0;

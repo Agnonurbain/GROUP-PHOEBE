@@ -7,6 +7,7 @@ import type { Database } from "@group-phoebe/database/types";
 import { notifierClient } from "@/lib/notifications";
 import { rembourserPaiement } from "@/lib/payments/expiration-demandes";
 import { validateImageUpload } from "@/lib/upload-validation";
+import { parsePeriodeRange } from "@/lib/periode";
 
 type Carburant = "vide" | "quart" | "demi" | "trois_quarts" | "plein";
 const CARBURANTS: Carburant[] = ["vide", "quart", "demi", "trois_quarts", "plein"];
@@ -175,13 +176,11 @@ export async function enregistrerEtatLieuxRetour(
       if (zoneData) {
         const kmParcourus = kilometrage - kmDepart;
         let nbJours = 1;
-        if (demande.periode) {
-          const parts = demande.periode.replace(/[\[\]()]/g, "").split(",");
-          if (parts.length === 2) {
-            const d0 = new Date(parts[0].trim());
-            const d1 = new Date(parts[1].trim());
-            nbJours = Math.max(1, Math.ceil((d1.getTime() - d0.getTime()) / (1000 * 60 * 60 * 24)));
-          }
+        const periode = parsePeriodeRange(demande.periode);
+        if (periode) {
+          const d0 = new Date(periode.debut);
+          const d1 = new Date(periode.fin);
+          nbJours = Math.max(1, Math.ceil((d1.getTime() - d0.getTime()) / (1000 * 60 * 60 * 24)));
         }
         const kmAutorise = (zoneData as { km_inclus_par_jour: number; supplement_km_fcfa: number }).km_inclus_par_jour * nbJours;
         const kmExcedent = kmParcourus - kmAutorise;
