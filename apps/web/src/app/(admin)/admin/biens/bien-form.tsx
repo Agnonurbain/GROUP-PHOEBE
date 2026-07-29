@@ -129,6 +129,41 @@ export default function BienForm({ bien, agents = [], action, estProprietaire }:
             </div>
           </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label htmlFor="latitude" className={labelClass}>Latitude</label>
+              <input
+                id="latitude"
+                name="latitude"
+                type="number"
+                step="0.000001"
+                min="-90"
+                max="90"
+                defaultValue={bien?.latitude ?? ""}
+                placeholder="Ex. 5.359952"
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label htmlFor="longitude" className={labelClass}>Longitude</label>
+              <input
+                id="longitude"
+                name="longitude"
+                type="number"
+                step="0.000001"
+                min="-180"
+                max="180"
+                defaultValue={bien?.longitude ?? ""}
+                placeholder="Ex. -4.008256"
+                className={inputClass}
+              />
+            </div>
+            <p className="text-xs text-phoebe-anthracite/60 sm:col-span-2">
+              Facultatif. Renseignées, elles ajoutent un lien « Situer le bien sur une
+              carte » sur la fiche publique.
+            </p>
+          </div>
+
           <div>
             <label htmlFor="description" className={labelClass}>Description</label>
             <textarea

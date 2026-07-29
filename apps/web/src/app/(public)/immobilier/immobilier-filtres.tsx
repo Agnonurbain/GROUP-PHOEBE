@@ -1,20 +1,34 @@
 "use client"
 
 import { useRouter, useSearchParams } from "next/navigation"
-import { useCallback } from "react"
+import { useCallback, useEffect, useRef } from "react"
+
+const DEBOUNCE_MS = 350
 
 export default function ImmobilierFiltres() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
 
   const get = useCallback((key: string) => searchParams.get(key) ?? "", [searchParams])
 
+  // `replace` et non `push` : chaque frappe créait une entrée d'historique, si
+  // bien que revenir en arrière obligeait à défiler tout ce qui avait été tapé.
+  // Le debounce évite en plus un rendu serveur par caractère.
   const update = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString())
       if (value) params.set(key, value)
       else params.delete(key)
-      router.push(`/immobilier?${params.toString()}`)
+      // Tout changement de filtre ramène à la première page.
+      params.delete("page")
+
+      if (timer.current) clearTimeout(timer.current)
+      timer.current = setTimeout(() => {
+        router.replace(`/immobilier?${params.toString()}`, { scroll: false })
+      }, DEBOUNCE_MS)
     },
     [router, searchParams],
   )

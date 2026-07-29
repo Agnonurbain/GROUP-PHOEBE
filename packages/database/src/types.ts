@@ -863,22 +863,25 @@ export type Database = {
       }
       favoris: {
         Row: {
+          bien_id: string | null
           created_at: string
           id: string
           user_id: string
-          vehicule_id: string
+          vehicule_id: string | null
         }
         Insert: {
+          bien_id?: string | null
           created_at?: string
           id?: string
           user_id: string
-          vehicule_id: string
+          vehicule_id?: string | null
         }
         Update: {
+          bien_id?: string | null
           created_at?: string
           id?: string
           user_id?: string
-          vehicule_id?: string
+          vehicule_id?: string | null
         }
         Relationships: [
           {

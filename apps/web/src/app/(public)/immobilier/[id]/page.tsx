@@ -1,10 +1,14 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { MapPin } from "lucide-react"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getBienById, getParametresImmobilier } from "@/lib/public-cache"
+import { getFavorisBienIds } from "@/app/actions/favoris"
 import { VehicleGallery } from "@/components/public/vehicle-gallery"
 import { BienInteractionForm } from "@/components/public/bien-interaction-form"
+import { GarantieDocuments } from "@/components/public/garantie-documents"
+import { FavoriButton } from "@/components/favori-button"
 import { BackLink } from "@/components/public/back-link"
 import { Badge } from "@/components/ui"
 import { serializeJsonLd } from "@/lib/json-ld"
@@ -45,6 +49,10 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
 
   // Annoncé dans le formulaire : demander une visite déclenche un paiement.
   const paramsImmo = await getParametresImmobilier()
+  const favorisBiens = await getFavorisBienIds()
+  const estFavori = favorisBiens.includes(bien.id)
+
+  const disponible = bien.statut === "disponible"
 
   const specs: { label: string; value: string }[] = [
     { label: "Type", value: typeBienLabel(bien.type) },
@@ -107,11 +115,26 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
             <Badge variant="blue">{TRANSACTION_LABELS[bien.transaction] ?? bien.transaction}</Badge>
           </div>
 
-          <h1 className="mt-3 text-4xl font-bold text-public-text">{typeBienLabel(bien.type)} — {bien.localisation}</h1>
+          <div className="mt-3 flex items-start justify-between gap-4">
+            <h1 className="text-4xl font-bold text-public-text">{typeBienLabel(bien.type)} — {bien.localisation}</h1>
+            {isLoggedIn && <FavoriButton bienId={bien.id} isFavori={estFavori} />}
+          </div>
           <p className="mt-2 text-3xl font-bold text-accent-green">{Number(bien.prix).toLocaleString("fr-FR")} FCFA</p>
 
           {bien.description && (
             <p className="mt-6 text-sm leading-relaxed text-public-text-muted">{bien.description}</p>
+          )}
+
+          {bien.latitude != null && bien.longitude != null && (
+            <a
+              href={`https://www.openstreetmap.org/?mlat=${bien.latitude}&mlon=${bien.longitude}#map=17/${bien.latitude}/${bien.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-accent-green transition-colors hover:text-accent-green-hover"
+            >
+              <MapPin size={16} aria-hidden="true" />
+              Situer le bien sur une carte
+            </a>
           )}
 
           <div className="mt-10">
@@ -138,7 +161,29 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
                 </p>
               )}
             </div>
-            <BienInteractionForm bienId={bien.id} isLoggedIn={isLoggedIn} fraisVisite={paramsImmo.frais_visite} />
+            {disponible ? (
+              <BienInteractionForm bienId={bien.id} isLoggedIn={isLoggedIn} fraisVisite={paramsImmo.frais_visite} />
+            ) : (
+              /* Le formulaire échouait après soumission sur un bien non
+                 disponible : autant le dire avant que le client ne le remplisse. */
+              <div className="rounded-2xl border border-public-border bg-public-bg-card p-6">
+                <p className="text-sm font-semibold text-public-text">
+                  Ce bien n&apos;est plus disponible
+                </p>
+                <p className="mt-2 text-xs text-public-text-muted">
+                  Il est actuellement {statutBienLabel(bien.statut).toLowerCase()}. Parcourez
+                  les biens disponibles pour trouver une alternative.
+                </p>
+                <Link
+                  href="/immobilier"
+                  className="mt-4 inline-block text-xs font-semibold text-accent-green hover:text-accent-green-hover"
+                >
+                  Voir les biens disponibles
+                </Link>
+              </div>
+            )}
+
+            <GarantieDocuments />
           </div>
         </div>
       </div>

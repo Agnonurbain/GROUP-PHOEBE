@@ -119,6 +119,10 @@ function parseBien(
     surface_m2: num(formData.get("surface_m2")),
     description: str(formData.get("description")),
     agent_id: str(formData.get("agent_id")),
+    // Colonnes présentes depuis 00001 mais jamais écrites : le formulaire les
+    // ignorait, donc la géolocalisation des biens restait morte.
+    latitude: num(formData.get("latitude")),
+    longitude: num(formData.get("longitude")),
   };
 
   if (avecPrix) {

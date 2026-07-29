@@ -2,13 +2,20 @@ import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
-import { Badge, Button, Card, CardContent, CardFooter } from "@/components/ui"
+import {
+  Badge, Button, Card, CardContent, CardFooter,
+  Pagination, PaginationContent, PaginationItem, PaginationLink,
+  PaginationNext, PaginationPrevious,
+} from "@/components/ui"
 import ImmobilierFiltres from "./immobilier-filtres"
 import { BackLink } from "@/components/public/back-link"
 import { PageHero, SectionHead } from "@/components/public/section-head"
 import { getBiensWithPhotos } from "@/lib/public-cache"
 import { serializeJsonLd } from "@/lib/json-ld"
 import { statutBienLabel, statutBienBadgeVariant, typeBienLabel } from "@/lib/immobilier"
+import { GarantieDocuments } from "@/components/public/garantie-documents"
+import { FavoriButton } from "@/components/favori-button"
+import { getFavorisBienIds } from "@/app/actions/favoris"
 
 export const metadata: Metadata = {
   title: "Immobilier — Achat, Vente & Location",
@@ -42,7 +49,27 @@ export default async function Immobilier({
     zone_id: sp.zone,
   }
 
-  const { biens, photoMap, offreCountMap } = await getBiensWithPhotos(filters)
+  const { biens: tousLesBiens, photoMap, offreCountMap } = await getBiensWithPhotos(filters)
+  const favorisBiens = await getFavorisBienIds()
+
+  // Découpage en pages après l'exclusion des biens dont une visite est engagée :
+  // paginer en SQL donnerait des pages incomplètes, l'exclusion se faisant en
+  // aval de la requête. Le catalogue est déjà chargé et mis en cache.
+  const PAR_PAGE = 12
+  const total = tousLesBiens?.length ?? 0
+  const nbPages = Math.max(1, Math.ceil(total / PAR_PAGE))
+  const page = Math.min(Math.max(1, Number(sp.page) || 1), nbPages)
+  const biens = (tousLesBiens ?? []).slice((page - 1) * PAR_PAGE, page * PAR_PAGE)
+
+  const lienPage = (n: number) => {
+    const params = new URLSearchParams()
+    for (const [cle, valeur] of Object.entries(filters)) {
+      if (valeur) params.set(cle === "chambres_min" ? "pieces" : cle, valeur)
+    }
+    if (n > 1) params.set("page", String(n))
+    const q = params.toString()
+    return q ? `/immobilier?${q}` : "/immobilier"
+  }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
@@ -116,9 +143,10 @@ export default async function Immobilier({
           title="Biens disponibles"
           lede="Nos offres du moment, mises à jour en continu."
           aside={
-            biens && biens.length > 0 ? (
+            total > 0 ? (
               <span className="text-sm text-public-text-muted">
-                {biens.length} bien{biens.length > 1 ? "s" : ""}
+                {total} bien{total > 1 ? "s" : ""}
+                {nbPages > 1 ? ` · page ${page} sur ${nbPages}` : ""}
               </span>
             ) : null
           }
@@ -149,9 +177,12 @@ export default async function Immobilier({
                   </div>
                 )}
                 <CardContent className="px-(--card-spacing) pt-(--card-spacing)">
-                  <div className="mb-3 flex flex-wrap gap-2">
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
                     <Badge variant={statutBienBadgeVariant(b.statut)}>{statutBienLabel(b.statut)}</Badge>
                     <Badge variant="green">{typeBienLabel(b.type)}</Badge>
+                    <span className="ml-auto">
+                      <FavoriButton bienId={b.id} isFavori={favorisBiens.includes(b.id)} />
+                    </span>
                   </div>
                   <h3 className="text-lg font-semibold text-public-text">{typeBienLabel(b.type)} – {b.localisation}</h3>
                   <p className="font-display mt-1 text-3xl font-medium text-accent-green">{b.prix.toLocaleString("fr-FR")} <span className="text-base">FCFA</span></p>
@@ -164,8 +195,9 @@ export default async function Immobilier({
                     )}
                   </div>
                 </CardContent>
-                <CardFooter>
+                <CardFooter className="flex flex-wrap items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-green transition-all group-hover:gap-2">Voir le détail <ChevronRight size={12} /></span>
+                  <GarantieDocuments variante="ligne" />
                 </CardFooter>
               </Card>
               </Link>
@@ -177,6 +209,30 @@ export default async function Immobilier({
             </div>
           )}
         </div>
+
+        {nbPages > 1 && (
+          <Pagination className="mt-12">
+            <PaginationContent>
+              {page > 1 && (
+                <PaginationItem>
+                  <PaginationPrevious href={lienPage(page - 1)} />
+                </PaginationItem>
+              )}
+              {Array.from({ length: nbPages }, (_, i) => i + 1).map((n) => (
+                <PaginationItem key={n}>
+                  <PaginationLink href={lienPage(n)} isActive={n === page}>
+                    {n}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              {page < nbPages && (
+                <PaginationItem>
+                  <PaginationNext href={lienPage(page + 1)} />
+                </PaginationItem>
+              )}
+            </PaginationContent>
+          </Pagination>
+        )}
       </section>
 
       <section className="border-t border-public-border bg-public-bg-card px-6 py-24 sm:px-10">
