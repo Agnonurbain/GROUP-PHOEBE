@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import AssistanceClient from "./page-client"
 import { serializeJsonLd } from "@/lib/json-ld"
-import { getTarifsAssistance } from "@/lib/public-cache"
+import { getTarifsAssistance, getParametresBillet } from "@/lib/public-cache"
 import { createClient } from "@/lib/supabase/server"
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
 }
 
 export default async function AssistancePage() {
-  const tarifs = await getTarifsAssistance()
+  const [tarifs, paramsBillet] = await Promise.all([getTarifsAssistance(), getParametresBillet()])
 
   // La demande de billet exige les informations de passeport : elle n'a de sens
   // que pour un utilisateur identifié.
@@ -86,7 +86,7 @@ export default async function AssistancePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
-      <AssistanceClient tarifs={tarifs} isLoggedIn={isLoggedIn} />
+      <AssistanceClient tarifs={tarifs} isLoggedIn={isLoggedIn} paramsBillet={paramsBillet} />
     </>
   )
 }

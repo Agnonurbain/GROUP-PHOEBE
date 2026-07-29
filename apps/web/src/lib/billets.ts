@@ -68,10 +68,38 @@ export const STATUTS_BILLET_OUVERTS = [
   "devis_envoye",
 ] as const
 
-// Un passeport doit rester valable un certain temps après le départ — la règle la
-// plus répandue est six mois. En deçà, l'embarquement peut être refusé : autant
-// le dire à la saisie plutôt qu'à l'aéroport.
-export const MOIS_VALIDITE_PASSEPORT_REQUIS = 6
+// ─── Paramètres pilotés depuis /admin/tarifs (table parametres_billet) ───────
+// Ces valeurs étaient figées dans le code. Elles restent ici comme REPLI : la
+// source de vérité est la base, lue par getParametresBillet().
+
+export type ParametresBillet = {
+  /** Frais de dossier GROUP PHOEBE, par billet, en sus du prix du vol. */
+  frais_service: number
+  /**
+   * Validité résiduelle du passeport exigée APRÈS le départ. Six mois est la
+   * règle la plus répandue, mais elle varie selon la destination — d'où le
+   * paramètre plutôt qu'une constante.
+   */
+  mois_validite_passeport: number
+  /** Au-delà, la réservation passe par un tarif groupe négocié à part. */
+  max_voyageurs: number
+  /** Délai de réponse annoncé au client : un engagement, donc pilotable. */
+  delai_reponse_heures: number
+}
+
+export const PARAMETRES_BILLET_DEFAUT: ParametresBillet = {
+  frais_service: 15000,
+  mois_validite_passeport: 6,
+  max_voyageurs: 9,
+  delai_reponse_heures: 48,
+}
+
+/** Délai de réponse en langage courant : « sous 48 h », « sous 3 jours ». */
+export function libelleDelai(heures: number): string {
+  if (heures < 24) return `sous ${heures} h`
+  const jours = Math.round(heures / 24)
+  return jours === 1 ? "sous 24 h" : `sous ${jours} jours`
+}
 
 export type VoyageursParTranche = {
   adultes: number
@@ -112,6 +140,7 @@ export type DemandeBilletSaisie = {
  */
 export function validerDemandeBillet(
   saisie: DemandeBilletSaisie,
+  params: ParametresBillet = PARAMETRES_BILLET_DEFAUT,
   aujourdHui: Date = new Date()
 ): { error: string } | { ok: true } {
   const {
@@ -159,8 +188,10 @@ export function validerDemandeBillet(
   if (bebes > adultes) {
     return { error: "Chaque bébé doit voyager avec un adulte : il ne peut pas y avoir plus de bébés que d'adultes." }
   }
-  if (totalVoyageurs(voyageurs) > 9) {
-    return { error: "Au-delà de 9 voyageurs, contactez-nous directement : la réservation passe par un tarif groupe." }
+  if (totalVoyageurs(voyageurs) > params.max_voyageurs) {
+    return {
+      error: `Au-delà de ${params.max_voyageurs} voyageurs, contactez-nous directement : la réservation passe par un tarif groupe.`,
+    }
   }
 
   if (!passeportNom.trim()) return { error: "Le nom figurant sur le passeport est obligatoire." }
@@ -171,11 +202,13 @@ export function validerDemandeBillet(
   if (expiration <= debutJournee) return { error: "Ce passeport est expiré." }
 
   // La validité se juge à la date du voyage, pas à celle de la demande.
-  const minimum = new Date(depart_)
-  minimum.setMonth(minimum.getMonth() + MOIS_VALIDITE_PASSEPORT_REQUIS)
-  if (expiration < minimum) {
-    return {
-      error: `Votre passeport doit rester valable au moins ${MOIS_VALIDITE_PASSEPORT_REQUIS} mois après le départ. Renouvelez-le avant de réserver.`,
+  if (params.mois_validite_passeport > 0) {
+    const minimum = new Date(depart_)
+    minimum.setMonth(minimum.getMonth() + params.mois_validite_passeport)
+    if (expiration < minimum) {
+      return {
+        error: `Votre passeport doit rester valable au moins ${params.mois_validite_passeport} mois après le départ. Renouvelez-le avant de réserver.`,
+      }
     }
   }
 

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
 import { PageHero, SectionHead } from "@/components/public/section-head"
 import { BilletForm } from "@/components/public/billet-form"
+import type { ParametresBillet } from "@/lib/billets"
 import {
   PAYS_LIST,
   appliquerTarifsListe,
@@ -46,7 +47,15 @@ function ChoixBloc({
   )
 }
 
-export default function Assistance({ tarifs, isLoggedIn }: { tarifs: TarifsAssistance; isLoggedIn: boolean }) {
+export default function Assistance({
+  tarifs,
+  isLoggedIn,
+  paramsBillet,
+}: {
+  tarifs: TarifsAssistance
+  isLoggedIn: boolean
+  paramsBillet: ParametresBillet
+}) {
   const pays = appliquerTarifsListe(PAYS_LIST, tarifs)
   const etudesCountries = pays.filter((d) => d.categorie === "etudes")
   const voyageCountries = pays.filter((d) => d.categorie === "voyage")
@@ -97,7 +106,7 @@ export default function Assistance({ tarifs, isLoggedIn }: { tarifs: TarifsAssis
             className="border-b-0 pb-0"
           />
           <div className="mt-10">
-            <BilletForm isLoggedIn={isLoggedIn} />
+            <BilletForm isLoggedIn={isLoggedIn} params={paramsBillet} />
           </div>
         </div>
       </section>

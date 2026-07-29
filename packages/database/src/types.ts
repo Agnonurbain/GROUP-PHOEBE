@@ -432,6 +432,7 @@ export type Database = {
           date_retour: string | null
           depart: string
           destination: string
+          frais_service: number | null
           id: string
           message: string | null
           montant_propose: number | null
@@ -454,6 +455,7 @@ export type Database = {
           date_retour?: string | null
           depart: string
           destination: string
+          frais_service?: number | null
           id?: string
           message?: string | null
           montant_propose?: number | null
@@ -476,6 +478,7 @@ export type Database = {
           date_retour?: string | null
           depart?: string
           destination?: string
+          frais_service?: number | null
           id?: string
           message?: string | null
           montant_propose?: number | null
@@ -1258,6 +1261,33 @@ export type Database = {
           client_id?: string
           created_at?: string
           items?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      parametres_billet: {
+        Row: {
+          delai_reponse_heures: number
+          frais_service: number
+          id: number
+          max_voyageurs: number
+          mois_validite_passeport: number
+          updated_at: string
+        }
+        Insert: {
+          delai_reponse_heures?: number
+          frais_service?: number
+          id?: number
+          max_voyageurs?: number
+          mois_validite_passeport?: number
+          updated_at?: string
+        }
+        Update: {
+          delai_reponse_heures?: number
+          frais_service?: number
+          id?: number
+          max_voyageurs?: number
+          mois_validite_passeport?: number
           updated_at?: string
         }
         Relationships: []

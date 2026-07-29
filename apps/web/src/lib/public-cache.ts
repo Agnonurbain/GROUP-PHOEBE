@@ -11,6 +11,7 @@ import {
 import type { TarifsAssistance } from "@/lib/assistance";
 import { CONTACT_VIDE, type ParametresContact } from "@/lib/contact";
 import { PARAMETRES_IMMO_DEFAUT, type ParametresImmobilier } from "@/lib/immobilier";
+import { PARAMETRES_BILLET_DEFAUT, type ParametresBillet } from "@/lib/billets";
 import { makeGroupKey } from "@/lib/vehicle-group";
 
 // Transport catalogue
@@ -437,6 +438,35 @@ export const getParametresImmobilier = unstable_cache(
   },
   ["parametres_immobilier"],
   { revalidate: 3600, tags: ["parametres_immobilier"] }
+);
+
+// Paramétrage des billets d'avion (frais de service, règles de validation).
+export const getParametresBillet = unstable_cache(
+  async (): Promise<ParametresBillet> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("parametres_billet")
+      .select("frais_service, mois_validite_passeport, max_voyageurs, delai_reponse_heures")
+      .maybeSingle();
+
+    if (!data) return PARAMETRES_BILLET_DEFAUT;
+
+    // Repli seulement sur une valeur absente ou non numérique : 0 est légitime
+    // pour les frais de service comme pour la validité exigée.
+    const ou = (valeur: unknown, defaut: number) => {
+      const n = Number(valeur);
+      return valeur === null || valeur === undefined || !Number.isFinite(n) ? defaut : n;
+    };
+
+    return {
+      frais_service: ou(data.frais_service, PARAMETRES_BILLET_DEFAUT.frais_service),
+      mois_validite_passeport: ou(data.mois_validite_passeport, PARAMETRES_BILLET_DEFAUT.mois_validite_passeport),
+      max_voyageurs: ou(data.max_voyageurs, PARAMETRES_BILLET_DEFAUT.max_voyageurs),
+      delai_reponse_heures: ou(data.delai_reponse_heures, PARAMETRES_BILLET_DEFAUT.delai_reponse_heures),
+    };
+  },
+  ["parametres_billet"],
+  { revalidate: 3600, tags: ["parametres_billet"] }
 );
 
 // Chiffres affichés sur l'accueil (bande de preuve).

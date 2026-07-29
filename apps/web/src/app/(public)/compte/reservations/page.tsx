@@ -100,7 +100,7 @@ export default async function CompteReservations({
       .order("created_at", { ascending: false }),
     supabase
       .from("demandes_billet")
-      .select("id, created_at, statut, type_trajet, depart, destination, date_depart, date_retour, nb_adultes, nb_enfants, nb_bebes, montant_propose")
+      .select("id, created_at, statut, type_trajet, depart, destination, date_depart, date_retour, nb_adultes, nb_enfants, nb_bebes, montant_propose, frais_service")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
   ])
@@ -243,9 +243,10 @@ export default async function CompteReservations({
     period: `${TYPE_TRAJET_LABELS[d.type_trajet] ?? d.type_trajet} · ${new Date(d.date_depart).toLocaleDateString("fr-FR")}${
       d.date_retour ? ` → ${new Date(d.date_retour).toLocaleDateString("fr-FR")}` : ""
     } · ${libelleVoyageurs({ adultes: d.nb_adultes, enfants: d.nb_enfants, bebes: d.nb_bebes })}`,
-    // Le devis prime : c'est le prix que l'équipe a proposé.
+    // Le devis prime, et c'est le TOTAL qui est annoncé : prix du vol plus les
+    // frais de service figés à la demande.
     price: d.montant_propose != null
-      ? `${Number(d.montant_propose).toLocaleString("fr-FR")} FCFA`
+      ? `${(Number(d.montant_propose) + Number(d.frais_service ?? 0)).toLocaleString("fr-FR")} FCFA`
       : "Devis en cours",
     status: d.statut,
     photoUrl: null,

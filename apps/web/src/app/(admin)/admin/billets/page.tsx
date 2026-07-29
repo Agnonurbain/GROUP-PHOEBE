@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { createClient } from "@/lib/supabase/server"
+import { getParametresBillet } from "@/lib/public-cache"
 import { BilletActions } from "./billet-actions"
 import {
   STATUT_BILLET_LABELS,
@@ -10,7 +11,6 @@ import {
   TYPE_TRAJET_LABELS,
   CLASSE_LABELS,
   libelleVoyageurs,
-  MOIS_VALIDITE_PASSEPORT_REQUIS,
 } from "@/lib/billets"
 
 export const metadata: Metadata = {
@@ -36,6 +36,9 @@ export default async function BilletsAdminPage() {
     ? await supabase.from("users").select("role").eq("id", claimsData.claims.sub).single()
     : { data: null }
   const estProprietaire = profile?.role === "proprietaire"
+
+  // Même règle que celle appliquée au client : la validité exigée est pilotée.
+  const params = await getParametresBillet()
 
   const { data: demandes } = await db
     .from("demandes_billet")
@@ -79,7 +82,7 @@ export default async function BilletsAdminPage() {
             // Un passeport doit rester valable après le départ : le signaler ici
             // évite un billet émis sur un document qui ne passera pas.
             const limite = new Date(d.date_depart)
-            limite.setMonth(limite.getMonth() + MOIS_VALIDITE_PASSEPORT_REQUIS)
+            limite.setMonth(limite.getMonth() + params.mois_validite_passeport)
             const passeportJuste = new Date(d.passeport_expiration) < limite
 
             return (
@@ -130,9 +133,17 @@ export default async function BilletsAdminPage() {
 
                   <div className="text-right">
                     {d.montant_propose != null && (
-                      <p className="text-lg font-bold text-phoebe-green-deep">
-                        {Number(d.montant_propose).toLocaleString("fr-FR")} FCFA
-                      </p>
+                      <>
+                        <p className="text-lg font-bold text-phoebe-green-deep">
+                          {(Number(d.montant_propose) + Number(d.frais_service ?? 0)).toLocaleString("fr-FR")} FCFA
+                        </p>
+                        <p className="text-xs text-phoebe-anthracite/70">
+                          vol {Number(d.montant_propose).toLocaleString("fr-FR")}
+                          {d.frais_service != null && Number(d.frais_service) > 0 && (
+                            <> + frais {Number(d.frais_service).toLocaleString("fr-FR")}</>
+                          )}
+                        </p>
+                      </>
                     )}
                     <p className="text-xs text-phoebe-anthracite/70">
                       Demandé le {dateFr(d.created_at)}

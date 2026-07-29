@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -13,6 +13,7 @@ import {
   libelleVoyageurs,
   TYPE_TRAJET_LABELS,
 } from "@/lib/billets";
+import { getParametresBillet } from "@/lib/public-cache";
 import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouvelleDemandeBillet } from "./notifications-admin";
 import { logAudit } from "@/lib/audit";
@@ -100,7 +101,10 @@ export async function creerDemandeBillet(
     passeportExpiration: ((formData.get("passeport_expiration") as string) || "").trim(),
   };
 
-  const validation = validerDemandeBillet(saisie);
+  // Règles pilotées depuis /admin/tarifs : validité de passeport exigée et
+  // plafond de voyageurs. Même source que ce que le formulaire annonce.
+  const params = await getParametresBillet();
+  const validation = validerDemandeBillet(saisie, params);
   if ("error" in validation) return { error: validation.error };
 
   const admin = getAdmin();
@@ -121,6 +125,9 @@ export async function creerDemandeBillet(
       passeport_numero: saisie.passeportNumero,
       passeport_expiration: saisie.passeportExpiration,
       message: ((formData.get("message") as string) || "").trim() || null,
+      // Frais figés au barème du jour : le paramètre peut changer, pas ce qui a
+      // été annoncé au client au moment de sa demande.
+      frais_service: params.frais_service,
       statut: "soumise",
     })
     .select("id")
@@ -210,7 +217,7 @@ export async function proposerDevisBillet(
   const admin = getAdmin();
   const { data: demande } = await admin
     .from("demandes_billet")
-    .select("client_id, statut, depart, destination, montant_propose")
+    .select("client_id, statut, depart, destination, montant_propose, frais_service")
     .eq("id", demandeId)
     .single();
   if (!demande) return { error: "Demande introuvable." };
@@ -238,10 +245,17 @@ export async function proposerDevisBillet(
     newValues: { montant_propose: montant, statut: "devis_envoye" },
   });
 
+  // Le client doit lire le total qu'il aura à régler, pas le seul prix du vol.
+  const frais = Number(demande.frais_service ?? 0);
+  const total = montant + frais;
   await notifierClient(
     demande.client_id,
     "Votre devis de billet est prêt",
-    `${demande.depart} → ${demande.destination} : ${montant.toLocaleString("fr-FR")} FCFA. Retrouvez le détail dans « Mes réservations ».`
+    `${demande.depart} → ${demande.destination} : ${total.toLocaleString("fr-FR")} FCFA` +
+      (frais > 0
+        ? ` (vol ${montant.toLocaleString("fr-FR")} + frais de service ${frais.toLocaleString("fr-FR")})`
+        : "") +
+      `. Retrouvez le détail dans « Mes réservations ».`
   );
 
   revalidatePath("/admin/billets");
@@ -271,5 +285,55 @@ export async function affecterConseillerBillet(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/billets");
+  return { success: true };
+}
+
+// ─── Paramètres (propriétaire seul) ──────────────────────────────────────────
+
+export async function modifierParametresBillet(
+  _prev: BilletState,
+  formData: FormData
+): Promise<BilletState> {
+  // frais_service est un montant facturé au client : propriétaire uniquement.
+  try {
+    await requireProprietaireAvecId();
+  } catch {
+    return { error: "Seul le propriétaire peut modifier ces paramètres." };
+  }
+
+  const nb = (cle: string) => Number(formData.get(cle));
+  const frais_service = nb("frais_service");
+  const mois_validite_passeport = nb("mois_validite_passeport");
+  const max_voyageurs = nb("max_voyageurs");
+  const delai_reponse_heures = nb("delai_reponse_heures");
+
+  // 0 est légitime pour les frais comme pour la validité exigée : on teste la
+  // finitude et les bornes, jamais la vérité de la valeur.
+  if (!Number.isFinite(frais_service) || frais_service < 0) {
+    return { error: "Les frais de service doivent être positifs ou nuls." };
+  }
+  if (!Number.isInteger(mois_validite_passeport) || mois_validite_passeport < 0 || mois_validite_passeport > 24) {
+    return { error: "La validité de passeport exigée doit être entre 0 et 24 mois." };
+  }
+  if (!Number.isInteger(max_voyageurs) || max_voyageurs < 1 || max_voyageurs > 50) {
+    return { error: "Le nombre maximum de voyageurs doit être entre 1 et 50." };
+  }
+  if (!Number.isInteger(delai_reponse_heures) || delai_reponse_heures < 1 || delai_reponse_heures > 720) {
+    return { error: "Le délai de réponse doit être entre 1 et 720 heures." };
+  }
+
+  const admin = getAdmin();
+  const { error } = await admin.from("parametres_billet").upsert({
+    id: 1,
+    frais_service,
+    mois_validite_passeport,
+    max_voyageurs,
+    delai_reponse_heures,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) return { error: error.message };
+
+  (revalidateTag as (tag: string) => void)("parametres_billet");
+  revalidatePath("/assistance");
   return { success: true };
 }

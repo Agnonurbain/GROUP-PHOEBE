@@ -68,7 +68,7 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 55 migrations SQL
+├── supabase/migrations/         # 56 migrations SQL
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -156,7 +156,7 @@ group-phoebe/
 | `/admin/comptes` | Comptes internes — propriétaire seul : opérateur, livreur, agent immobilier (avec sa zone de couverture) |
 | `/admin/verifications` | Vérifications documents |
 | `/admin/verifications/historique` | Historique vérifications |
-| `/admin/tarifs` | Tarifs et zones |
+| `/admin/tarifs` | Tarifs et zones — onglets Coefficients, Cartographie, Prix & Communes, Livraison, Assistance, **Billets d'avion**, Contact |
 | `/admin/planning` | Planning |
 | `/admin/audit` | Journal d'audit |
 | `/admin/remboursements` | Gestion remboursements |
@@ -185,11 +185,11 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-55 migrations Supabase (00001 → 00055).
+56 migrations Supabase (00001 → 00056).
 
 ### 5.1 Tables
 
-43 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
+44 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
 qui est généré depuis la base — c'est la référence en cas de doute.
 
 | Table | Module | Description |
@@ -225,7 +225,8 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `demandes_immobilier` | Immobilier | Demandes info/visite/offre. Négociation (`montant_offre`, `montant_contre_offre`), prix arrêté (`montant_convenu`) et part GROUP PHOEBE (`taux_commission`, `montant_commission`) — ces quatre montants sont **figés dès l'acceptation**. Plus `message` et `date_souhaitee` du client, `location_debut` / `location_duree_mois` pour une location, `agent_id` hérité du bien. Chaque ligne acceptée est une entrée du registre des transactions |
 | `parametres_immobilier` | Immobilier | Singleton : frais de visite, remise max, quota d'offres, **taux de commission** |
 | `dossiers_voyage` | Assistance | Dossiers études/visa |
-| `demandes_billet` | Assistance | Demandes de billet d'avion : trajet, dates, ventilation des voyageurs, passeport, devis (`montant_propose`) |
+| `demandes_billet` | Assistance | Demandes de billet d'avion : trajet, dates, ventilation des voyageurs, passeport, devis (`montant_propose`) et frais de service figés (`frais_service`) |
+| `parametres_billet` | Assistance | Singleton : frais de service, validité de passeport exigée, plafond de voyageurs, délai de réponse annoncé |
 | `documents_dossier_voyage` | Assistance | Documents associés |
 | `tarifs_assistance` | Assistance | Tarifs pilotables |
 | `paiements` | Transverse | Multi-module, multi-méthode (`stripe` \| `cinetpay`), remboursements. Types : `montant`, `caution`, `acompte`, `commission`, `frais` — `frais` porte les frais de visite immobiliers, non remboursables |
@@ -240,7 +241,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 
 ### 5.2 RLS et sécurité
 
-- RLS activée sur les 43 tables. Ce n'était pas le cas avant la migration 00048 :
+- RLS activée sur les 44 tables. Ce n'était pas le cas avant la migration 00048 :
   10 tables en étaient dépourvues tout en portant `GRANT ALL TO anon`, donc
   lisibles et modifiables par quiconque détenait la clé anon (`visites`,
   `agents_immobiliers`, `audit_log`, `notifications_log`, `chauffeurs`,
@@ -282,7 +283,8 @@ Champs couverts, et par quoi :
 | `tarifs_livraison`, `paliers_poids`, `tarifs_assistance`, `parametres_contact` | `requireProprietaireAvecId` (tarifs.ts) | — |
 | `parametres_immobilier.frais_visite` | `requireProprietaireAvecId` (immobilier.ts) | policy `is_proprietaire()` |
 | `demandes_immobilier.montant_offre`, `montant_contre_offre`, `montant_convenu`, `montant_commission` | `proposerContreOffre` | `garde_montants` (00047, gel en 00053, commission en 00054) |
-| `demandes_billet.montant_propose` | `proposerDevisBillet` | `garde_montant` (00055) |
+| `demandes_billet.montant_propose`, `frais_service` | `proposerDevisBillet` | `garde_montant` (00055, frais en 00056) |
+| `parametres_billet.frais_service` | `modifierParametresBillet` | policy `is_proprietaire()` |
 | `biens.prix` | `retirerChampsPrix` + création propriétaire (biens.ts) | `garde_prix` (00049) |
 
 Créer un bien est réservé au propriétaire : `biens.prix` est NOT NULL, il n'y a
@@ -635,7 +637,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 361 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 367 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -658,6 +660,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-07-29 | **Les paramètres des billets deviennent pilotables** (00056), onglet « Billets d'avion » dans `/admin/tarifs`, propriétaire seul. Étaient figés dans le code : les **frais de service** par billet, la **validité de passeport exigée** après le départ, le **plafond de voyageurs** et le **délai de réponse** annoncé au client. `validerDemandeBillet` prend désormais ces paramètres au lieu de constantes — les tests vérifient qu'un plafond ou une validité modifiés changent réellement le verdict. Les frais sont **figés sur la demande** à sa création, comme la commission immobilière : le barème peut évoluer sans réécrire ce qui a été annoncé au client. Le devis affiche le total (vol + frais) côté client comme côté admin, et la notification l'annonce détaillé. Même précaution que pour `taux_max_reduction` sur la lecture en cache : le repli ne joue que sur une valeur absente ou non numérique, jamais sur 0 — 0 est légitime pour les frais comme pour la validité exigée. |
 | 2026-07-29 | **Vente de billets d'avion** dans le module Assistance (00055). Zone de demande sur `/assistance#billet`, inspirée des comparateurs de vols : aller simple / aller-retour, origine et destination (avec liste d'aéroports en aide, champ libre), dates, ventilation adultes / enfants / bébés, classe, et le passeport du voyageur principal — nom exact, numéro, expiration. Table `demandes_billet` distincte de `dossiers_voyage` : ni les mêmes champs, ni les mêmes statuts, les fondre aurait donné une table à moitié nulle selon le cas. **Pas de recherche de vol en direct** (aucune connexion GDS) : le client décrit son besoin, l'équipe cherche et répond par un devis depuis `/admin/billets`. Le vocabulaire de l'interface le dit — « Demander mon billet », pas « Rechercher ». Le chiffrage (`montant_propose`) suit la règle du projet : propriétaire seul, garde applicative **et** trigger `garde_montant`. Contraintes en base : un aller simple n'a pas de retour, un aller-retour en a un postérieur au départ. Validation applicative : la validité du passeport se juge **après la date de départ** (6 mois), pas à la date de la demande, et un bébé ne voyage pas sans adulte. |
 | 2026-07-29 | Dix agents immobiliers couvrent désormais **les 30 biens du catalogue** (détail dans TEST_ACCOUNTS.md). Deux libellés de zone y sont contre-intuitifs, et pour une raison durable : `autoAssignAgent()` retient le **premier** agent dont la zone est contenue dans la localisation, sans ordre défini. D'où `Plateau, Abidjan` plutôt que `Plateau` — « Plateau » est contenu dans « II Plateaux, Abidjan » — et aucun agent « Angré », cette chaîne étant contenue dans « Cocody Angré, Abidjan » sans qu'aucun sous-libellé ne permette de viser l'un sans l'autre. **Simuler toute nouvelle zone contre les localisations existantes avant de la créer.** |
 | 2026-07-29 | Les **agents immobiliers se créent depuis `/admin/comptes`**, comme les opérateurs et livreurs, avec leur zone de couverture — obligatoire, sinon l'agent existe sans jamais recevoir de bien (`autoAssignAgent` en dépend). Ils sont aussi désactivables. Trois agents de test créés en base (Cocody, Marcory, Yopougon) et les 14 biens dont la localisation correspond à une zone ont reçu leur agent : l'affectation automatique ne joue qu'à la création d'un bien, les 30 biens existants avaient `agent_id` à null. |

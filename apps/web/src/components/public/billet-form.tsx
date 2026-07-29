@@ -10,7 +10,8 @@ import {
   TYPES_TRAJET,
   TYPE_TRAJET_LABELS,
   libelleVoyageurs,
-  MOIS_VALIDITE_PASSEPORT_REQUIS,
+  libelleDelai,
+  type ParametresBillet,
 } from "@/lib/billets"
 
 const champ =
@@ -28,7 +29,14 @@ const AEROPORTS = [
 
 const aujourdHui = () => new Date().toISOString().slice(0, 10)
 
-export function BilletForm({ isLoggedIn }: { isLoggedIn: boolean }) {
+export function BilletForm({
+  isLoggedIn,
+  params,
+}: {
+  isLoggedIn: boolean
+  /** Frais et règles pilotés par le propriétaire depuis /admin/tarifs. */
+  params: ParametresBillet
+}) {
   const [state, action, pending] = useActionState<BilletState, FormData>(creerDemandeBillet, {})
   const [typeTrajet, setTypeTrajet] = useState<string>("aller_retour")
   const [voyageurs, setVoyageurs] = useState({ adultes: 1, enfants: 0, bebes: 0 })
@@ -192,7 +200,8 @@ export function BilletForm({ isLoggedIn }: { isLoggedIn: boolean }) {
                 </div>
               ))}
               <p className="mt-2 border-t border-public-border pt-2 text-xs text-public-text-faint">
-                Un bébé voyage sur les genoux d&apos;un adulte.
+                Un bébé voyage sur les genoux d&apos;un adulte. Au-delà de{" "}
+                {params.max_voyageurs} voyageurs, contactez-nous pour un tarif groupe.
               </p>
             </div>
           )}
@@ -206,8 +215,10 @@ export function BilletForm({ isLoggedIn }: { isLoggedIn: boolean }) {
         </legend>
         <p className="mt-1 text-xs text-public-text-muted">
           Le nom doit être exactement celui du passeport : une différence rend le billet
-          inutilisable à l&apos;embarquement. Il doit rester valable au moins{" "}
-          {MOIS_VALIDITE_PASSEPORT_REQUIS} mois après le départ.
+          inutilisable à l&apos;embarquement.
+          {params.mois_validite_passeport > 0 && (
+            <> Il doit rester valable au moins {params.mois_validite_passeport} mois après le départ.</>
+          )}
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div>
@@ -254,9 +265,21 @@ export function BilletForm({ isLoggedIn }: { isLoggedIn: boolean }) {
 
       {/* Dire ce que fait le bouton : il n'y a pas de recherche en direct, et
           promettre des résultats immédiats décevrait à coup sûr. */}
+      {params.frais_service > 0 && (
+        <div className="rounded-xl border border-accent-blue/25 bg-accent-blue/5 p-4">
+          <p className="text-sm font-semibold text-public-text">
+            Frais de service : {params.frais_service.toLocaleString("fr-FR")} FCFA par billet
+          </p>
+          <p className="mt-1 text-xs text-public-text-muted">
+            Ils s&apos;ajoutent au prix du vol et couvrent la recherche, la réservation et
+            l&apos;émission. Le devis vous donnera le total.
+          </p>
+        </div>
+      )}
+
       <p className="text-xs text-public-text-faint">
-        Nous recherchons le meilleur vol pour votre trajet et vous envoyons un devis.
-        Aucun paiement à cette étape.
+        Nous recherchons le meilleur vol pour votre trajet et vous répondons{" "}
+        {libelleDelai(params.delai_reponse_heures)} avec un devis. Aucun paiement à cette étape.
       </p>
     </form>
   )
