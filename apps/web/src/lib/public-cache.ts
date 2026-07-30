@@ -446,7 +446,7 @@ export const getParametresBillet = unstable_cache(
     const supabase = createPublicClient();
     const { data } = await supabase
       .from("parametres_billet")
-      .select("frais_service, mois_validite_passeport, max_voyageurs, delai_reponse_heures")
+      .select("frais_service, mois_validite_passeport, max_voyageurs, delai_reponse_heures, validite_devis_heures")
       .maybeSingle();
 
     if (!data) return PARAMETRES_BILLET_DEFAUT;
@@ -463,6 +463,7 @@ export const getParametresBillet = unstable_cache(
       mois_validite_passeport: ou(data.mois_validite_passeport, PARAMETRES_BILLET_DEFAUT.mois_validite_passeport),
       max_voyageurs: ou(data.max_voyageurs, PARAMETRES_BILLET_DEFAUT.max_voyageurs),
       delai_reponse_heures: ou(data.delai_reponse_heures, PARAMETRES_BILLET_DEFAUT.delai_reponse_heures),
+      validite_devis_heures: ou(data.validite_devis_heures, PARAMETRES_BILLET_DEFAUT.validite_devis_heures),
     };
   },
   ["parametres_billet"],

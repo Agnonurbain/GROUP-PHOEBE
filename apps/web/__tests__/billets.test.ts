@@ -182,6 +182,10 @@ describe("statuts", () => {
   it("une demande émise ou annulée n'est plus ouverte", () => {
     for (const s of ["emise", "annulee"]) expect(STATUTS_BILLET_OUVERTS).not.toContain(s);
   });
+
+  it("payée est une demande ouverte (en attente d'émission)", () => {
+    expect(STATUTS_BILLET_OUVERTS).toContain("payee");
+  });
 });
 
 describe("gardes du chiffrage", () => {
@@ -257,5 +261,18 @@ describe("les règles sont pilotées, pas figées", () => {
     const debut = source.indexOf("export async function modifierParametresBillet");
     const corps = source.slice(debut);
     expect(corps).toContain("requireProprietaireAvecId()");
+  });
+
+  it("payer un devis exige le statut devis_envoye", () => {
+    const source = src("app/actions/billets.ts");
+    const debut = source.indexOf("export async function payerDevisBillet");
+    const corps = source.slice(debut, source.indexOf("\nexport ", debut + 1));
+    expect(corps).toContain('demande.statut !== "devis_envoye"');
+  });
+
+  it("payer un devis vérifie l'expiration", () => {
+    const source = src("app/actions/billets.ts");
+    expect(source).toContain("devis_valable_jusqu_a");
+    expect(source).toContain("Ce devis a expiré");
   });
 });

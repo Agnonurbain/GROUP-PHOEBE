@@ -95,7 +95,7 @@ export function BilletActions({
         </form>
       </div>
 
-      {estProprietaire && ouverte && (
+      {estProprietaire && ouverte && statut !== "payee" && (
         <form action={devisAction} className="mt-4 flex flex-wrap items-end gap-2 rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4">
           <input type="hidden" name="demande_id" value={demandeId} />
           <div>

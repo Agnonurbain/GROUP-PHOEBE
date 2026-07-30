@@ -160,6 +160,21 @@ async function confirmerUnPaiement(
     }
   }
 
+  // Billet : le paiement est confirmé → la demande passe en « payée » en
+  // attente d'émission du billet par l'équipe.
+  if (paiement.reference_table === "demandes_billet") {
+    const { error } = await admin
+      .from("demandes_billet")
+      .update({ statut: "payee", updated_at: new Date().toISOString() })
+      .eq("id", paiement.reference_id)
+      .eq("statut", "devis_envoye");
+
+    if (error) {
+      console.error("Erreur mise à jour demande_billet:", error.message);
+      return { ok: false, raison: error.message };
+    }
+  }
+
   // Livraison (expeditions) : aucun changement de statut à la capture — l'état
   // de paiement est porté par la table paiements ; la gestion du cycle de vie
   // (prise_en_charge → en_transit → livree) se fait côté admin.
@@ -294,6 +309,14 @@ export async function annulerCommande(
           .eq("id", demande.bien_id)
           .eq("statut", "reserve");
       }
+    }
+
+    if (paiement.reference_table === "demandes_billet") {
+      await admin
+        .from("demandes_billet")
+        .update({ statut: "annulee", updated_at: new Date().toISOString() })
+        .eq("id", paiement.reference_id)
+        .eq("statut", "devis_envoye");
     }
 
     // Livraison : le paiement échoué reste tracé dans paiements ; l'expédition

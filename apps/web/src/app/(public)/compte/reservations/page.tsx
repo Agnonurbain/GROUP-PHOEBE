@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server"
 import { Card } from "@/components/ui"
 import { annulerParClient } from "@/app/actions/demandes"
 import { PayerAcompte } from "@/components/public/payer-acompte"
+import { PayerBillet } from "@/components/public/payer-billet"
 import { ContreOffreReponse } from "@/components/public/contre-offre-reponse"
 import { formaterCreneau } from "@/lib/immobilier"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
@@ -100,7 +101,7 @@ export default async function CompteReservations({
       .order("created_at", { ascending: false }),
     supabase
       .from("demandes_billet")
-      .select("id, created_at, statut, type_trajet, depart, destination, date_depart, date_retour, nb_adultes, nb_enfants, nb_bebes, montant_propose, frais_service")
+      .select("id, created_at, statut, type_trajet, depart, destination, date_depart, date_retour, nb_adultes, nb_enfants, nb_bebes, montant_propose, frais_service, devis_valable_jusqu_a")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
   ])
@@ -234,6 +235,7 @@ export default async function CompteReservations({
     contreOffre: null,
   })) ?? []
 
+  const maintenant = new Date()
   const billetReservations: ReservationItem[] = billetsRes.data?.map((d) => ({
     id: d.id,
     created_at: d.created_at,
@@ -250,7 +252,11 @@ export default async function CompteReservations({
       : "Devis en cours",
     status: d.statut,
     photoUrl: null,
-    aPayer: null,
+    aPayer:
+      d.statut === "devis_envoye" && d.montant_propose != null
+        && d.devis_valable_jusqu_a && new Date(d.devis_valable_jusqu_a) > maintenant
+        ? Number(d.montant_propose) + Number(d.frais_service ?? 0)
+        : null,
     isAchat: false,
     contreOffre: null,
   })) ?? []
@@ -271,6 +277,7 @@ export default async function CompteReservations({
     // Le client doit agir : le libellé le dit plutôt que « En attente ».
     if (status === "contre_offre") return { color: "text-accent-gold", label: "Réponse attendue" }
     if (status === "devis_envoye") return { color: "text-accent-gold", label: "Devis reçu" }
+    if (status === "payee") return { color: "text-accent-green", label: "Payé" }
     if (status === "emise") return { color: "text-accent-green", label: "Billet émis" }
     if (STATUT_BILLET_LABELS[status]) return { color: "text-accent-orange", label: STATUT_BILLET_LABELS[status] }
     return { color: "text-accent-orange", label: "En attente" }
@@ -344,7 +351,10 @@ export default async function CompteReservations({
                   {r.contreOffre != null && (
                     <ContreOffreReponse demandeId={r.id} montant={r.contreOffre} />
                   )}
-                  {r.aPayer != null && (
+                  {r.aPayer != null && r.category === "Billet" && (
+                    <PayerBillet demandeId={r.id} total={r.aPayer} />
+                  )}
+                  {r.aPayer != null && r.category !== "Billet" && (
                     <PayerAcompte demandeId={r.id} montant={r.aPayer} isAchat={r.isAchat} />
                   )}
                   <Link

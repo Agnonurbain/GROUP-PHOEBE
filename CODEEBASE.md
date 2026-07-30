@@ -68,7 +68,7 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 56 migrations SQL
+├── supabase/migrations/         # 58 migrations SQL
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -185,11 +185,11 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-56 migrations Supabase (00001 → 00056).
+58 migrations Supabase (00001 → 00058).
 
 ### 5.1 Tables
 
-44 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
+45 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
 qui est généré depuis la base — c'est la référence en cas de doute.
 
 | Table | Module | Description |
@@ -225,8 +225,9 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `demandes_immobilier` | Immobilier | Demandes info/visite/offre. Négociation (`montant_offre`, `montant_contre_offre`), prix arrêté (`montant_convenu`) et part GROUP PHOEBE (`taux_commission`, `montant_commission`) — ces quatre montants sont **figés dès l'acceptation**. Plus `message` et `date_souhaitee` du client, `location_debut` / `location_duree_mois` pour une location, `agent_id` hérité du bien. Chaque ligne acceptée est une entrée du registre des transactions |
 | `parametres_immobilier` | Immobilier | Singleton : frais de visite, remise max, quota d'offres, **taux de commission** |
 | `dossiers_voyage` | Assistance | Dossiers études/visa |
-| `demandes_billet` | Assistance | Demandes de billet d'avion : trajet, dates, ventilation des voyageurs, passeport, devis (`montant_propose`) et frais de service figés (`frais_service`). Documents : certificat fièvre jaune (`certificat_fievre_jaune` + vérif admin), autorisation parentale mineurs (`mineur_autorisation_parentale` + vérif admin) |
-| `parametres_billet` | Assistance | Singleton : frais de service, validité de passeport exigée, plafond de voyageurs, délai de réponse annoncé |
+| `demandes_billet` | Assistance | Demandes de billet d'avion : trajet, dates, ventilation des voyageurs, passeport, devis (`montant_propose`) et frais de service figés (`frais_service`). Documents : certificat fièvre jaune (`certificat_fievre_jaune` + vérif admin), autorisation parentale mineurs (`mineur_autorisation_parentale` + vérif admin). Devis valable jusqu'à (`devis_valable_jusqu_a`). Statuts : soumise → en_cours_traitement → devis_envoye → **payee** → emise |
+| `parametres_billet` | Assistance | Singleton : frais de service, validité de passeport exigée, plafond de voyageurs, délai de réponse annoncé, **validité du devis** (heures) |
+| `passagers_billet` | Assistance | Passagers d'une demande de billet : nom, date naissance, passeport — collectés au paiement pour l'émission |
 | `documents_dossier_voyage` | Assistance | Documents associés |
 | `tarifs_assistance` | Assistance | Tarifs pilotables |
 | `paiements` | Transverse | Multi-module, multi-méthode (`stripe` \| `cinetpay`), remboursements. Types : `montant`, `caution`, `acompte`, `commission`, `frais` — `frais` porte les frais de visite immobiliers, non remboursables |
@@ -241,7 +242,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 
 ### 5.2 RLS et sécurité
 
-- RLS activée sur les 44 tables. Ce n'était pas le cas avant la migration 00048 :
+- RLS activée sur les 45 tables. Ce n'était pas le cas avant la migration 00048 :
   10 tables en étaient dépourvues tout en portant `GRANT ALL TO anon`, donc
   lisibles et modifiables par quiconque détenait la clé anon (`visites`,
   `agents_immobiliers`, `audit_log`, `notifications_log`, `chauffeurs`,
@@ -720,6 +721,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | 2026-07-28 | GoldTrail amélioré : double passe (glow large + core fin), trail plus long (120pts), vie plus lente (0.012), couleurs gold asset. |
 | 2026-07-28 | Fix auth dark mode : `focus:bg-white` → `focus:bg-phoebe-pearl` (s'adapte au thème). Ajout override `-webkit-autofill` dans `auth.css`. Même correctif appliqué dans l'admin (8 fichiers). |
 | 2026-07-30 | **Documents obligatoires du voyageur** (00057). Trois ajouts à `demandes_billet` : déclaration du certificat fièvre jaune (case à cocher + indicateur admin), mention CEDEAO dans l'interface (le passeport est exigé par les compagnies même vers la CEDEAO, la CNI CEDEAO ne suffit pas), et déclaration d'autorisation parentale pour les mineurs voyageant sans leurs deux parents (case + indicateur admin + validation bloquante). `validerDemandeBillet` vérifie les deux déclarations. Le formulaire client affiche les explications pour chaque document. L'admin voit l'état déclaré/vérifié de chaque document par demande. |
+| 2026-07-30 | **Paiement des billets et passagers** (00058). Le cycle passe à `soumise → en_cours_traitement → devis_envoye → payee → emise`. `devis_valable_jusqu_a` fixé à l'envoi du devis (durée pilotable depuis `/admin/tarifs`). Nouvelle table `passagers_billet` pour collecter nom, date naissance et passeport de chaque voyageur. Branchement `demandes_billet` dans `traitement.ts` (webhook → statut `payee`). `payerDevisBillet` : vérifie validité du devis, collecte les passagers, crée le paiement Stripe/CinetPay et redirige. Bouton « Payer » sur la page réservations quand le devis est valide. Admin affiche l'expiration du devis et l'état `payee`. |
 
 ## 13. ÉVOLUTION
 

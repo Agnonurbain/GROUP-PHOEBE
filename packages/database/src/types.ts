@@ -434,6 +434,7 @@ export type Database = {
           date_retour: string | null
           depart: string
           destination: string
+          devis_valable_jusqu_a: string | null
           frais_service: number | null
           id: string
           message: string | null
@@ -461,6 +462,7 @@ export type Database = {
           date_retour?: string | null
           depart: string
           destination: string
+          devis_valable_jusqu_a?: string | null
           frais_service?: number | null
           id?: string
           message?: string | null
@@ -488,6 +490,7 @@ export type Database = {
           date_retour?: string | null
           depart?: string
           destination?: string
+          devis_valable_jusqu_a?: string | null
           frais_service?: number | null
           id?: string
           message?: string | null
@@ -1285,6 +1288,7 @@ export type Database = {
           max_voyageurs: number
           mois_validite_passeport: number
           updated_at: string
+          validite_devis_heures: number
         }
         Insert: {
           delai_reponse_heures?: number
@@ -1293,6 +1297,7 @@ export type Database = {
           max_voyageurs?: number
           mois_validite_passeport?: number
           updated_at?: string
+          validite_devis_heures?: number
         }
         Update: {
           delai_reponse_heures?: number
@@ -1301,8 +1306,47 @@ export type Database = {
           max_voyageurs?: number
           mois_validite_passeport?: number
           updated_at?: string
+          validite_devis_heures?: number
         }
         Relationships: []
+      }
+      passagers_billet: {
+        Row: {
+          created_at: string
+          date_naissance: string
+          demande_id: string
+          id: string
+          nom: string
+          passeport_expiration: string
+          passeport_numero: string
+        }
+        Insert: {
+          created_at?: string
+          date_naissance: string
+          demande_id: string
+          id?: string
+          nom: string
+          passeport_expiration: string
+          passeport_numero: string
+        }
+        Update: {
+          created_at?: string
+          date_naissance?: string
+          demande_id?: string
+          id?: string
+          nom?: string
+          passeport_expiration?: string
+          passeport_numero?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passagers_billet_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: false
+            referencedRelation: "demandes_billet"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       parametres_contact: {
         Row: {

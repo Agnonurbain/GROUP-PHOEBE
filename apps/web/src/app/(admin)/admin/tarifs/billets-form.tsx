@@ -120,6 +120,28 @@ export function BilletsParamsForm({ params }: { params: ParametresBillet }) {
           </p>
         </div>
 
+        <div>
+          <label htmlFor="validite_devis_heures" className={labelClass}>
+            Validité du devis (heures)
+          </label>
+          <input
+            id="validite_devis_heures"
+            name="validite_devis_heures"
+            type="number"
+            min={1}
+            max={720}
+            step={1}
+            defaultValue={params.validite_devis_heures}
+            className={inputClass}
+            required
+          />
+          <p className={aide}>
+            Passé ce délai, le client ne peut plus payer — le devis expire. Les
+            tarifs aériens changent vite : un délai trop long expose à des devis
+            payés sur un vol qui a augmenté.
+          </p>
+        </div>
+
         <SubmitButton>Enregistrer</SubmitButton>
       </form>
     </div>

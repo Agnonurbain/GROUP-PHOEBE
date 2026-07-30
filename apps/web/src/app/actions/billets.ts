@@ -17,6 +17,8 @@ import { getParametresBillet } from "@/lib/public-cache";
 import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouvelleDemandeBillet } from "./notifications-admin";
 import { logAudit } from "@/lib/audit";
+import { creerSessionStripe } from "@/lib/payments/stripe";
+import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 
 export type BilletState = {
   error?: string;
@@ -230,11 +232,17 @@ export async function proposerDevisBillet(
     return { error: `Demande ${STATUT_BILLET_LABELS[demande.statut] ?? demande.statut} : elle est close.` };
   }
 
+  const paramsBillet = await getParametresBillet();
+  const devisExpiration = new Date(
+    Date.now() + paramsBillet.validite_devis_heures * 60 * 60 * 1000
+  ).toISOString();
+
   const { error } = await admin
     .from("demandes_billet")
     .update({
       montant_propose: montant,
       statut: "devis_envoye",
+      devis_valable_jusqu_a: devisExpiration,
       updated_at: new Date().toISOString(),
     })
     .eq("id", demandeId);
@@ -265,6 +273,137 @@ export async function proposerDevisBillet(
   revalidatePath("/admin/billets");
   revalidatePath("/compte/reservations");
   return { success: true };
+}
+
+/** Payer un devis de billet. Le client accepte le devis et paie le total. */
+export async function payerDevisBillet(
+  _prev: BilletState,
+  formData: FormData
+): Promise<BilletState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Vous devez être connecté." };
+
+  const demandeId = formData.get("demande_id") as string;
+  const methode = formData.get("methode_paiement") as string;
+
+  if (!["cinetpay", "stripe"].includes(methode)) {
+    return { error: "Méthode de paiement invalide." };
+  }
+
+  const admin = getAdmin();
+  const { data: demande } = await admin
+    .from("demandes_billet")
+    .select("id, client_id, statut, depart, destination, montant_propose, frais_service, devis_valable_jusqu_a, nb_adultes, nb_enfants, nb_bebes")
+    .eq("id", demandeId)
+    .eq("client_id", user.sub)
+    .single();
+
+  if (!demande) return { error: "Demande introuvable." };
+  if (demande.statut !== "devis_envoye") {
+    return { error: "Cette demande n'a pas de devis en attente." };
+  }
+  if (demande.montant_propose == null) {
+    return { error: "Le devis n'a pas de montant." };
+  }
+
+  // Vérifier la validité du devis
+  if (demande.devis_valable_jusqu_a && new Date(demande.devis_valable_jusqu_a) < new Date()) {
+    return { error: "Ce devis a expiré. Contactez-nous pour un nouveau devis." };
+  }
+
+  // Collecter les passagers supplémentaires depuis le formulaire
+  const passagers: Array<{
+    nom: string
+    date_naissance: string
+    passeport_numero: string
+    passeport_expiration: string
+  }> = []
+
+  const nbPassagersSuppl = (demande.nb_adultes - 1) + demande.nb_enfants + demande.nb_bebes
+
+  for (let i = 0; i < nbPassagersSuppl; i++) {
+    const nom = (formData.get(`passager_nom_${i}`) as string || "").trim()
+    const dateNaissance = (formData.get(`passager_date_naissance_${i}`) as string || "").trim()
+    const passeportNumero = (formData.get(`passager_passeport_numero_${i}`) as string || "").trim()
+    const passeportExpiration = (formData.get(`passager_passeport_expiration_${i}`) as string || "").trim()
+
+    if (!nom) return { error: `Le nom du passager ${i + 1} est obligatoire.` }
+    if (!dateNaissance) return { error: `La date de naissance du passager ${i + 1} est obligatoire.` }
+    if (!passeportNumero) return { error: `Le numéro de passeport du passager ${i + 1} est obligatoire.` }
+    if (!passeportExpiration) return { error: `La date d'expiration du passeport du passager ${i + 1} est obligatoire.` }
+
+    passagers.push({
+      nom,
+      date_naissance: dateNaissance,
+      passeport_numero: passeportNumero,
+      passeport_expiration: passeportExpiration,
+    })
+  }
+
+  // Créer le paiement
+  const total = Number(demande.montant_propose) + Number(demande.frais_service ?? 0)
+
+  const { data: paiement, error: paiementErr } = await admin
+    .from("paiements")
+    .insert({
+      module: "billet",
+      reference_table: "demandes_billet",
+      reference_id: demande.id,
+      type: "montant",
+      montant: total,
+      methode: methode as "cinetpay" | "stripe",
+      statut: "en_attente",
+    })
+    .select("id")
+    .single()
+
+  if (paiementErr) return { error: paiementErr.message }
+
+  // Insérer les passagers supplémentaires
+  for (const p of passagers) {
+    const { error: passErr } = await admin
+      .from("passagers_billet")
+      .insert({
+        demande_id: demande.id,
+        nom: p.nom,
+        date_naissance: p.date_naissance,
+        passeport_numero: p.passeport_numero,
+        passeport_expiration: p.passeport_expiration,
+      })
+    if (passErr) return { error: "Erreur lors de l'enregistrement des passagers." }
+  }
+
+  const description = `Billet ${demande.depart} → ${demande.destination}`
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+
+  let paymentUrl: string
+  try {
+    if (methode === "stripe") {
+      paymentUrl = await creerSessionStripe({
+        montantCFA: total,
+        description,
+        paiementId: paiement.id,
+        successUrl: `${baseUrl}/reservation/confirmation?demande=${demande.id}`,
+        cancelUrl: `${baseUrl}/reservation/echec?demande=${demande.id}`,
+      })
+    } else {
+      paymentUrl = await creerSessionCinetPay({
+        montantCFA: total,
+        description,
+        paiementId: paiement.id,
+        returnUrl: `${baseUrl}/reservation/confirmation?demande=${demande.id}`,
+        notifyUrl: `${baseUrl}/api/webhooks/cinetpay`,
+      })
+    }
+  } catch (err) {
+    return {
+      error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
+    }
+  }
+
+  redirect(paymentUrl)
 }
 
 export async function affecterConseillerBillet(
@@ -310,6 +449,7 @@ export async function modifierParametresBillet(
   const mois_validite_passeport = nb("mois_validite_passeport");
   const max_voyageurs = nb("max_voyageurs");
   const delai_reponse_heures = nb("delai_reponse_heures");
+  const validite_devis_heures = nb("validite_devis_heures");
 
   // 0 est légitime pour les frais comme pour la validité exigée : on teste la
   // finitude et les bornes, jamais la vérité de la valeur.
@@ -325,6 +465,9 @@ export async function modifierParametresBillet(
   if (!Number.isInteger(delai_reponse_heures) || delai_reponse_heures < 1 || delai_reponse_heures > 720) {
     return { error: "Le délai de réponse doit être entre 1 et 720 heures." };
   }
+  if (!Number.isInteger(validite_devis_heures) || validite_devis_heures < 1 || validite_devis_heures > 720) {
+    return { error: "La validité du devis doit être entre 1 et 720 heures." };
+  }
 
   const admin = getAdmin();
   const { error } = await admin.from("parametres_billet").upsert({
@@ -333,6 +476,7 @@ export async function modifierParametresBillet(
     mois_validite_passeport,
     max_voyageurs,
     delai_reponse_heures,
+    validite_devis_heures,
     updated_at: new Date().toISOString(),
   });
   if (error) return { error: error.message };

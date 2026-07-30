@@ -35,6 +35,7 @@ export const STATUTS_BILLET = [
   "soumise",
   "en_cours_traitement",
   "devis_envoye",
+  "payee",
   "emise",
   "annulee",
 ] as const
@@ -45,6 +46,7 @@ export const STATUT_BILLET_LABELS: Record<string, string> = {
   soumise: "Soumise",
   en_cours_traitement: "Recherche en cours",
   devis_envoye: "Devis envoyé",
+  payee: "Payée",
   emise: "Billet émis",
   annulee: "Annulée",
 }
@@ -53,7 +55,8 @@ export const STATUT_BILLET_COLORS: Record<string, string> = {
   soumise: "bg-blue-50 text-blue-700",
   en_cours_traitement: "bg-phoebe-gold/10 text-phoebe-gold-dark",
   devis_envoye: "bg-phoebe-gold/20 text-phoebe-gold-dark",
-  emise: "bg-phoebe-green/10 text-phoebe-green-deep",
+  payee: "bg-phoebe-green/10 text-phoebe-green-deep",
+  emise: "bg-phoebe-green/20 text-phoebe-green-deep",
   annulee: "bg-error/10 text-error",
 }
 
@@ -66,6 +69,7 @@ export const STATUTS_BILLET_OUVERTS = [
   "soumise",
   "en_cours_traitement",
   "devis_envoye",
+  "payee",
 ] as const
 
 // ─── Paramètres pilotés depuis /admin/tarifs (table parametres_billet) ───────
@@ -85,6 +89,8 @@ export type ParametresBillet = {
   max_voyageurs: number
   /** Délai de réponse annoncé au client : un engagement, donc pilotable. */
   delai_reponse_heures: number
+  /** Durée de validité du devis en heures. Passé ce délai, le client ne peut plus payer. */
+  validite_devis_heures: number
 }
 
 export const PARAMETRES_BILLET_DEFAUT: ParametresBillet = {
@@ -92,6 +98,7 @@ export const PARAMETRES_BILLET_DEFAUT: ParametresBillet = {
   mois_validite_passeport: 6,
   max_voyageurs: 9,
   delai_reponse_heures: 48,
+  validite_devis_heures: 48,
 }
 
 /** Délai de réponse en langage courant : « sous 48 h », « sous 3 jours ». */

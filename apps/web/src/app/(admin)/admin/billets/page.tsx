@@ -177,6 +177,16 @@ export default async function BilletsAdminPage() {
                     <p className="text-xs text-phoebe-anthracite/70">
                       Demandé le {dateFr(d.created_at)}
                     </p>
+                    {d.statut === "devis_envoye" && d.devis_valable_jusqu_a && (
+                      new Date(d.devis_valable_jusqu_a) < new Date()
+                        ? <p className="mt-0.5 text-[11px] font-semibold text-error">Devis expiré</p>
+                        : <p className="mt-0.5 text-[11px] text-phoebe-anthracite/60">
+                            Devis valable jusqu&apos;au {dateFr(d.devis_valable_jusqu_a)}
+                          </p>
+                    )}
+                    {d.statut === "payee" && (
+                      <p className="mt-0.5 text-[11px] font-semibold text-phoebe-green-deep">Payé — à émettre</p>
+                    )}
                   </div>
                 </div>
 
