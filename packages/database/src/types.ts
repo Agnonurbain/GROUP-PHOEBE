@@ -424,6 +424,8 @@ export type Database = {
       }
       demandes_billet: {
         Row: {
+          certificat_fievre_jaune: boolean
+          certificat_fievre_jaune_valide: boolean | null
           classe: string
           client_id: string
           conseiller_id: string | null
@@ -435,6 +437,8 @@ export type Database = {
           frais_service: number | null
           id: string
           message: string | null
+          mineur_autorisation_parentale: boolean
+          mineur_autorisation_verifie: boolean | null
           montant_propose: number | null
           nb_adultes: number
           nb_bebes: number
@@ -447,6 +451,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          certificat_fievre_jaune?: boolean
+          certificat_fievre_jaune_valide?: boolean | null
           classe?: string
           client_id: string
           conseiller_id?: string | null
@@ -458,6 +464,8 @@ export type Database = {
           frais_service?: number | null
           id?: string
           message?: string | null
+          mineur_autorisation_parentale?: boolean
+          mineur_autorisation_verifie?: boolean | null
           montant_propose?: number | null
           nb_adultes?: number
           nb_bebes?: number
@@ -470,6 +478,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          certificat_fievre_jaune?: boolean
+          certificat_fievre_jaune_valide?: boolean | null
           classe?: string
           client_id?: string
           conseiller_id?: string | null
@@ -481,6 +491,8 @@ export type Database = {
           frais_service?: number | null
           id?: string
           message?: string | null
+          mineur_autorisation_parentale?: boolean
+          mineur_autorisation_verifie?: boolean | null
           montant_propose?: number | null
           nb_adultes?: number
           nb_bebes?: number

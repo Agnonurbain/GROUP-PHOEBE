@@ -225,7 +225,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `demandes_immobilier` | Immobilier | Demandes info/visite/offre. Négociation (`montant_offre`, `montant_contre_offre`), prix arrêté (`montant_convenu`) et part GROUP PHOEBE (`taux_commission`, `montant_commission`) — ces quatre montants sont **figés dès l'acceptation**. Plus `message` et `date_souhaitee` du client, `location_debut` / `location_duree_mois` pour une location, `agent_id` hérité du bien. Chaque ligne acceptée est une entrée du registre des transactions |
 | `parametres_immobilier` | Immobilier | Singleton : frais de visite, remise max, quota d'offres, **taux de commission** |
 | `dossiers_voyage` | Assistance | Dossiers études/visa |
-| `demandes_billet` | Assistance | Demandes de billet d'avion : trajet, dates, ventilation des voyageurs, passeport, devis (`montant_propose`) et frais de service figés (`frais_service`) |
+| `demandes_billet` | Assistance | Demandes de billet d'avion : trajet, dates, ventilation des voyageurs, passeport, devis (`montant_propose`) et frais de service figés (`frais_service`). Documents : certificat fièvre jaune (`certificat_fievre_jaune` + vérif admin), autorisation parentale mineurs (`mineur_autorisation_parentale` + vérif admin) |
 | `parametres_billet` | Assistance | Singleton : frais de service, validité de passeport exigée, plafond de voyageurs, délai de réponse annoncé |
 | `documents_dossier_voyage` | Assistance | Documents associés |
 | `tarifs_assistance` | Assistance | Tarifs pilotables |
@@ -719,6 +719,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | 2026-07-28 | Fix hero light mode : texte forcé en `text-white`/`text-white/80` quand `bgImage` est présent (les tokens public-text deviennent sombres en light theme). |
 | 2026-07-28 | GoldTrail amélioré : double passe (glow large + core fin), trail plus long (120pts), vie plus lente (0.012), couleurs gold asset. |
 | 2026-07-28 | Fix auth dark mode : `focus:bg-white` → `focus:bg-phoebe-pearl` (s'adapte au thème). Ajout override `-webkit-autofill` dans `auth.css`. Même correctif appliqué dans l'admin (8 fichiers). |
+| 2026-07-30 | **Documents obligatoires du voyageur** (00057). Trois ajouts à `demandes_billet` : déclaration du certificat fièvre jaune (case à cocher + indicateur admin), mention CEDEAO dans l'interface (le passeport est exigé par les compagnies même vers la CEDEAO, la CNI CEDEAO ne suffit pas), et déclaration d'autorisation parentale pour les mineurs voyageant sans leurs deux parents (case + indicateur admin + validation bloquante). `validerDemandeBillet` vérifie les deux déclarations. Le formulaire client affiche les explications pour chaque document. L'admin voit l'état déclaré/vérifié de chaque document par demande. |
 
 ## 13. ÉVOLUTION
 

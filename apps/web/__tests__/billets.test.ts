@@ -29,6 +29,8 @@ const base: DemandeBilletSaisie = {
   passeportNom: "KONE AWA",
   passeportNumero: "21AB45678",
   passeportExpiration: "2028-01-01",
+  certificatFievreJaune: true,
+  mineurAutorisationParentale: false,
 };
 
 const err = (r: ReturnType<typeof validerDemandeBillet>) =>
@@ -93,7 +95,7 @@ describe("validerDemandeBillet — voyageurs", () => {
 
   it("accepte autant de bébés que d'adultes", () => {
     expect(validerDemandeBillet(
-      { ...base, voyageurs: { adultes: 2, enfants: 1, bebes: 2 } }, P, AUJOURDHUI
+      { ...base, voyageurs: { adultes: 2, enfants: 1, bebes: 2 }, mineurAutorisationParentale: true }, P, AUJOURDHUI
     )).toEqual({ ok: true });
   });
 
@@ -128,6 +130,35 @@ describe("validerDemandeBillet — passeport", () => {
   it("accepte pile la validité minimale", () => {
     // Départ 2026-12-01 + 6 mois = 2027-06-01.
     expect(validerDemandeBillet({ ...base, passeportExpiration: "2027-06-01" }, P, AUJOURDHUI))
+      .toEqual({ ok: true });
+  });
+});
+
+describe("validerDemandeBillet — documents obligatoires", () => {
+  it("exige le certificat fièvre jaune", () => {
+    expect(err(validerDemandeBillet({ ...base, certificatFievreJaune: false }, P, AUJOURDHUI)))
+      .toContain("fièvre jaune");
+  });
+
+  it("accepte avec le certificat déclaré", () => {
+    expect(validerDemandeBillet({ ...base, certificatFievreJaune: true }, P, AUJOURDHUI))
+      .toEqual({ ok: true });
+  });
+
+  it("exige l'autorisation parentale quand il y a des enfants", () => {
+    const avecEnfants = { ...base, voyageurs: { adultes: 1, enfants: 1, bebes: 0 }, mineurAutorisationParentale: false };
+    expect(err(validerDemandeBillet(avecEnfants, P, AUJOURDHUI)))
+      .toContain("autorisation parentale");
+  });
+
+  it("accepte quand l'autorisation parentale est déclarée pour les enfants", () => {
+    const avecEnfants = { ...base, voyageurs: { adultes: 1, enfants: 1, bebes: 0 }, mineurAutorisationParentale: true };
+    expect(validerDemandeBillet(avecEnfants, P, AUJOURDHUI))
+      .toEqual({ ok: true });
+  });
+
+  it("n'exige pas l'autorisation parentale sans enfants", () => {
+    expect(validerDemandeBillet(base, P, AUJOURDHUI))
       .toEqual({ ok: true });
   });
 });

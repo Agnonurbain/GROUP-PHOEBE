@@ -130,6 +130,8 @@ export type DemandeBilletSaisie = {
   passeportNom: string
   passeportNumero: string
   passeportExpiration: string
+  certificatFievreJaune: boolean
+  mineurAutorisationParentale: boolean
 }
 
 /**
@@ -146,6 +148,7 @@ export function validerDemandeBillet(
   const {
     typeTrajet, depart, destination, dateDepart, dateRetour, classe, voyageurs,
     passeportNom, passeportNumero, passeportExpiration,
+    certificatFievreJaune, mineurAutorisationParentale,
   } = saisie
 
   if (!isTypeTrajet(typeTrajet)) return { error: "Type de trajet invalide." }
@@ -192,6 +195,21 @@ export function validerDemandeBillet(
     return {
       error: `Au-delà de ${params.max_voyageurs} voyageurs, contactez-nous directement : la réservation passe par un tarif groupe.`,
     }
+  }
+
+  // Le certificat fièvre jaune est obligatoire pour entrer en Côte d'Ivoire et
+  // dans la plupart des destinations depuis Abidjan. Tout voyageur de 9 mois et
+  // plus doit en disposer — notre tranche « bébé » (< 2 ans) inclut des enfants
+  // de 10 mois qui en ont besoin, donc on l'exige dès qu'un voyageur n'est plus
+  // un nourrisson.
+  if (!certificatFievreJaune) {
+    return { error: "Le certificat de vaccination fièvre jaune est obligatoire pour voyager. Cochez la case correspondante." }
+  }
+
+  // Tout mineur voyageant sans ses deux parents doit présenter une autorisation
+  // parentale légalisée à la mairie, jusqu'à 18 ans.
+  if (enfants > 0 && !mineurAutorisationParentale) {
+    return { error: "Un enfant voyageant sans ses deux parents doit disposer d'une autorisation parentale. Cochez la case correspondante." }
   }
 
   if (!passeportNom.trim()) return { error: "Le nom figurant sur le passeport est obligatoire." }

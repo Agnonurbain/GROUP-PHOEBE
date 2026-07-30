@@ -41,6 +41,8 @@ export function BilletForm({
   const [typeTrajet, setTypeTrajet] = useState<string>("aller_retour")
   const [voyageurs, setVoyageurs] = useState({ adultes: 1, enfants: 0, bebes: 0 })
   const [panneauVoyageurs, setPanneauVoyageurs] = useState(false)
+  const [certificatFievreJaune, setCertificatFievreJaune] = useState(false)
+  const [mineurAutorisation, setMineurAutorisation] = useState(false)
 
   const majVoyageurs = (cle: keyof typeof voyageurs, delta: number) =>
     setVoyageurs((v) => ({ ...v, [cle]: Math.max(cle === "adultes" ? 1 : 0, v[cle] + delta) }))
@@ -69,6 +71,8 @@ export function BilletForm({
       <input type="hidden" name="nb_adultes" value={voyageurs.adultes} />
       <input type="hidden" name="nb_enfants" value={voyageurs.enfants} />
       <input type="hidden" name="nb_bebes" value={voyageurs.bebes} />
+      <input type="hidden" name="certificat_fievre_jaune" value={certificatFievreJaune ? "1" : "0"} />
+      <input type="hidden" name="mineur_autorisation_parentale" value={mineurAutorisation ? "1" : "0"} />
 
       {state.error && (
         <p role="alert" className="rounded-xl border border-error/20 bg-error/5 px-4 py-3 text-sm text-error">
@@ -220,6 +224,10 @@ export function BilletForm({
             <> Il doit rester valable au moins {params.mois_validite_passeport} mois après le départ.</>
           )}
         </p>
+        <p className="mt-1.5 text-xs text-accent-blue/80">
+          Même vers la CEDEAO, le passeport est exigé par les compagnies desservant Abidjan,
+          dont Air Côte d&apos;Ivoire. La carte d&apos;identité CEDEAO ne suffit pas à l&apos;embarquement.
+        </p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div>
             <label htmlFor="passeport_nom" className={label}>Nom et prénoms</label>
@@ -241,6 +249,60 @@ export function BilletForm({
             />
           </div>
         </div>
+      </fieldset>
+
+      {/* Documents obligatoires : fièvre jaune et autorisation parentale */}
+      <fieldset className="rounded-2xl border border-public-border bg-public-bg-card p-5">
+        <legend className="px-1 text-sm font-semibold text-public-text">
+          Documents obligatoires
+        </legend>
+
+        <label className="mt-3 flex cursor-pointer items-start gap-3">
+          <input
+            type="checkbox"
+            checked={certificatFievreJaune}
+            onChange={(e) => setCertificatFievreJaune(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-public-border bg-public-bg text-accent-blue focus:ring-accent-blue/30"
+          />
+          <div>
+            <p className="text-sm font-medium text-public-text">
+              Je dispose d&apos;un certificat de vaccination fièvre jaune valide
+            </p>
+            <p className="mt-0.5 text-xs text-public-text-muted">
+              Le vaccin contre la fièvre jaune est obligatoire pour tout voyageur de 9 mois et
+              plus entrant en Côte d&apos;Ivoire. Sans certificat à l&apos;arrivée, la vaccination
+              est faite à l&apos;aéroport (7 000 FCFA). De nombreuses destinations l&apos;exigent
+              aussi depuis Abidjan.
+            </p>
+          </div>
+        </label>
+
+        {voyageurs.enfants > 0 && (
+          <label className="mt-4 flex cursor-pointer items-start gap-3 border-t border-public-border pt-4">
+            <input
+              type="checkbox"
+              checked={mineurAutorisation}
+              onChange={(e) => setMineurAutorisation(e.target.checked)}
+              className="mt-0.5 h-4 w-4 rounded border-public-border bg-public-bg text-accent-blue focus:ring-accent-blue/30"
+            />
+            <div>
+              <p className="text-sm font-medium text-public-text">
+                Je dispose de l&apos;autorisation parentale pour les mineurs
+              </p>
+              <p className="mt-0.5 text-xs text-public-text-muted">
+                Tout mineur voyageant sans ses deux parents doit présenter une autorisation
+                parentale légalisée à la mairie, et ce jusqu&apos;à sa majorité.
+              </p>
+            </div>
+          </label>
+        )}
+
+        {voyageurs.enfants > 0 && !mineurAutorisation && (
+          <p className="mt-3 text-xs text-error/80">
+            Cette autorisation est obligatoire pour les enfants voyageant sans leurs deux parents.
+            La démarche prend plusieurs jours : anticipez.
+          </p>
+        )}
       </fieldset>
 
       <div>

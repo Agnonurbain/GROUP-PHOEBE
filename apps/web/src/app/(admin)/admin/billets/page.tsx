@@ -124,6 +124,35 @@ export default async function BilletsAdminPage() {
                       )}
                     </p>
 
+                    <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-phoebe-anthracite/70">
+                      <span>
+                        Fièvre jaune :
+                        {d.certificat_fievre_jaune
+                          ? <span className="text-phoebe-green-deep"> Certificat déclaré</span>
+                          : <span className="text-error"> Non déclaré</span>}
+                        {d.certificat_fievre_jaune_valide === true && (
+                          <span className="ml-1.5 text-phoebe-green-deep">· Vérifié</span>
+                        )}
+                        {d.certificat_fievre_jaune_valide === false && (
+                          <span className="ml-1.5 text-error">· À régulariser</span>
+                        )}
+                      </span>
+                      {(d.nb_enfants > 0 || d.nb_bebes > 0) && (
+                        <span>
+                          Autorisation parentale :
+                          {d.mineur_autorisation_parentale
+                            ? <span className="text-phoebe-green-deep"> Déclarée</span>
+                            : <span className="text-error"> Non déclarée</span>}
+                          {d.mineur_autorisation_verifie === true && (
+                            <span className="ml-1.5 text-phoebe-green-deep">· Vérifiée</span>
+                          )}
+                          {d.mineur_autorisation_verifie === false && (
+                            <span className="ml-1.5 text-error">· À régulariser</span>
+                          )}
+                        </span>
+                      )}
+                    </div>
+
                     {d.message && (
                       <p className="mt-2 max-w-prose rounded-lg bg-phoebe-pearl/50 px-3 py-2 text-xs italic text-phoebe-anthracite/80">
                         « {d.message} »

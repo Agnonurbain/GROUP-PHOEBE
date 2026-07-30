@@ -99,6 +99,8 @@ export async function creerDemandeBillet(
     passeportNom: ((formData.get("passeport_nom") as string) || "").trim(),
     passeportNumero: ((formData.get("passeport_numero") as string) || "").trim(),
     passeportExpiration: ((formData.get("passeport_expiration") as string) || "").trim(),
+    certificatFievreJaune: formData.get("certificat_fievre_jaune") === "1",
+    mineurAutorisationParentale: formData.get("mineur_autorisation_parentale") === "1",
   };
 
   // Règles pilotées depuis /admin/tarifs : validité de passeport exigée et
@@ -124,6 +126,8 @@ export async function creerDemandeBillet(
       passeport_nom: saisie.passeportNom,
       passeport_numero: saisie.passeportNumero,
       passeport_expiration: saisie.passeportExpiration,
+      certificat_fievre_jaune: saisie.certificatFievreJaune,
+      mineur_autorisation_parentale: saisie.mineurAutorisationParentale,
       message: ((formData.get("message") as string) || "").trim() || null,
       // Frais figés au barème du jour : le paramètre peut changer, pas ce qui a
       // été annoncé au client au moment de sa demande.
