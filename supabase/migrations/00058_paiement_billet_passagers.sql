@@ -12,7 +12,7 @@ alter table public.demandes_billet
 comment on column public.demandes_billet.devis_valable_jusqu_a is
   'Date d expiration du devis. Calculee a l envoi du devis : maintenant + validite_devis_heures.';
 
-drop constraint if exists demandes_billet_statut_check on public.demandes_billet;
+alter table public.demandes_billet drop constraint if exists demandes_billet_statut_check;
 
 alter table public.demandes_billet
   add constraint demandes_billet_statut_check
