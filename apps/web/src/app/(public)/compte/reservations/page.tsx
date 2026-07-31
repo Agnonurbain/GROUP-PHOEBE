@@ -9,6 +9,7 @@ import { annulerParClient } from "@/app/actions/demandes"
 import { PayerAcompte } from "@/components/public/payer-acompte"
 import { PayerBillet } from "@/components/public/payer-billet"
 import { ContreOffreReponse } from "@/components/public/contre-offre-reponse"
+import { TelechargerFacture } from "@/components/public/telecharger-facture"
 import { formaterCreneau } from "@/lib/immobilier"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
 
@@ -37,6 +38,12 @@ type ReservationItem = {
   detailHref: string
   /** Contre-offre immobilière en attente de réponse du client, le cas échéant. */
   contreOffre: number | null
+  /**
+   * Factures émises pour cette demande. Plusieurs sont possibles : une demande
+   * peut donner lieu à un acompte puis un solde, ou à une caution en plus du
+   * montant.
+   */
+  factures: { id: string; numero: string }[]
 }
 
 const TABS = [
@@ -128,6 +135,24 @@ export default async function CompteReservations({
     }
   }
 
+  // Factures du client, tous modules confondus. `factures_select_own` limite la
+  // lecture aux siennes ; on les indexe par demande pour les rattacher aux
+  // lignes ci-dessous. Une facture n'existe que sur un paiement encaissé.
+  const { data: facturesClient } = await supabase
+    .from("factures")
+    .select("id, numero, reference_id, created_at")
+    .eq("client_id", user.id)
+    .eq("annulee", false)
+    .order("created_at", { ascending: true })
+
+  const facturesParDemande = new Map<string, { id: string; numero: string }[]>()
+  for (const f of facturesClient ?? []) {
+    const liste = facturesParDemande.get(f.reference_id) ?? []
+    liste.push({ id: f.id, numero: f.numero })
+    facturesParDemande.set(f.reference_id, liste)
+  }
+  const facturesDe = (id: string) => facturesParDemande.get(id) ?? []
+
   const vehiculeIds = [...new Set(transportRes.data?.map((d) => d.vehicule_id).filter(Boolean) as string[] ?? [])]
   const { data: allPhotos } = vehiculeIds.length > 0
     ? await supabase.from("vehicule_photos").select("vehicule_id, url").in("vehicule_id", vehiculeIds).order("ordre")
@@ -157,6 +182,7 @@ export default async function CompteReservations({
         : null,
     isAchat: d.type === "achat",
     contreOffre: null,
+    factures: facturesDe(d.id),
   })) ?? []
 
   // Le libellé disait « Visite: <date de création> » pour toutes les demandes
@@ -203,6 +229,7 @@ export default async function CompteReservations({
       d.statut === "contre_offre" && d.montant_contre_offre != null
         ? Number(d.montant_contre_offre)
         : null,
+    factures: facturesDe(d.id),
   })) ?? []
 
   const assistanceReservations: ReservationItem[] = assistanceRes.data?.map((d) => ({
@@ -218,6 +245,7 @@ export default async function CompteReservations({
     aPayer: null,
     isAchat: false,
     contreOffre: null,
+    factures: facturesDe(d.id),
   })) ?? []
 
   const livraisonReservations: ReservationItem[] = livraisonRes.data?.map((d) => ({
@@ -233,6 +261,7 @@ export default async function CompteReservations({
     aPayer: null,
     isAchat: false,
     contreOffre: null,
+    factures: facturesDe(d.id),
   })) ?? []
 
   const maintenant = new Date()
@@ -259,6 +288,7 @@ export default async function CompteReservations({
         : null,
     isAchat: false,
     contreOffre: null,
+    factures: facturesDe(d.id),
   })) ?? []
 
   const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations, ...billetReservations]
@@ -363,6 +393,15 @@ export default async function CompteReservations({
                   >
                     {r.category === "Livraison" ? "Suivre le colis" : "Voir le détail"}
                   </Link>
+                  {/* Une facture par paiement encaissé : le numéro n'est affiché
+                      que s'il y en a plusieurs, sinon il n'apprend rien. */}
+                  {r.factures.map((f) => (
+                    <TelechargerFacture
+                      key={f.id}
+                      factureId={f.id}
+                      label={r.factures.length > 1 ? `Facture ${f.numero}` : "Facture"}
+                    />
+                  ))}
                   {r.category === "Transport" && canCancel(r.status) && (
                     <form action={async () => { await annulerParClient(r.id) }}>
                       <button

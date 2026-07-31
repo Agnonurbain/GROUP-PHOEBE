@@ -68,7 +68,7 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 58 migrations SQL
+├── supabase/migrations/         # 59 migrations SQL
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -116,6 +116,9 @@ group-phoebe/
 | `/compte/favoris` | `page.tsx` | Favoris |
 | `/compte/verification` | `page.tsx` | Vérification identité |
 | `/compte/reservations` | `page.tsx` | Historique réservations |
+| `/avis` | `page.tsx` + `page-client.tsx` | Avis clients publiés |
+| `/blog` | `page.tsx` + `page-client.tsx` | Blog / Guides |
+| `/blog/[slug]` | `page.tsx` | Article blog |
 | `/contact` | `page.tsx` | Contact |
 | `/suivi` | `page.tsx` | Suivi expédition |
 | `/offline` | `page.tsx` | Page hors-ligne |
@@ -159,6 +162,13 @@ group-phoebe/
 | `/admin/tarifs` | Tarifs et zones — onglets Coefficients, Cartographie, Prix & Communes, Livraison, Assistance, **Billets d'avion**, Contact |
 | `/admin/planning` | Planning |
 | `/admin/audit` | Journal d'audit |
+| `/admin/avis` | Modération des avis clients |
+| `/admin/avis/[id]` | Modération d'un avis |
+| `/admin/blog` | Liste des articles blog/guides |
+| `/admin/blog/nouveau` | Nouvel article |
+| `/admin/blog/[id]` | Édition article |
+| `/admin/blog/categories` | Gestion catégories articles |
+| `/admin/factures` | Facturation — propriétaire seul : TVA, préfixe de numérotation, registre des factures émises |
 | `/admin/remboursements` | Gestion remboursements |
 | `/admin/reserver-pour-client` | Réservation par opérateur |
 
@@ -185,11 +195,11 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-58 migrations Supabase (00001 → 00058).
+59 migrations Supabase (00001 → 00059).
 
 ### 5.1 Tables
 
-45 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
+52 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
 qui est généré depuis la base — c'est la référence en cas de doute.
 
 | Table | Module | Description |
@@ -209,6 +219,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `propositions_prix` | Transport | Propositions de prix (opérateur → propriétaire) |
 | `avis_transport` | Transport | Avis clients |
 | `intervalles_prix` | Transport | Grille de prix par intervalle |
+| `langues` | Transverse | Langues disponibles (fr, en), i18n infrastructure |
 | `zones_tarifaires` | Transport | Zones et km inclus par jour |
 | `propositions_tarifs` | Transport | Propositions de modification tarifaire |
 | `livreurs` | Livraison | Livreurs avec zone |
@@ -218,6 +229,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `propositions_zones_tarifaires` | Livraison | Propositions de modification de zone |
 | `tarifs_livraison` | Livraison | Grille zone × mode, pilotable |
 | `paliers_poids` | Livraison | Paliers de poids, pilotables |
+| `categories_article` | Contenu | Catégories du blog (slug, nom, ordre) |
 | `biens` | Immobilier | Types, transactions, géolocalisation |
 | `bien_medias` | Immobilier | Photos/vidéos |
 | `agents_immobiliers` | Immobilier | Agents et `zone_couverture`. La zone pilote `autoAssignAgent()` : **correspondance par sous-chaîne**, premier agent trouvé, sans ordre défini — deux zones qui matchent un même bien rendent l'affectation arbitraire (cf. TEST_ACCOUNTS.md) |
@@ -234,15 +246,20 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `webhook_idempotency` | Transverse | Anti-rejeu des webhooks de paiement |
 | `notifications_log` | Transverse | Log multi-canal |
 | `push_subscriptions` | Transverse | Subscriptions push |
+| `articles` | Contenu | Articles du blog / guides, avec SEO metadata, catégorie, publication |
 | `audit_log` | Transverse | Journalisation (`action`, `cible_table`, `cible_id`, `details`) |
 | `audit_logs` | Transverse | Seconde table d'audit (`table_name`, `record_id`, `old_values`/`new_values`) — les deux coexistent |
+| `avis` | Transverse | Avis clients cross-vertical (polymorphique : `reference_table` + `reference_id`), modération avant publication |
+| `factures` | Transverse | Factures PDF générées automatiquement après paiement. Le bucket `factures` est **privé** : `pdf_chemin` porte le chemin de l'objet, jamais une URL — elle est signée à la demande, après contrôle du demandeur |
 | `favoris` | Transverse | Favoris utilisateur — une ligne cible un véhicule **ou** un bien (contrainte `favoris_une_seule_cible`, 00052) |
 | `paniers` | Transverse | Panier serveur |
+| `parametres_avis` | Transverse | Singleton : modération obligatoire, délai après terme |
 | `parametres_contact` | Transverse | Coordonnées (WhatsApp, tel, email, réseau) |
+| `parametres_facturation` | Transverse | Singleton : TVA, numérotation factures, préfixe |
 
 ### 5.2 RLS et sécurité
 
-- RLS activée sur les 45 tables. Ce n'était pas le cas avant la migration 00048 :
+- RLS activée sur les 52 tables. Ce n'était pas le cas avant la migration 00048 :
   10 tables en étaient dépourvues tout en portant `GRANT ALL TO anon`, donc
   lisibles et modifiables par quiconque détenait la clé anon (`visites`,
   `agents_immobiliers`, `audit_log`, `notifications_log`, `chauffeurs`,
@@ -286,6 +303,7 @@ Champs couverts, et par quoi :
 | `demandes_immobilier.montant_offre`, `montant_contre_offre`, `montant_convenu`, `montant_commission` | `proposerContreOffre` | `garde_montants` (00047, gel en 00053, commission en 00054) |
 | `demandes_billet.montant_propose`, `frais_service` | `proposerDevisBillet` | `garde_montant` (00055, frais en 00056) |
 | `parametres_billet.frais_service` | `modifierParametresBillet` | policy `is_proprietaire()` |
+| `parametres_facturation.taux_tva`, `prefixe_facture` | `modifierParametresFacturation` | policy `is_staff()` |
 | `biens.prix` | `retirerChampsPrix` + création propriétaire (biens.ts) | `garde_prix` (00049) |
 
 Créer un bien est réservé au propriétaire : `biens.prix` est NOT NULL, il n'y a
@@ -315,6 +333,8 @@ le reste, prix en lecture seule dans le formulaire.
 | `contre-offre-reponse.tsx` | Réponse du client à une contre-offre (accepter / refuser, refus confirmé) |
 | `billet-form.tsx` | Demande de billet d'avion : trajet, dates, voyageurs par tranche d'âge, classe, passeport |
 | `garantie-documents.tsx` | Garantie documentaire affichée sur chaque bien : pièces en règle, présentables devant notaire à la finalisation. Variantes bloc (fiche) et ligne (carte catalogue) |
+| `locale-switcher.tsx` | Sélecteur de langue (fr/en) avec drapeaux, i18n |
+| `telecharger-facture.tsx` | Téléchargement d'une facture : l'URL signée est demandée **au clic**, pas au rendu — signée à l'affichage, elle expirerait avant que le client ne clique |
 | `back-link.tsx` | Lien retour |
 
 ### 6.2 Composants effets (`components/effects/`)
@@ -401,7 +421,11 @@ Les composants `ui/` sont basés sur **shadcn/ui** (base-nova) avec `@base-ui/re
 | `billets.ts` | Billets d'avion : types de trajet, classes, statuts, `validerDemandeBillet` (dates, voyageurs, validité du passeport) |
 | `immobilier.ts` | Logique immobilière : libellés, statuts, validation de contre-offre (`plancherContreOffre`, `validerContreOffre`) |
 | `assistance.ts` | Logique assistance voyage |
+| `avis.ts` | Utilitaires avis : cache public, libellés statuts, helpers |
 | `contact.ts` | Fonctions contact |
+| `facture-pdf.ts` | Génération PDF facture avec pdf-lib + upload Storage |
+| `langues.ts` | Infrastructure i18n : langues disponibles, détection, cookie |
+| `langue-context.tsx` | Contexte React LangueProvider, hook useLangue |
 | `analytics.ts` | Tracking GA4 (page_view, add_to_cart, purchase, etc.) |
 | `telephone.ts` | Formatage téléphone (Côte d'Ivoire) |
 | `periode.ts` | Parsing des ranges Postgres `tstzrange` (colonnes `periode`, typées `unknown` par `supabase gen types`) |
@@ -479,12 +503,12 @@ un aller-retour en a une postérieure au départ.
 
 ### 7.7 Server Actions (`app/actions/`)
 
-26 fichiers : `auth.ts`, `cart.ts`, `vehicules.ts`, `reservation.ts`, `livraison.ts`,
-`immobilier.ts`, `assistance.ts`, `biens.ts`, `demandes.ts`, `disponibilites.ts`,
-`propositions.ts`, `favoris.ts`, `contact.ts`, `admin.ts`, `verification.ts`,
-`etat-lieux.ts`, `achat.ts`, `checkout.ts`, `tarifs.ts`, `negociation.ts`,
-`propositions-zones.ts`, `vehicle-assignment.ts`, `remboursements.ts`,
-`notifications-admin.ts`, `reservation-operateur.ts`, `billets.ts`.
+30 fichiers : `auth.ts`, `avis.ts`, `blog.ts`, `cart.ts`, `vehicules.ts`, `reservation.ts`,
+`livraison.ts`, `immobilier.ts`, `assistance.ts`, `biens.ts`, `demandes.ts`,
+`disponibilites.ts`, `propositions.ts`, `factures.ts`, `favoris.ts`, `contact.ts`,
+`admin.ts`, `verification.ts`, `etat-lieux.ts`, `achat.ts`, `checkout.ts`, `tarifs.ts`,
+`negociation.ts`, `propositions-zones.ts`, `vehicle-assignment.ts`, `remboursements.ts`,
+`notifications-admin.ts`, `reservation-operateur.ts`, `billets.ts`, `langues.ts`.
 
 ---
 
@@ -664,7 +688,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 367 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 385 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -680,6 +704,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | `role-guards.test.ts`, `permissions.test.ts` | Cloisonnement des rôles |
 | `exclusion.test.ts` | Non-chevauchement des périodes (contrainte GiST) |
 | `annulation-48h.test.ts` | Rétention de caution sous 48 h |
+| `facture.test.ts` | Facturation : client résolu depuis la table référencée (le paiement ne le porte pas), numéros distincts, webhook rejoué sans doublon ni numéro brûlé, échec de facture qui ne fait pas échouer l'encaissement, et chemin stocké plutôt qu'URL. Lit aussi le source de `telechargerFacture` : casse si la lecture bascule en clé de service ou si l'URL cesse d'être signée |
 
 ---
 
@@ -722,6 +747,13 @@ casser doit être un choix conscient, pas un effet de bord :
 | 2026-07-28 | Fix auth dark mode : `focus:bg-white` → `focus:bg-phoebe-pearl` (s'adapte au thème). Ajout override `-webkit-autofill` dans `auth.css`. Même correctif appliqué dans l'admin (8 fichiers). |
 | 2026-07-30 | **Documents obligatoires du voyageur** (00057). Trois ajouts à `demandes_billet` : déclaration du certificat fièvre jaune (case à cocher + indicateur admin), mention CEDEAO dans l'interface (le passeport est exigé par les compagnies même vers la CEDEAO, la CNI CEDEAO ne suffit pas), et déclaration d'autorisation parentale pour les mineurs voyageant sans leurs deux parents (case + indicateur admin + validation bloquante). `validerDemandeBillet` vérifie les deux déclarations. Le formulaire client affiche les explications pour chaque document. L'admin voit l'état déclaré/vérifié de chaque document par demande. |
 | 2026-07-30 | **Paiement des billets et passagers** (00058). Le cycle passe à `soumise → en_cours_traitement → devis_envoye → payee → emise`. `devis_valable_jusqu_a` fixé à l'envoi du devis (durée pilotable depuis `/admin/tarifs`). Nouvelle table `passagers_billet` pour collecter nom, date naissance et passeport de chaque voyageur. Branchement `demandes_billet` dans `traitement.ts` (webhook → statut `payee`). `payerDevisBillet` : vérifie validité du devis, collecte les passagers, crée le paiement Stripe/CinetPay et redirige. Bouton « Payer » sur la page réservations quand le devis est valide. Admin affiche l'expiration du devis et l'état `payee`. |
+| 2026-07-30 | **Avis cross-vertical, factures PDF, blog/guides, i18n** (00059). Migration créant 8 nouvelles tables et 2 buckets Storage. **Avis** : table `avis` polymorphique (remplace `avis_transport` — transport seulement), couvre transport, immobilier, assistance, billet, livraison. Modération en admin (`/admin/avis`), affichage public (`/avis`). **Factures** : génération PDF automatique via pdf-lib après chaque paiement capturé (hooké dans `traitement.ts`), stockage dans bucket `factures`, téléchargeable depuis « Mes réservations » (branché en 00061). Paramètres TVA + numérotation dans `parametres_facturation`. **Blog/Guides** : `categories_article` + `articles` avec SEO metadata, image couverture, publication. Admin CRUD complet (`/admin/blog/*`), pages publiques (`/blog`, `/blog/[slug]`). **i18n** : table `langues` (fr/en seed), `LangueProvider` context, `LocaleSwitcher` dans le header, détection Accept-Language + cookie. Navigation admin augmentée : groupes Modération (Avis), Contenu (Blog), Facturation. |
+
+| 2026-07-31 | **La facturation automatique ne fonctionnait pas** (00060). Trois défauts empilés, tous silencieux — le webhook avale l'erreur, à raison : une facture ratée ne doit pas faire échouer un encaissement. (1) `genererEtStockerFacture` lisait `paiement.client_id`, colonne qui **n'existe pas** sur `paiements` ; `factures.client_id` étant NOT NULL, aucune facture n'aurait jamais été insérée. Le client se résout désormais depuis la table référencée — les cinq (`demandes_transport`, `demandes_immobilier`, `demandes_billet`, `expeditions`, `dossiers_voyage`) portent un `client_id`. Le cast `as never` à l'appel masquait exactement cette erreur. (2) `toLocaleString("fr-FR")` sépare les milliers par une espace fine insécable (U+202F), que les polices standard de pdf-lib ne savent pas encoder : `drawText` levait à la première ligne de montant. Montants formatés à la main, et tout texte ramené au jeu WinAnsi — un nom client ne doit pas pouvoir emporter la facture entière. (3) La numérotation lisait `numero_suivant` puis l'incrémentait en deux temps : chaque ligne d'un panier multi-véhicules étant un paiement distinct capturé dans la même transaction, deux factures pouvaient porter le même numéro, et l'unicité en base perdait la seconde. Nouvelle fonction `prochain_numero_facture()`, atomique par `UPDATE ... RETURNING`, réservée à `service_role` — un export de fichier `"use server"` est une route appelable sans authentification, et l'ancienne version consommait un numéro par appel. Ajouté au passage : index unique sur `factures.paiement_id`, court-circuit avant réservation du numéro pour qu'un webhook rejoué ne brûle rien, et pied de page neutre (la facture d'un billet d'avion annonçait « Location et vente de véhicules »). La route `/admin/factures`, présente dans la navigation mais inexistante, est créée : paramètres TVA / préfixe et registre des factures émises, propriétaire seul. |
+
+| 2026-07-31 | **La facture était déposée dans un bucket privé et référencée par une URL publique** (00061) — lien mort dès l'émission, côté client comme côté admin. Le bucket privé est le bon choix : une facture porte le nom, le téléphone, l'email et les montants d'un client. C'est le stockage de `getPublicUrl()` qui était faux. `factures.pdf_url` devient `pdf_chemin` et porte le chemin de l'objet ; l'URL est **signée à la demande** — 60 s pour un téléchargement client, 5 min pour une page d'admin, assez pour ouvrir le PDF, trop court pour qu'un lien recopié reste exploitable. `telechargerFacture` lit la facture **avec la session du demandeur** (ce sont `factures_select_own` / `factures_staff_select` qui tranchent) puis signe en clé de service : interroger en clé de service dès la lecture rendrait toute facture lisible par quiconque connaît un identifiant. Renommage sans risque, la table étant vide — la génération n'avait jamais abouti (cf. 00060). |
+
+| 2026-07-31 | **Le client peut enfin récupérer ses factures**, et `factures.devis` devient `devise` (00062). Le téléchargement était annoncé dans le journal de 00059 mais `telechargerFacture` n'était branchée sur aucune interface : les factures existaient sans chemin pour y accéder. Nouveau `TelechargerFacture` sur « Mes réservations », qui demande l'URL signée **au clic** — signée au rendu, elle expirerait avant que le client ne clique, et allonger sa validité pour compenser laisserait traîner un accès à un document portant ses coordonnées. Les factures sont indexées par demande : plusieurs par ligne sont possibles (acompte puis solde, ou caution en plus du montant), et le numéro n'est affiché que dans ce cas — seul, il n'apprend rien. La coquille `devis` → `devise` est corrigée par migration plutôt que dans 00059, déjà appliquée : dans un projet où « devis » désigne le chiffrage d'un billet d'avion, le faux ami coûtait cher à la lecture du schéma. |
 
 ## 13. ÉVOLUTION
 
