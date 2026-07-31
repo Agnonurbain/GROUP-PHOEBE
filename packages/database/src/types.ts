@@ -61,6 +61,65 @@ export type Database = {
           },
         ]
       }
+      articles: {
+        Row: {
+          auteur: string | null
+          categorie_id: string | null
+          contenu: string
+          created_at: string
+          date_publication: string | null
+          id: string
+          image_couverture: string | null
+          meta_description: string | null
+          meta_title: string | null
+          publie: boolean
+          resume: string | null
+          slug: string
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          auteur?: string | null
+          categorie_id?: string | null
+          contenu: string
+          created_at?: string
+          date_publication?: string | null
+          id?: string
+          image_couverture?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          publie?: boolean
+          resume?: string | null
+          slug: string
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          auteur?: string | null
+          categorie_id?: string | null
+          contenu?: string
+          created_at?: string
+          date_publication?: string | null
+          id?: string
+          image_couverture?: string | null
+          meta_description?: string | null
+          meta_title?: string | null
+          publie?: boolean
+          resume?: string | null
+          slug?: string
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "articles_categorie_id_fkey"
+            columns: ["categorie_id"]
+            isOneToOne: false
+            referencedRelation: "categories_article"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -134,6 +193,66 @@ export type Database = {
           {
             foreignKeyName: "audit_logs_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      avis: {
+        Row: {
+          client_id: string
+          commentaire: string | null
+          created_at: string
+          id: string
+          modere_at: string | null
+          modere_par: string | null
+          note: number
+          reference_id: string
+          reference_table: string
+          reponse_admin: string | null
+          statut: string
+          titre: string | null
+        }
+        Insert: {
+          client_id: string
+          commentaire?: string | null
+          created_at?: string
+          id?: string
+          modere_at?: string | null
+          modere_par?: string | null
+          note: number
+          reference_id: string
+          reference_table: string
+          reponse_admin?: string | null
+          statut?: string
+          titre?: string | null
+        }
+        Update: {
+          client_id?: string
+          commentaire?: string | null
+          created_at?: string
+          id?: string
+          modere_at?: string | null
+          modere_par?: string | null
+          note?: number
+          reference_id?: string
+          reference_table?: string
+          reponse_admin?: string | null
+          statut?: string
+          titre?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "avis_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "avis_modere_par_fkey"
+            columns: ["modere_par"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -262,6 +381,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      categories_article: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          nom: string
+          ordre: number
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          nom: string
+          ordre?: number
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          nom?: string
+          ordre?: number
+          slug?: string
+        }
+        Relationships: []
       }
       chauffeurs: {
         Row: {
@@ -978,6 +1124,69 @@ export type Database = {
           },
         ]
       }
+      factures: {
+        Row: {
+          annulee: boolean
+          client_id: string
+          created_at: string
+          devise: string
+          id: string
+          montant_ht: number
+          montant_ttc: number
+          numero: string
+          paiement_id: string
+          pdf_chemin: string | null
+          reference_id: string
+          reference_table: string
+          taux_tva: number
+        }
+        Insert: {
+          annulee?: boolean
+          client_id: string
+          created_at?: string
+          devise?: string
+          id?: string
+          montant_ht: number
+          montant_ttc: number
+          numero: string
+          paiement_id: string
+          pdf_chemin?: string | null
+          reference_id: string
+          reference_table: string
+          taux_tva?: number
+        }
+        Update: {
+          annulee?: boolean
+          client_id?: string
+          created_at?: string
+          devise?: string
+          id?: string
+          montant_ht?: number
+          montant_ttc?: number
+          numero?: string
+          paiement_id?: string
+          pdf_chemin?: string | null
+          reference_id?: string
+          reference_table?: string
+          taux_tva?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "factures_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "factures_paiement_id_fkey"
+            columns: ["paiement_id"]
+            isOneToOne: false
+            referencedRelation: "paiements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       favoris: {
         Row: {
           bien_id: string | null
@@ -1064,6 +1273,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      langues: {
+        Row: {
+          actif: boolean
+          code: string
+          created_at: string
+          defaut: boolean
+          drapeau: string | null
+          nom: string
+          ordre: number
+        }
+        Insert: {
+          actif?: boolean
+          code: string
+          created_at?: string
+          defaut?: boolean
+          drapeau?: string | null
+          nom: string
+          ordre?: number
+        }
+        Update: {
+          actif?: boolean
+          code?: string
+          created_at?: string
+          defaut?: boolean
+          drapeau?: string | null
+          nom?: string
+          ordre?: number
+        }
+        Relationships: []
       }
       lignes_demande: {
         Row: {
@@ -1280,6 +1519,30 @@ export type Database = {
         }
         Relationships: []
       }
+      parametres_avis: {
+        Row: {
+          created_at: string
+          delai_apres_terme_jours: number
+          id: boolean
+          moderation_obligatoire: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          delai_apres_terme_jours?: number
+          id?: boolean
+          moderation_obligatoire?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          delai_apres_terme_jours?: number
+          id?: boolean
+          moderation_obligatoire?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       parametres_billet: {
         Row: {
           delai_reponse_heures: number
@@ -1390,6 +1653,36 @@ export type Database = {
           updated_at?: string
           whatsapp?: string | null
           youtube?: string | null
+        }
+        Relationships: []
+      }
+      parametres_facturation: {
+        Row: {
+          created_at: string
+          email_cc: string | null
+          id: boolean
+          numero_suivant: number
+          prefixe_facture: string
+          taux_tva: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email_cc?: string | null
+          id?: boolean
+          numero_suivant?: number
+          prefixe_facture?: string
+          taux_tva?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email_cc?: string | null
+          id?: boolean
+          numero_suivant?: number
+          prefixe_facture?: string
+          taux_tva?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2015,6 +2308,7 @@ export type Database = {
       is_proprietaire: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
       own_role: { Args: never; Returns: string }
+      prochain_numero_facture: { Args: never; Returns: string }
       own_statut_verification: { Args: never; Returns: string }
       owns_paiement: { Args: { ref_id: string }; Returns: boolean }
       stored_role: { Args: { target: string }; Returns: string }

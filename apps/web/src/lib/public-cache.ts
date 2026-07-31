@@ -326,6 +326,8 @@ export async function revalidatePublicCache() {
   (revalidateTag as (tag: string) => void)("tarifs_livraison");
   (revalidateTag as (tag: string) => void)("tarifs_assistance");
   (revalidateTag as (tag: string) => void)("parametres_contact");
+  (revalidateTag as (tag: string) => void)("avis");
+  (revalidateTag as (tag: string) => void)("articles");
 }
 // Livraison — grille tarifaire et paliers de poids pilotés depuis /admin/tarifs.
 // Repli sur les constantes du module si la base ne répond pas : mieux vaut un

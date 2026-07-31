@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { getStripe } from "./stripe";
+import { genererEtStockerFacture } from "@/lib/facture-pdf";
 
 type AdminClient = ReturnType<typeof createClient<Database>>;
 type Paiement = Database["public"]["Tables"]["paiements"]["Row"];
@@ -178,6 +179,18 @@ async function confirmerUnPaiement(
   // Livraison (expeditions) : aucun changement de statut à la capture — l'état
   // de paiement est porté par la table paiements ; la gestion du cycle de vie
   // (prise_en_charge → en_transit → livree) se fait côté admin.
+
+  // La facture est un effet de bord de l'encaissement, pas une condition : son
+  // échec ne doit pas renvoyer un statut d'erreur au prestataire, qui rejouerait
+  // le webhook sur un paiement déjà capturé.
+  try {
+    await genererEtStockerFacture(admin, paiement);
+  } catch (err) {
+    console.error(
+      `Erreur génération facture PDF (paiement ${paiement.id}) :`,
+      err
+    );
+  }
 
   return { ok: true };
 }

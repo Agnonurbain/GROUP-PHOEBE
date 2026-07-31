@@ -9,63 +9,8 @@ const { confirmerCommande, annulerCommande } = await import(
   "@/lib/payments/traitement"
 );
 
-// ─── Mock Supabase en memoire : modelise paiements + demandes_transport et les
-// chaines de requetes utilisees par traitement.ts (select/eq/single, update/eq,
-// delete/eq). Les objets sont mutes en place pour observer les effets. ────────
-
-type Row = Record<string, unknown>;
-
-function createStore(tables: Record<string, Row[]>) {
-  function match(row: Row, filters: [string, unknown][]) {
-    return filters.every(([c, v]) => row[c] === v);
-  }
-  return {
-    from(table: string) {
-      const rows = tables[table] ?? [];
-      return {
-        select() {
-          const filters: [string, unknown][] = [];
-          const b = {
-            eq(c: string, v: unknown) { filters.push([c, v]); return b; },
-            single() {
-              const r = rows.find((row) => match(row, filters)) ?? null;
-              return Promise.resolve({ data: r, error: null });
-            },
-            then(resolve: (x: unknown) => void) {
-              resolve({ data: rows.filter((row) => match(row, filters)), error: null });
-            },
-          };
-          return b;
-        },
-        update(vals: Row) {
-          const filters: [string, unknown][] = [];
-          const b = {
-            eq(c: string, v: unknown) { filters.push([c, v]); return b; },
-            then(resolve: (x: unknown) => void) {
-              const matched = rows.filter((row) => match(row, filters));
-              matched.forEach((row) => Object.assign(row, vals));
-              resolve({ error: null, count: matched.length });
-            },
-          };
-          return b;
-        },
-        delete() {
-          const filters: [string, unknown][] = [];
-          const b = {
-            eq(c: string, v: unknown) { filters.push([c, v]); return b; },
-            then(resolve: (x: unknown) => void) {
-              for (let i = rows.length - 1; i >= 0; i--) {
-                if (match(rows[i], filters)) rows.splice(i, 1);
-              }
-              resolve({ error: null });
-            },
-          };
-          return b;
-        },
-      };
-    },
-  };
-}
+// Mock Supabase en memoire partage avec facture.test.ts.
+import { createStore, type Row } from "./helpers/supabase-store";
 
 function paiement(id: string, over: Row = {}): Row {
   return {

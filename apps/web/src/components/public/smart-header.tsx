@@ -7,12 +7,16 @@ import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui"
 import { LogoutButton } from "@/components/logout-button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LocaleSwitcher } from "@/components/public/locale-switcher"
+import type { Langue } from "@/lib/langues"
 
 type Vertical = "transport" | "livraison" | "immobilier" | "assistance" | "default"
 
 interface SmartHeaderProps {
   vertical?: Vertical
   session?: { nom?: string; role?: string } | null
+  langues?: Langue[]
+  langue?: string
 }
 
 // Dimensions intrinsèques des PNG (marges transparentes rognées)
@@ -39,7 +43,7 @@ function detectVertical(pathname: string): Vertical {
   return "default"
 }
 
-export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderProps) {
+export function SmartHeader({ vertical: forcedVertical, session, langues, langue }: SmartHeaderProps) {
   const pathname = usePathname()
   const vertical = forcedVertical ?? detectVertical(pathname)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -111,6 +115,9 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
             ),
           )}
           <ThemeToggle className="text-public-text-muted hover:text-public-text" />
+          {langues && langue && (
+            <LocaleSwitcher langues={langues} current={langue} />
+          )}
           {session ? (
             <span className="flex items-center gap-3">
               {showServiceCta && (
@@ -151,6 +158,9 @@ export function SmartHeader({ vertical: forcedVertical, session }: SmartHeaderPr
 
         <div className="flex items-center gap-1 md:hidden">
           <ThemeToggle className="text-public-text-muted hover:text-public-text" />
+          {langues && langue && (
+            <LocaleSwitcher langues={langues} current={langue} />
+          )}
           <button
           className="flex h-11 w-11 items-center justify-center rounded-lg text-public-text-muted transition-colors hover:bg-white/5 hover:text-public-text"
           onClick={() => setMenuOpen(!menuOpen)}

@@ -17,6 +17,9 @@ import {
   Users,
   ScrollText,
   Settings,
+  MessageSquare,
+  PenLine,
+  Receipt,
   type LucideIcon,
 } from "lucide-react"
 
@@ -106,10 +109,23 @@ export const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
+    title: "Modération",
+    items: [
+      { href: "/admin/avis", label: "Avis clients", icon: MessageSquare },
+    ],
+  },
+  {
+    title: "Contenu",
+    items: [
+      { href: "/admin/blog", label: "Blog / Guides", icon: PenLine },
+    ],
+  },
+  {
     title: "Administration",
     proprietaireOnly: true,
     items: [
       { href: "/admin/comptes", label: "Comptes internes", icon: Users },
+      { href: "/admin/factures", label: "Facturation", icon: Receipt },
       { href: "/admin/audit", label: "Journal d'audit", icon: ScrollText },
     ],
   },
