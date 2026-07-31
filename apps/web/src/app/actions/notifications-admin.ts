@@ -75,6 +75,18 @@ export async function notifierAdminNouvelleReservation(
   });
 }
 
+export async function notifierAdminAnnulationExpedition(
+  numeroSuivi: string,
+  aRembourser: boolean
+) {
+  await notifierStaff({
+    evenement: "annulation_expedition",
+    titre: "Envoi annulé par le client",
+    message: `${numeroSuivi}${aRembourser ? " · remboursement à traiter" : ""}`,
+    lien: "/admin/expeditions",
+  });
+}
+
 export async function notifierAdminNouveauDossierVoyage(
   _dossierId: string,
   clientNom: string,

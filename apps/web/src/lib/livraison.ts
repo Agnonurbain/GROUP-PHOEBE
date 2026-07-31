@@ -148,6 +148,7 @@ export const STATUT_LIVRAISON = {
   enTransit: "en_transit",
   livree: "livree",
   echecLivraison: "echec_livraison",
+  annulee: "annulee",
 } as const;
 
 export const STATUT_LIVRAISON_LABELS: Record<string, string> = {
@@ -156,6 +157,7 @@ export const STATUT_LIVRAISON_LABELS: Record<string, string> = {
   en_transit: "En transit",
   livree: "Livrée",
   echec_livraison: "Échec de livraison",
+  annulee: "Annulée",
 };
 
 export type StatutLivraison = (typeof STATUT_LIVRAISON)[keyof typeof STATUT_LIVRAISON];
@@ -170,15 +172,18 @@ export type StatutLivraison = (typeof STATUT_LIVRAISON)[keyof typeof STATUT_LIVR
  * pouvait afficher une chronologie impossible — et c'est la seule chose qu'un
  * client voit.
  *
- * `livree` est terminal. `echec_livraison` ne l'est pas : une seconde
- * présentation est le déroulé normal, pas l'exception.
+ * `livree` et `annulee` sont terminaux. `echec_livraison` ne l'est pas : une
+ * seconde présentation est le déroulé normal, pas l'exception.
  */
 export const TRANSITIONS_LIVRAISON: Record<StatutLivraison, readonly StatutLivraison[]> = {
-  creee: ["prise_en_charge", "echec_livraison"],
+  creee: ["prise_en_charge", "echec_livraison", "annulee"],
   prise_en_charge: ["en_transit", "echec_livraison"],
   en_transit: ["livree", "echec_livraison"],
   livree: [],
   echec_livraison: ["prise_en_charge", "en_transit"],
+  // Terminal, et volontairement distinct de `echec_livraison` : reprendre un
+  // échec est le déroulé normal, reprendre une annulation est un contresens.
+  annulee: [],
 } as const;
 
 export function isStatutLivraison(v: unknown): v is StatutLivraison {

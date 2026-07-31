@@ -98,12 +98,12 @@ export function ComptesForm() {
             </div>
 
             <div>
-              <label htmlFor="capacite_max_par_jour" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-                Capacité par jour
+              <label htmlFor="charge_max_simultanee" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+                Charge simultanée max
               </label>
               <input
-                id="capacite_max_par_jour"
-                name="capacite_max_par_jour"
+                id="charge_max_simultanee"
+                name="charge_max_simultanee"
                 type="number"
                 min={1}
                 step={1}
@@ -111,8 +111,9 @@ export function ComptesForm() {
                 className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
               />
               <p className="mt-1.5 text-xs text-phoebe-anthracite/60">
-                Nombre de colis en cours au-delà duquel l&apos;affectation
-                automatique le passe. Modifiable ensuite depuis Livreurs.
+                Nombre de colis simultanément en cours au-delà duquel
+                l&apos;affectation automatique le passe. Modifiable ensuite depuis
+                Livreurs.
               </p>
             </div>
           </>

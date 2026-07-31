@@ -6,10 +6,13 @@ import { createClient } from "@/lib/supabase/server"
 
 import { Card } from "@/components/ui"
 import { annulerParClient } from "@/app/actions/demandes"
+import { annulerExpeditionParClient } from "@/app/actions/livraison"
 import { PayerAcompte } from "@/components/public/payer-acompte"
 import { PayerBillet } from "@/components/public/payer-billet"
 import { ContreOffreReponse } from "@/components/public/contre-offre-reponse"
 import { TelechargerFacture } from "@/components/public/telecharger-facture"
+import { PreuveLivraison } from "@/components/public/preuve-livraison"
+import { DeposerAvis } from "@/components/public/deposer-avis"
 import { formaterCreneau } from "@/lib/immobilier"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
 
@@ -44,6 +47,10 @@ type ReservationItem = {
    * montant.
    */
   factures: { id: string; numero: string }[]
+  /** Livraison remise : preuve consultable par le client. */
+  preuve: { recuPar: string | null; livreeAt: string | null } | null
+  /** Table d'origine, pour rattacher un avis à la bonne prestation. */
+  referenceTable: string
 }
 
 const TABS = [
@@ -103,7 +110,7 @@ export default async function CompteReservations({
       .order("created_at", { ascending: false }),
     supabase
       .from("expeditions")
-      .select("id, created_at, statut, prix, numero_suivi, mode")
+      .select("id, created_at, statut, prix, numero_suivi, mode, recu_par, livree_at, preuve_chemin")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -169,6 +176,7 @@ export default async function CompteReservations({
     created_at: d.created_at,
     title: `${d.vehicules?.marque ?? ""} ${d.vehicules?.modele ?? ""}`.trim() || "Véhicule",
     category: "Transport",
+    referenceTable: "demandes_transport",
     detailHref: `/reservation/confirmation?demande=${d.id}`,
     period: new Date(d.created_at).toLocaleDateString("fr-FR"),
     price: d.montant ? `${d.montant.toLocaleString("fr-FR")} FCFA` : "—",
@@ -183,6 +191,7 @@ export default async function CompteReservations({
     isAchat: d.type === "achat",
     contreOffre: null,
     factures: facturesDe(d.id),
+    preuve: null,
   })) ?? []
 
   // Le libellé disait « Visite: <date de création> » pour toutes les demandes
@@ -213,6 +222,7 @@ export default async function CompteReservations({
     created_at: d.created_at,
     title: d.biens?.localisation ?? "Bien immobilier",
     category: "Immobilier",
+    referenceTable: "demandes_immobilier",
     detailHref: `/reservation/confirmation?demande=${d.id}`,
     period: periodeImmo(d),
     // Le montant convenu prime : c'est le prix arrêté, pas l'offre initiale.
@@ -230,6 +240,7 @@ export default async function CompteReservations({
         ? Number(d.montant_contre_offre)
         : null,
     factures: facturesDe(d.id),
+    preuve: null,
   })) ?? []
 
   const assistanceReservations: ReservationItem[] = assistanceRes.data?.map((d) => ({
@@ -237,6 +248,7 @@ export default async function CompteReservations({
     created_at: d.created_at,
     title: `${d.type} - ${d.pays_cible}`,
     category: "Assistance",
+    referenceTable: "dossiers_voyage",
     detailHref: `/reservation/confirmation?demande=${d.id}`,
     period: new Date(d.created_at).toLocaleDateString("fr-FR"),
     price: "—",
@@ -246,6 +258,7 @@ export default async function CompteReservations({
     isAchat: false,
     contreOffre: null,
     factures: facturesDe(d.id),
+    preuve: null,
   })) ?? []
 
   const livraisonReservations: ReservationItem[] = livraisonRes.data?.map((d) => ({
@@ -253,6 +266,7 @@ export default async function CompteReservations({
     created_at: d.created_at,
     title: `Colis ${d.numero_suivi}`,
     category: "Livraison",
+    referenceTable: "expeditions",
     detailHref: `/suivi?numero=${encodeURIComponent(d.numero_suivi)}`,
     period: new Date(d.created_at).toLocaleDateString("fr-FR"),
     price: d.prix != null ? `${Number(d.prix).toLocaleString("fr-FR")} FCFA` : "—",
@@ -262,6 +276,8 @@ export default async function CompteReservations({
     isAchat: false,
     contreOffre: null,
     factures: facturesDe(d.id),
+    // La preuve n'existe que sur un colis effectivement remis.
+    preuve: d.preuve_chemin ? { recuPar: d.recu_par, livreeAt: d.livree_at } : null,
   })) ?? []
 
   const maintenant = new Date()
@@ -270,6 +286,7 @@ export default async function CompteReservations({
     created_at: d.created_at,
     title: `${d.depart} → ${d.destination}`,
     category: "Billet",
+    referenceTable: "demandes_billet",
     detailHref: "/assistance#billet",
     period: `${TYPE_TRAJET_LABELS[d.type_trajet] ?? d.type_trajet} · ${new Date(d.date_depart).toLocaleDateString("fr-FR")}${
       d.date_retour ? ` → ${new Date(d.date_retour).toLocaleDateString("fr-FR")}` : ""
@@ -289,6 +306,7 @@ export default async function CompteReservations({
     isAchat: false,
     contreOffre: null,
     factures: facturesDe(d.id),
+    preuve: null,
   })) ?? []
 
   const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations, ...billetReservations]
@@ -395,6 +413,17 @@ export default async function CompteReservations({
                   </Link>
                   {/* Une facture par paiement encaissé : le numéro n'est affiché
                       que s'il y en a plusieurs, sinon il n'apprend rien. */}
+                  {/* L'avis n'a de sens qu'une fois la prestation rendue. */}
+                  {isTerminee(r.status) && (
+                    <DeposerAvis referenceTable={r.referenceTable} referenceId={r.id} />
+                  )}
+                  {r.preuve && (
+                    <PreuveLivraison
+                      expeditionId={r.id}
+                      recuPar={r.preuve.recuPar}
+                      livreeAt={r.preuve.livreeAt}
+                    />
+                  )}
                   {r.factures.map((f) => (
                     <TelechargerFacture
                       key={f.id}
@@ -402,6 +431,18 @@ export default async function CompteReservations({
                       label={r.factures.length > 1 ? `Facture ${f.numero}` : "Facture"}
                     />
                   ))}
+                  {/* Une livraison ne s'annule que tant que personne ne s'est
+                      déplacé : au-delà, la course est engagée. */}
+                  {r.category === "Livraison" && r.status === "creee" && (
+                    <form action={async () => { "use server"; await annulerExpeditionParClient(r.id) }}>
+                      <button
+                        type="submit"
+                        className="text-xs text-[#EF4444] hover:text-[#DC2626] transition-colors"
+                      >
+                        Annuler l&apos;envoi
+                      </button>
+                    </form>
+                  )}
                   {r.category === "Transport" && canCancel(r.status) && (
                     <form action={async () => { await annulerParClient(r.id) }}>
                       <button

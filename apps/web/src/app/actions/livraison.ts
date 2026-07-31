@@ -26,7 +26,10 @@ import { getCommunes, getTarifsLivraison } from "@/lib/public-cache";
 import { compressImage } from "@/lib/compress-image";
 import { validateImageUpload } from "@/lib/upload-validation";
 import { notifierClient } from "@/lib/notifications";
-import { notifierAdminNouvelleReservation } from "./notifications-admin";
+import {
+  notifierAdminNouvelleReservation,
+  notifierAdminAnnulationExpedition,
+} from "./notifications-admin";
 
 export type LivraisonState = {
   error?: string;
@@ -99,6 +102,7 @@ export async function creerExpedition(
   const poidsRaw = formData.get("poids_kg") as string;
   const valeurRaw = formData.get("valeur_declaree") as string;
   const methode = formData.get("methode_paiement") as string;
+  const dateSouhaitee = ((formData.get("date_souhaitee") as string) || "").trim();
 
   if (
     !expediteurNom || !expediteurContact ||
@@ -111,7 +115,19 @@ export async function creerExpedition(
   if (!isModeLivraison(mode)) {
     return { error: "Mode de livraison invalide." };
   }
-  if (!["cinetpay", "stripe"].includes(methode)) {
+
+  // Le mode « programmée » n'a de sens qu'avec une date, et une date n'en a pas
+  // sur les autres modes — elle y laisserait croire à un engagement de créneau.
+  if (mode === "programmee") {
+    if (!dateSouhaitee) return { error: "Indiquez la date de livraison souhaitée." };
+    const demain = new Date();
+    demain.setHours(0, 0, 0, 0);
+    demain.setDate(demain.getDate() + 1);
+    if (Number.isNaN(Date.parse(dateSouhaitee)) || new Date(dateSouhaitee) < demain) {
+      return { error: "La date programmée doit être au plus tôt demain." };
+    }
+  }
+  if (!["cinetpay", "stripe", "a_la_livraison"].includes(methode)) {
     return { error: "Méthode de paiement invalide." };
   }
 
@@ -175,6 +191,7 @@ export async function creerExpedition(
       commune_collecte: communeCollecte,
       commune_livraison: communeLivraison,
       mode,
+      date_souhaitee: mode === "programmee" ? dateSouhaitee : null,
       nature_colis: natureColis,
       dimensions,
       poids_kg: poidsKg,
@@ -224,7 +241,7 @@ export async function creerExpedition(
       reference_id: expedition.id,
       type: "montant",
       montant: prix,
-      methode: methode as "cinetpay" | "stripe",
+      methode: methode as "cinetpay" | "stripe" | "a_la_livraison",
       statut: "en_attente",
     })
     .select("id")
@@ -237,6 +254,15 @@ export async function creerExpedition(
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
   const description = `Livraison ${MODE_LABELS[mode]} · ${ZONE_LABELS[zone]}`;
+
+  // Paiement à la livraison : le colis part sans encaissement, le paiement
+  // reste `en_attente` jusqu'à ce que le livreur encaisse à la remise. On ne
+  // passe donc par aucun prestataire, et le client va directement à la
+  // confirmation — c'est la commande qui est acquise, pas l'argent.
+  if (methode === "a_la_livraison") {
+    await notifierAdminNouvelleReservation(expedition.id, expediteurNom, 1, prix);
+    redirect(`/livraison/confirmation?exp=${expedition.id}`);
+  }
 
   let paymentUrl: string;
   try {
@@ -286,7 +312,7 @@ async function choisirLivreurAuto(
 ): Promise<string | null> {
   const { data: livreurs } = await admin
     .from("livreurs")
-    .select("id, capacite_max_par_jour, zone_couverture")
+    .select("id, charge_max_simultanee, zone_couverture")
     .eq("actif", true);
   if (!livreurs || livreurs.length === 0) return null;
 
@@ -308,7 +334,7 @@ async function choisirLivreurAuto(
   const preferes = livreurs.filter((l) => couvreLaCommune(l.zone_couverture, communeCollecte));
   const pool = preferes.length > 0 ? preferes : livreurs;
   const disponibles = pool.filter(
-    (l) => (charge.get(l.id) ?? 0) < (l.capacite_max_par_jour ?? Number.POSITIVE_INFINITY)
+    (l) => (charge.get(l.id) ?? 0) < (l.charge_max_simultanee ?? Number.POSITIVE_INFINITY)
   );
   if (disponibles.length === 0) return null;
 
@@ -379,6 +405,58 @@ export async function affecterLivreurManuel(
   if (!expeditionId || !livreurId) return { error: "Expédition ou livreur manquant." };
 
   return assignerEtNotifier(admin, expeditionId, livreurId);
+}
+
+/**
+ * Retire le livreur d'une expédition.
+ *
+ * On pouvait réaffecter, jamais désaffecter : un colis confié à quelqu'un
+ * d'indisponible restait sur son écran, et l'opérateur devait choisir un autre
+ * livreur pour l'en sortir — même quand personne n'était disponible. Le colis
+ * retourne dans la file des non affectées, là où il est visible.
+ */
+export async function desaffecterLivreur(
+  _prev: ExpeditionActionState,
+  formData: FormData
+): Promise<ExpeditionActionState> {
+  const { user } = await requireStaff();
+  const admin = getAdmin();
+
+  const expeditionId = formData.get("expedition_id") as string;
+  if (!expeditionId) return { error: "Expédition invalide." };
+
+  const { data: exp } = await admin
+    .from("expeditions")
+    .select("livreur_id, statut")
+    .eq("id", expeditionId)
+    .single();
+  if (!exp) return { error: "Expédition introuvable." };
+  if (!exp.livreur_id) return { success: true };
+
+  // Un colis remis n'est plus à personne : lui retirer son livreur effacerait
+  // qui l'a livré, alors que la preuve de remise y renvoie.
+  if (exp.statut === STATUT_LIVRAISON.livree) {
+    return { error: "Un colis déjà livré ne peut pas être désaffecté." };
+  }
+
+  const { error } = await admin
+    .from("expeditions")
+    .update({ livreur_id: null, updated_at: new Date().toISOString() })
+    .eq("id", expeditionId);
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId: user.sub as string,
+    action: "desaffecter_livreur",
+    tableName: "expeditions",
+    recordId: expeditionId,
+    oldValues: { livreur_id: exp.livreur_id },
+    newValues: { livreur_id: null },
+  });
+
+  revalidatePath("/admin/expeditions");
+  revalidatePath("/terrain/livreur");
+  return { success: true };
 }
 
 export async function changerStatutExpedition(
@@ -497,6 +575,203 @@ export async function ajusterPrixExpedition(
     `Le tarif du colis ${exp.numero_suivi} a été ${sens} : ${nouveauPrix.toLocaleString("fr-FR")} FCFA (${motif}). Notre équipe vous recontacte pour la régularisation.`
   );
 
+  revalidatePath("/admin/expeditions");
+  return { success: true };
+}
+
+/**
+ * Clôture définitive d'une expédition en échec.
+ *
+ * `echec_livraison` n'était pas terminal — une seconde présentation est le
+ * déroulé normal. Mais quand l'envoi est abandonné pour de bon, rien
+ * n'instruisait la suite : le client avait payé un service non rendu et aucun
+ * chemin ne menait au remboursement. Les expéditions étaient absentes de
+ * `remboursements.ts`.
+ *
+ * Le paiement suit ce qui s'est réellement passé :
+ *  - encaissé        → `remboursement_requis`, la file d'attente existante prend le relais ;
+ *  - jamais encaissé → `echoue`, il n'y a rien à rendre (cas nominal du paiement
+ *                      à la livraison sur un colis jamais remis).
+ */
+export async function cloturerEchecLivraison(
+  _prev: ExpeditionActionState,
+  formData: FormData
+): Promise<ExpeditionActionState> {
+  const { user } = await requireStaff();
+  const admin = getAdmin();
+
+  const expeditionId = formData.get("expedition_id") as string;
+  const motif = ((formData.get("motif") as string) || "").trim();
+  if (!expeditionId) return { error: "Expédition invalide." };
+  if (!motif) return { error: "Indiquez le motif de la clôture." };
+
+  const { data: exp } = await admin
+    .from("expeditions")
+    .select("statut, client_id, numero_suivi")
+    .eq("id", expeditionId)
+    .single();
+  if (!exp) return { error: "Expédition introuvable." };
+
+  if (exp.statut !== STATUT_LIVRAISON.echecLivraison) {
+    return { error: "Seule une expédition en échec peut être clôturée ainsi." };
+  }
+
+  const { data: paiement } = await admin
+    .from("paiements")
+    .select("id, statut, montant")
+    .eq("reference_table", "expeditions")
+    .eq("reference_id", expeditionId)
+    .maybeSingle();
+
+  let messageClient = `Votre envoi ${exp.numero_suivi} est clôturé : ${motif}.`;
+  let sortPaiement: string | null = null;
+
+  if (paiement) {
+    // Le filtre porte sur le statut ATTENDU, jamais sur celui qu'on vient de
+    // lire. Conditionner à l'observé rendait l'opération destructrice au second
+    // passage : la clôture ne change pas le statut de l'expédition, donc elle
+    // est rejouable — et un paiement déjà passé en `remboursement_requis`,
+    // n'étant plus en `capture`, aurait été basculé en `echoue`. Le
+    // remboursement disparaissait de la file, sans bruit.
+    if (paiement.statut === "capture") {
+      const { error: errPaiement } = await admin
+        .from("paiements")
+        .update({ statut: "remboursement_requis" })
+        .eq("id", paiement.id)
+        .eq("statut", "capture");
+      if (errPaiement) return { error: errPaiement.message };
+
+      sortPaiement = "remboursement_requis";
+      messageClient +=
+        ` Le remboursement de ${Number(paiement.montant).toLocaleString("fr-FR")} FCFA est engagé,` +
+        ` notre équipe vous recontacte.`;
+    } else if (paiement.statut === "en_attente") {
+      const { error: errPaiement } = await admin
+        .from("paiements")
+        .update({ statut: "echoue" })
+        .eq("id", paiement.id)
+        .eq("statut", "en_attente");
+      if (errPaiement) return { error: errPaiement.message };
+
+      sortPaiement = "echoue";
+    } else {
+      // Remboursé, remboursement déjà requis, ou déjà clos : le sort du
+      // paiement est arrêté, le redire l'abîmerait.
+      return { error: "Le paiement de cet envoi est déjà instruit." };
+    }
+  }
+
+  await logAudit({
+    userId: user.sub as string,
+    action: "cloturer_echec_livraison",
+    tableName: "expeditions",
+    recordId: expeditionId,
+    oldValues: { statut: exp.statut, paiement: paiement?.statut ?? null },
+    newValues: { motif, paiement: sortPaiement },
+  });
+
+  await notifierClient(exp.client_id, "Envoi clôturé", messageClient);
+
+  revalidatePath("/admin/expeditions");
+  revalidatePath("/admin/remboursements");
+  return { success: true };
+}
+
+/**
+ * Annulation d'une livraison par le client.
+ *
+ * Elle n'existait pas : `annulerParClient` est propre au transport, et le bouton
+ * de « Mes réservations » est conditionné à cette verticale. Un colis commandé
+ * par erreur ne se réglait qu'au téléphone.
+ *
+ * Bornée à `creee` : une fois le colis pris en charge, le livreur s'est déplacé
+ * et la course est engagée — annuler à ce stade est une décision d'équipe, pas
+ * un geste de client.
+ */
+export async function annulerExpeditionParClient(
+  expeditionId: string
+): Promise<ExpeditionActionState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Non authentifié." };
+
+  const admin = getAdmin();
+  const { data: exp } = await admin
+    .from("expeditions")
+    .select("client_id, statut, numero_suivi")
+    .eq("id", expeditionId)
+    .single();
+
+  if (!exp) return { error: "Expédition introuvable." };
+  if (exp.client_id !== user.sub) return { error: "Cet envoi n'est pas le vôtre." };
+
+  if (exp.statut !== STATUT_LIVRAISON.creee) {
+    return {
+      error: "Le colis est déjà pris en charge. Contactez-nous pour l'annuler.",
+    };
+  }
+
+  // La transition d'abord, le paiement ensuite. L'inverse touchait l'argent
+  // avant d'avoir acquis le droit d'annuler : deux requêtes concurrentes, ou un
+  // colis déjà pris en charge entre-temps, laissaient un paiement modifié sur
+  // une expédition qui n'a pas bougé.
+  //
+  // Statut dédié, et le livreur est retiré : sans cela le colis restait sur son
+  // écran (echec_livraison compte parmi les statuts actifs) et il pouvait le
+  // reprendre puis le livrer, alors que le paiement est déjà marqué remboursable.
+  const { error, count } = await admin
+    .from("expeditions")
+    .update(
+      {
+        statut: STATUT_LIVRAISON.annulee,
+        livreur_id: null,
+        updated_at: new Date().toISOString(),
+      },
+      { count: "exact" }
+    )
+    .eq("id", expeditionId)
+    .eq("statut", STATUT_LIVRAISON.creee);
+
+  if (error) return { error: error.message };
+  if (!count) return { error: "Le colis a changé d'état entre-temps. Rechargez la page." };
+
+  const { data: paiement } = await admin
+    .from("paiements")
+    .select("id, statut")
+    .eq("reference_table", "expeditions")
+    .eq("reference_id", expeditionId)
+    .maybeSingle();
+
+  // Comme à la clôture d'un échec : le filtre porte sur le statut attendu, écrit
+  // en clair. Un paiement déjà instruit n'est pas retouché.
+  const aRembourser = paiement?.statut === "capture";
+  if (paiement?.statut === "capture") {
+    await admin
+      .from("paiements")
+      .update({ statut: "remboursement_requis" })
+      .eq("id", paiement.id)
+      .eq("statut", "capture");
+  } else if (paiement?.statut === "en_attente") {
+    await admin
+      .from("paiements")
+      .update({ statut: "echoue" })
+      .eq("id", paiement.id)
+      .eq("statut", "en_attente");
+  }
+
+  await logAudit({
+    userId: user.sub as string,
+    action: "annuler_expedition_client",
+    tableName: "expeditions",
+    recordId: expeditionId,
+    oldValues: { statut: exp.statut },
+    newValues: { statut: STATUT_LIVRAISON.annulee },
+  });
+
+  await notifierAdminAnnulationExpedition(exp.numero_suivi, aRembourser);
+
+  revalidatePath("/compte/reservations");
   revalidatePath("/admin/expeditions");
   return { success: true };
 }

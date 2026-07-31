@@ -8,6 +8,7 @@ import { creerExpedition, type LivraisonState } from "@/app/actions/livraison"
 import {
   MODES_LIVRAISON,
   MODE_LABELS,
+  MODE_DESCRIPTIONS,
   ZONE_LABELS,
   computeLivraisonPrix,
   deriverZoneLivraison,
@@ -84,6 +85,11 @@ export default function CommanderClient({
   paliers: PalierPoids[]
 }) {
   const [state, formAction, pending] = useActionState<LivraisonState, FormData>(creerExpedition, {})
+  // Calculé une fois au montage : `Date.now()` pendant le rendu rendrait le
+  // composant impur, et la borne pourrait bouger d'un rendu à l'autre.
+  const [demain] = useState(() =>
+    new Date(Date.now() + 86400000).toISOString().slice(0, 10)
+  );
   const [mode, setMode] = useState<string>(MODES_LIVRAISON[0])
   const [communeCollecte, setCommuneCollecte] = useState("")
   const [communeLivraison, setCommuneLivraison] = useState("")
@@ -183,7 +189,28 @@ export default function CommanderClient({
                   <option key={m} value={m}>{MODE_LABELS[m]}</option>
                 ))}
               </select>
+              <p className="mt-1 text-xs text-public-text-faint">{MODE_DESCRIPTIONS[mode as keyof typeof MODE_DESCRIPTIONS]}</p>
             </div>
+
+            {/* « Programmée » promettait « vous choisissez la date » sans jamais
+                la demander : le client payait un créneau qu'il ne pouvait pas
+                indiquer. */}
+            {mode === "programmee" && (
+              <div className="mt-5">
+                <label htmlFor="date_souhaitee" className={labelClass}>Date de livraison souhaitée *</label>
+                <input
+                  id="date_souhaitee"
+                  name="date_souhaitee"
+                  type="date"
+                  required
+                  min={demain}
+                  className={inputClass}
+                />
+                <p className="mt-1 text-xs text-public-text-faint">
+                  À partir de demain. La collecte est organisée pour livrer ce jour-là.
+                </p>
+              </div>
+            )}
           </Card>
 
           {/* Colis */}
@@ -227,6 +254,14 @@ export default function CommanderClient({
               <div className="sm:col-span-2">
                 <label htmlFor="valeur_declaree" className={labelClass}>Valeur déclarée (FCFA)</label>
                 <input id="valeur_declaree" name="valeur_declaree" type="number" inputMode="numeric" min="0" placeholder="Optionnel" className={inputClass} />
+                {/* Le champ était demandé sans rien promettre. Le dire est plus
+                    honnête que de laisser entendre une couverture inexistante :
+                    une politique d'indemnisation est une décision commerciale,
+                    pas une déduction à faire depuis ce champ. */}
+                <p className="mt-1 text-xs text-public-text-faint">
+                  Indicatif : nous aide à prendre les précautions de manutention adaptées.
+                  Ne vaut pas assurance — aucune indemnisation ne s&apos;y rattache.
+                </p>
               </div>
               <div className="sm:col-span-2">
                 <label htmlFor="photos" className={labelClass}>Photos du colis (optionnel)</label>
@@ -248,12 +283,20 @@ export default function CommanderClient({
             <h2 className="text-base font-semibold text-public-text">Moyen de paiement</h2>
             <div className="mt-5 space-y-3">
               {[
-                { name: "Mobile Money (Orange, MTN, Wave)", value: "cinetpay" },
-                { name: "Carte bancaire (Visa/Mastercard)", value: "stripe" },
+                {
+                  name: "À la livraison",
+                  value: "a_la_livraison",
+                  detail: "Espèces ou Mobile Money remis au livreur. Rien à payer maintenant.",
+                },
+                { name: "Mobile Money (Orange, MTN, Wave)", value: "cinetpay", detail: "Paiement immédiat, en ligne." },
+                { name: "Carte bancaire (Visa/Mastercard)", value: "stripe", detail: "Paiement immédiat, en ligne." },
               ].map((m, i) => (
-                <label key={m.value} className="flex cursor-pointer items-center gap-4 rounded-xl border border-public-border bg-public-bg p-4 transition-all hover:border-accent-orange/30 has-[:checked]:border-accent-orange has-[:checked]:bg-accent-orange/5">
-                  <input type="radio" name="methode_paiement" value={m.value} defaultChecked={i === 0} required className="h-4 w-4 accent-accent-orange" />
-                  <span className="text-sm font-medium text-public-text">{m.name}</span>
+                <label key={m.value} className="flex cursor-pointer items-start gap-4 rounded-xl border border-public-border bg-public-bg p-4 transition-all hover:border-accent-orange/30 has-[:checked]:border-accent-orange has-[:checked]:bg-accent-orange/5">
+                  <input type="radio" name="methode_paiement" value={m.value} defaultChecked={i === 0} required className="mt-0.5 h-4 w-4 accent-accent-orange" />
+                  <span>
+                    <span className="block text-sm font-medium text-public-text">{m.name}</span>
+                    <span className="mt-0.5 block text-xs text-public-text-muted">{m.detail}</span>
+                  </span>
                 </label>
               ))}
             </div>

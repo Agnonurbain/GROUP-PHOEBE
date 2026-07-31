@@ -6,6 +6,8 @@ import {
   affecterLivreurManuel,
   changerStatutExpedition,
   ajusterPrixExpedition,
+  cloturerEchecLivraison,
+  desaffecterLivreur,
   type ExpeditionActionState,
 } from "@/app/actions/livraison"
 
@@ -41,8 +43,10 @@ export function ExpeditionActions({
   const [manuelState, manuelAction, manuelPending] = useActionState<ExpeditionActionState, FormData>(affecterLivreurManuel, {})
   const [statutState, statutAction, statutPending] = useActionState<ExpeditionActionState, FormData>(changerStatutExpedition, {})
   const [prixState, prixAction, prixPending] = useActionState<ExpeditionActionState, FormData>(ajusterPrixExpedition, {})
+  const [clotureState, clotureAction, cloturePending] = useActionState<ExpeditionActionState, FormData>(cloturerEchecLivraison, {})
+  const [desaffState, desaffAction, desaffPending] = useActionState<ExpeditionActionState, FormData>(desaffecterLivreur, {})
 
-  const erreur = autoState.error || manuelState.error || statutState.error || prixState.error
+  const erreur = autoState.error || manuelState.error || statutState.error || prixState.error || clotureState.error || desaffState.error
   const prixAjustable = isProprietaire && STATUTS_PRIX_AJUSTABLE.includes(currentStatut)
 
   return (
@@ -73,6 +77,16 @@ export function ExpeditionActions({
               </select>
               <button type="submit" disabled={manuelPending} className={btnGhost}>
                 {manuelPending ? "…" : "Affecter"}
+              </button>
+            </form>
+          )}
+          {/* Réaffecter suppose de savoir à qui. Retirer le colis à tout le
+              monde le renvoie dans la file des non affectées. */}
+          {assigned && (
+            <form action={desaffAction}>
+              <input type="hidden" name="expedition_id" value={expeditionId} />
+              <button type="submit" disabled={desaffPending} className={btnGhost}>
+                {desaffPending ? "…" : "Retirer le livreur"}
               </button>
             </form>
           )}
@@ -130,6 +144,34 @@ export function ExpeditionActions({
           </button>
           <p className="w-full text-[11px] text-phoebe-anthracite/60">
             L&apos;écart avec le montant déjà encaissé se régularise hors ligne. Le client est notifié, l&apos;ajustement est tracé.
+          </p>
+        </form>
+      )}
+
+      {/* Un échec se reprend normalement. Quand l'envoi est abandonné pour de
+          bon, la clôture instruit la suite : sans elle, le client avait payé un
+          service non rendu et rien ne menait au remboursement. */}
+      {currentStatut === "echec_livraison" && (
+        <form action={clotureAction} className="mt-4 flex flex-wrap items-end gap-2 border-t border-phoebe-pearl pt-4">
+          <input type="hidden" name="expedition_id" value={expeditionId} />
+          <div className="flex-1 min-w-[14rem]">
+            <label htmlFor={`cloture-${expeditionId}`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
+              Clôturer définitivement — motif
+            </label>
+            <input
+              id={`cloture-${expeditionId}`}
+              name="motif"
+              required
+              placeholder="Ex : destinataire injoignable après trois présentations"
+              className={`${selectClass} w-full`}
+            />
+          </div>
+          <button type="submit" disabled={cloturePending} className={btnGhost}>
+            {cloturePending ? "…" : "Clôturer et instruire"}
+          </button>
+          <p className="w-full text-[11px] text-phoebe-anthracite/60">
+            Un paiement encaissé passe en remboursement à traiter. Un paiement jamais
+            encaissé est simplement clos — il n&apos;y a rien à rendre.
           </p>
         </form>
       )}

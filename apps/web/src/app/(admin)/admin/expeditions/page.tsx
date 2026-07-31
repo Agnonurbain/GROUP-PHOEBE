@@ -22,10 +22,16 @@ const STATUT_COLORS: Record<string, string> = {
   en_transit: "bg-phoebe-gold/10 text-phoebe-gold-dark",
   livree: "bg-phoebe-green/10 text-phoebe-green-deep",
   echec_livraison: "bg-error/10 text-error",
+  annulee: "bg-phoebe-pearl text-phoebe-anthracite",
 }
 
-function paiementBadge(ps: string | undefined): { label: string; color: string } {
+function paiementBadge(ps: string | undefined, methode?: string): { label: string; color: string } {
   if (ps === "capture") return { label: "Payée", color: "bg-phoebe-green/10 text-phoebe-green-deep" }
+  // Un colis payable à la remise n'est pas un impayé : c'est le mode nominal.
+  // Les confondre ferait relancer des clients qui n'ont rien à se reprocher.
+  if (ps === "en_attente" && methode === "a_la_livraison") {
+    return { label: "À encaisser", color: "bg-phoebe-gold/10 text-phoebe-gold-dark" }
+  }
   if (ps === "en_attente") return { label: "Att. paiement", color: "bg-blue-50 text-blue-700" }
   if (ps && ["echoue", "rembourse", "remboursement_requis"].includes(ps)) {
     return { label: "Non payée", color: "bg-error/10 text-error" }
@@ -74,11 +80,15 @@ export default async function ExpeditionsAdminPage({
 
   const ids = expAll.map((e) => e.id)
   const { data: paies } = ids.length
-    ? await db.from("paiements").select("reference_id, statut").eq("reference_table", "expeditions").in("reference_id", ids)
+    ? await db.from("paiements").select("reference_id, statut, methode").eq("reference_table", "expeditions").in("reference_id", ids)
     : { data: [] }
   const paiementStatut = new Map<string, string>()
+  const paiementMethode = new Map<string, string>()
   for (const p of paies ?? []) {
-    if (p.reference_id && !paiementStatut.has(p.reference_id)) paiementStatut.set(p.reference_id, p.statut)
+    if (p.reference_id && !paiementStatut.has(p.reference_id)) {
+      paiementStatut.set(p.reference_id, p.statut)
+      paiementMethode.set(p.reference_id, p.methode)
+    }
   }
 
   const clientIds = [...new Set(expAll.map((e) => e.client_id))]
@@ -123,6 +133,7 @@ export default async function ExpeditionsAdminPage({
     const ps = paiementStatut.get(e.id)
     if (fPaiement === "paye" && ps !== "capture") return false
     if (fPaiement === "attente" && ps !== "en_attente") return false
+    if (fPaiement === "a_encaisser" && !(ps === "en_attente" && paiementMethode.get(e.id) === "a_la_livraison")) return false
     if (fPaiement === "echoue" && !(ps && ["echoue", "rembourse", "remboursement_requis"].includes(ps))) return false
     if (fQ && !e.numero_suivi.toLowerCase().includes(fQ.toLowerCase())) return false
     return true
@@ -156,6 +167,7 @@ export default async function ExpeditionsAdminPage({
             <option value="all">Tous</option>
             <option value="paye">Payées</option>
             <option value="attente">En attente</option>
+            <option value="a_encaisser">À encaisser (à la livraison)</option>
             <option value="echoue">Non payées</option>
           </select>
         </div>
@@ -185,7 +197,7 @@ export default async function ExpeditionsAdminPage({
       ) : (
         <div className="space-y-4">
           {expeditions.map((e) => {
-            const pb = paiementBadge(paiementStatut.get(e.id))
+            const pb = paiementBadge(paiementStatut.get(e.id), paiementMethode.get(e.id))
             const photos = ((e as unknown as { photos?: string[] }).photos) ?? []
             const preuve = {
               photo: e.preuve_chemin ? preuvesSignees.get(e.preuve_chemin) ?? null : null,
@@ -211,6 +223,9 @@ export default async function ExpeditionsAdminPage({
                     {ZONE_LABELS[e.zone as keyof typeof ZONE_LABELS] ?? e.zone} ·{" "}
                     {MODE_LABELS[e.mode as keyof typeof MODE_LABELS] ?? e.mode} ·{" "}
                     {new Date(e.created_at).toLocaleDateString("fr-FR")}
+                    {e.date_souhaitee && (
+                      <> · <strong>à livrer le {new Date(e.date_souhaitee).toLocaleDateString("fr-FR")}</strong></>
+                    )}
                   </p>
                 </div>
                 <div className="text-right">

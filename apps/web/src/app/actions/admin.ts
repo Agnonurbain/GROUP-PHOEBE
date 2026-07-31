@@ -132,7 +132,7 @@ export async function creerCompteInterne(
   const role = formData.get("role") as "operateur" | "livreur" | "agent_immobilier";
   const password = formData.get("password") as string;
   const zoneCouverture = ((formData.get("zone_couverture") as string) || "").trim();
-  const capaciteRaw = (formData.get("capacite_max_par_jour") as string) || "";
+  const capaciteRaw = (formData.get("charge_max_simultanee") as string) || "";
 
   if (!nom || !telephone || !role || !password) {
     return { error: "Tous les champs sont obligatoires." };
@@ -198,7 +198,7 @@ export async function creerCompteInterne(
       .insert({
         user_id: data.user.id,
         zone_couverture: zoneCouverture || null,
-        ...(capacite !== null ? { capacite_max_par_jour: capacite } : {}),
+        ...(capacite !== null ? { charge_max_simultanee: capacite } : {}),
       });
 
     if (livreurError) {
