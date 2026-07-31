@@ -163,7 +163,11 @@
       "Bash(pnpm -F web test checkout-multi-paiement)",
       "Bash(pnpm -F web test facture)",
       "Bash(pnpm -F web lint)",
-      "Bash(rtk wc *)"
+      "Bash(rtk wc *)",
+      "Bash(git fetch *)",
+      "Bash(gh auth *)",
+      "Bash(git ls-remote *)",
+      "Bash(xargs -I{} echo \"branche distante restante: {}\")"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
