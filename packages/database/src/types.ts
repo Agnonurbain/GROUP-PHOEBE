@@ -1042,19 +1042,27 @@ export type Database = {
           adresse_collecte: string
           adresse_livraison: string
           client_id: string
+          commune_collecte: string | null
+          commune_livraison: string | null
           created_at: string
           destinataire_contact: string
           destinataire_nom: string
           dimensions: string | null
+          echec_motif: string | null
           expediteur_contact: string
           expediteur_nom: string
           id: string
+          livree_at: string | null
           livreur_id: string | null
           mode: string
           nature_colis: string | null
           numero_suivi: string
           photos: string[]
           poids_kg: number | null
+          preuve_latitude: number | null
+          preuve_longitude: number | null
+          preuve_chemin: string | null
+          recu_par: string | null
           prix: number | null
           statut: string
           updated_at: string
@@ -1065,19 +1073,27 @@ export type Database = {
           adresse_collecte: string
           adresse_livraison: string
           client_id: string
+          commune_collecte?: string | null
+          commune_livraison?: string | null
           created_at?: string
           destinataire_contact: string
           destinataire_nom: string
           dimensions?: string | null
+          echec_motif?: string | null
           expediteur_contact: string
           expediteur_nom: string
           id?: string
+          livree_at?: string | null
           livreur_id?: string | null
           mode: string
           nature_colis?: string | null
           numero_suivi: string
           photos?: string[]
           poids_kg?: number | null
+          preuve_latitude?: number | null
+          preuve_longitude?: number | null
+          preuve_chemin?: string | null
+          recu_par?: string | null
           prix?: number | null
           statut?: string
           updated_at?: string
@@ -1088,19 +1104,27 @@ export type Database = {
           adresse_collecte?: string
           adresse_livraison?: string
           client_id?: string
+          commune_collecte?: string | null
+          commune_livraison?: string | null
           created_at?: string
           destinataire_contact?: string
           destinataire_nom?: string
           dimensions?: string | null
+          echec_motif?: string | null
           expediteur_contact?: string
           expediteur_nom?: string
           id?: string
+          livree_at?: string | null
           livreur_id?: string | null
           mode?: string
           nature_colis?: string | null
           numero_suivi?: string
           photos?: string[]
           poids_kg?: number | null
+          preuve_latitude?: number | null
+          preuve_longitude?: number | null
+          preuve_chemin?: string | null
+          recu_par?: string | null
           prix?: number | null
           statut?: string
           updated_at?: string
@@ -2307,6 +2331,7 @@ export type Database = {
       expirer_reservations_abandonnees: { Args: never; Returns: number }
       is_proprietaire: { Args: never; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      own_livreur_id: { Args: never; Returns: string }
       own_role: { Args: never; Returns: string }
       prochain_numero_facture: { Args: never; Returns: string }
       own_statut_verification: { Args: never; Returns: string }

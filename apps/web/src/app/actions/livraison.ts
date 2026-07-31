@@ -15,6 +15,8 @@ import {
   MODE_LABELS,
   STATUT_LIVRAISON,
   STATUT_LIVRAISON_LABELS,
+  transitionAutorisee,
+  couvreLaCommune,
   isModeLivraison,
   poidsMax,
   type CommuneMatch,
@@ -167,6 +169,11 @@ export async function creerExpedition(
       adresse_collecte: adresseCollecte,
       adresse_livraison: adresseLivraison,
       zone,
+      // La commune était fondue dans l'adresse (« détail — Commune ») : plus
+      // rien ne permettait de rattacher un colis à une commune sans reparser du
+      // texte libre. L'affectation automatique en dépend.
+      commune_collecte: communeCollecte,
+      commune_livraison: communeLivraison,
       mode,
       nature_colis: natureColis,
       dimensions,
@@ -265,9 +272,18 @@ export async function creerExpedition(
 
 type AdminClient = ReturnType<typeof createAdminClient<Database>>;
 
-// Choisit automatiquement un livreur actif : préfère ceux dont la zone de
-// couverture correspond (ou est vide), et prend le moins chargé sous sa capacité.
-async function choisirLivreurAuto(admin: AdminClient, zone: string): Promise<string | null> {
+// Choisit automatiquement un livreur actif : préfère ceux qui desservent la
+// commune de collecte (ou qui n'ont pas de zone déclarée, donc couvrent tout),
+// et prend le moins chargé sous sa capacité.
+//
+// Le paramètre était la `zone` de l'expédition — `intracommunale`,
+// `intercommunale`, `nationale` — comparée par égalité à `zone_couverture`.
+// C'est une classe de trajet, pas un territoire : personne ne couvre
+// « l'intercommunal ». Le filtre ne pouvait donc jamais correspondre.
+async function choisirLivreurAuto(
+  admin: AdminClient,
+  communeCollecte: string | null
+): Promise<string | null> {
   const { data: livreurs } = await admin
     .from("livreurs")
     .select("id, capacite_max_par_jour, zone_couverture")
@@ -285,7 +301,11 @@ async function choisirLivreurAuto(admin: AdminClient, zone: string): Promise<str
     if (e.livreur_id) charge.set(e.livreur_id, (charge.get(e.livreur_id) ?? 0) + 1);
   }
 
-  const preferes = livreurs.filter((l) => !l.zone_couverture || l.zone_couverture === zone);
+  // Un livreur sans zone dessert tout : c'est le défaut, et le seul qui
+  // garantisse qu'un colis trouve preneur tant que personne n'a paramétré les
+  // couvertures. Si aucun ne couvre la commune, on retombe sur l'ensemble
+  // plutôt que de laisser le colis sans livreur.
+  const preferes = livreurs.filter((l) => couvreLaCommune(l.zone_couverture, communeCollecte));
   const pool = preferes.length > 0 ? preferes : livreurs;
   const disponibles = pool.filter(
     (l) => (charge.get(l.id) ?? 0) < (l.capacite_max_par_jour ?? Number.POSITIVE_INFINITY)
@@ -335,13 +355,15 @@ export async function affecterLivreurAuto(
 
   const { data: exp } = await admin
     .from("expeditions")
-    .select("zone")
+    .select("commune_collecte")
     .eq("id", expeditionId)
     .single();
   if (!exp) return { error: "Expédition introuvable." };
 
-  const livreurId = await choisirLivreurAuto(admin, exp.zone);
-  if (!livreurId) return { error: "Aucun livreur disponible pour cette zone." };
+  const livreurId = await choisirLivreurAuto(admin, exp.commune_collecte);
+  if (!livreurId) {
+    return { error: "Aucun livreur disponible : tous ont atteint leur capacité du jour." };
+  }
 
   return assignerEtNotifier(admin, expeditionId, livreurId);
 }
@@ -375,9 +397,23 @@ export async function changerStatutExpedition(
 
   const { data: exp } = await admin
     .from("expeditions")
-    .select("client_id, numero_suivi")
+    .select("client_id, numero_suivi, statut")
     .eq("id", expeditionId)
     .single();
+  if (!exp) return { error: "Expédition introuvable." };
+
+  // Le cycle était libre : un colis livré pouvait repasser en « enregistrée »,
+  // ou sauter le transit. Chaque changement écrivant une ligne d'historique,
+  // la timeline publique — seule chose que le client voit — pouvait afficher
+  // une chronologie impossible.
+  if (exp.statut === statut) return { success: true };
+  if (!transitionAutorisee(exp.statut, statut)) {
+    return {
+      error: `Passage impossible de « ${
+        STATUT_LIVRAISON_LABELS[exp.statut] ?? exp.statut
+      } » à « ${STATUT_LIVRAISON_LABELS[statut] ?? statut} ».`,
+    };
+  }
 
   const { error } = await admin
     .from("expeditions")

@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { accueilSelonRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -154,13 +155,10 @@ export async function connexion(
     .eq("id", data.user.id)
     .single();
 
-  const isStaff =
-    profile?.role === "operateur" || profile?.role === "proprietaire";
-
   const next = formData.get("redirect") as string | null;
   const safeNext = next && next.startsWith("/") ? next : null;
 
-  redirect(safeNext ?? (isStaff ? "/admin" : "/compte/profil"));
+  redirect(safeNext ?? accueilSelonRole(profile?.role));
 }
 
 export async function verifierOtp(
