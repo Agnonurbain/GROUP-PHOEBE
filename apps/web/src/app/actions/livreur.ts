@@ -61,7 +61,7 @@ async function chargerExpeditionDuLivreur(expeditionId: string, livreurId: strin
   const admin = getAdmin();
   const { data: exp } = await admin
     .from("expeditions")
-    .select("id, statut, client_id, numero_suivi, livreur_id")
+    .select("id, statut, client_id, numero_suivi, livreur_id, prix")
     .eq("id", expeditionId)
     .single();
 
@@ -77,7 +77,9 @@ async function appliquerStatut(
   depuis: string,
   vers: string,
   champs: Record<string, unknown>,
-  contexte: { livreurId: string; userId: string; clientId: string; numeroSuivi: string }
+  contexte: { livreurId: string; userId: string; clientId: string; numeroSuivi: string },
+  /** Paiement à la livraison à capturer, une fois la transition acquise. */
+  paiementACapturer: string | null = null
 ): Promise<LivreurState> {
   if (!transitionAutorisee(depuis, vers)) {
     return {
@@ -101,6 +103,25 @@ async function appliquerStatut(
 
   if (error) return { error: error.message };
   if (!count) return { error: "Le colis a changé d'état entre-temps. Rechargez la page." };
+
+  if (paiementACapturer) {
+    // Le filtre sur `en_attente` fait office de verrou : deux validations
+    // concurrentes ne capturent qu'une fois.
+    const { error: errPaiement } = await admin
+      .from("paiements")
+      .update({ statut: "capture" })
+      .eq("id", paiementACapturer)
+      .eq("statut", "en_attente");
+
+    // La remise est faite et l'argent est pris : on ne la défait pas pour une
+    // écriture ratée. L'écart est signalé, il se règle à la remontée de caisse.
+    if (errPaiement) {
+      console.error(
+        `Encaissement non enregistré (paiement ${paiementACapturer}, expédition ${expeditionId}) :`,
+        errPaiement.message
+      );
+    }
+  }
 
   await logAudit({
     userId: contexte.userId,
@@ -202,6 +223,31 @@ export async function confirmerLivraison(
   const lat = latRaw ? Number(latRaw) : null;
   const lng = lngRaw ? Number(lngRaw) : null;
 
+  // Paiement à la livraison : remettre le colis et encaisser sont un seul geste.
+  // Un colis remis sans encaissement serait une perte sèche, et un encaissement
+  // déclaré sans remise fausserait la caisse — les deux vont ensemble ou aucun.
+  const { data: paiement } = await admin
+    .from("paiements")
+    .select("id, statut")
+    .eq("reference_table", "expeditions")
+    .eq("reference_id", expeditionId)
+    .eq("methode", "a_la_livraison")
+    .maybeSingle();
+
+  const aEncaisser = paiement?.statut === "en_attente";
+  if (aEncaisser && formData.get("encaissement_confirme") !== "on") {
+    return {
+      error: `Confirmez avoir encaissé ${Number(exp.prix ?? 0).toLocaleString("fr-FR")} FCFA avant de valider la remise.`,
+    };
+  }
+
+  const champsEncaissement = aEncaisser
+    ? {
+        paiement_encaisse_at: new Date().toISOString(),
+        paiement_encaisse_par: livreurId,
+      }
+    : {};
+
   return appliquerStatut(
     expeditionId,
     exp.statut,
@@ -212,8 +258,12 @@ export async function confirmerLivraison(
       preuve_longitude: Number.isFinite(lng) ? lng : null,
       recu_par: recuPar,
       livree_at: new Date().toISOString(),
+      ...champsEncaissement,
     },
-    { livreurId, userId, clientId: exp.client_id, numeroSuivi: exp.numero_suivi }
+    { livreurId, userId, clientId: exp.client_id, numeroSuivi: exp.numero_suivi },
+    // Le paiement n'est capturé que si la transition aboutit : sinon un
+    // encaissement serait enregistré sur un colis resté en transit.
+    aEncaisser ? paiement!.id : null
   );
 }
 
@@ -256,4 +306,39 @@ export async function signalerEchecLivraison(
   }
 
   return res;
+}
+
+/**
+ * Preuve de remise, pour le client.
+ *
+ * La photo était collectée sans que le destinataire du service la voie jamais :
+ * elle ne servait qu'à l'équipe. « Reçu par X, le Y » est précisément ce qui
+ * coupe court à une contestation.
+ *
+ * La lecture passe par la session du demandeur — c'est `expeditions_select_own`
+ * qui tranche. Interroger en clé de service rendrait la preuve de n'importe quel
+ * colis lisible par qui connaît un identifiant.
+ */
+export async function preuveDeLivraison(
+  expeditionId: string
+): Promise<{ error?: string; url?: string }> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: "Non authentifié." };
+
+  const { data: exp } = await supabase
+    .from("expeditions")
+    .select("preuve_chemin")
+    .eq("id", expeditionId)
+    .single();
+
+  if (!exp?.preuve_chemin) return { error: "Aucune preuve disponible." };
+
+  const admin = getAdmin();
+  const { data: signee, error } = await admin.storage
+    .from("livraison-preuves")
+    .createSignedUrl(exp.preuve_chemin, 60);
+
+  if (error || !signee?.signedUrl) return { error: "Lien indisponible." };
+  return { url: signee.signedUrl };
 }

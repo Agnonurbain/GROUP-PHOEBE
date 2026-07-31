@@ -44,7 +44,7 @@ export async function modifierLivreur(
 
   const livreurId = formData.get("livreur_id") as string;
   const zoneBrute = ((formData.get("zone_couverture") as string) || "").trim();
-  const capaciteRaw = ((formData.get("capacite_max_par_jour") as string) || "").trim();
+  const capaciteRaw = ((formData.get("charge_max_simultanee") as string) || "").trim();
   const actif = formData.get("actif") === "on";
 
   if (!livreurId) return { error: "Livreur invalide." };
@@ -66,7 +66,7 @@ export async function modifierLivreur(
 
   const { data: ancien } = await admin
     .from("livreurs")
-    .select("zone_couverture, capacite_max_par_jour, actif")
+    .select("zone_couverture, charge_max_simultanee, actif")
     .eq("id", livreurId)
     .single();
 
@@ -74,7 +74,7 @@ export async function modifierLivreur(
 
   const { error } = await admin
     .from("livreurs")
-    .update({ zone_couverture: zone, capacite_max_par_jour: capacite, actif })
+    .update({ zone_couverture: zone, charge_max_simultanee: capacite, actif })
     .eq("id", livreurId);
 
   if (error) return { error: error.message };
@@ -85,7 +85,7 @@ export async function modifierLivreur(
     tableName: "livreurs",
     recordId: livreurId,
     oldValues: ancien,
-    newValues: { zone_couverture: zone, capacite_max_par_jour: capacite, actif },
+    newValues: { zone_couverture: zone, charge_max_simultanee: capacite, actif },
   });
 
   revalidatePath("/admin/livreurs");

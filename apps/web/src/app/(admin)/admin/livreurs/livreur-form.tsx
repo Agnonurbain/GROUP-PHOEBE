@@ -14,7 +14,7 @@ export function LivreurForm({
   livreurId: string
   initial: {
     zone_couverture: string
-    capacite_max_par_jour: number
+    charge_max_simultanee: number
     actif: boolean
   }
 }) {
@@ -63,21 +63,23 @@ export function LivreurForm({
             htmlFor={`capacite-${livreurId}`}
             className="mb-1 block text-xs font-medium text-phoebe-anthracite"
           >
-            Capacité par jour
+            Charge simultanée max
           </label>
           <input
             id={`capacite-${livreurId}`}
-            name="capacite_max_par_jour"
+            name="charge_max_simultanee"
             type="number"
             min={1}
             step={1}
-            defaultValue={initial.capacite_max_par_jour}
+            defaultValue={initial.charge_max_simultanee}
             className={inputClass}
             required
           />
           <p className="mt-1 text-[11px] text-phoebe-anthracite/60">
-            Au-delà, l&apos;affectation automatique le passe. Pour suspendre
-            quelqu&apos;un, décochez « actif » plutôt que de descendre à zéro.
+            Nombre de colis en cours au-delà duquel l&apos;affectation automatique
+            le passe. Ce n&apos;est pas un quota journalier : un colis clôturé libère
+            aussitôt sa place. Pour suspendre quelqu&apos;un, décochez « actif »
+            plutôt que de descendre à zéro.
           </p>
         </div>
       </div>

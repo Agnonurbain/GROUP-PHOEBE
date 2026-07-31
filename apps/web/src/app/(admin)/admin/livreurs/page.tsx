@@ -8,7 +8,7 @@ import { LivreurForm } from "./livreur-form"
 
 export const metadata: Metadata = {
   title: "Livreurs — Administration",
-  description: "Zones desservies, capacité quotidienne et charge en cours de chaque livreur.",
+  description: "Zones desservies, charge maximale et charge en cours de chaque livreur.",
 }
 
 function getAdmin() {
@@ -35,7 +35,7 @@ export default async function LivreursAdminPage() {
 
   const { data: livreursRaw } = await db
     .from("livreurs")
-    .select("id, user_id, zone_couverture, capacite_max_par_jour, actif")
+    .select("id, user_id, zone_couverture, charge_max_simultanee, actif")
 
   const livreurs = livreursRaw ?? []
 
@@ -63,7 +63,7 @@ export default async function LivreursAdminPage() {
       <div>
         <h1 className="text-2xl font-bold text-phoebe-anthracite">Livreurs</h1>
         <p className="mt-1 text-sm text-phoebe-anthracite/70">
-          Zone desservie et capacité quotidienne — les deux pilotent l&apos;affectation
+          Zone desservie et charge simultanée maximale — les deux pilotent l&apos;affectation
           automatique d&apos;un colis. Les comptes se créent depuis{" "}
           <a href="/admin/comptes" className="text-phoebe-green hover:underline">
             Comptes internes
@@ -83,7 +83,7 @@ export default async function LivreursAdminPage() {
           {livreurs.map((l) => {
             const p = profils.get(l.user_id)
             const enCharge = charge.get(l.id) ?? 0
-            const sature = enCharge >= (l.capacite_max_par_jour ?? Infinity)
+            const sature = enCharge >= (l.charge_max_simultanee ?? Infinity)
             return (
               <div key={l.id} className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
                 <div className="flex flex-wrap items-start justify-between gap-3">
@@ -113,10 +113,10 @@ export default async function LivreursAdminPage() {
                         sature ? "text-error" : "text-phoebe-anthracite"
                       }`}
                     >
-                      {enCharge} / {l.capacite_max_par_jour}
+                      {enCharge} / {l.charge_max_simultanee}
                     </p>
                     <p className="text-xs text-phoebe-anthracite/70">
-                      {sature ? "Capacité atteinte" : "colis en cours"}
+                      {sature ? "Charge atteinte" : "colis en cours"}
                     </p>
                   </div>
                 </div>
@@ -126,7 +126,7 @@ export default async function LivreursAdminPage() {
                     livreurId={l.id}
                     initial={{
                       zone_couverture: l.zone_couverture ?? "",
-                      capacite_max_par_jour: l.capacite_max_par_jour,
+                      charge_max_simultanee: l.charge_max_simultanee,
                       actif: l.actif,
                     }}
                   />

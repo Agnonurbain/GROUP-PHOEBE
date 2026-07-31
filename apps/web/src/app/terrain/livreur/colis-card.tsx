@@ -25,6 +25,11 @@ type Colis = {
   natureColis: string | null;
   poidsKg: number | null;
   echecMotif: string | null;
+  /** Montant à encaisser à la remise, ou null si le colis est déjà payé. */
+  aEncaisser: number | null;
+  photos: string[];
+  /** Date convenue pour une livraison programmée. */
+  dateSouhaitee: string | null;
 };
 
 const LIBELLE_ACTION: Record<string, string> = {
@@ -79,13 +84,38 @@ export function ColisCard({ colis }: { colis: Colis }) {
       <p className="mt-1 text-xs text-public-text-muted">
         {colis.zoneLabel} · {colis.modeLabel}
         {colis.poidsKg ? ` · ${colis.poidsKg} kg` : ""}
+        {colis.dateSouhaitee
+          ? ` · à livrer le ${new Date(colis.dateSouhaitee).toLocaleDateString("fr-FR")}`
+          : ""}
         {colis.natureColis ? ` · ${colis.natureColis}` : ""}
       </p>
+
+      {colis.aEncaisser != null && (
+        <p className="mt-2 rounded-lg bg-accent-gold/15 px-3 py-2 text-sm font-semibold text-accent-gold">
+          À encaisser : {colis.aEncaisser.toLocaleString("fr-FR")} FCFA
+        </p>
+      )}
 
       {colis.echecMotif && (
         <p className="mt-2 rounded-lg bg-error/10 px-3 py-2 text-xs text-error">
           Échec précédent : {colis.echecMotif}
         </p>
+      )}
+
+      {/* Les photos prises à la commande : c'est ce qui permet d'identifier le
+          bon paquet au retrait. */}
+      {colis.photos.length > 0 && (
+        <div className="mt-3 flex gap-2 overflow-x-auto">
+          {colis.photos.map((url) => (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              key={url}
+              src={url}
+              alt="Colis"
+              className="h-16 w-16 shrink-0 rounded-lg object-cover"
+            />
+          ))}
+        </div>
       )}
 
       <dl className="mt-3 space-y-2 border-t border-public-border pt-3 text-sm">
@@ -145,6 +175,7 @@ export function ColisCard({ colis }: { colis: Colis }) {
         {peutLivrer && ouvert === "livraison" && (
           <FormulaireLivraison
             colisId={colis.id}
+            aEncaisser={colis.aEncaisser}
             action={livrer}
             enCours={livraisonEnCours}
             onAnnuler={() => setOuvert(null)}
@@ -205,11 +236,13 @@ export function ColisCard({ colis }: { colis: Colis }) {
  */
 function FormulaireLivraison({
   colisId,
+  aEncaisser,
   action,
   enCours,
   onAnnuler,
 }: {
   colisId: string;
+  aEncaisser: number | null;
   action: (formData: FormData) => void;
   enCours: boolean;
   onAnnuler: () => void;
@@ -287,6 +320,24 @@ function FormulaireLivraison({
               ? "Position indisponible — vous pouvez continuer"
               : "Ajouter ma position (facultatif)"}
       </button>
+
+      {aEncaisser != null && (
+        <label className="flex items-start gap-2 rounded-lg bg-accent-gold/10 p-3 text-sm">
+          <input
+            type="checkbox"
+            name="encaissement_confirme"
+            required
+            className="mt-0.5 h-4 w-4 accent-accent-gold"
+          />
+          <span>
+            J&apos;ai bien encaissé{" "}
+            <strong>{aEncaisser.toLocaleString("fr-FR")} FCFA</strong>
+            <span className="mt-0.5 block text-[11px] text-public-text-muted">
+              Espèces ou Mobile Money. Ne remettez pas le colis avant.
+            </span>
+          </span>
+        </label>
+      )}
 
       <div className="flex gap-2">
         <button

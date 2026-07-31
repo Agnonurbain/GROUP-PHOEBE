@@ -1045,6 +1045,7 @@ export type Database = {
           commune_collecte: string | null
           commune_livraison: string | null
           created_at: string
+          date_souhaitee: string | null
           destinataire_contact: string
           destinataire_nom: string
           dimensions: string | null
@@ -1057,6 +1058,8 @@ export type Database = {
           mode: string
           nature_colis: string | null
           numero_suivi: string
+          paiement_encaisse_at: string | null
+          paiement_encaisse_par: string | null
           photos: string[]
           poids_kg: number | null
           preuve_latitude: number | null
@@ -1076,6 +1079,7 @@ export type Database = {
           commune_collecte?: string | null
           commune_livraison?: string | null
           created_at?: string
+          date_souhaitee?: string | null
           destinataire_contact: string
           destinataire_nom: string
           dimensions?: string | null
@@ -1088,6 +1092,8 @@ export type Database = {
           mode: string
           nature_colis?: string | null
           numero_suivi: string
+          paiement_encaisse_at?: string | null
+          paiement_encaisse_par?: string | null
           photos?: string[]
           poids_kg?: number | null
           preuve_latitude?: number | null
@@ -1107,6 +1113,7 @@ export type Database = {
           commune_collecte?: string | null
           commune_livraison?: string | null
           created_at?: string
+          date_souhaitee?: string | null
           destinataire_contact?: string
           destinataire_nom?: string
           dimensions?: string | null
@@ -1119,6 +1126,8 @@ export type Database = {
           mode?: string
           nature_colis?: string | null
           numero_suivi?: string
+          paiement_encaisse_at?: string | null
+          paiement_encaisse_par?: string | null
           photos?: string[]
           poids_kg?: number | null
           preuve_latitude?: number | null
@@ -1386,21 +1395,21 @@ export type Database = {
       livreurs: {
         Row: {
           actif: boolean
-          capacite_max_par_jour: number
+          charge_max_simultanee: number
           id: string
           user_id: string
           zone_couverture: string | null
         }
         Insert: {
           actif?: boolean
-          capacite_max_par_jour?: number
+          charge_max_simultanee?: number
           id?: string
           user_id: string
           zone_couverture?: string | null
         }
         Update: {
           actif?: boolean
-          capacite_max_par_jour?: number
+          charge_max_simultanee?: number
           id?: string
           user_id?: string
           zone_couverture?: string | null

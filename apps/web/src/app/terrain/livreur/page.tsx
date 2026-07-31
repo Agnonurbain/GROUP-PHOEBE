@@ -60,6 +60,23 @@ export default async function LivreurPage() {
 
   const enCours = colis ?? [];
 
+  // Colis payables à la remise : le livreur doit savoir combien encaisser avant
+  // de lâcher le paquet. Un paiement déjà capturé ne remonte pas — c'est un
+  // colis payé en ligne, ou déjà encaissé.
+  const { data: paiementsDus } = enCours.length
+    ? await admin
+        .from("paiements")
+        .select("reference_id, montant")
+        .eq("reference_table", "expeditions")
+        .eq("methode", "a_la_livraison")
+        .eq("statut", "en_attente")
+        .in("reference_id", enCours.map((c) => c.id))
+    : { data: [] };
+
+  const aEncaisser = new Map(
+    (paiementsDus ?? []).map((p) => [p.reference_id, Number(p.montant)])
+  );
+
   // Le compteur du jour porte sur les livraisons abouties, pas sur la charge :
   // c'est ce qu'un livreur regarde en fin de journée.
   const debutJour = new Date();
@@ -111,6 +128,9 @@ export default async function LivreurPage() {
                     natureColis: c.nature_colis,
                     poidsKg: c.poids_kg,
                     echecMotif: (c as { echec_motif?: string | null }).echec_motif ?? null,
+                    aEncaisser: aEncaisser.get(c.id) ?? null,
+                    dateSouhaitee: c.date_souhaitee,
+                    photos: c.photos ?? [],
                   }}
                 />
               </li>

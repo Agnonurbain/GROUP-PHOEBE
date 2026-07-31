@@ -11,6 +11,7 @@ import {
   AlertTriangle,
   ArrowUp,
   CircleAlert,
+  Truck,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/shadcn/card";
 import { Button } from "@/components/shadcn/button";
@@ -67,6 +68,7 @@ export default async function DashboardPage({
     { count: remboursementsEnAttente },
     { data: dernieresDemandes },
     { data: derniersClients },
+    { data: expeditions30j },
   ] = await Promise.all([
     supabase
       .from("demandes_transport")
@@ -131,7 +133,39 @@ export default async function DashboardPage({
       .eq("role", "client")
       .order("created_at", { ascending: false })
       .limit(50),
+    // Livraison : la verticale était absente du tableau de bord alors que les
+    // trois autres y figuraient. On lit les expéditions de la période plutôt
+    // que des compteurs par statut — un seul aller-retour, et le détail sert le
+    // taux d'échec comme le chiffre d'affaires.
+    supabase
+      .from("expeditions")
+      .select("statut, prix, livreur_id")
+      .gte("created_at", ilXj),
   ]);
+
+  // Livraison sur la période. Le taux d'échec porte sur les colis dont le sort
+  // est connu : inclure ceux encore en route le ferait mécaniquement baisser et
+  // dirait surtout que beaucoup de colis viennent d'être créés.
+  const expes = expeditions30j ?? [];
+  const livraison = (() => {
+    // Une annulation client n'est pas une tentative de remise : elle ne juge pas
+    // la performance de livraison et sort donc des deux termes du ratio.
+    const annulees = expes.filter((e) => e.statut === "annulee").length;
+    const livrees = expes.filter((e) => e.statut === "livree").length;
+    const echecs = expes.filter((e) => e.statut === "echec_livraison").length;
+    const denouees = livrees + echecs;
+    return {
+      total: expes.length,
+      livrees,
+      echecs,
+      annulees,
+      enCours: expes.length - denouees - annulees,
+      nonAffectees: expes.filter(
+        (e) => !e.livreur_id && e.statut !== "livree" && e.statut !== "annulee"
+      ).length,
+      tauxEchec: denouees > 0 ? Math.round((echecs / denouees) * 100) : 0,
+    };
+  })();
 
   const caBrut = (demandesCA ?? []).reduce((sum, d) => sum + (Number(d.montant) || 0), 0);
   const alertEnAttente = enAttenteCount ?? 0;
@@ -351,6 +385,30 @@ export default async function DashboardPage({
             )}
           </CardContent>
         </Card>
+
+        <KpiCard
+          label="Colis expédiés"
+          valeur={livraison.total}
+          icon={Truck}
+          aide={
+            livraison.total > 0
+              ? `${livraison.livrees} livré${livraison.livrees > 1 ? "s" : ""} · ${livraison.enCours} en cours${livraison.annulees > 0 ? ` · ${livraison.annulees} annulé${livraison.annulees > 1 ? "s" : ""}` : ""}`
+              : "Aucun envoi sur la période"
+          }
+        />
+
+        <KpiCard
+          label="Échecs de livraison"
+          valeur={livraison.tauxEchec}
+          unite="%"
+          icon={AlertTriangle}
+          hausseEstBonne={false}
+          aide={
+            livraison.nonAffectees > 0
+              ? `${livraison.nonAffectees} colis sans livreur`
+              : `${livraison.echecs} échec${livraison.echecs > 1 ? "s" : ""} sur la période`
+          }
+        />
 
         <KpiCard
           label="Vérification d'identité"

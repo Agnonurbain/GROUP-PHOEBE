@@ -257,6 +257,137 @@ describe("Livraison — la preuve de remise n'est pas publique", () => {
   });
 });
 
+// Le colis n'était créé qu'après un paiement en ligne intégral. En Côte
+// d'Ivoire, le paiement à la remise est le mode dominant : exiger l'avance
+// écartait du service la clientèle qu'il vise.
+describe("Livraison — paiement à la livraison", () => {
+  const livraison = src("app/actions/livraison.ts");
+  const livreur = src("app/actions/livreur.ts");
+
+  it("la commande accepte le paiement à la livraison", () => {
+    const corps = corpsDeFonction(livraison, "creerExpedition");
+    expect(corps).toContain('"a_la_livraison"');
+  });
+
+  it("aucune session prestataire n'est ouverte pour ce mode", () => {
+    const corps = corpsDeFonction(livraison, "creerExpedition");
+    const idx = corps.indexOf('if (methode === "a_la_livraison")');
+    expect(idx).toBeGreaterThan(-1);
+    // Le court-circuit précède l'appel aux prestataires.
+    expect(idx).toBeLessThan(corps.indexOf("creerSessionStripe("));
+    expect(idx).toBeLessThan(corps.indexOf("creerSessionCinetPay("));
+  });
+
+  // Remettre le colis et encaisser sont un seul geste : remis sans encaissement
+  // c'est une perte sèche, encaissé sans remise c'est une caisse fausse.
+  it("la remise exige la confirmation d'encaissement", () => {
+    const corps = corpsDeFonction(livreur, "confirmerLivraison");
+    expect(corps).toContain('formData.get("encaissement_confirme")');
+    expect(corps).toContain("Confirmez avoir encaissé");
+  });
+
+  it("la capture n'a lieu qu'une fois la transition acquise", () => {
+    // Le paiement est passé à appliquerStatut, qui ne capture qu'après un
+    // update ayant touché une ligne.
+    expect(livreur).toMatch(/paiementACapturer/);
+    expect(livreur).toMatch(/\.eq\("statut", "en_attente"\)/);
+  });
+});
+
+describe("Livraison — fins de parcours", () => {
+  const livraison = src("app/actions/livraison.ts");
+
+  // `echec_livraison` n'est pas terminal, mais quand l'envoi est abandonné rien
+  // n'instruisait la suite : le client avait payé un service non rendu.
+  it("la clôture d'un échec oriente le paiement selon ce qui a été encaissé", () => {
+    const corps = corpsDeFonction(livraison, "cloturerEchecLivraison");
+    expect(corps).toContain("remboursement_requis");
+    expect(corps).toContain('"echoue"');
+  });
+
+  it("on ne clôture que ce qui est en échec", () => {
+    const corps = corpsDeFonction(livraison, "cloturerEchecLivraison");
+    expect(corps).toContain("Seule une expédition en échec peut être clôturée");
+  });
+
+  // Une fois le colis pris en charge, le livreur s'est déplacé.
+  it("le client n'annule que tant que rien n'est engagé", () => {
+    const corps = corpsDeFonction(livraison, "annulerExpeditionParClient");
+    expect(corps).toMatch(/statut !== STATUT_LIVRAISON\.creee/);
+    expect(corps).toMatch(/exp\.client_id !== user\.sub/);
+  });
+
+  // Lui retirer son livreur effacerait qui l'a remis, alors que la preuve y renvoie.
+  it("un colis livré ne se désaffecte pas", () => {
+    const corps = corpsDeFonction(livraison, "desaffecterLivreur");
+    expect(corps).toMatch(/STATUT_LIVRAISON\.livree/);
+  });
+});
+
+// L'annulation réutilisait `echec_livraison` pour éviter un sixième statut.
+// Économie de façade : les deux situations n'ont ni les mêmes suites ni la même
+// lecture. Ces tests verrouillent la séparation.
+describe("Livraison — une annulation n'est pas un échec", () => {
+  const livraison = src("app/actions/livraison.ts");
+
+  it("annuler pose le statut dédié, pas un échec", () => {
+    const corps = corpsDeFonction(livraison, "annulerExpeditionParClient");
+    expect(corps).toMatch(/statut: STATUT_LIVRAISON\.annulee/);
+    expect(corps).not.toMatch(/statut: STATUT_LIVRAISON\.echecLivraison/);
+  });
+
+  // Sinon le colis restait sur l'écran du livreur, qui pouvait le reprendre et
+  // le livrer alors que le paiement est déjà marqué remboursable.
+  it("annuler retire le livreur", () => {
+    const corps = corpsDeFonction(livraison, "annulerExpeditionParClient");
+    expect(corps).toMatch(/livreur_id: null/);
+  });
+
+  it("un colis annulé sort de l'écran du livreur", () => {
+    expect(STATUTS_ACTIFS_LIVREUR).not.toContain("annulee");
+  });
+
+  it("une annulation est terminale — on ne la reprend pas", () => {
+    expect(TRANSITIONS_LIVRAISON.annulee).toHaveLength(0);
+    for (const cible of Object.keys(TRANSITIONS_LIVRAISON)) {
+      expect(transitionAutorisee("annulee", cible)).toBe(false);
+    }
+  });
+
+  it("on n'annule que ce qui n'est pas encore engagé", () => {
+    expect(transitionAutorisee("creee", "annulee")).toBe(true);
+    expect(transitionAutorisee("prise_en_charge", "annulee")).toBe(false);
+    expect(transitionAutorisee("en_transit", "annulee")).toBe(false);
+    expect(transitionAutorisee("livree", "annulee")).toBe(false);
+  });
+
+  // Le pire cas évité : la clôture relisait un paiement déjà passé en
+  // `remboursement_requis` par l'annulation, ne le voyait pas en `capture`, et
+  // le basculait en `echoue` — le remboursement disparaissait de la file, sans
+  // bruit, et le client n'était jamais remboursé.
+  it("la clôture d'échec ne peut pas rejouer sur une annulation", () => {
+    const corps = corpsDeFonction(livraison, "cloturerEchecLivraison");
+    expect(corps).toMatch(/statut !== STATUT_LIVRAISON\.echecLivraison/);
+  });
+
+  // La clôture ne change pas le statut de l'expédition : elle reste donc
+  // rejouable, et c'est le paiement qui doit s'en protéger. Voir aussi
+  // statuts-paiement.test.ts, qui étend la règle à tout le dépôt.
+  it("un paiement déjà instruit n'est pas retouché par une seconde clôture", () => {
+    const corps = corpsDeFonction(livraison, "cloturerEchecLivraison");
+    expect(corps).toContain("Le paiement de cet envoi est déjà instruit.");
+  });
+
+  // L'inverse touchait l'argent avant d'avoir acquis le droit d'annuler.
+  it("l'annulation acquiert la transition avant de toucher au paiement", () => {
+    const corps = corpsDeFonction(livraison, "annulerExpeditionParClient");
+    const transition = corps.indexOf('STATUT_LIVRAISON.annulee');
+    const paiement = corps.indexOf('from("paiements")');
+    expect(transition).toBeGreaterThan(-1);
+    expect(paiement).toBeGreaterThan(transition);
+  });
+});
+
 describe("Connexion — chaque rôle atterrit chez lui", () => {
   it("le livreur va sur son espace terrain, pas sur l'espace client", () => {
     expect(accueilSelonRole("livreur")).toBe("/terrain/livreur");

@@ -168,7 +168,9 @@
       "Bash(gh auth *)",
       "Bash(git ls-remote *)",
       "Bash(xargs -I{} echo \"branche distante restante: {}\")",
-      "Bash(pnpm -F web test livreur)"
+      "Bash(pnpm -F web test livreur)",
+      "Bash(xargs -I{} echo \"fichiers modifies: {}\")",
+      "Bash(pnpm -F web test statuts-paiement)"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
