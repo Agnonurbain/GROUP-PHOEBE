@@ -132,6 +132,7 @@ export async function creerCompteInterne(
   const role = formData.get("role") as "operateur" | "livreur" | "agent_immobilier";
   const password = formData.get("password") as string;
   const zoneCouverture = ((formData.get("zone_couverture") as string) || "").trim();
+  const capaciteRaw = (formData.get("capacite_max_par_jour") as string) || "";
 
   if (!nom || !telephone || !role || !password) {
     return { error: "Tous les champs sont obligatoires." };
@@ -145,6 +146,16 @@ export async function creerCompteInterne(
   // (autoAssignAgent) : sans elle, l'agent existe mais ne reçoit jamais de bien.
   if (role === "agent_immobilier" && !zoneCouverture) {
     return { error: "La zone de couverture est obligatoire pour un agent immobilier." };
+  }
+
+  // 0 course par jour n'a pas de sens : ce serait un livreur que l'affectation
+  // automatique écarte systématiquement, sans que rien ne le dise.
+  let capacite: number | null = null;
+  if (role === "livreur" && capaciteRaw.trim()) {
+    capacite = Number(capaciteRaw);
+    if (!Number.isInteger(capacite) || capacite < 1) {
+      return { error: "La capacité doit être un nombre entier d'au moins 1." };
+    }
   }
 
   if (password.length < 8) {
@@ -179,9 +190,16 @@ export async function creerCompteInterne(
   }
 
   if (role === "livreur") {
+    // Zone et capacité pilotent `choisirLivreurAuto`. La zone reste facultative
+    // — un livreur sans zone dessert tout, ce qui est le bon défaut : c'est le
+    // seul qui garantisse qu'un colis trouve preneur avant tout paramétrage.
     const { error: livreurError } = await admin
       .from("livreurs")
-      .insert({ user_id: data.user.id });
+      .insert({
+        user_id: data.user.id,
+        zone_couverture: zoneCouverture || null,
+        ...(capacite !== null ? { capacite_max_par_jour: capacite } : {}),
+      });
 
     if (livreurError) {
       await rollbackUser(admin, data.user.id);

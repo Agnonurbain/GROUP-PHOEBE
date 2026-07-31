@@ -8,6 +8,20 @@
 | Opérateur | operateur@test.phoebe.ci | `TestPhoebe2025!` | operateur | Email+Phone |
 | Propriétaire | proprietaire@test.phoebe.ci | `TestPhoebe2025!` | proprietaire | Email+Phone |
 | *10 agents immobiliers* | `agent.<zone>@test.phoebe.ci` | `TestPhoebe2025!` | agent_immobilier | Email+Phone |
+| Moussa Diarra | livreur.abidjan@test.phoebe.ci | `TestPhoebe2025!` | livreur | Email |
+
+## Livreur
+
+Créé le 2026-07-31. Se connecte et atterrit sur **`/terrain/livreur`**, pas sur
+l'espace client : la redirection suit le rôle (`accueilSelonRole`). Le back-office
+lui répond `notFound()`, c'est voulu.
+
+Zone de couverture **vide** — donc il dessert tout. C'est le bon défaut tant que
+les couvertures ne sont pas réparties : un colis trouve toujours preneur. Capacité
+à 10 colis en cours. Les deux se règlent depuis `/admin/livreurs`.
+
+L'expédition de test `GP-UTTD8JA5` (Bingerville) lui est affectée, au statut
+`prise_en_charge`.
 
 ## Agents immobiliers
 

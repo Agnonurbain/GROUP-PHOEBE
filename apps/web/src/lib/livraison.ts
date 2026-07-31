@@ -158,6 +158,90 @@ export const STATUT_LIVRAISON_LABELS: Record<string, string> = {
   echec_livraison: "Échec de livraison",
 };
 
+export type StatutLivraison = (typeof STATUT_LIVRAISON)[keyof typeof STATUT_LIVRAISON];
+
+/**
+ * Transitions autorisées.
+ *
+ * Le cycle était libre : n'importe quel statut valide vers n'importe quel autre.
+ * On pouvait faire repasser un colis livré en « enregistrée », ou sauter de
+ * « enregistrée » à « livrée » sans transit. Chaque changement écrivant une
+ * ligne d'historique (trigger `expedition_statut_log`), la timeline publique
+ * pouvait afficher une chronologie impossible — et c'est la seule chose qu'un
+ * client voit.
+ *
+ * `livree` est terminal. `echec_livraison` ne l'est pas : une seconde
+ * présentation est le déroulé normal, pas l'exception.
+ */
+export const TRANSITIONS_LIVRAISON: Record<StatutLivraison, readonly StatutLivraison[]> = {
+  creee: ["prise_en_charge", "echec_livraison"],
+  prise_en_charge: ["en_transit", "echec_livraison"],
+  en_transit: ["livree", "echec_livraison"],
+  livree: [],
+  echec_livraison: ["prise_en_charge", "en_transit"],
+} as const;
+
+export function isStatutLivraison(v: unknown): v is StatutLivraison {
+  return typeof v === "string" && v in TRANSITIONS_LIVRAISON;
+}
+
+export function transitionAutorisee(depuis: string, vers: string): boolean {
+  if (!isStatutLivraison(depuis) || !isStatutLivraison(vers)) return false;
+  return TRANSITIONS_LIVRAISON[depuis].includes(vers);
+}
+
+// ─── Zone de couverture d'un livreur ─────────────────────────────────────────
+// `livreurs.zone_couverture` était comparée par égalité stricte à
+// `expeditions.zone`, qui vaut `intracommunale` | `intercommunale` |
+// `nationale` : une classe de trajet, pas un territoire. Personne ne « couvre
+// l'intercommunal ». Le champ n'étant renseigné nulle part, le filtre laissait
+// tout le monde passer — il marchait par accident, et y écrire « Cocody »
+// aurait rendu le livreur inéligible à tout, en silence.
+//
+// La zone est désormais la liste des communes desservies, comparée à la
+// commune de collecte du colis.
+
+/** Normalise pour comparer : casse, accents et espaces parasites ignorés. */
+function normaliserCommune(v: string): string {
+  return v
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+export function parseZoneCouverture(zone: string | null | undefined): string[] {
+  if (!zone) return [];
+  return zone
+    .split(",")
+    .map((c) => c.trim())
+    .filter(Boolean);
+}
+
+/**
+ * Un livreur sans zone dessert tout : c'est le cas par défaut, et le seul qui
+ * garantisse qu'un colis trouve preneur tant que personne n'a paramétré les
+ * couvertures.
+ */
+export function couvreLaCommune(
+  zoneCouverture: string | null | undefined,
+  commune: string | null | undefined
+): boolean {
+  const communes = parseZoneCouverture(zoneCouverture);
+  if (communes.length === 0) return true;
+  if (!commune) return false;
+  const cible = normaliserCommune(commune);
+  return communes.some((c) => normaliserCommune(c) === cible);
+}
+
+/** Statuts sur lesquels le livreur a encore quelque chose à faire. */
+export const STATUTS_ACTIFS_LIVREUR: readonly StatutLivraison[] = [
+  "creee",
+  "prise_en_charge",
+  "en_transit",
+  "echec_livraison",
+] as const;
+
 // ─── Numéro de suivi ─────────────────────────────────────────────────────────
 // Format GP-XXXXXXXX (8 caractères sans ambiguïté 0/O, 1/I).
 const SUIVI_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";

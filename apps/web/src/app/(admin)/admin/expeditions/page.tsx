@@ -97,6 +97,22 @@ export default async function ExpeditionsAdminPage({
   const livreurNom = new Map(livreurs.map((l) => [l.id, l.nom]))
   const livreursActifs = livreurs.filter((l) => l.actif).map((l) => ({ id: l.id, nom: l.nom }))
 
+  // Les preuves de remise vivent dans un bucket privé : une signature pour
+  // toute la page plutôt qu'un appel par colis. La validité couvre la
+  // consultation, pas plus — la photo montre le domicile d'un client.
+  const cheminsPreuve = expAll
+    .map((e) => e.preuve_chemin)
+    .filter((c): c is string => Boolean(c))
+  const preuvesSignees = new Map<string, string>()
+  if (cheminsPreuve.length) {
+    const { data: signees } = await db.storage
+      .from("livraison-preuves")
+      .createSignedUrls(cheminsPreuve, 300)
+    signees?.forEach((s) => {
+      if (s.path && s.signedUrl) preuvesSignees.set(s.path, s.signedUrl)
+    })
+  }
+
   const statuts = Object.entries(STATUT_LIVRAISON_LABELS).map(([value, label]) => ({ value, label }))
 
   // Filtrage
@@ -171,6 +187,14 @@ export default async function ExpeditionsAdminPage({
           {expeditions.map((e) => {
             const pb = paiementBadge(paiementStatut.get(e.id))
             const photos = ((e as unknown as { photos?: string[] }).photos) ?? []
+            const preuve = {
+              photo: e.preuve_chemin ? preuvesSignees.get(e.preuve_chemin) ?? null : null,
+              recuPar: e.recu_par,
+              livreeAt: e.livree_at,
+              latitude: e.preuve_latitude,
+              longitude: e.preuve_longitude,
+              echecMotif: e.echec_motif,
+            }
             return (
             <div key={e.id} className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -224,6 +248,43 @@ export default async function ExpeditionsAdminPage({
                     <div className="mt-1">
                       <PhotoLightbox photos={photos} />
                     </div>
+                  </div>
+                )}
+                {/* Ce que le livreur a rapporté du terrain : sans cet affichage,
+                    la preuve serait collectée sans que personne la voie. */}
+                {preuve.photo && (
+                  <div className="sm:col-span-2">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-phoebe-anthracite/70">
+                      Preuve de livraison
+                    </p>
+                    <p className="text-phoebe-anthracite/70">
+                      {preuve.recuPar ? `Reçu par ${preuve.recuPar}` : "Réceptionnaire non précisé"}
+                      {preuve.livreeAt ? ` · ${new Date(preuve.livreeAt).toLocaleString("fr-FR")}` : ""}
+                      {preuve.latitude != null && preuve.longitude != null && (
+                        <>
+                          {" · "}
+                          <a
+                            href={`https://www.google.com/maps?q=${preuve.latitude},${preuve.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-phoebe-green hover:underline"
+                          >
+                            Position de remise
+                          </a>
+                        </>
+                      )}
+                    </p>
+                    <div className="mt-1">
+                      <PhotoLightbox photos={[preuve.photo]} />
+                    </div>
+                  </div>
+                )}
+                {preuve.echecMotif && (
+                  <div className="sm:col-span-2">
+                    <p className="text-[11px] font-medium uppercase tracking-wider text-phoebe-anthracite/70">
+                      Motif de l&apos;échec
+                    </p>
+                    <p className="text-error">{preuve.echecMotif}</p>
                   </div>
                 )}
               </div>

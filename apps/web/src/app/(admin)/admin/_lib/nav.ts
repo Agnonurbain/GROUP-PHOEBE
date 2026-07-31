@@ -18,6 +18,7 @@ import {
   ScrollText,
   Settings,
   MessageSquare,
+  Bike as BikeIcon,
   PenLine,
   Receipt,
   type LucideIcon,
@@ -90,7 +91,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: "Livraison",
-    items: [{ href: "/admin/expeditions", label: "Livraisons", icon: Truck }],
+    items: [
+      { href: "/admin/expeditions", label: "Livraisons", icon: Truck },
+      { href: "/admin/livreurs", label: "Livreurs", icon: BikeIcon, proprietaireOnly: true },
+    ],
   },
   {
     title: "Immobilier",

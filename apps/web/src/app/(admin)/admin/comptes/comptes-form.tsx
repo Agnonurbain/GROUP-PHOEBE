@@ -77,6 +77,47 @@ export function ComptesForm() {
           </select>
         </div>
 
+        {role === "livreur" && (
+          <>
+            <div>
+              <label htmlFor="zone_couverture_livreur" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+                Communes desservies
+              </label>
+              <input
+                id="zone_couverture_livreur"
+                name="zone_couverture"
+                type="text"
+                placeholder="Ex. Cocody, Marcory"
+                className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
+              />
+              <p className="mt-1.5 text-xs text-phoebe-anthracite/60">
+                Séparées par des virgules. Laissez vide pour desservir tout Abidjan —
+                c&apos;est le bon défaut tant que les couvertures ne sont pas réparties.
+                À ne pas confondre avec la zone d&apos;un agent immobilier.
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="capacite_max_par_jour" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
+                Capacité par jour
+              </label>
+              <input
+                id="capacite_max_par_jour"
+                name="capacite_max_par_jour"
+                type="number"
+                min={1}
+                step={1}
+                placeholder="Par défaut : 10"
+                className="w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
+              />
+              <p className="mt-1.5 text-xs text-phoebe-anthracite/60">
+                Nombre de colis en cours au-delà duquel l&apos;affectation
+                automatique le passe. Modifiable ensuite depuis Livreurs.
+              </p>
+            </div>
+          </>
+        )}
+
         {role === "agent_immobilier" && (
           <div>
             <label htmlFor="zone_couverture" className="mb-1 block text-sm font-medium text-phoebe-anthracite">

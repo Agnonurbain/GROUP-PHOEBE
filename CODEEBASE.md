@@ -89,7 +89,8 @@ group-phoebe/
 
 - `(public)` — Site public, sombre par défaut, [data-vertical] pour les accents
 - `(auth)` — Pages d'authentification, thème clair/sombre libre
-- `(admin)` — Back-office, rôles `operateur` / `proprietaire` uniquement
+- `(admin)` — Back-office, rôles `operateur` / `proprietaire` / `agent_immobilier`
+- `terrain/` — Espace terrain, rôles `livreur` / `agent_immobilier`. Hors groupe de routes : ni en-tête marchand, ni panier, ni pied de page. Pensé pour un téléphone tenu à une main, dehors
 
 ### 4.2 Routes publiques
 
@@ -124,6 +125,12 @@ group-phoebe/
 | `/offline` | `page.tsx` | Page hors-ligne |
 | `/design-system` | `page.tsx` | Galerie des composants (hors groupe de routes) |
 
+### 4.2b Espace terrain
+
+| Route | Description |
+|---|---|
+| `/terrain/livreur` | Courses du livreur : colis affectés, avancement du statut, preuve de remise, signalement d'échec |
+
 ### 4.3 Routes authentification
 
 | Route | Description |
@@ -150,6 +157,7 @@ group-phoebe/
 | `/admin/biens/nouveau` | Ajout bien |
 | `/admin/biens/[id]` | Édition bien |
 | `/admin/expeditions` | Gestion expéditions |
+| `/admin/livreurs` | Livreurs — propriétaire seul : communes desservies, capacité quotidienne, charge en cours, activation |
 | `/admin/demandes-immobilier` | Demandes immobilières (statuts, visites, agent, contre-offre) |
 | `/admin/transactions-immobilier` | Registre : qui a loué / acheté quel bien, à quel prix et quand (cumul des sommes réservé au propriétaire) |
 | `/admin/parametres-immobilier` | Paramétrage immobilier — propriétaire uniquement (frais de visite, remise max, quota d'offres) |
@@ -222,8 +230,8 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `langues` | Transverse | Langues disponibles (fr, en), i18n infrastructure |
 | `zones_tarifaires` | Transport | Zones et km inclus par jour |
 | `propositions_tarifs` | Transport | Propositions de modification tarifaire |
-| `livreurs` | Livraison | Livreurs avec zone |
-| `expeditions` | Livraison | Colis avec suivi |
+| `livreurs` | Livraison | Livreurs. `zone_couverture` = **communes desservies séparées par des virgules**, comparées à `expeditions.commune_collecte` ; vide = dessert tout. À ne pas confondre avec `agents_immobiliers.zone_couverture` (sous-chaîne de localisation) ni avec `expeditions.zone` (classe de trajet). `capacite_max_par_jour` borne l'affectation automatique — les deux sont pilotables depuis `/admin/livreurs` |
+| `expeditions` | Livraison | Colis avec suivi. `commune_collecte` / `commune_livraison` (l'affectation automatique en dépend). Preuve de remise : `preuve_chemin` (bucket **privé** `livraison-preuves`, URL signée à la demande), `preuve_latitude`/`longitude`, `recu_par`, `livree_at`, et `echec_motif` |
 | `expedition_statut_historique` | Livraison | Timeline statuts |
 | `communes` | Livraison | Communes rattachées à une zone |
 | `propositions_zones_tarifaires` | Livraison | Propositions de modification de zone |
@@ -688,7 +696,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 385 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 423 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -704,6 +712,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | `role-guards.test.ts`, `permissions.test.ts` | Cloisonnement des rôles |
 | `exclusion.test.ts` | Non-chevauchement des périodes (contrainte GiST) |
 | `annulation-48h.test.ts` | Rétention de caution sous 48 h |
+| `livreur.test.ts` | Cycle d'une expédition : `livree` terminal, transit non contournable, échec repris. Cloisonnement du livreur (n'agit que sur ses colis, désactivé il perd l'accès), preuve obligatoire à la remise et non publique, et lecture du SQL de 00063 pour que la garde reste en `security invoker`. Couverture d'un livreur : vide = dessert tout, accents et casse indifférents, et **une classe de trajet n'est jamais une commune** |
 | `facture.test.ts` | Facturation : client résolu depuis la table référencée (le paiement ne le porte pas), numéros distincts, webhook rejoué sans doublon ni numéro brûlé, échec de facture qui ne fait pas échouer l'encaissement, et chemin stocké plutôt qu'URL. Lit aussi le source de `telechargerFacture` : casse si la lecture bascule en clé de service ou si l'URL cesse d'être signée |
 
 ---
@@ -754,6 +763,10 @@ casser doit être un choix conscient, pas un effet de bord :
 | 2026-07-31 | **La facture était déposée dans un bucket privé et référencée par une URL publique** (00061) — lien mort dès l'émission, côté client comme côté admin. Le bucket privé est le bon choix : une facture porte le nom, le téléphone, l'email et les montants d'un client. C'est le stockage de `getPublicUrl()` qui était faux. `factures.pdf_url` devient `pdf_chemin` et porte le chemin de l'objet ; l'URL est **signée à la demande** — 60 s pour un téléchargement client, 5 min pour une page d'admin, assez pour ouvrir le PDF, trop court pour qu'un lien recopié reste exploitable. `telechargerFacture` lit la facture **avec la session du demandeur** (ce sont `factures_select_own` / `factures_staff_select` qui tranchent) puis signe en clé de service : interroger en clé de service dès la lecture rendrait toute facture lisible par quiconque connaît un identifiant. Renommage sans risque, la table étant vide — la génération n'avait jamais abouti (cf. 00060). |
 
 | 2026-07-31 | **Le client peut enfin récupérer ses factures**, et `factures.devis` devient `devise` (00062). Le téléchargement était annoncé dans le journal de 00059 mais `telechargerFacture` n'était branchée sur aucune interface : les factures existaient sans chemin pour y accéder. Nouveau `TelechargerFacture` sur « Mes réservations », qui demande l'URL signée **au clic** — signée au rendu, elle expirerait avant que le client ne clique, et allonger sa validité pour compenser laisserait traîner un accès à un document portant ses coordonnées. Les factures sont indexées par demande : plusieurs par ligne sont possibles (acompte puis solde, ou caution en plus du montant), et le numéro n'est affiché que dans ce cas — seul, il n'apprend rien. La coquille `devis` → `devise` est corrigée par migration plutôt que dans 00059, déjà appliquée : dans un projet où « devis » désigne le chiffrage d'un billet d'avion, le faux ami coûtait cher à la lecture du schéma. |
+
+| 2026-07-31 | **Espace terrain du livreur** (00063). Le rôle `livreur` existait sans aucune interface : le shell admin le refuse, et il n'avait aucun accès RLS à `expeditions` — `expeditions_select_own` filtre sur `client_id`, `expeditions_select_staff` repose sur `is_staff()`, qui ne couvre que `operateur` et `proprietaire`. Un livreur affecté à un colis ne pouvait pas le lire, et chaque changement de statut devait être tapé par un opérateur prévenu par téléphone. Nouveau `/terrain/livreur`, hors des groupes public et admin, pensé pour un téléphone : colis affectés, appels directs sur les contacts, avancement du statut. **Preuve de remise obligatoire** — photo et nom du réceptionnaire (rarement le destinataire déclaré), position facultative parce qu'un GPS refusé ne doit pas empêcher de clôturer une course déjà faite. **Motif obligatoire sur un échec**, sans quoi le statut était un cul-de-sac : ni seconde présentation, ni retour, ni remboursement instruits. Le cycle cesse d'être libre : `TRANSITIONS_LIVRAISON` interdit de sauter le transit ou de défaire une livraison, et l'admin y est soumis comme le livreur — chaque changement écrivant une ligne d'historique, la timeline publique pouvait afficher une chronologie impossible. Côté base, même précaution que pour les montants : la policy d'update borne *quelles lignes* un livreur écrit, jamais *quelles colonnes* — RLS ne sait pas faire — d'où le trigger `garde_livreur_expedition` qui refuse prix, affectation et client, en `security invoker` pour voir le vrai appelant. Enfin la connexion cesse d'envoyer un livreur sur `/compte/profil`, c'est-à-dire l'espace d'un client (`accueilSelonRole`). |
+
+| 2026-07-31 | **Preuve de remise privée, et zone de livreur qui veut dire quelque chose** (00064). Deux suites de l'espace terrain. (1) La photo de remise partait dans `colis-photos`, bucket public : le chemin contient un UUID donc rien n'est énumérable, mais une photo de la porte d'un client avec le nom de qui a réceptionné n'a pas à être lisible par quiconque récupère l'URL. Nouveau bucket privé `livraison-preuves`, `preuve_photo` devient `preuve_chemin`, URL signée à la demande — même traitement que les factures. Le client peut lire les preuves de ses propres colis : c'est d'abord pour lui qu'elles existent. (2) `livreurs.zone_couverture` était comparée **par égalité stricte** à `expeditions.zone`, qui vaut `intracommunale` / `intercommunale` / `nationale` — une classe de trajet, pas un territoire : personne ne « couvre l'intercommunal ». Le champ n'étant exposé par aucun formulaire, le filtre laissait tout le monde passer et marchait par accident ; y écrire « Cocody », comme le nom de la colonne et l'usage voisin le suggèrent, aurait rendu ce livreur inéligible à toutes les expéditions, en silence. La zone devient la **liste des communes desservies**, comparée à `expeditions.commune_collecte` — nouvelle colonne, la commune étant jusque-là fondue dans l'adresse (« détail — Commune ») et irrécupérable sans reparser du texte libre. Vide = dessert tout, et si aucun livreur ne couvre la commune, l'affectation retombe sur l'ensemble plutôt que de laisser le colis sans personne. Enfin `capacite_max_par_jour` et la zone deviennent éditables : à la création du compte, et depuis la nouvelle page `/admin/livreurs` qui montre aussi la charge en cours. Une capacité à 0 est refusée — ce serait un livreur que l'affectation écarte toujours sans que rien ne le dise ; pour suspendre quelqu'un, il y a « actif ». |
 
 ## 13. ÉVOLUTION
 
