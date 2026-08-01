@@ -124,10 +124,10 @@ export default async function Immobilier({
         bgImage={{ src: "/images/hero-immobilier.webp", alt: "Bien immobilier" }}
         aside={
           <Image
-            src="/logos/logo-imm.png"
+            src="/logos/immobilier.png"
             alt="Immobilier"
-            width={308}
-            height={278}
+            width={500}
+            height={500}
             className="h-24 w-auto animate-service-logo opacity-90"
             priority
           />

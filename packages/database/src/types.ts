@@ -158,47 +158,6 @@ export type Database = {
           },
         ]
       }
-      audit_logs: {
-        Row: {
-          action: string
-          created_at: string
-          id: string
-          new_values: Json | null
-          old_values: Json | null
-          record_id: string | null
-          table_name: string
-          user_id: string | null
-        }
-        Insert: {
-          action: string
-          created_at?: string
-          id?: string
-          new_values?: Json | null
-          old_values?: Json | null
-          record_id?: string | null
-          table_name: string
-          user_id?: string | null
-        }
-        Update: {
-          action?: string
-          created_at?: string
-          id?: string
-          new_values?: Json | null
-          old_values?: Json | null
-          record_id?: string | null
-          table_name?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "audit_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       avis: {
         Row: {
           client_id: string
@@ -255,38 +214,6 @@ export type Database = {
             columns: ["modere_par"]
             isOneToOne: false
             referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      avis_transport: {
-        Row: {
-          commentaire: string | null
-          created_at: string
-          demande_id: string
-          id: string
-          note: number
-        }
-        Insert: {
-          commentaire?: string | null
-          created_at?: string
-          demande_id: string
-          id?: string
-          note: number
-        }
-        Update: {
-          commentaire?: string | null
-          created_at?: string
-          demande_id?: string
-          id?: string
-          note?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "avis_transport_demande_id_fkey"
-            columns: ["demande_id"]
-            isOneToOne: true
-            referencedRelation: "demandes_transport"
             referencedColumns: ["id"]
           },
         ]

@@ -21,11 +21,11 @@ interface SmartHeaderProps {
 
 // Dimensions intrinsèques des PNG (marges transparentes rognées)
 const logos: Record<Vertical, { src: string; alt: string; w: number; h: number }> = {
-  default: { src: "/logos/logo_g-phoebe.png", alt: "GROUP PHOEBE", w: 334, h: 303 },
-  transport: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 407, h: 345 },
-  livraison: { src: "/logos/logo-trans-livr.png", alt: "Transport & Livraison", w: 407, h: 345 },
-  immobilier: { src: "/logos/logo-imm.png", alt: "Immobilier", w: 308, h: 278 },
-  assistance: { src: "/logos/logo-assi-etud.png", alt: "Assistance Voyages & Études", w: 429, h: 346 },
+  default: { src: "/logos/phoebe.png", alt: "GROUP PHOEBE", w: 334, h: 303 },
+  transport: { src: "/logos/transport.png", alt: "Transport", w: 500, h: 500 },
+  livraison: { src: "/logos/livraison.png", alt: "Livraison", w: 500, h: 500 },
+  immobilier: { src: "/logos/immobilier.png", alt: "Immobilier", w: 308, h: 278 },
+  assistance: { src: "/logos/assistance.png", alt: "Assistance Voyages & Études", w: 429, h: 346 },
 }
 
 const verticales = [

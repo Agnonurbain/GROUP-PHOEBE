@@ -50,7 +50,11 @@ describe("createOrganizationSchema", () => {
   it("utilise le domaine passé en paramètre, jamais un domaine codé en dur", () => {
     const s = createOrganizationSchema({ baseUrl });
     expect(s.url).toBe(baseUrl);
-    expect(s.logo).toBe(`${baseUrl}/logos/logo_g-phoebe.png`);
+    // Ce qui est gardé ici, c'est le DOMAINE, pas le nom du fichier : figer
+    // celui-ci faisait échouer le test au premier changement de logo, alors
+    // que la règle qu'il protège n'avait pas bougé.
+    expect(s.logo).toMatch(new RegExp(`^${baseUrl}/logos/[\\w-]+\\.png$`));
+    expect(s.logo).not.toMatch(/group-phoebe\.com/);
   });
 });
 

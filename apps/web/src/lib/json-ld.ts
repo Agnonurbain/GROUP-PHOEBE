@@ -27,7 +27,7 @@ export function createOrganizationSchema(params: {
     "@type": "Organization",
     name: "GROUP PHOEBE",
     url: baseUrl,
-    logo: `${baseUrl}/logos/logo_g-phoebe.png`,
+    logo: `${baseUrl}/logos/phoebe.png`,
     description:
       "Transport et livraison, immobilier et assistance voyages à Abidjan et partout en Côte d'Ivoire.",
     areaServed: { "@type": "Country", name: "Côte d'Ivoire" },
