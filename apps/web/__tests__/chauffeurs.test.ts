@@ -121,7 +121,7 @@ describe("Transport — documents du client", () => {
   // ait bougé.
   it("la caution retenue est affichée au client", () => {
     expect(reservations).toContain("t.compte.cautionRetenue");
-    expect(reservations).toMatch(/documents\.cautionRetenue.*toLocaleString/s);
+    expect(reservations).toMatch(/documents\.cautionRetenue[\s\S]*toLocaleString/);
   });
 });
 

@@ -2,7 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { getParametresContact } from "@/lib/public-cache"
 import { telHref, reseauxActifs } from "@/lib/contact"
-import { getT } from "@/lib/i18n"
+import { getT } from "@/lib/i18n/server"
 
 /* Hallmark · chrome partagé — voir design.md (§ Ce que TOUTES les pages partagent).
    Footer éditorial : filets, colonnes alignées à gauche, eyebrow en petites

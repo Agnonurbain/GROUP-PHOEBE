@@ -17,7 +17,7 @@ import { ReponseCreneauVisite } from "@/components/public/reponse-creneau-visite
 import { DossierPieces, type PieceClient } from "@/components/public/dossier-pieces"
 import { PayerDossier } from "@/components/public/payer-dossier"
 import { formaterCreneau } from "@/lib/immobilier"
-import { getT } from "@/lib/i18n"
+import { getT } from "@/lib/i18n/server"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
 
 export const metadata: Metadata = {

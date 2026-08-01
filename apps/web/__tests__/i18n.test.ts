@@ -96,6 +96,30 @@ describe("i18n — l'interface est réellement branchée", () => {
     expect(code).toMatch(/t\.[a-z]+\./);
   });
 
+  /**
+   * Le barrel `@/lib/i18n` est importé par `langue-context.tsx`, un composant
+   * CLIENT. Y remettre `next/headers` fait entrer une API serveur dans le
+   * bundle navigateur : le build de production échoue, et **ni `tsc` ni ESLint
+   * ne le voient** — seul `next build` le détecte. C'est arrivé une fois.
+   */
+  it("le barrel i18n reste pur : aucune API serveur", () => {
+    // On vise l'IMPORT, pas la chaîne : le commentaire du fichier mentionne
+    // légitimement `next/headers` pour expliquer pourquoi il n'y est pas.
+    const barrel = src("lib/i18n/index.ts");
+    expect(barrel).not.toMatch(/^\s*import .*["']next\/headers["']/m);
+    expect(barrel).not.toMatch(/^\s*import .*["']server-only["']/m);
+
+    // Les helpers serveur vivent à part, et la frontière est déclarée.
+    const serveur = src("lib/i18n/server.ts");
+    expect(serveur).toContain('import "server-only"');
+    expect(serveur).toContain("next/headers");
+  });
+
+  it("le contexte client n'importe que le module pur", () => {
+    expect(src("lib/langue-context.tsx")).toMatch(/from "@\/lib\/i18n"/);
+    expect(src("lib/langue-context.tsx")).not.toContain("@/lib/i18n/server");
+  });
+
   // Figé à "fr", il faisait annoncer du français à un lecteur d'écran servant
   // une interface anglaise.
   it("l'attribut lang suit la langue choisie", () => {

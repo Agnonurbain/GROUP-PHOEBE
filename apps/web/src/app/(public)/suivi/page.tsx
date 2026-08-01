@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { BackLink } from "@/components/public/back-link"
-import { getT } from "@/lib/i18n"
+import { getT } from "@/lib/i18n/server"
 import { PhotoLightbox } from "@/components/photo-lightbox"
 import {
   ZONE_LABELS,

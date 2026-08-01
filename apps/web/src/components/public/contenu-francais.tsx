@@ -1,4 +1,4 @@
-import { getT, langueCourante } from "@/lib/i18n"
+import { getT, langueCourante } from "@/lib/i18n/server"
 
 /**
  * Mention affichée sous le contenu métier resté en français.

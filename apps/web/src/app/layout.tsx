@@ -6,7 +6,7 @@ import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { PushNotificationSetup } from "@/components/push-notification-setup";
 import { OfflineBanner } from "@/components/offline-banner";
 import { getParametresContact } from "@/lib/public-cache";
-import { langueCourante } from "@/lib/i18n";
+import { langueCourante } from "@/lib/i18n/server";
 import "./globals.css";
 
 const inter = Inter({
