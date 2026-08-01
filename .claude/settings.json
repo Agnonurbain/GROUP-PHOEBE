@@ -174,7 +174,10 @@
       "Bash(pnpm -F web test chauffeurs)",
       "Bash(pnpm -F web test contrats)",
       "Bash(pnpm -F web test crons)",
-      "Bash(xargs -I{} echo \"{} expressions\")"
+      "Bash(xargs -I{} echo \"{} expressions\")",
+      "Bash(pnpm -F web test legal-indemnisation)",
+      "Bash(grep -E \"error|^$\")",
+      "Bash(pnpm -F web test immobilier-cycle)"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
