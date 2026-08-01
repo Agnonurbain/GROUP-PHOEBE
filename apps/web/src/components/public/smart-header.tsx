@@ -9,6 +9,7 @@ import { LogoutButton } from "@/components/logout-button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LocaleSwitcher } from "@/components/public/locale-switcher"
 import type { Langue } from "@/lib/langues"
+import { useT } from "@/lib/langue-context"
 
 type Vertical = "transport" | "livraison" | "immobilier" | "assistance" | "default"
 
@@ -29,10 +30,10 @@ const logos: Record<Vertical, { src: string; alt: string; w: number; h: number }
 }
 
 const verticales = [
-  { id: "transport" as const, label: "Transport", href: "/transport/catalogue" },
-  { id: "livraison" as const, label: "Livraison", href: "/livraison" },
-  { id: "immobilier" as const, label: "Immobilier", href: "/immobilier" },
-  { id: "assistance" as const, label: "Assistance", href: "/assistance" },
+  { id: "transport" as const, cle: "transport" as const, href: "/transport/catalogue" },
+  { id: "livraison" as const, cle: "livraison" as const, href: "/livraison" },
+  { id: "immobilier" as const, cle: "immobilier" as const, href: "/immobilier" },
+  { id: "assistance" as const, cle: "assistance" as const, href: "/assistance" },
 ]
 
 function detectVertical(pathname: string): Vertical {
@@ -64,17 +65,20 @@ export function SmartHeader({ vertical: forcedVertical, session, langues, langue
   }, [])
 
   const logo = logos[vertical]
+  const t = useT()
   const isStaff = session?.role === "operateur" || session?.role === "proprietaire"
 
   const showVerticalNav = !session
+  // Les libellés de verticale viennent du dictionnaire : ils étaient figés en
+  // français dans le tableau, donc intraduisibles.
   const navLinks = session
     ? isStaff
-      ? [{ href: "/admin", label: "Back-office" }]
+      ? [{ href: "/admin", label: t.nav.administration }]
       : [
-          { href: "/compte/reservations", label: "Mes réservations" },
-          { href: "/compte/profil", label: session.nom ?? "Profil", isName: true },
+          { href: "/compte/reservations", label: t.nav.mesReservations },
+          { href: "/compte/profil", label: session.nom ?? t.nav.monCompte, isName: true },
         ]
-    : verticales
+    : verticales.map((v) => ({ href: v.href, label: t.nav[v.cle] }))
 
   // Client connecté : bouton bien visible pour choisir son service, sauf s'il
   // est déjà sur l'accueil (où les services sont affichés).

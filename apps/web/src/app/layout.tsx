@@ -6,6 +6,7 @@ import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { PushNotificationSetup } from "@/components/push-notification-setup";
 import { OfflineBanner } from "@/components/offline-banner";
 import { getParametresContact } from "@/lib/public-cache";
+import { langueCourante } from "@/lib/i18n/server";
 import "./globals.css";
 
 const inter = Inter({
@@ -74,7 +75,10 @@ export default async function RootLayout({
     // laissait les contrôles natifs (barres de défilement, sélecteurs de date)
     // en clair sur fond sombre.
     <html
-      lang="fr"
+      // `lang` suit la langue choisie : figé à "fr", il faisait annoncer du
+      // français à un lecteur d'écran servant une interface anglaise, et
+      // orientait mal la traduction automatique des navigateurs.
+      lang={await langueCourante()}
       className={`${inter.variable} ${fraunces.variable} h-full antialiased`}
       suppressHydrationWarning
     >

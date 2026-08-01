@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
+import { ContenuFrancais } from "@/components/public/contenu-francais"
 import { BackLink } from "@/components/public/back-link"
 import { getPageLegale, pageIncomplete, SLUGS_LEGAUX } from "@/lib/legal"
 
@@ -73,6 +74,8 @@ export default async function PageLegaleRoute({
           </p>
         </div>
       )}
+
+        <ContenuFrancais />
 
       <div className="mt-10 space-y-8">
         {page.sections.map((section) => (

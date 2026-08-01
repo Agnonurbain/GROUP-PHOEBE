@@ -2,41 +2,45 @@ import Link from "next/link"
 import Image from "next/image"
 import { getParametresContact } from "@/lib/public-cache"
 import { telHref, reseauxActifs } from "@/lib/contact"
+import { getT } from "@/lib/i18n/server"
 
 /* Hallmark · chrome partagé — voir design.md (§ Ce que TOUTES les pages partagent).
    Footer éditorial : filets, colonnes alignées à gauche, eyebrow en petites
    capitales espacées. Pas de grille de cartes, pas de centrage. */
 
-const servicesLinks = [
-  { href: "/livraison", label: "Livraison" },
-  { href: "/transport/catalogue", label: "Transport" },
-  { href: "/immobilier", label: "Immobilier" },
-  { href: "/assistance", label: "Assistance Voyages" },
-]
-
-const legalLinks = [
-  { href: "/legal/mentions-legales", label: "Mentions légales" },
-  { href: "/legal/cgv", label: "CGV" },
-  { href: "/legal/confidentialite", label: "Politique de confidentialité" },
-]
-
 export async function Footer() {
+  const t = await getT()
   const contact = await getParametresContact()
   const tel = telHref(contact.telephone)
   const reseaux = reseauxActifs(contact)
 
   // Un champ non renseigné n'affiche rien : mieux vaut une absence qu'une
   // fausse coordonnée sur laquelle un visiteur peut appeler.
+  // Dans le composant : les libellés dépendent de la langue, un tableau de
+  // module les figerait au chargement du fichier.
+  const servicesLinks = [
+    { href: "/livraison", label: t.nav.livraison },
+    { href: "/transport/catalogue", label: t.nav.transport },
+    { href: "/immobilier", label: t.nav.immobilier },
+    { href: "/assistance", label: t.nav.assistance },
+  ]
+
+  const legalLinks = [
+    { href: "/legal/mentions-legales", label: t.legal.mentionsLegales },
+    { href: "/legal/cgv", label: t.legal.cgv },
+    { href: "/legal/confidentialite", label: t.legal.confidentialite },
+  ]
+
   const contactLinks = [
-    { href: "/contact", label: "Nous écrire" },
+    { href: "/contact", label: t.nav.contact },
     ...(contact.email ? [{ href: `mailto:${contact.email}`, label: contact.email }] : []),
     ...(tel && contact.telephone ? [{ href: tel, label: contact.telephone }] : []),
   ]
 
   const columns = [
-    { title: "Services", links: servicesLinks },
-    { title: "Contact", links: contactLinks },
-    { title: "Légal", links: legalLinks },
+    { title: t.footer.services, links: servicesLinks },
+    { title: t.footer.contact, links: contactLinks },
+    { title: t.footer.legal, links: legalLinks },
   ]
 
   return (
@@ -105,7 +109,7 @@ export async function Footer() {
         </div>
 
         <p className="mt-14 border-t border-public-border pt-6 text-xs text-public-text-faint">
-          &copy; {new Date().getFullYear()} GROUP PHOEBE. Tous droits réservés.
+          &copy; {new Date().getFullYear()} GROUP PHOEBE. {t.footer.droits}
         </p>
       </div>
     </footer>
