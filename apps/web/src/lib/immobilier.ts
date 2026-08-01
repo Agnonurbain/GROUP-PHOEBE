@@ -54,6 +54,7 @@ export const STATUTS_DEMANDE = [
   "en_attente",
   "en_cours_traitement",
   "visite_programmee",
+  "visite_realisee",
   "offre_soumise",
   "contre_offre",
   "acceptee",
@@ -68,6 +69,7 @@ export const STATUT_DEMANDE_LABELS: Record<string, string> = {
   en_attente: "En attente",
   en_cours_traitement: "En cours de traitement",
   visite_programmee: "Visite programmée",
+  visite_realisee: "Visite réalisée",
   offre_soumise: "Offre soumise",
   contre_offre: "Contre-offre envoyée",
   acceptee: "Acceptée",
@@ -189,6 +191,66 @@ export const STATUTS_DEMANDE_VISITE_ACTIFS = ["en_attente", "en_cours_traitement
 
 // Une offre en attente de réponse du client compte toujours dans son quota.
 export const STATUTS_DEMANDE_OFFRE_ACTIFS = ["en_attente", "offre_soumise", "en_cours_traitement", "contre_offre", "acceptee"] as const
+
+
+/**
+ * Transitions autorisées d'une demande immobilière.
+ *
+ * Le cycle était libre : n'importe lequel des neuf statuts menait à n'importe
+ * quel autre. Ce n'était pas théorique — une demande `refusee`, y compris close
+ * automatiquement parce qu'un concurrent avait emporté le bien, pouvait repasser
+ * à `acceptee`. Le contrôle du bien laissait passer (`reserve` est accepté, et
+ * c'est justement l'état où le gagnant l'a mis), le prix du perdant se figeait,
+ * une commission se calculait, et `cloturerConcurrentes` ne refermait pas le
+ * vrai gagnant puisque `acceptee` ne figure pas dans les statuts qu'elle balaie.
+ * Deux acquéreurs engagés sur un même bien, deux prix arrêtés, deux commissions.
+ *
+ * `finalisee`, `refusee` et `annulee` sont terminaux : rouvrir une affaire close
+ * suppose une nouvelle demande, pas la réanimation de l'ancienne.
+ */
+export const TRANSITIONS_DEMANDE_IMMO: Record<StatutDemande, readonly StatutDemande[]> = {
+  en_attente: ["en_cours_traitement", "visite_programmee", "offre_soumise", "refusee", "annulee"],
+  en_cours_traitement: ["visite_programmee", "offre_soumise", "contre_offre", "acceptee", "refusee", "annulee"],
+  visite_programmee: ["visite_realisee", "en_cours_traitement", "offre_soumise", "refusee", "annulee"],
+  // Après une visite, le client peut faire une offre : c'est le parcours nominal.
+  visite_realisee: ["offre_soumise", "en_cours_traitement", "annulee"],
+  offre_soumise: ["contre_offre", "acceptee", "refusee", "annulee"],
+  contre_offre: ["acceptee", "offre_soumise", "refusee", "annulee"],
+  // Une affaire conclue ne se dénoue que par un abandon explicite, jamais par
+  // un retour en négociation : le prix est figé et la commission calculée.
+  acceptee: ["finalisee", "annulee"],
+  refusee: [],
+  annulee: [],
+  finalisee: [],
+} as const;
+
+export function transitionDemandeAutorisee(depuis: string, vers: string): boolean {
+  if (!isStatutDemande(depuis) || !isStatutDemande(vers)) return false;
+  return TRANSITIONS_DEMANDE_IMMO[depuis].includes(vers);
+}
+
+/**
+ * Transitions d'une visite.
+ *
+ * `proposee` attendait une réponse que personne ne pouvait donner : seul un
+ * opérateur passait à `confirmee`, si bien qu'il « confirmait » un rendez-vous
+ * que le client n'avait jamais accepté — alors qu'il a payé des frais de visite
+ * non remboursables. Le client peut désormais accepter ou décliner, et un
+ * créneau décliné revient au staff pour reprogrammation.
+ */
+export const TRANSITIONS_VISITE: Record<StatutVisite, readonly StatutVisite[]> = {
+  proposee: ["confirmee", "annulee"],
+  confirmee: ["realisee", "annulee"],
+  // Une visite annulée se reprogramme : c'est le déroulé normal quand un
+  // créneau ne convient pas.
+  annulee: ["proposee"],
+  realisee: [],
+} as const;
+
+export function transitionVisiteAutorisee(depuis: string, vers: string): boolean {
+  if (!isStatutVisite(depuis) || !isStatutVisite(vers)) return false;
+  return TRANSITIONS_VISITE[depuis].includes(vers);
+}
 
 // ─── Contre-offre (propriétaire → acheteur) ──────────────────────────────────
 

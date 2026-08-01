@@ -87,6 +87,20 @@ export async function notifierAdminAnnulationExpedition(
   });
 }
 
+export async function notifierAdminReponseCreneauVisite(
+  creneau: string,
+  accepte: boolean
+) {
+  await notifierStaff({
+    evenement: "reponse_creneau_visite",
+    titre: accepte ? "Créneau de visite accepté" : "Créneau de visite décliné",
+    message: accepte
+      ? `Le client confirme le ${creneau}.`
+      : `Le client décline le ${creneau} — un nouveau créneau est à proposer.`,
+    lien: "/admin/demandes-immobilier",
+  });
+}
+
 export async function notifierAdminNouveauDossierVoyage(
   _dossierId: string,
   clientNom: string,

@@ -8,7 +8,10 @@ import type { Database } from "@group-phoebe/database/types";
 import {
   isTypeDemande,
   isStatutDemande,
+  transitionDemandeAutorisee,
+  transitionVisiteAutorisee,
   isStatutVisite,
+  STATUT_VISITE_LABELS,
   TYPE_DEMANDE_LABELS,
   STATUT_DEMANDE_LABELS,
   typeBienLabel,
@@ -25,6 +28,7 @@ import { logAudit } from "@/lib/audit";
 import {
   notifierAdminNouvelleDemandeImmobilier,
   notifierAdminReponseContreOffre,
+  notifierAdminReponseCreneauVisite,
 } from "./notifications-admin";
 import { getParametresImmobilier } from "@/lib/public-cache";
 import { creerSessionStripe } from "@/lib/payments/stripe";
@@ -306,12 +310,25 @@ export async function changerStatutDemandeImmobilier(
     .select("client_id, bien_id, statut, montant_offre, montant_contre_offre, montant_convenu")
     .eq("id", demandeId)
     .single();
+  if (!demande) return { error: "Demande introuvable." };
+
+  if (demande.statut === statut) return { success: true };
+
+  // Sans cette garde, une demande `refusee` — y compris close automatiquement
+  // parce qu'un concurrent avait emporté le bien — pouvait repasser à
+  // `acceptee` : deux acquéreurs engagés sur le même bien, deux prix figés,
+  // deux commissions dues.
+  if (!transitionDemandeAutorisee(demande.statut, statut)) {
+    return {
+      error: `Passage impossible de « ${STATUT_DEMANDE_LABELS[demande.statut] ?? demande.statut} » à « ${STATUT_DEMANDE_LABELS[statut] ?? statut} ».`,
+    };
+  }
 
   // Accepter arrête le prix. Après une contre-offre c'est elle qui fait foi ;
   // sinon c'est l'offre du client. Écrit dans le même UPDATE que le statut, car
   // le trigger `garde_montants` (00053) gèle les montants dès l'acceptation.
   const figerMontant =
-    statut === "acceptee" && demande != null && demande.montant_convenu == null;
+    statut === "acceptee" && demande.montant_convenu == null;
   const montantConvenu = figerMontant
     ? (demande.montant_contre_offre ?? demande.montant_offre)
     : null;
@@ -319,7 +336,7 @@ export async function changerStatutDemandeImmobilier(
     montantConvenu != null ? await commissionDue(Number(montantConvenu)) : null;
 
   // Un bien déjà réservé ou vendu ne peut plus faire l'objet d'un second accord.
-  if (statut === "acceptee" && demande?.bien_id) {
+  if (statut === "acceptee" && demande.bien_id) {
     const { data: bienActuel } = await admin
       .from("biens")
       .select("statut")
@@ -345,10 +362,11 @@ export async function changerStatutDemandeImmobilier(
         : {}),
       updated_at: new Date().toISOString(),
     })
-    .eq("id", demandeId);
+    .eq("id", demandeId)
+    .eq("statut", demande.statut);
   if (error) return { error: error.message };
 
-  if (statut === "acceptee" && demande?.bien_id) {
+  if (statut === "acceptee" && demande.bien_id) {
     await admin
       .from("biens")
       .update({ statut: "reserve", updated_at: new Date().toISOString() })
@@ -356,18 +374,18 @@ export async function changerStatutDemandeImmobilier(
       .eq("statut", "disponible");
 
     await cloturerConcurrentes(admin, demandeId, demande.bien_id);
-  } else if (statut === "finalisee" && demande?.bien_id) {
+  } else if (statut === "finalisee" && demande.bien_id) {
     const { data: bien } = await admin.from("biens").select("transaction").eq("id", demande.bien_id).single();
     const statutBien = bien?.transaction === "location" ? "loue" : "vendu";
     await admin.from("biens").update({ statut: statutBien, updated_at: new Date().toISOString() }).eq("id", demande.bien_id);
-  } else if (["refusee", "annulee"].includes(statut) && demande?.bien_id) {
+  } else if (["refusee", "annulee"].includes(statut) && demande.bien_id) {
     const { data: bien } = await admin.from("biens").select("statut").eq("id", demande.bien_id).single();
     if (bien?.statut === "reserve") {
       await admin.from("biens").update({ statut: "disponible", updated_at: new Date().toISOString() }).eq("id", demande.bien_id);
     }
   }
 
-  if (demande) {
+  {
     await notifierClient(
       demande.client_id,
       "Mise à jour de votre demande immobilière",
@@ -731,18 +749,31 @@ export async function changerStatutVisite(
 
   const { data: visite } = await admin
     .from("visites")
-    .select("bien_id, client_id, creneau")
+    .select("bien_id, client_id, creneau, statut")
     .eq("id", visiteId)
     .single();
+  if (!visite) return { error: "Visite introuvable." };
 
-  const { error } = await admin
+  if (visite.statut === statut) return { success: true };
+
+  // Sans garde, une visite réalisée pouvait repasser à « proposée » — et la
+  // demande qu'elle avait refermée serait rouverte à la visite suivante.
+  if (!transitionVisiteAutorisee(visite.statut, statut)) {
+    return {
+      error: `Passage impossible de « ${STATUT_VISITE_LABELS[visite.statut] ?? visite.statut} » à « ${STATUT_VISITE_LABELS[statut] ?? statut} ».`,
+    };
+  }
+
+  const { error, count } = await admin
     .from("visites")
-    .update({ statut })
-    .eq("id", visiteId);
+    .update({ statut }, { count: "exact" })
+    .eq("id", visiteId)
+    .eq("statut", visite.statut);
   if (error) return { error: error.message };
+  if (!count) return { error: "La visite a changé d'état entre-temps. Rechargez la page." };
 
   // Le créneau devient ferme : le client doit le savoir.
-  if (visite && statut === "confirmee") {
+  if (statut === "confirmee") {
     await notifierClient(
       visite.client_id,
       "Votre visite est confirmée",
@@ -754,8 +785,10 @@ export async function changerStatutVisite(
   // Une visite terminée doit refermer la demande qui la portait. Sans cela la
   // demande restait à « visite_programmee » — statut que le cron d'expiration ne
   // traite pas — et le bien restait masqué du catalogue indéfiniment.
-  if (visite && (statut === "realisee" || statut === "annulee")) {
-    const statutDemande = statut === "realisee" ? "finalisee" : "annulee";
+  if (statut === "realisee" || statut === "annulee") {
+    // `visite_realisee`, pas `finalisee` : une visite effectuée n'est pas une
+    // vente conclue, et `finalisee` sort le bien du catalogue.
+    const statutDemande = statut === "realisee" ? "visite_realisee" : "annulee";
 
     const { data: demandes } = await admin
       .from("demandes_immobilier")
@@ -839,5 +872,78 @@ export async function modifierParametresImmobilier(
   if (error) return { error: error.message };
 
   (revalidateTag as (tag: string) => void)("parametres_immobilier");
+  return { success: true };
+}
+
+/**
+ * Réponse du client au créneau de visite qu'on lui propose.
+ *
+ * `proposee` attendait une réponse que personne ne pouvait donner : seul un
+ * opérateur passait à `confirmee`, si bien qu'il « confirmait » un rendez-vous
+ * que le client n'avait jamais accepté. Le client, lui, voyait le créneau en
+ * lecture seule — alors qu'il a payé des frais de visite non remboursables pour
+ * ce déplacement.
+ *
+ * Décliner remet la visite à l'équipe, qui reproposera : ce n'est pas une
+ * annulation de la demande, seulement du créneau.
+ */
+export async function repondreCreneauVisite(
+  _prev: VisiteState,
+  formData: FormData
+): Promise<VisiteState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Non authentifié." };
+
+  const visiteId = formData.get("visite_id") as string;
+  const reponse = formData.get("reponse") as string;
+  if (!visiteId || !["accepte", "decline"].includes(reponse)) {
+    return { error: "Réponse invalide." };
+  }
+
+  const admin = getAdmin();
+  const { data: visite } = await admin
+    .from("visites")
+    .select("client_id, statut, creneau, bien_id")
+    .eq("id", visiteId)
+    .single();
+
+  if (!visite) return { error: "Visite introuvable." };
+  if (visite.client_id !== user.sub) return { error: "Cette visite n'est pas la vôtre." };
+  if (visite.statut !== "proposee") {
+    return { error: "Ce créneau n'attend plus de réponse." };
+  }
+
+  const cible = reponse === "accepte" ? "confirmee" : "annulee";
+
+  const { error, count } = await admin
+    .from("visites")
+    .update({ statut: cible }, { count: "exact" })
+    .eq("id", visiteId)
+    .eq("statut", "proposee");
+
+  if (error) return { error: error.message };
+  if (!count) return { error: "Ce créneau a changé entre-temps. Rechargez la page." };
+
+  // Décliner ne relibère pas le bien : la demande reste vivante, l'équipe doit
+  // reproposer. Le relâcher ici remettrait le bien au catalogue alors que le
+  // client attend toujours sa visite, déjà payée.
+  await logAudit({
+    userId: user.sub as string,
+    action: reponse === "accepte" ? "accepter_creneau_visite" : "decliner_creneau_visite",
+    tableName: "visites",
+    recordId: visiteId,
+    oldValues: { statut: "proposee" },
+    newValues: { statut: cible },
+  });
+
+  await notifierAdminReponseCreneauVisite(
+    formaterCreneau(visite.creneau as string),
+    reponse === "accepte"
+  );
+
+  revalidatePath("/compte/reservations");
+  revalidatePath("/admin/demandes-immobilier");
   return { success: true };
 }
