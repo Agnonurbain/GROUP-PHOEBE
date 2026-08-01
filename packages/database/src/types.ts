@@ -516,6 +516,7 @@ export type Database = {
       demandes_billet: {
         Row: {
           certificat_fievre_jaune: boolean
+          certificat_fievre_jaune_url: string | null
           certificat_fievre_jaune_valide: boolean | null
           classe: string
           client_id: string
@@ -530,6 +531,7 @@ export type Database = {
           id: string
           message: string | null
           mineur_autorisation_parentale: boolean
+          mineur_autorisation_url: string | null
           mineur_autorisation_verifie: boolean | null
           montant_propose: number | null
           nb_adultes: number
@@ -544,6 +546,7 @@ export type Database = {
         }
         Insert: {
           certificat_fievre_jaune?: boolean
+          certificat_fievre_jaune_url?: string | null
           certificat_fievre_jaune_valide?: boolean | null
           classe?: string
           client_id: string
@@ -558,6 +561,7 @@ export type Database = {
           id?: string
           message?: string | null
           mineur_autorisation_parentale?: boolean
+          mineur_autorisation_url?: string | null
           mineur_autorisation_verifie?: boolean | null
           montant_propose?: number | null
           nb_adultes?: number
@@ -572,6 +576,7 @@ export type Database = {
         }
         Update: {
           certificat_fievre_jaune?: boolean
+          certificat_fievre_jaune_url?: string | null
           certificat_fievre_jaune_valide?: boolean | null
           classe?: string
           client_id?: string
@@ -586,6 +591,7 @@ export type Database = {
           id?: string
           message?: string | null
           mineur_autorisation_parentale?: boolean
+          mineur_autorisation_url?: string | null
           mineur_autorisation_verifie?: boolean | null
           montant_propose?: number | null
           nb_adultes?: number
@@ -866,27 +872,33 @@ export type Database = {
       }
       documents_dossier_voyage: {
         Row: {
+          commentaire: string | null
           created_at: string
           dossier_id: string
           id: string
           statut: string
           type_document: string
+          updated_at: string
           url: string
         }
         Insert: {
+          commentaire?: string | null
           created_at?: string
           dossier_id: string
           id?: string
           statut?: string
           type_document: string
+          updated_at?: string
           url: string
         }
         Update: {
+          commentaire?: string | null
           created_at?: string
           dossier_id?: string
           id?: string
           statut?: string
           type_document?: string
+          updated_at?: string
           url?: string
         }
         Relationships: [
