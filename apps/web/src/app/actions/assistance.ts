@@ -5,13 +5,26 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
-import { getPays, getPrestation, isStatutDossier, STATUT_DOSSIER_LABELS } from "@/lib/assistance";
+import { validateDocumentUpload } from "@/lib/upload-validation";
+import { logAudit } from "@/lib/audit";
+import { creerSessionStripe } from "@/lib/payments/stripe";
+import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
+import {
+  getPays,
+  getPrestation,
+  isStatutDossier,
+  transitionDossierAutorisee,
+  isTypeDocument,
+  STATUT_DOSSIER_LABELS,
+} from "@/lib/assistance";
 import { getTarifsAssistance } from "@/lib/public-cache";
 import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouveauDossierVoyage } from "./notifications-admin";
 
 export type AssistanceState = {
   error?: string;
+  /** Dépôt de pièce et règlement : le client doit voir que c'est passé. */
+  success?: boolean;
 };
 
 export type DossierActionState = {
@@ -93,6 +106,39 @@ export async function creerDossierVoyage(
     return { error: "Impossible de créer le dossier. Veuillez réessayer." };
   }
 
+  // Le dossier n'était jamais facturé : `montant_estime` était écrit depuis le
+  // tarif, et aucun paiement de module `voyage` n'était créé nulle part. Le
+  // service était rendu et jamais encaissé.
+  //
+  // Le paiement naît avec le dossier, en attente : le client règle depuis
+  // « Mes réservations », comme un devis de billet. Facturer d'emblée
+  // bloquerait la soumission d'un dossier que l'équipe n'a pas encore examiné.
+  // Une prestation peut n'avoir aucun prix publié (« sur devis ») : on ne
+  // fabrique pas de ligne de paiement à zéro, elle traînerait en attente.
+  const prixPrestation = Number(prestation.prix ?? 0);
+  if (prixPrestation > 0) {
+    const { error: paiementErr } = await admin.from("paiements").insert({
+      module: "voyage",
+      reference_table: "dossiers_voyage",
+      reference_id: dossier.id,
+      type: "montant",
+      montant: prixPrestation,
+      // Le mode est choisi au règlement ; `agence` est le repli neutre tant que
+      // le client n'a rien réglé.
+      methode: "agence",
+      statut: "en_attente",
+    });
+
+    // Non bloquant : un dossier reçu vaut mieux qu'un dossier perdu parce que
+    // la ligne de paiement n'a pas pu s'écrire. L'écart se voit en admin.
+    if (paiementErr) {
+      console.error(
+        `Paiement non créé pour le dossier ${dossier.id} :`,
+        paiementErr.message
+      );
+    }
+  }
+
   await notifierAdminNouveauDossierVoyage(
     dossier.id,
     profile.nom,
@@ -121,17 +167,29 @@ export async function changerStatutDossier(
 
   const { data: dossier } = await admin
     .from("dossiers_voyage")
-    .select("client_id, pays_cible")
+    .select("client_id, pays_cible, statut")
     .eq("id", dossierId)
     .single();
+  if (!dossier) return { error: "Dossier introuvable." };
 
-  const { error } = await admin
+  if (dossier.statut === statut) return { success: true };
+
+  // Le cycle était libre : un dossier finalisé pouvait repasser à « soumis ».
+  if (!transitionDossierAutorisee(dossier.statut, statut)) {
+    return {
+      error: `Passage impossible de « ${STATUT_DOSSIER_LABELS[dossier.statut] ?? dossier.statut} » à « ${STATUT_DOSSIER_LABELS[statut] ?? statut} ».`,
+    };
+  }
+
+  const { error, count } = await admin
     .from("dossiers_voyage")
-    .update({ statut, updated_at: new Date().toISOString() })
-    .eq("id", dossierId);
+    .update({ statut, updated_at: new Date().toISOString() }, { count: "exact" })
+    .eq("id", dossierId)
+    .eq("statut", dossier.statut);
   if (error) return { error: error.message };
+  if (!count) return { error: "Le dossier a changé d'état entre-temps. Rechargez la page." };
 
-  if (dossier) {
+  {
     await notifierClient(
       dossier.client_id,
       "Mise à jour de votre dossier visa",
@@ -160,5 +218,266 @@ export async function affecterConseiller(
   if (error) return { error: error.message };
 
   revalidatePath("/admin/dossiers-voyage");
+  return { success: true };
+}
+
+/**
+ * Règlement d'un dossier par le client.
+ *
+ * Le paiement naît en attente avec le dossier ; c'est ici qu'il est encaissé.
+ * Le montant n'est jamais lu depuis le formulaire — il vient de la ligne de
+ * paiement créée à la soumission, sur le tarif en vigueur ce jour-là. Le laisser
+ * arriver du client permettrait de payer ce qu'on veut.
+ */
+export async function payerDossierVoyage(
+  _prev: AssistanceState,
+  formData: FormData
+): Promise<AssistanceState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Vous devez être connecté." };
+
+  const dossierId = formData.get("dossier_id") as string;
+  const methode = formData.get("methode_paiement") as string;
+  if (!dossierId) return { error: "Dossier invalide." };
+  if (!["cinetpay", "stripe"].includes(methode)) {
+    return { error: "Méthode de paiement invalide." };
+  }
+
+  const admin = getAdmin();
+
+  const { data: dossier } = await admin
+    .from("dossiers_voyage")
+    .select("id, client_id, pays_cible, prestation")
+    .eq("id", dossierId)
+    .single();
+
+  if (!dossier) return { error: "Dossier introuvable." };
+  if (dossier.client_id !== user.sub) return { error: "Ce dossier n'est pas le vôtre." };
+
+  const { data: paiement } = await admin
+    .from("paiements")
+    .select("id, montant, statut")
+    .eq("reference_table", "dossiers_voyage")
+    .eq("reference_id", dossierId)
+    .maybeSingle();
+
+  if (!paiement) return { error: "Aucun montant à régler pour ce dossier." };
+  if (paiement.statut !== "en_attente") {
+    return { error: "Ce dossier est déjà réglé." };
+  }
+
+  // La méthode est arrêtée maintenant : elle valait `agence` tant que le client
+  // n'avait rien choisi.
+  const { error: majErr } = await admin
+    .from("paiements")
+    .update({ methode })
+    .eq("id", paiement.id)
+    .eq("statut", "en_attente");
+  if (majErr) return { error: majErr.message };
+
+  const montant = Number(paiement.montant);
+  const description = `Assistance ${(dossier as { prestation?: string }).prestation ?? ""} — ${dossier.pays_cible}`.trim();
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
+  let paymentUrl: string;
+  try {
+    if (methode === "stripe") {
+      paymentUrl = await creerSessionStripe({
+        montantCFA: montant,
+        description,
+        paiementId: paiement.id,
+        successUrl: `${baseUrl}/compte/reservations`,
+        cancelUrl: `${baseUrl}/compte/reservations?echec=1`,
+      });
+    } else {
+      paymentUrl = await creerSessionCinetPay({
+        montantCFA: montant,
+        description,
+        paiementId: paiement.id,
+        returnUrl: `${baseUrl}/compte/reservations`,
+        notifyUrl: `${baseUrl}/api/webhooks/cinetpay`,
+      });
+    }
+  } catch (err) {
+    return {
+      error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
+    };
+  }
+
+  redirect(paymentUrl);
+}
+
+// ─── Pièces justificatives d'un dossier ──────────────────────────────────────
+// `documents_dossier_voyage` existait depuis la migration initiale, avec ses
+// policies posées en 00038, et zéro ligne de code. Le statut
+// `pieces_complementaires_requises` demandait des pièces qu'aucun canal ne
+// permettait d'envoyer.
+
+export async function deposerPieceDossier(
+  _prev: AssistanceState,
+  formData: FormData
+): Promise<AssistanceState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Vous devez être connecté." };
+
+  const dossierId = formData.get("dossier_id") as string;
+  const typeDocument = formData.get("type_document") as string;
+  const fichier = formData.get("fichier") as File | null;
+
+  if (!dossierId) return { error: "Dossier invalide." };
+  if (!isTypeDocument(typeDocument)) return { error: "Type de pièce invalide." };
+  if (!fichier || typeof fichier === "string" || !fichier.size) {
+    return { error: "Choisissez un fichier." };
+  }
+
+  const admin = getAdmin();
+  const { data: dossier } = await admin
+    .from("dossiers_voyage")
+    .select("id, client_id")
+    .eq("id", dossierId)
+    .single();
+
+  if (!dossier) return { error: "Dossier introuvable." };
+  if (dossier.client_id !== user.sub) return { error: "Ce dossier n'est pas le vôtre." };
+
+  let ext: string;
+  try {
+    ({ ext } = validateDocumentUpload(fichier));
+  } catch {
+    return { error: "Fichier invalide : PDF ou image, 5 Mo maximum." };
+  }
+
+  // Bucket privé : passeports, diplômes, actes de naissance. C'est le chemin
+  // qui est stocké, l'URL se signe à la demande.
+  const chemin = `${dossierId}/${typeDocument}-${crypto.randomUUID()}.${ext}`;
+  const { error: upErr } = await admin.storage
+    .from("dossiers-documents")
+    .upload(chemin, await fichier.arrayBuffer(), { contentType: fichier.type });
+
+  if (upErr) return { error: "Échec de l'envoi. Réessayez." };
+
+  // Redéposer une pièce rejetée doit la remplacer, pas en ajouter une seconde :
+  // l'équipe verrait deux lignes à vérifier pour un seul document. L'unicité
+  // (dossier_id, type_document) posée en 00073 tient la règle en base.
+  const { error } = await admin
+    .from("documents_dossier_voyage")
+    .upsert(
+      {
+        dossier_id: dossierId,
+        type_document: typeDocument,
+        url: chemin,
+        statut: "soumis",
+        commentaire: null,
+        updated_at: new Date().toISOString(),
+      } as never,
+      { onConflict: "dossier_id,type_document" }
+    );
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/compte/reservations");
+  revalidatePath("/admin/dossiers-voyage");
+  return { success: true };
+}
+
+/** Lien signé vers une pièce : le client pour les siennes, le staff pour toutes. */
+export async function lienPieceDossier(
+  documentId: string
+): Promise<{ error?: string; url?: string }> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Non authentifié." };
+
+  const admin = getAdmin();
+  const { data: doc } = await admin
+    .from("documents_dossier_voyage")
+    .select("url, dossier_id")
+    .eq("id", documentId)
+    .single();
+  if (!doc) return { error: "Pièce introuvable." };
+
+  const { data: dossier } = await admin
+    .from("dossiers_voyage")
+    .select("client_id")
+    .eq("id", doc.dossier_id)
+    .single();
+
+  if (dossier?.client_id !== user.sub) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.sub)
+      .single();
+    if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+      return { error: "Accès refusé." };
+    }
+  }
+
+  const { data: signee, error } = await admin.storage
+    .from("dossiers-documents")
+    .createSignedUrl(doc.url, 60);
+
+  if (error || !signee?.signedUrl) return { error: "Lien indisponible." };
+  return { url: signee.signedUrl };
+}
+
+/**
+ * Vérification d'une pièce par le staff.
+ *
+ * Le motif d'un rejet est obligatoire : sans lui, le client devine ce qu'il doit
+ * corriger et redépose la même pièce.
+ */
+export async function verifierPieceDossier(
+  _prev: AssistanceState,
+  formData: FormData
+): Promise<AssistanceState> {
+  const { user } = await requireStaff();
+
+  const documentId = formData.get("document_id") as string;
+  const decision = formData.get("decision") as string;
+  const commentaire = ((formData.get("commentaire") as string) || "").trim();
+
+  if (!documentId || !["valide", "rejete"].includes(decision)) {
+    return { error: "Demande invalide." };
+  }
+  if (decision === "rejete" && !commentaire) {
+    return { error: "Indiquez ce qui ne va pas : le client doit savoir quoi corriger." };
+  }
+
+  const admin = getAdmin();
+
+  // Le filtre porte sur l'état attendu : une pièce déjà tranchée n'est pas
+  // rejouée, et deux opérateurs simultanés n'en produisent qu'une décision.
+  const { error, count } = await admin
+    .from("documents_dossier_voyage")
+    .update(
+      {
+        statut: decision,
+        commentaire: decision === "rejete" ? commentaire : null,
+        updated_at: new Date().toISOString(),
+      } as never,
+      { count: "exact" }
+    )
+    .eq("id", documentId)
+    .eq("statut", "soumis");
+
+  if (error) return { error: error.message };
+  if (!count) return { error: "Cette pièce a déjà été traitée." };
+
+  await logAudit({
+    userId: user.sub as string,
+    action: decision === "valide" ? "valider_piece_dossier" : "rejeter_piece_dossier",
+    tableName: "documents_dossier_voyage",
+    recordId: documentId,
+    newValues: { statut: decision, commentaire: commentaire || null },
+  });
+
+  revalidatePath("/admin/dossiers-voyage");
+  revalidatePath("/compte/reservations");
   return { success: true };
 }

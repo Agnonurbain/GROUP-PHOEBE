@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
+import { PiecesSection, type PieceAdmin } from "./pieces-section"
 import { DossierActions } from "./dossiers-actions"
 import { STATUTS_DOSSIER, STATUT_DOSSIER_LABELS, prixLabel } from "@/lib/assistance"
 
@@ -35,6 +36,29 @@ export default async function DossiersVoyageAdminPage() {
     .from("dossiers_voyage")
     .select("*")
     .order("created_at", { ascending: false })
+
+  // Pièces justificatives : la table existait depuis la migration initiale, avec
+  // ses policies posées en 00038, et personne ne la lisait — alors que le statut
+  // `pieces_complementaires_requises` en réclamait.
+  const dossierIds = (dossiers ?? []).map((d) => d.id)
+  const { data: piecesRaw } = dossierIds.length
+    ? await db
+        .from("documents_dossier_voyage")
+        .select("id, dossier_id, type_document, statut, commentaire")
+        .in("dossier_id", dossierIds)
+    : { data: [] }
+
+  const piecesParDossier = new Map<string, PieceAdmin[]>()
+  for (const p of piecesRaw ?? []) {
+    const liste = piecesParDossier.get(p.dossier_id) ?? []
+    liste.push({
+      id: p.id,
+      type_document: p.type_document,
+      statut: p.statut,
+      commentaire: p.commentaire,
+    })
+    piecesParDossier.set(p.dossier_id, liste)
+  }
 
   const userIds = [
     ...new Set([
@@ -99,6 +123,8 @@ export default async function DossiersVoyageAdminPage() {
                   </p>
                 </div>
               </div>
+
+              <PiecesSection pieces={piecesParDossier.get(d.id) ?? []} />
 
               <DossierActions
                 dossierId={d.id}

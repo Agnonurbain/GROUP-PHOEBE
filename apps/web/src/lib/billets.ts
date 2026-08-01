@@ -51,6 +51,29 @@ export const STATUT_BILLET_LABELS: Record<string, string> = {
   annulee: "Annulée",
 }
 
+/**
+ * Transitions autorisées d'une demande de billet.
+ *
+ * `emise` est terminal : un billet émis auprès de la compagnie ne se dénoue pas
+ * par un retour en arrière dans notre outil. `annulee` l'est aussi — reprendre
+ * une demande close suppose une nouvelle demande, avec un devis à jour.
+ */
+export const TRANSITIONS_BILLET: Record<StatutBillet, readonly StatutBillet[]> = {
+  soumise: ["en_cours_traitement", "annulee"],
+  en_cours_traitement: ["devis_envoye", "annulee"],
+  // Un devis expiré se refait : on repasse en recherche plutôt que de laisser
+  // le client sur une offre qui n'a plus cours.
+  devis_envoye: ["payee", "en_cours_traitement", "annulee"],
+  payee: ["emise", "annulee"],
+  emise: [],
+  annulee: [],
+} as const
+
+export function transitionBilletAutorisee(depuis: string, vers: string): boolean {
+  if (!isStatutBillet(depuis) || !isStatutBillet(vers)) return false
+  return TRANSITIONS_BILLET[depuis].includes(vers)
+}
+
 export const STATUT_BILLET_COLORS: Record<string, string> = {
   soumise: "bg-blue-50 text-blue-700",
   en_cours_traitement: "bg-phoebe-gold/10 text-phoebe-gold-dark",

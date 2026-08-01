@@ -8,6 +8,7 @@ import type { Database } from "@group-phoebe/database/types";
 import {
   validerDemandeBillet,
   isStatutBillet,
+  transitionBilletAutorisee,
   STATUT_BILLET_LABELS,
   STATUTS_BILLET_OUVERTS,
   libelleVoyageurs,
@@ -178,17 +179,30 @@ export async function changerStatutBillet(
   const admin = getAdmin();
   const { data: demande } = await admin
     .from("demandes_billet")
-    .select("client_id, depart, destination")
+    .select("client_id, depart, destination, statut")
     .eq("id", demandeId)
     .single();
+  if (!demande) return { error: "Demande introuvable." };
 
-  const { error } = await admin
+  if (demande.statut === statut) return { success: true };
+
+  // `emise` est terminal : un billet émis auprès de la compagnie ne se dénoue
+  // pas par un retour en arrière dans notre outil.
+  if (!transitionBilletAutorisee(demande.statut, statut)) {
+    return {
+      error: `Passage impossible de « ${STATUT_BILLET_LABELS[demande.statut] ?? demande.statut} » à « ${STATUT_BILLET_LABELS[statut] ?? statut} ».`,
+    };
+  }
+
+  const { error, count } = await admin
     .from("demandes_billet")
-    .update({ statut, updated_at: new Date().toISOString() })
-    .eq("id", demandeId);
+    .update({ statut, updated_at: new Date().toISOString() }, { count: "exact" })
+    .eq("id", demandeId)
+    .eq("statut", demande.statut);
   if (error) return { error: error.message };
+  if (!count) return { error: "La demande a changé d'état entre-temps. Rechargez la page." };
 
-  if (demande) {
+  {
     await notifierClient(
       demande.client_id,
       "Mise à jour de votre demande de billet",
@@ -484,4 +498,82 @@ export async function modifierParametresBillet(
   (revalidateTag as (tag: string) => void)("parametres_billet");
   revalidatePath("/assistance");
   return { success: true };
+}
+
+/**
+ * Vérification d'une pièce de billet par le staff.
+ *
+ * `certificat_fievre_jaune_valide` et `mineur_autorisation_verifie` étaient
+ * affichés en admin avec un ✓ ou un ✗ et **n'étaient écrits par personne** :
+ * ils restaient NULL indéfiniment. L'écran suggérait un contrôle qui n'existait
+ * pas — et pour cause, il n'y avait aucun document à contrôler, seulement une
+ * case que le client avait cochée.
+ */
+export async function verifierPieceBillet(
+  _prev: BilletState,
+  formData: FormData
+): Promise<BilletState> {
+  try {
+    await requireStaff()
+  } catch {
+    return { error: "Session expirée ou accès refusé." }
+  }
+
+  const demandeId = formData.get("demande_id") as string
+  const piece = formData.get("piece") as string
+  const valide = formData.get("valide") === "1"
+
+  const colonnes: Record<string, string> = {
+    fievre_jaune: "certificat_fievre_jaune_valide",
+    autorisation_mineur: "mineur_autorisation_verifie",
+  }
+  const colonne = colonnes[piece]
+  if (!demandeId || !colonne) return { error: "Pièce inconnue." }
+
+  const admin = getAdmin()
+  const { error } = await admin
+    .from("demandes_billet")
+    .update({ [colonne]: valide, updated_at: new Date().toISOString() } as never)
+    .eq("id", demandeId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath("/admin/billets")
+  return { success: true }
+}
+
+/** Lien signé vers une pièce de billet. Bucket privé, staff seul. */
+export async function lienPieceBillet(
+  demandeId: string,
+  piece: string
+): Promise<{ error?: string; url?: string }> {
+  try {
+    await requireStaff()
+  } catch {
+    return { error: "Accès refusé." }
+  }
+
+  const colonnes: Record<string, string> = {
+    fievre_jaune: "certificat_fievre_jaune_url",
+    autorisation_mineur: "mineur_autorisation_url",
+  }
+  const colonne = colonnes[piece]
+  if (!colonne) return { error: "Pièce inconnue." }
+
+  const admin = getAdmin()
+  const { data } = await admin
+    .from("demandes_billet")
+    .select(colonne)
+    .eq("id", demandeId)
+    .single()
+
+  const chemin = (data as Record<string, string | null> | null)?.[colonne]
+  if (!chemin) return { error: "Aucun document déposé." }
+
+  const { data: signee, error } = await admin.storage
+    .from("dossiers-documents")
+    .createSignedUrl(chemin, 60)
+
+  if (error || !signee?.signedUrl) return { error: "Lien indisponible." }
+  return { url: signee.signedUrl }
 }

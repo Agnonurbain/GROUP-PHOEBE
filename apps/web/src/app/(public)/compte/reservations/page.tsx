@@ -14,6 +14,8 @@ import { TelechargerFacture } from "@/components/public/telecharger-facture"
 import { PreuveLivraison } from "@/components/public/preuve-livraison"
 import { DeposerAvis } from "@/components/public/deposer-avis"
 import { ReponseCreneauVisite } from "@/components/public/reponse-creneau-visite"
+import { DossierPieces, type PieceClient } from "@/components/public/dossier-pieces"
+import { PayerDossier } from "@/components/public/payer-dossier"
 import { formaterCreneau } from "@/lib/immobilier"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
 
@@ -54,6 +56,8 @@ type ReservationItem = {
   referenceTable: string
   /** Créneau de visite en attente de la réponse du client. */
   creneauAConfirmer: { id: string; creneau: string } | null
+  /** Dossier d'assistance : pièces à déposer et montant à régler. */
+  dossier: { pieces: PieceClient[]; aRegler: number | null; conseiller: string | null } | null
   /**
    * Documents d'une location : contrat dès qu'elle est engagée, état des lieux
    * dès qu'il a été fait. Le second justifie ce qui est retenu sur la caution —
@@ -124,7 +128,7 @@ export default async function CompteReservations({
       .order("created_at", { ascending: false }),
     supabase
       .from("dossiers_voyage")
-      .select("id, created_at, statut, type, pays_cible")
+      .select("id, created_at, statut, type, pays_cible, prestation, montant_estime, conseiller_id")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -179,6 +183,51 @@ export default async function CompteReservations({
   }
   const facturesDe = (id: string) => facturesParDemande.get(id) ?? []
 
+  // Dossiers d'assistance : pièces déposées, montant restant dû, conseiller.
+  // Les trois manquaient — le client ne voyait ni ce qu'il devait, ni comment
+  // envoyer une pièce, ni à qui il avait affaire.
+  const dossierIds = (assistanceRes.data ?? []).map((d) => d.id)
+
+  const { data: piecesClient } = dossierIds.length
+    ? await supabase
+        .from("documents_dossier_voyage")
+        .select("id, dossier_id, type_document, statut, commentaire")
+        .in("dossier_id", dossierIds)
+    : { data: [] }
+
+  const piecesParDossier = new Map<string, PieceClient[]>()
+  for (const p of piecesClient ?? []) {
+    const liste = piecesParDossier.get(p.dossier_id) ?? []
+    liste.push({
+      id: p.id,
+      type_document: p.type_document,
+      statut: p.statut,
+      commentaire: (p as { commentaire?: string | null }).commentaire ?? null,
+    })
+    piecesParDossier.set(p.dossier_id, liste)
+  }
+
+  const { data: paiementsDossier } = dossierIds.length
+    ? await supabase
+        .from("paiements")
+        .select("reference_id, montant")
+        .eq("reference_table", "dossiers_voyage")
+        .eq("statut", "en_attente")
+        .in("reference_id", dossierIds)
+    : { data: [] }
+
+  const paiementDuParDossier = new Map(
+    (paiementsDossier ?? []).map((p) => [p.reference_id, Number(p.montant)])
+  )
+
+  const conseillerIds = [
+    ...new Set((assistanceRes.data ?? []).map((d) => d.conseiller_id).filter(Boolean) as string[]),
+  ]
+  const { data: conseillers } = conseillerIds.length
+    ? await supabase.from("users").select("id, nom").in("id", conseillerIds)
+    : { data: [] }
+  const nomConseiller = new Map((conseillers ?? []).map((c) => [c.id, c.nom ?? "Conseiller"]))
+
   const vehiculeIds = [...new Set(transportRes.data?.map((d) => d.vehicule_id).filter(Boolean) as string[] ?? [])]
   const { data: allPhotos } = vehiculeIds.length > 0
     ? await supabase.from("vehicule_photos").select("vehicule_id, url").in("vehicule_id", vehiculeIds).order("ordre")
@@ -229,6 +278,7 @@ export default async function CompteReservations({
         }
       : null,
     creneauAConfirmer: null,
+    dossier: null,
   })) ?? []
 
   // Le libellé disait « Visite: <date de création> » pour toutes les demandes
@@ -285,6 +335,7 @@ export default async function CompteReservations({
       const v = creneauParBien.get(d.bien_id)
       return v?.statut === "proposee" ? { id: v.id, creneau: formaterCreneau(v.creneau) } : null
     })(),
+    dossier: null,
   })) ?? []
 
   const assistanceReservations: ReservationItem[] = assistanceRes.data?.map((d) => ({
@@ -295,7 +346,9 @@ export default async function CompteReservations({
     referenceTable: "dossiers_voyage",
     detailHref: `/reservation/confirmation?demande=${d.id}`,
     period: new Date(d.created_at).toLocaleDateString("fr-FR"),
-    price: "—",
+    // Le montant existait en base sans jamais être montré : le client ne
+    // savait ni ce qu'il devait, ni qu'il ne devait rien.
+    price: d.montant_estime ? `${Number(d.montant_estime).toLocaleString("fr-FR")} FCFA` : "Sur devis",
     status: d.statut,
     photoUrl: null,
     aPayer: null,
@@ -305,6 +358,11 @@ export default async function CompteReservations({
     preuve: null,
     documents: null,
     creneauAConfirmer: null,
+    dossier: {
+      pieces: piecesParDossier.get(d.id) ?? [],
+      aRegler: paiementDuParDossier.get(d.id) ?? null,
+      conseiller: d.conseiller_id ? (nomConseiller.get(d.conseiller_id) ?? null) : null,
+    },
   })) ?? []
 
   const livraisonReservations: ReservationItem[] = livraisonRes.data?.map((d) => ({
@@ -326,6 +384,7 @@ export default async function CompteReservations({
     preuve: d.preuve_chemin ? { recuPar: d.recu_par, livreeAt: d.livree_at } : null,
     documents: null,
     creneauAConfirmer: null,
+    dossier: null,
   })) ?? []
 
   const maintenant = new Date()
@@ -357,6 +416,7 @@ export default async function CompteReservations({
     preuve: null,
     documents: null,
     creneauAConfirmer: null,
+    dossier: null,
   })) ?? []
 
   const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations, ...billetReservations]
@@ -495,6 +555,17 @@ export default async function CompteReservations({
                   {/* L'avis n'a de sens qu'une fois la prestation rendue. */}
                   {isTerminee(r.status) && (
                     <DeposerAvis referenceTable={r.referenceTable} referenceId={r.id} />
+                  )}
+                  {r.dossier?.conseiller && (
+                    <span className="text-[11px] text-public-text-muted">
+                      Conseiller : {r.dossier.conseiller}
+                    </span>
+                  )}
+                  {r.dossier && r.dossier.aRegler != null && (
+                    <PayerDossier dossierId={r.id} montant={r.dossier.aRegler} />
+                  )}
+                  {r.dossier && (
+                    <DossierPieces dossierId={r.id} pieces={r.dossier.pieces} />
                   )}
                   {r.creneauAConfirmer && (
                     <ReponseCreneauVisite

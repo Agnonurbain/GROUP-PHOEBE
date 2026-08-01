@@ -204,6 +204,61 @@ export const STATUT_DOSSIER_LABELS: Record<string, string> = {
   finalise: "Finalisé",
 };
 
+/**
+ * Transitions autorisées d'un dossier.
+ *
+ * Le cycle était libre : un dossier `finalise` pouvait repasser à `soumis`.
+ * `pieces_complementaires_requises` n'est pas un cul-de-sac — c'est un
+ * aller-retour normal, le client complète et le traitement reprend.
+ */
+export const TRANSITIONS_DOSSIER: Record<StatutDossier, readonly StatutDossier[]> = {
+  soumis: ["en_cours_traitement", "pieces_complementaires_requises"],
+  en_cours_traitement: ["pieces_complementaires_requises", "finalise"],
+  pieces_complementaires_requises: ["en_cours_traitement", "finalise"],
+  finalise: [],
+} as const;
+
+export function transitionDossierAutorisee(depuis: string, vers: string): boolean {
+  if (!isStatutDossier(depuis) || !isStatutDossier(vers)) return false;
+  return TRANSITIONS_DOSSIER[depuis].includes(vers);
+}
+
+/** Types de pièces attendues sur un dossier. */
+export const TYPES_DOCUMENT = [
+  "passeport",
+  "photo_identite",
+  "acte_naissance",
+  "diplome",
+  "releve_bancaire",
+  "attestation_travail",
+  "autre",
+] as const;
+
+export type TypeDocument = (typeof TYPES_DOCUMENT)[number];
+
+export const TYPE_DOCUMENT_LABELS: Record<TypeDocument, string> = {
+  passeport: "Passeport",
+  photo_identite: "Photo d'identité",
+  acte_naissance: "Acte de naissance",
+  diplome: "Diplôme",
+  releve_bancaire: "Relevé bancaire",
+  attestation_travail: "Attestation de travail",
+  autre: "Autre pièce",
+};
+
+export function isTypeDocument(v: unknown): v is TypeDocument {
+  return typeof v === "string" && (TYPES_DOCUMENT as readonly string[]).includes(v);
+}
+
+export const STATUTS_DOCUMENT = ["soumis", "valide", "rejete"] as const;
+export type StatutDocument = (typeof STATUTS_DOCUMENT)[number];
+
+export const STATUT_DOCUMENT_LABELS: Record<StatutDocument, string> = {
+  soumis: "À vérifier",
+  valide: "Validée",
+  rejete: "Rejetée",
+};
+
 export function isStatutDossier(v: string): v is StatutDossier {
   return (STATUTS_DOSSIER as readonly string[]).includes(v);
 }
