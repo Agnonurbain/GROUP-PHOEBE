@@ -69,6 +69,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/demandes", label: "Demandes", icon: ClipboardList, badge: "demandes" },
       { href: "/admin/vehicules", label: "Véhicules", icon: Car },
       { href: "/admin/chauffeurs", label: "Chauffeurs", icon: UserCog, masquePourAgent: true },
+      { href: "/admin/contrats", label: "Abonnements", icon: CalendarDays, proprietaireOnly: true },
       { href: "/admin/reserver-pour-client", label: "Réserver pour client", icon: CalendarPlus },
       { href: "/admin/verifications", label: "Vérifications", icon: ShieldCheck, exact: true },
       { href: "/admin/verifications/historique", label: "Historique vérif.", icon: History },

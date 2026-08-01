@@ -11,6 +11,7 @@ import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations, expirerNegociationsAbandonnees } from "@/lib/payments/expiration-demandes";
 import { assignerVehiculesGroupe, type AssignedVehicle, type ZoneTarif } from "@/app/actions/vehicle-assignment";
+import { DELAI_NEGOCIATION_MS } from "@/lib/constants";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -175,6 +176,10 @@ export async function creerDemandeNegociation(
       montant: totalMontant,
       caution: totalCaution,
       statut: "en_negociation",
+      // Échéance portée par la donnée, plus par un calcul implicite du cron.
+      // Elle devient variable par demande, et surtout affichable au client :
+      // un délai qui n'existe que dans une constante ne peut pas se montrer.
+      devis_expire_at: new Date(Date.now() + DELAI_NEGOCIATION_MS).toISOString(),
       negociation_note: note,
     })
     .select("id")

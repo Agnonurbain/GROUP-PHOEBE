@@ -101,7 +101,7 @@ export default async function CompteReservations({
   const [transportRes, immobilierRes, assistanceRes, livraisonRes, billetsRes] = await Promise.all([
     supabase
       .from("demandes_transport")
-      .select("id, created_at, statut, montant, categorie, type, prix_negocie, vehicule_id, caution_retenue, etat_lieux_depart_photos, etat_lieux_retour_photos, kilometrage_depart, vehicules!inner(marque, modele)")
+      .select("id, created_at, statut, montant, categorie, type, prix_negocie, vehicule_id, caution_retenue, etat_lieux_depart_photos, etat_lieux_retour_photos, kilometrage_depart, devis_expire_at, vehicules!inner(marque, modele)")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -184,7 +184,12 @@ export default async function CompteReservations({
     category: "Transport",
     referenceTable: "demandes_transport",
     detailHref: `/reservation/confirmation?demande=${d.id}`,
-    period: new Date(d.created_at).toLocaleDateString("fr-FR"),
+    // Une négociation en cours court contre une échéance : la taire obligeait le
+    // client à deviner combien de temps son devis tenait.
+    period:
+      d.statut === "en_negociation" && d.devis_expire_at
+        ? `Devis valable jusqu'à ${new Date(d.devis_expire_at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+        : new Date(d.created_at).toLocaleDateString("fr-FR"),
     price: d.montant ? `${d.montant.toLocaleString("fr-FR")} FCFA` : "—",
     status: d.statut,
     photoUrl: d.vehicule_id ? (photoMap.get(d.vehicule_id) ?? null) : null,

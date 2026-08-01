@@ -158,6 +158,7 @@ group-phoebe/
 | `/admin/biens/nouveau` | Ajout bien |
 | `/admin/biens/[id]` | Édition bien |
 | `/admin/expeditions` | Gestion expéditions |
+| `/admin/contrats` | Abonnements — propriétaire seul : créneau desservi, facturation, échéances, suspension/résiliation |
 | `/admin/chauffeurs` | Chauffeurs — staff : création, téléphone, activation, véhicules rattachés et courses en cours. Alerte sur les véhicules qui vendent l'option « avec chauffeur » sans chauffeur actif rattaché |
 | `/admin/livreurs` | Livreurs — propriétaire seul : communes desservies, capacité quotidienne, charge en cours, activation |
 | `/admin/demandes-immobilier` | Demandes immobilières (statuts, visites, agent, contre-offre) |
@@ -225,7 +226,8 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 | `demandes_transport` | Transport | Réservations + devis, cycle de vie complet. Porte la négociation (`prix_negocie`, `negociation_note`, statut `en_negociation`) |
 | `lignes_demande` | Transport | Lignes de demande (multi-véhicules) |
 | `conducteurs_secondaires` | Transport | Vérifiés depuis `/admin/demandes` : nom, permis (bucket privé, URL signée au clic) et décision `verifie`/`rejete` |
-| `contrats_recurrents` | Transport | Abonnements scolaire/personnel |
+| `contrats_recurrents` | Transport | Abonnements scolaire / chauffeur personnel. Le contrat porte un **créneau** (`jours_semaine`, `heure_debut`, `heure_fin`) confronté à la demande, et non une réservation posée : sinon neuf mois d'école immobiliseraient le véhicule en bloc |
+| `echeances_contrat` | Transport | Échéances de facturation d'un abonnement. L'unicité `(contrat_id, periode_debut)` rend la génération par cron rejouable sans double facturation |
 | `propositions_prix` | Transport | Propositions de prix (opérateur → propriétaire) |
 | `avis_transport` | Transport | Avis clients |
 | `intervalles_prix` | Transport | Grille de prix par intervalle |
@@ -700,7 +702,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 464 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 496 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -716,6 +718,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | `role-guards.test.ts`, `permissions.test.ts` | Cloisonnement des rôles |
 | `exclusion.test.ts` | Non-chevauchement des périodes (contrainte GiST) |
 | `annulation-48h.test.ts` | Rétention de caution sous 48 h |
+| `contrats.test.ts` | Abonnements : ce que le créneau mobilise vraiment (un ramassage scolaire ne bloque pas le véhicule neuf mois), périodes de facturation bornées au terme, génération idempotente par conflit d'unicité, contrat résilié non réactivable. Échéance de devis portée par `devis_expire_at`, et retrait de `creerReservation` sans perdre la collecte du second conducteur |
 | `chauffeurs.test.ts` | Documents du client (contrat et état des lieux lisibles par leur client, signés pour le staff sinon) et conducteurs secondaires (décision non rejouable, permis en URL signée). Gestion des chauffeurs : téléphone normalisé et unique (base comprise), pas de désactivation avec courses en cours. Affectation : un chauffeur inactif n'est plus candidat, et le manque de chauffeur ne se dit plus comme un manque de véhicule |
 | `statuts-paiement.test.ts` | **Règle de dépôt** : un statut de paiement ne se réécrit jamais depuis celui qu'on vient de lire. Balaie tout `src/` et casse sur un `.eq("statut", <variable>)` ou un `statut:` calculé depuis `paiement.statut` — le filtre doit porter sur le statut **attendu**, écrit en clair |
 | `livreur.test.ts` | Paiement à la livraison (court-circuit du prestataire, encaissement indissociable de la remise), fins de parcours (clôture d'échec, annulation client, désaffectation). Cycle d'une expédition : `livree` terminal, transit non contournable, échec repris. Cloisonnement du livreur (n'agit que sur ses colis, désactivé il perd l'accès), preuve obligatoire à la remise et non publique, et lecture du SQL de 00063 pour que la garde reste en `security invoker`. Couverture d'un livreur : vide = dessert tout, accents et casse indifférents, et **une classe de trajet n'est jamais une commune** |
@@ -785,6 +788,8 @@ casser doit être un choix conscient, pas un effet de bord :
 | 2026-07-31 | **Le client voit enfin ce qui le concerne, et les conducteurs secondaires sont relus.** `/api/contrat-pdf` était une route complète, écrite pour le client — elle gère déjà son cas d'accès — et **appelée de nulle part** ; elle est branchée sur « Mes réservations ». L'état des lieux, lui, refusait la session du client alors que c'est **le document qui justifie ce qu'on retient sur sa caution** : le lui refuser rendait la retenue incontestable faute d'être consultable. Sa garde suit désormais celle du contrat, et le montant retenu s'affiche à côté du justificatif. Les **conducteurs secondaires** étaient saisis à la réservation — nom et permis déposés dans le bucket privé — puis jamais relus : `statut_verification` restait à `documents_soumis` pour toujours, le circuit que la colonne suppose n'existait pas, et au retrait personne ne savait qui d'autre avait le droit de conduire. Ils apparaissent dans `/admin/demandes` avec le permis en URL signée au clic et une décision valider/rejeter, non rejouable (le filtre porte sur l'état attendu, comme pour les paiements). |
 
 | 2026-08-01 | **Pages légales, consentement CGV, et un blocage sur l'achat.** Les trois liens légaux du pied de page pointaient vers `#` et `accepte_cgv` — présente depuis la migration initiale — n'était jamais remplie faute de case à cocher. Trois pages sont créées sous `/legal/[slug]` avec un **contenu d'exemple** : la structure attendue, et les passages `[À COMPLÉTER]` nommant ce qui manque (RCCM, capital, siège, hébergeur, durées de conservation). Un bandeau les annonce comme provisoires et la page est `noindex` tant qu'il reste un trou — un brouillon indexé serait cité comme engagement de l'entreprise. La case de consentement est exigée **côté serveur** sur les deux chemins vivants (panier et achat), et c'est ce consentement qui est enregistré : une case cochée dans le DOM n'est pas une preuve. En la branchant, découverte d'un **blocage complet sur l'achat de véhicule** : `creerDemandeAchat` écrivait dans `demandes_transport.categorie` la catégorie du *véhicule* (`leger` \| `car` \| `minibus`), alors que la colonne qualifie la *demande* (`classique` \| `evenementiel` \| `scolaire` \| `personnel`). La contrainte rejetait l'insert — vérifié en base, erreur `23514` — et le client recevait l'erreur Postgres brute. Aucune demande d'achat ne pouvait aboutir. |
+
+| 2026-08-01 | **Les abonnements existent enfin** (00069), et deux colonnes mortes trouvent leur emploi. `contrats_recurrents` dormait depuis la migration initiale : table vide, policies posées, zéro ligne de code. Trois manques, dont deux structurants. La **facturation récurrente** n'existait nulle part — ailleurs un paiement naît d'une commande, ici c'est le temps qui déclenche l'écriture : nouvelle table `echeances_contrat`, générée par cron, et **rejouable par construction** puisque l'unicité `(contrat_id, periode_debut)` écarte le doublon à l'insertion plutôt qu'un « a-t-on déjà facturé ? » lu avant d'écrire — entre la lecture et l'écriture, l'autre instance a le temps de passer. Le **modèle de disponibilité** ne s'y prêtait pas : `disponibilites_vehicule` protège les chevauchements réservation par réservation, et un ramassage scolaire de neuf mois y entrerait comme un intervalle continu, immobilisant le véhicule alors qu'il ne sert que matin et soir. Le contrat porte donc un **créneau** — jours de semaine et plage horaire — que l'affectation confronte à la période demandée sans rien poser : le reste du temps demeure louable. Enfin le chauffeur devient durable. **`devis_expire_at`** est câblé de bout en bout : écrit à l'ouverture de la négociation, lu par le cron (avec repli sur l'ancien calcul pour l'existant), et affiché au client — l'échéance se déduisait d'`updated_at`, si bien qu'une note d'opérateur repoussait l'expiration sans que personne l'ait décidé, et le client ne pouvait pas savoir jusqu'à quand son devis tenait. **`creerReservation`** — 293 lignes jamais appelées — est supprimée, mais seulement après avoir déplacé vers le panier la collecte du second conducteur, dont elle était l'unique source : la retirer d'abord aurait vidé l'écran de vérification construit la veille. |
 
 ## 13. ÉVOLUTION
 

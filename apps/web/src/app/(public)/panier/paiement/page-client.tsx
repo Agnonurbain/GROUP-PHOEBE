@@ -528,6 +528,43 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
               </div>
             </div>
 
+            {/* Un second conducteur doit être déclaré et son permis vérifié
+                avant la prise du véhicule : le collecter au moment de la
+                commande est le seul instant où le client est disponible. */}
+            <details className="mt-6 rounded-xl border border-public-border p-4">
+              <summary className="cursor-pointer text-sm font-medium text-public-text">
+                Ajouter un second conducteur (facultatif)
+              </summary>
+              <div className="mt-3 space-y-3">
+                <div>
+                  <label htmlFor="conducteur_secondaire_nom" className="mb-1 block text-xs font-medium text-public-text">
+                    Nom du second conducteur
+                  </label>
+                  <input
+                    id="conducteur_secondaire_nom"
+                    name="conducteur_secondaire_nom"
+                    className="w-full rounded-lg border border-public-border bg-public-bg px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="conducteur_secondaire_permis" className="mb-1 block text-xs font-medium text-public-text">
+                    Son permis de conduire
+                  </label>
+                  <input
+                    id="conducteur_secondaire_permis"
+                    name="conducteur_secondaire_permis"
+                    type="file"
+                    accept="image/*,application/pdf"
+                    className="w-full rounded-lg border border-public-border bg-public-bg px-3 py-2 text-sm"
+                  />
+                  <p className="mt-1 text-[11px] text-public-text-muted">
+                    Il sera vérifié par notre équipe. Sans permis validé, seul le
+                    titulaire de la réservation peut conduire.
+                  </p>
+                </div>
+              </div>
+            </details>
+
             <div className="mt-6 space-y-3">
               <AccepterCgv />
               <Link
