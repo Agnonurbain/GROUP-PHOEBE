@@ -13,6 +13,7 @@ import { ContreOffreReponse } from "@/components/public/contre-offre-reponse"
 import { TelechargerFacture } from "@/components/public/telecharger-facture"
 import { PreuveLivraison } from "@/components/public/preuve-livraison"
 import { DeposerAvis } from "@/components/public/deposer-avis"
+import { ReponseCreneauVisite } from "@/components/public/reponse-creneau-visite"
 import { formaterCreneau } from "@/lib/immobilier"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
 
@@ -51,6 +52,8 @@ type ReservationItem = {
   preuve: { recuPar: string | null; livreeAt: string | null } | null
   /** Table d'origine, pour rattacher un avis à la bonne prestation. */
   referenceTable: string
+  /** Créneau de visite en attente de la réponse du client. */
+  creneauAConfirmer: { id: string; creneau: string } | null
   /**
    * Documents d'une location : contrat dès qu'elle est engagée, état des lieux
    * dès qu'il a été fait. Le second justifie ce qui est retenu sur la caution —
@@ -65,14 +68,24 @@ const TABS = [
   { key: "annulees", label: "Annulées" },
 ] as const
 
+// `finalise` (assistance) et `finalisee` (immobilier) ne diffèrent que par un
+// « e » : le second manquait à ces listes, si bien qu'une vente conclue restait
+// indéfiniment dans l'onglet « Actives », badgée « En attente ».
+const STATUTS_TERMINES = [
+  "terminee", "termine", "finalise", "finalisee", "visite_realisee", "livree", "emise",
+]
+const STATUTS_ANNULES = [
+  "annulee", "annule", "refusee", "refuse", "echec_livraison",
+]
+
 function isActive(s: string) {
-  return !["terminee", "termine", "finalise", "annulee", "annule", "refusee", "refuse"].includes(s)
+  return !STATUTS_TERMINES.includes(s) && !STATUTS_ANNULES.includes(s)
 }
 function isTerminee(s: string) {
-  return ["terminee", "termine", "finalise", "livree", "emise"].includes(s)
+  return STATUTS_TERMINES.includes(s)
 }
 function isAnnulee(s: string) {
-  return ["annulee", "annule", "refusee", "refuse", "echec_livraison"].includes(s)
+  return STATUTS_ANNULES.includes(s)
 }
 
 function canCancel(status: string) {
@@ -133,7 +146,7 @@ export default async function CompteReservations({
   const { data: visitesClient } = bienIdsImmo.length > 0
     ? await supabase
         .from("visites")
-        .select("bien_id, creneau, statut")
+        .select("id, bien_id, creneau, statut")
         .eq("client_id", user.id)
         .in("bien_id", bienIdsImmo)
         .neq("statut", "annulee")
@@ -141,10 +154,10 @@ export default async function CompteReservations({
     : { data: null }
 
   // Un seul créneau retenu par bien : le plus récent non annulé.
-  const creneauParBien = new Map<string, { creneau: string; statut: string }>()
+  const creneauParBien = new Map<string, { id: string; creneau: string; statut: string }>()
   for (const v of visitesClient ?? []) {
     if (!creneauParBien.has(v.bien_id)) {
-      creneauParBien.set(v.bien_id, { creneau: v.creneau, statut: v.statut })
+      creneauParBien.set(v.bien_id, { id: v.id, creneau: v.creneau, statut: v.statut })
     }
   }
 
@@ -215,6 +228,7 @@ export default async function CompteReservations({
           cautionRetenue: Number(d.caution_retenue ?? 0),
         }
       : null,
+    creneauAConfirmer: null,
   })) ?? []
 
   // Le libellé disait « Visite: <date de création> » pour toutes les demandes
@@ -265,6 +279,12 @@ export default async function CompteReservations({
     factures: facturesDe(d.id),
     preuve: null,
     documents: null,
+    // Un créneau « proposé » attend sa réponse : c'est le client qui se déplace,
+    // et il a payé pour ce rendez-vous.
+    creneauAConfirmer: (() => {
+      const v = creneauParBien.get(d.bien_id)
+      return v?.statut === "proposee" ? { id: v.id, creneau: formaterCreneau(v.creneau) } : null
+    })(),
   })) ?? []
 
   const assistanceReservations: ReservationItem[] = assistanceRes.data?.map((d) => ({
@@ -284,6 +304,7 @@ export default async function CompteReservations({
     factures: facturesDe(d.id),
     preuve: null,
     documents: null,
+    creneauAConfirmer: null,
   })) ?? []
 
   const livraisonReservations: ReservationItem[] = livraisonRes.data?.map((d) => ({
@@ -304,6 +325,7 @@ export default async function CompteReservations({
     // La preuve n'existe que sur un colis effectivement remis.
     preuve: d.preuve_chemin ? { recuPar: d.recu_par, livreeAt: d.livree_at } : null,
     documents: null,
+    creneauAConfirmer: null,
   })) ?? []
 
   const maintenant = new Date()
@@ -334,6 +356,7 @@ export default async function CompteReservations({
     factures: facturesDe(d.id),
     preuve: null,
     documents: null,
+    creneauAConfirmer: null,
   })) ?? []
 
   const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations, ...billetReservations]
@@ -347,7 +370,7 @@ export default async function CompteReservations({
         : allReservations.filter((r) => isActive(r.status))
 
   const statusStyle = (status: string) => {
-    if (["terminee", "termine", "finalise"].includes(status)) return { color: "text-public-text-muted", label: "Terminé" }
+    if (STATUTS_TERMINES.includes(status)) return { color: "text-public-text-muted", label: "Terminé" }
     if (["annulee", "annule", "refusee", "refuse"].includes(status)) return { color: "text-[#EF4444]", label: "Annulé" }
     // Le client doit agir : le libellé le dit plutôt que « En attente ».
     if (status === "contre_offre") return { color: "text-accent-gold", label: "Réponse attendue" }
@@ -472,6 +495,12 @@ export default async function CompteReservations({
                   {/* L'avis n'a de sens qu'une fois la prestation rendue. */}
                   {isTerminee(r.status) && (
                     <DeposerAvis referenceTable={r.referenceTable} referenceId={r.id} />
+                  )}
+                  {r.creneauAConfirmer && (
+                    <ReponseCreneauVisite
+                      visiteId={r.creneauAConfirmer.id}
+                      creneau={r.creneauAConfirmer.creneau}
+                    />
                   )}
                   {r.preuve && (
                     <PreuveLivraison
