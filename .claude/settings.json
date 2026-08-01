@@ -171,7 +171,10 @@
       "Bash(pnpm -F web test livreur)",
       "Bash(xargs -I{} echo \"fichiers modifies: {}\")",
       "Bash(pnpm -F web test statuts-paiement)",
-      "Bash(pnpm -F web test chauffeurs)"
+      "Bash(pnpm -F web test chauffeurs)",
+      "Bash(pnpm -F web test contrats)",
+      "Bash(pnpm -F web test crons)",
+      "Bash(xargs -I{} echo \"{} expressions\")"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
