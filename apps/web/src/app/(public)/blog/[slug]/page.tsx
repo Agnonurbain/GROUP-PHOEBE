@@ -1,3 +1,4 @@
+import Image from "next/image"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
@@ -93,16 +94,17 @@ export default async function ArticlePage({ params }: Props) {
       <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10 sm:py-12">
         {article.image_couverture && (
           <div className="relative mb-10 aspect-[21/9] overflow-hidden rounded-xl">
-            {/* `next/image` lèverait à l'exécution sur un hôte absent de
-                remotePatterns, et le champ admin accepte une URL libre : la
-                couverture d'un article casserait la page entière. On garde
-                <img>, avec la priorité de chargement — c'est le LCP. */}
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            {/* La couverture est désormais déposée dans le bucket `blog-images`,
+                donc toujours servie depuis un domaine déclaré dans
+                remotePatterns : `next/image` ne peut plus lever à l'exécution.
+                `priority` parce que c'est le LCP de la page. */}
+            <Image
               src={article.image_couverture}
               alt={article.titre}
-              fetchPriority="high"
-              className="h-full w-full object-cover"
+              fill
+              priority
+              sizes="(max-width: 896px) 100vw, 896px"
+              className="object-cover"
             />
           </div>
         )}

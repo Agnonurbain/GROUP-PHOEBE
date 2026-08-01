@@ -20,6 +20,7 @@ import {
   MessageSquare,
   Bike as BikeIcon,
   UserCog,
+  Scale,
   PenLine,
   Receipt,
   type LucideIcon,
@@ -133,6 +134,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/comptes", label: "Comptes internes", icon: Users },
       { href: "/admin/factures", label: "Facturation", icon: Receipt },
+      { href: "/admin/pages-legales", label: "Pages légales", icon: Scale, proprietaireOnly: true },
       { href: "/admin/audit", label: "Journal d'audit", icon: ScrollText },
     ],
   },

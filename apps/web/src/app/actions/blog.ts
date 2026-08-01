@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
+import { validateImageUpload } from "@/lib/upload-validation";
+import { compressImage } from "@/lib/compress-image";
 
 async function requireStaff() {
   const supabase = await createClient();
@@ -116,7 +118,36 @@ export async function creerArticle(
   const categorie_id = (formData.get("categorie_id") as string) || null;
   const resume = (formData.get("resume") as string) || null;
   const contenu = formData.get("contenu") as string;
-  const image_couverture = (formData.get("image_couverture") as string) || null;
+  // La couverture était une URL libre : `next/image` lève à l'exécution sur un
+  // hôte absent de `remotePatterns`, si bien que la photo d'un article pouvait
+  // casser la page entière. Elle est désormais déposée dans le bucket
+  // `blog-images` — créé en 00059 pour cela et resté inutilisé — donc toujours
+  // servie depuis un domaine connu.
+  const fichierCouverture = formData.get("image_couverture") as File | null;
+  const couvertureActuelle = (formData.get("image_couverture_actuelle") as string) || null;
+  let image_couverture = couvertureActuelle;
+
+  if (fichierCouverture && typeof fichierCouverture !== "string" && fichierCouverture.size > 0) {
+    let ext: string;
+    try {
+      ({ ext } = validateImageUpload(fichierCouverture));
+    } catch {
+      return { error: "Image invalide : formats acceptés JPEG, PNG ou WebP, 5 Mo maximum." };
+    }
+
+    const compressee = await compressImage(fichierCouverture);
+    const chemin = `${slug}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await admin.storage
+      .from("blog-images")
+      .upload(chemin, await compressee.arrayBuffer(), { contentType: compressee.type });
+
+    // Bloquant, contrairement aux photos de colis : un article sans sa
+    // couverture publié sans avertissement se corrige à l'aveugle.
+    if (upErr) return { error: "Échec de l'envoi de l'image. Réessayez." };
+
+    const { data: { publicUrl } } = admin.storage.from("blog-images").getPublicUrl(chemin);
+    image_couverture = publicUrl;
+  }
   const auteur = (formData.get("auteur") as string) || null;
   const meta_description = (formData.get("meta_description") as string) || null;
   const meta_title = (formData.get("meta_title") as string) || null;

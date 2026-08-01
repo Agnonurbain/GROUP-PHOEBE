@@ -1,14 +1,10 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { BackLink } from "@/components/public/back-link"
-import { PAGES_LEGALES } from "../contenu"
+import { getPageLegale, pageIncomplete, SLUGS_LEGAUX } from "@/lib/legal"
 
 export function generateStaticParams() {
-  return PAGES_LEGALES.map((p) => ({ slug: p.slug }))
-}
-
-function trouver(slug: string) {
-  return PAGES_LEGALES.find((p) => p.slug === slug)
+  return SLUGS_LEGAUX.map((slug) => ({ slug }))
 }
 
 export async function generateMetadata({
@@ -17,14 +13,15 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const page = trouver(slug)
+  const page = await getPageLegale(slug)
   if (!page) return {}
+
   return {
     title: page.titre,
     description: page.chapeau,
     // Un brouillon n'a rien à faire dans un index de recherche : il serait cité
-    // comme engagement de l'entreprise alors qu'il attend une validation.
-    robots: { index: false, follow: false },
+    // comme l'engagement de l'entreprise alors qu'il attend une validation.
+    robots: page.publie ? undefined : { index: false, follow: false },
   }
 }
 
@@ -34,12 +31,10 @@ export default async function PageLegaleRoute({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const page = trouver(slug)
+  const page = await getPageLegale(slug)
   if (!page) notFound()
 
-  const aCompleter = page.sections.some((s) =>
-    s.paragraphes.some((p) => p.includes("[À COMPLÉTER"))
-  )
+  const incomplete = pageIncomplete(page)
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
@@ -48,28 +43,33 @@ export default async function PageLegaleRoute({
       </div>
 
       <h1 className="text-4xl font-bold text-public-text">{page.titre}</h1>
-      <p className="mt-2 text-sm text-public-text-muted">{page.chapeau}</p>
+      {page.chapeau && (
+        <p className="mt-2 text-sm text-public-text-muted">{page.chapeau}</p>
+      )}
       <p className="mt-1 text-xs text-public-text-faint">
         Dernière mise à jour :{" "}
-        {new Date(page.miseAJour).toLocaleDateString("fr-FR", {
+        {new Date(page.updated_at).toLocaleDateString("fr-FR", {
           day: "2-digit",
           month: "long",
           year: "numeric",
         })}
       </p>
 
-      {aCompleter && (
+      {!page.publie && (
         <div
           role="note"
           className="mt-6 rounded-xl border border-accent-gold/40 bg-accent-gold/5 px-5 py-4"
         >
           <p className="text-sm font-semibold text-accent-gold">Document provisoire</p>
           <p className="mt-1 text-xs text-public-text-muted">
-            Ce texte est un modèle de travail. Les passages marqués{" "}
-            <span className="font-mono">[À COMPLÉTER]</span> attendent des
-            informations que seule l&apos;entreprise détient — immatriculation,
-            siège, hébergeur, durées de conservation. Il n&apos;engage pas encore
-            GROUP PHOEBE et doit être validé par un conseil juridique.
+            {incomplete ? (
+              <>
+                Les passages marqués <span className="font-mono">[À COMPLÉTER]</span>{" "}
+                attendent des informations que seule l&apos;entreprise détient.{" "}
+              </>
+            ) : null}
+            Ce texte n&apos;engage pas encore GROUP PHOEBE et doit être validé avant
+            publication.
           </p>
         </div>
       )}
@@ -82,10 +82,8 @@ export default async function PageLegaleRoute({
               {section.paragraphes.map((p, i) => (
                 <p
                   key={i}
-                  className={`text-sm leading-relaxed ${
-                    p.includes("[À COMPLÉTER")
-                      ? "text-public-text-muted italic"
-                      : "text-public-text-muted"
+                  className={`text-sm leading-relaxed text-public-text-muted ${
+                    p.includes("[À COMPLÉTER") ? "italic" : ""
                   }`}
                 >
                   {p}
