@@ -301,10 +301,10 @@ export default async function TransportCatalogue({
         bgImage={{ src: "/images/hero-car.webp", alt: "Flotte de véhicules premium" }}
         aside={
           <Image
-            src="/logos/logo-trans-livr.png"
+            src="/logos/transport.png"
             alt="Transport"
-            width={407}
-            height={345}
+            width={500}
+            height={500}
             className="h-24 w-auto animate-service-logo opacity-90"
             priority
           />

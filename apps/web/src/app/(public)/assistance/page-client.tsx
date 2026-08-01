@@ -73,10 +73,10 @@ export default function Assistance({
         bgImage={{ src: "/images/hero-voyages.webp", alt: "Voyages et études" }}
         aside={
           <Image
-            src="/logos/logo-assi-etud.png"
+            src="/logos/assistance.png"
             alt="Assistance Voyages & Études"
-            width={429}
-            height={346}
+            width={500}
+            height={500}
             className="h-24 w-auto animate-service-logo opacity-90"
             priority
           />

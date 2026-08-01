@@ -46,10 +46,10 @@ export async function Footer() {
           <div>
             <Link href="/" className="inline-block">
               <Image
-                src="/logos/logo_g-phoebe.png"
+                src="/logos/phoebe.png"
                 alt="GROUP PHOEBE"
-                width={334}
-                height={303}
+                width={500}
+                height={500}
                 className="h-16 w-auto"
               />
             </Link>

@@ -66,10 +66,10 @@ export default async function Livraison({
         bgImage={{ src: "/images/hero-livraison.webp", alt: "Livraison de colis" }}
         aside={
           <Image
-            src="/logos/logo_g-phoebe.png"
+            src="/logos/phoebe.png"
             alt="Livraison"
-            width={334}
-            height={303}
+            width={500}
+            height={500}
             className="h-24 w-auto animate-service-logo opacity-90"
             priority
           />
