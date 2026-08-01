@@ -177,7 +177,8 @@
       "Bash(xargs -I{} echo \"{} expressions\")",
       "Bash(pnpm -F web test legal-indemnisation)",
       "Bash(grep -E \"error|^$\")",
-      "Bash(pnpm -F web test immobilier-cycle)"
+      "Bash(pnpm -F web test immobilier-cycle)",
+      "Bash(pnpm -F web test assistance-cycle)"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
