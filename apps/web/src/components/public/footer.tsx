@@ -15,9 +15,9 @@ const servicesLinks = [
 ]
 
 const legalLinks = [
-  { href: "#", label: "Mentions légales" },
-  { href: "#", label: "CGV" },
-  { href: "#", label: "Politique de confidentialité" },
+  { href: "/legal/mentions-legales", label: "Mentions légales" },
+  { href: "/legal/cgv", label: "CGV" },
+  { href: "/legal/confidentialite", label: "Politique de confidentialité" },
 ]
 
 export async function Footer() {

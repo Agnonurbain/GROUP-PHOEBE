@@ -303,7 +303,6 @@ export default async function VehicleDetail({
               vehiculeId={venteRep.id}
               marque={venteRep.marque}
               modele={venteRep.modele}
-              categorie={venteRep.categorie}
               prixVente={Number(venteRep.prix_vente) || 0}
             />
           ) : (

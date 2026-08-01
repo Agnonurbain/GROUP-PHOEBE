@@ -4,12 +4,12 @@ import { useActionState } from "react"
 import { creerDemandeAchat, type AchatState } from "@/app/actions/achat"
 import { Card } from "@/components/ui"
 import { SubmitButton } from "@/components/submit-button"
+import { AccepterCgv } from "@/components/public/accepter-cgv"
 
 interface VehiclePurchaseProps {
   vehiculeId: string
   marque: string
   modele: string
-  categorie: string
   prixVente: number
 }
 
@@ -17,7 +17,6 @@ export function VehiclePurchase({
   vehiculeId,
   marque,
   modele,
-  categorie,
   prixVente,
 }: VehiclePurchaseProps) {
   const [state, action] = useActionState<AchatState, FormData>(
@@ -30,7 +29,6 @@ export function VehiclePurchase({
       <input type="hidden" name="vehicule_id" value={vehiculeId} />
       <input type="hidden" name="marque" value={marque} />
       <input type="hidden" name="modele" value={modele} />
-      <input type="hidden" name="categorie" value={categorie} />
 
       <Card>
         <h3 className="text-base font-semibold text-public-text">Acheter ce véhicule</h3>
@@ -67,6 +65,8 @@ export function VehiclePurchase({
             {state.error}
           </p>
         )}
+
+        <AccepterCgv id="cgv-achat" />
 
         <SubmitButton
           variant="default"

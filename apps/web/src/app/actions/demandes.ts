@@ -249,3 +249,101 @@ export async function annulerParClient(
   revalidatePath("/compte/profil");
   return { success: true };
 }
+
+/**
+ * Vérification d'un conducteur secondaire.
+ *
+ * Ils étaient collectés à la réservation — nom et permis déposés dans le bucket
+ * privé — puis **jamais relus**. `statut_verification` restait à
+ * `documents_soumis` pour toujours : le circuit que la colonne suppose n'existait
+ * pas, et le jour du retrait personne ne savait qui d'autre avait le droit de
+ * conduire.
+ */
+export async function verifierConducteurSecondaire(
+  _prev: DemandeActionState,
+  formData: FormData
+): Promise<DemandeActionState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Non authentifié." };
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.sub)
+    .single();
+  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+    return { error: "Accès refusé." };
+  }
+
+  const conducteurId = formData.get("conducteur_id") as string;
+  const decision = formData.get("decision") as string;
+  if (!conducteurId || !["verifie", "rejete"].includes(decision)) {
+    return { error: "Demande invalide." };
+  }
+
+  const admin = getAdmin();
+
+  // Le filtre porte sur l'état attendu : une décision déjà prise n'est pas
+  // rejouée, et deux opérateurs simultanés n'en produisent qu'une.
+  const { error, count } = await admin
+    .from("conducteurs_secondaires")
+    .update({ statut_verification: decision }, { count: "exact" })
+    .eq("id", conducteurId)
+    .eq("statut_verification", "documents_soumis");
+
+  if (error) return { error: error.message };
+  if (!count) return { error: "Ce conducteur a déjà été traité." };
+
+  await logAudit({
+    userId: user.sub as string,
+    action: decision === "verifie" ? "verifier_conducteur" : "rejeter_conducteur",
+    tableName: "conducteurs_secondaires",
+    recordId: conducteurId,
+    newValues: { statut_verification: decision },
+  });
+
+  revalidatePath("/admin/demandes");
+  return { success: true };
+}
+
+/**
+ * Lien signé vers le permis d'un conducteur secondaire.
+ *
+ * Le bucket `identity-documents` est privé et c'est le chemin qui est stocké :
+ * l'URL se signe à la demande, jamais au rendu — elle expirerait avant le clic.
+ */
+export async function permisConducteurSecondaire(
+  conducteurId: string
+): Promise<{ error?: string; url?: string }> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Non authentifié." };
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.sub)
+    .single();
+  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+    return { error: "Accès refusé." };
+  }
+
+  const admin = getAdmin();
+  const { data: conducteur } = await admin
+    .from("conducteurs_secondaires")
+    .select("permis_conduire_url")
+    .eq("id", conducteurId)
+    .single();
+
+  if (!conducteur?.permis_conduire_url) return { error: "Aucun permis déposé." };
+
+  const { data: signee, error } = await admin.storage
+    .from("identity-documents")
+    .createSignedUrl(conducteur.permis_conduire_url, 60);
+
+  if (error || !signee?.signedUrl) return { error: "Lien indisponible." };
+  return { url: signee.signedUrl };
+}

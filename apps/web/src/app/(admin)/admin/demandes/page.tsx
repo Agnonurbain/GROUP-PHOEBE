@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { createClient } from "@/lib/supabase/server";
 import { DemandeActions } from "./demande-actions";
+import { ConducteursSecondaires, type Conducteur } from "./conducteurs-secondaires";
 import { ExportCsvButton } from "./export-csv-button";
 import { NegotiationTimer } from "./negotiation-timer";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
@@ -99,6 +100,24 @@ export default async function DemandesPage({
   }
 
   const filteredCount = demandes?.length ?? 0
+
+  // Conducteurs secondaires des demandes affichées. Ils étaient saisis à la
+  // réservation puis jamais relus : au retrait, l'agent ignorait qui d'autre
+  // avait le droit de conduire, et le permis déposé ne servait à rien.
+  const idsAffiches = [...(demandes ?? []), ...(historique ?? [])].map((d) => d.id)
+  const { data: conducteursRaw } = idsAffiches.length
+    ? await supabase
+        .from("conducteurs_secondaires")
+        .select("id, nom, statut_verification, demande_transport_id")
+        .in("demande_transport_id", idsAffiches)
+    : { data: [] }
+
+  const conducteursParDemande = new Map<string, Conducteur[]>()
+  for (const c of conducteursRaw ?? []) {
+    const liste = conducteursParDemande.get(c.demande_transport_id) ?? []
+    liste.push({ id: c.id, nom: c.nom, statut_verification: c.statut_verification })
+    conducteursParDemande.set(c.demande_transport_id, liste)
+  }
 
   return (
     <div className="space-y-6">
@@ -264,6 +283,9 @@ export default async function DemandesPage({
                           {d.caution ? ` + ${Number(d.caution).toLocaleString("fr-FR")} caution` : ""}
                         </p>
                       </div>
+                      <ConducteursSecondaires
+                        conducteurs={conducteursParDemande.get(d.id) ?? []}
+                      />
                       <DemandeActions
                         demandeId={d.id}
                         statut={d.statut}
