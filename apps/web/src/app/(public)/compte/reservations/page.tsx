@@ -17,6 +17,7 @@ import { ReponseCreneauVisite } from "@/components/public/reponse-creneau-visite
 import { DossierPieces, type PieceClient } from "@/components/public/dossier-pieces"
 import { PayerDossier } from "@/components/public/payer-dossier"
 import { formaterCreneau } from "@/lib/immobilier"
+import { getT } from "@/lib/i18n"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
 
 export const metadata: Metadata = {
@@ -67,9 +68,9 @@ type ReservationItem = {
 }
 
 const TABS = [
-  { key: "actives", label: "Actives" },
-  { key: "terminees", label: "Terminées" },
-  { key: "annulees", label: "Annulées" },
+  { key: "actives" as const },
+  { key: "terminees" as const },
+  { key: "annulees" as const },
 ] as const
 
 // `finalise` (assistance) et `finalisee` (immobilier) ne diffèrent que par un
@@ -101,6 +102,7 @@ export default async function CompteReservations({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
+  const t = await getT()
   const sp = await searchParams
   const currentTab = sp.tab || "actives"
   const supabase = await createClient()
@@ -109,8 +111,8 @@ export default async function CompteReservations({
   if (!user) {
     return (
       <div className="px-6 py-20 text-center">
-        <h1 className="text-4xl font-bold text-public-text">Mes Réservations</h1>
-        <p className="mt-4 text-sm text-public-text-muted">Connectez-vous pour voir vos réservations.</p>
+        <h1 className="text-4xl font-bold text-public-text">{t.compte.titre}</h1>
+        <p className="mt-4 text-sm text-public-text-muted">{t.compte.connectezVous}</p>
       </div>
     )
   }
@@ -444,9 +446,9 @@ export default async function CompteReservations({
   return (
     <div className="px-6 py-10">
       <div className="mb-6">
-        <BackLink href="/compte/profil" label="Retour au profil" />
+        <BackLink href="/compte/profil" label={t.compte.retourProfil} />
       </div>
-      <h1 className="text-4xl font-bold text-public-text">Mes Réservations</h1>
+      <h1 className="text-4xl font-bold text-public-text">{t.compte.titre}</h1>
 
       <div className="mt-6 flex gap-4 border-b border-public-border pb-3">
         {TABS.map((tab) => (
@@ -455,7 +457,7 @@ export default async function CompteReservations({
             href={`/compte/reservations?tab=${tab.key}`}
             className={`text-sm transition-colors ${currentTab === tab.key ? "font-semibold text-public-text" : "text-public-text-muted hover:text-public-text"}`}
           >
-            {tab.label}
+            {t.compte.onglets[tab.key]}
           </Link>
         ))}
       </div>
@@ -519,7 +521,7 @@ export default async function CompteReservations({
                     href={r.detailHref}
                     className="text-xs text-public-text hover:text-accent-gold transition-colors text-right"
                   >
-                    {r.category === "Livraison" ? "Suivre le colis" : "Voir le détail"}
+                    {r.category === "Livraison" ? t.compte.suivreColis : t.commun.voirDetail}
                   </Link>
                   {/* Une facture par paiement encaissé : le numéro n'est affiché
                       que s'il y en a plusieurs, sinon il n'apprend rien. */}
@@ -529,7 +531,7 @@ export default async function CompteReservations({
                     <div className="flex flex-col items-end gap-0.5">
                       {r.documents.cautionRetenue > 0 && (
                         <span className="text-[11px] text-[#EF4444]">
-                          Caution retenue : {r.documents.cautionRetenue.toLocaleString("fr-FR")} FCFA
+                          {t.compte.cautionRetenue} : {r.documents.cautionRetenue.toLocaleString("fr-FR")} FCFA
                         </span>
                       )}
                       <a
@@ -538,7 +540,7 @@ export default async function CompteReservations({
                         rel="noopener noreferrer"
                         className="text-xs text-public-text-muted transition-colors hover:text-accent-gold"
                       >
-                        Contrat de location
+                        {t.compte.contrat}
                       </a>
                       {r.documents.etatLieux && (
                         <a
@@ -547,7 +549,7 @@ export default async function CompteReservations({
                           rel="noopener noreferrer"
                           className="text-xs text-public-text-muted transition-colors hover:text-accent-gold"
                         >
-                          État des lieux
+                          {t.compte.etatLieux}
                         </a>
                       )}
                     </div>
@@ -595,7 +597,7 @@ export default async function CompteReservations({
                         type="submit"
                         className="text-xs text-[#EF4444] hover:text-[#DC2626] transition-colors"
                       >
-                        Annuler l&apos;envoi
+                        {t.compte.annulerEnvoi}
                       </button>
                     </form>
                   )}
@@ -605,7 +607,7 @@ export default async function CompteReservations({
                         type="submit"
                         className="text-xs text-[#EF4444] hover:text-[#DC2626] transition-colors"
                       >
-                        Annuler la réservation
+                        {t.compte.annulerReservation}
                       </button>
                     </form>
                   )}

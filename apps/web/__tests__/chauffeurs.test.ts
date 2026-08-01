@@ -115,9 +115,13 @@ describe("Transport — documents du client", () => {
     expect(reservations).toContain("/api/etat-lieux-pdf?id=");
   });
 
-  // Ce qui est retenu doit être lisible là où le justificatif l'est.
+  // Ce qui est retenu doit être lisible là où le justificatif l'est. Le libellé
+  // vit désormais dans le dictionnaire — le test vise l'affichage du montant,
+  // pas le mot français, sinon la traduction le casserait sans que la règle
+  // ait bougé.
   it("la caution retenue est affichée au client", () => {
-    expect(reservations).toContain("Caution retenue");
+    expect(reservations).toContain("t.compte.cautionRetenue");
+    expect(reservations).toMatch(/documents\.cautionRetenue.*toLocaleString/s);
   });
 });
 

@@ -1,5 +1,6 @@
 import Image from "next/image"
 import type { Metadata } from "next"
+import { ContenuFrancais } from "@/components/public/contenu-francais"
 import { notFound } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import Link from "next/link"
@@ -128,6 +129,8 @@ export default async function ArticlePage({ params }: Props) {
           className="prose-content text-base leading-relaxed text-public-text-muted"
           dangerouslySetInnerHTML={{ __html: article.contenu }}
         />
+
+        <ContenuFrancais />
 
         <div className="mt-16 border-t border-public-border pt-8">
           <Link

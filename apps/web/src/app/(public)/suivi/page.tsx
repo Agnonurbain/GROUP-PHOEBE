@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { BackLink } from "@/components/public/back-link"
+import { getT } from "@/lib/i18n"
 import { PhotoLightbox } from "@/components/photo-lightbox"
 import {
   ZONE_LABELS,
@@ -26,6 +27,7 @@ export default async function SuiviPage({
 }: {
   searchParams: Promise<{ numero?: string }>
 }) {
+  const t = await getT()
   const { numero } = await searchParams
   const numeroNorm = numero?.trim().toUpperCase() ?? ""
 
@@ -62,11 +64,11 @@ export default async function SuiviPage({
   return (
     <div className="mx-auto max-w-xl px-6 py-12">
       <div className="mb-6">
-        <BackLink href="/livraison" label="Retour à la livraison" />
+        <BackLink href="/livraison" label={t.suivi.retourLivraison} />
       </div>
-      <h1 className="text-4xl font-bold text-public-text">Suivre un colis</h1>
+      <h1 className="text-4xl font-bold text-public-text">{t.suivi.titre}</h1>
       <p className="mt-2 text-sm text-public-text-muted">
-        Saisissez votre numéro de suivi (format <span className="font-mono">GP-XXXXXXXX</span>).
+        {t.suivi.consigne}
       </p>
 
       <form method="get" className="mt-6 flex gap-2">
@@ -81,13 +83,13 @@ export default async function SuiviPage({
           type="submit"
           className="shrink-0 rounded-xl bg-accent-orange px-5 py-2.5 text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-orange-hover"
         >
-          Suivre
+          {t.suivi.bouton}
         </button>
       </form>
 
       {introuvable && (
         <div role="alert" className="mt-6 rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error">
-          Aucun colis trouvé pour ce numéro. Vérifiez le numéro de suivi.
+          {t.suivi.introuvable}
         </div>
       )}
 
@@ -106,7 +108,7 @@ export default async function SuiviPage({
 
           {photos.length > 0 && (
             <div className="mt-5">
-              <p className="text-xs uppercase tracking-wider text-public-text-muted">Photos du colis</p>
+              <p className="text-xs uppercase tracking-wider text-public-text-muted">{t.suivi.photosColis}</p>
               <div className="mt-2">
                 <PhotoLightbox photos={photos} />
               </div>
