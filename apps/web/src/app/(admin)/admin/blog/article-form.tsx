@@ -108,15 +108,26 @@ export default function ArticleForm({ article, categories, action }: Props) {
           </legend>
 
           <div>
-            <label htmlFor="image_couverture" className={labelClass}>Image de couverture (URL)</label>
+            <label htmlFor="image_couverture" className={labelClass}>Image de couverture</label>
             <input
               id="image_couverture"
               name="image_couverture"
-              type="url"
-              defaultValue={article?.image_couverture ?? ""}
-              placeholder="https://example.com/image.jpg"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
               className={inputClass}
             />
+            {/* Conserve la couverture existante quand on modifie l'article sans
+                redéposer d'image. */}
+            <input
+              type="hidden"
+              name="image_couverture_actuelle"
+              value={article?.image_couverture ?? ""}
+            />
+            <p className="mt-1.5 text-xs text-phoebe-anthracite/60">
+              JPEG, PNG ou WebP. Elle est hébergée avec le site — une URL externe
+              pouvait casser la page si son domaine n&apos;était pas autorisé.
+              {article?.image_couverture && " Laissez vide pour garder l'actuelle."}
+            </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">

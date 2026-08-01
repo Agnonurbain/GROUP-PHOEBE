@@ -74,6 +74,7 @@ export default function CommanderClient({
   communes,
   grille,
   paliers,
+  texteIndemnisation,
 }: {
   defaultNom: string
   defaultContact: string
@@ -83,6 +84,9 @@ export default function CommanderClient({
      partagée à l'identique avec le serveur. */
   grille: GrilleTarifs
   paliers: PalierPoids[]
+  /* Phrase calculée côté serveur depuis les paramètres pilotés : le client ne
+     décide de rien, il affiche ce que le propriétaire a arrêté. */
+  texteIndemnisation: string
 }) {
   const [state, formAction, pending] = useActionState<LivraisonState, FormData>(creerExpedition, {})
   // Calculé une fois au montage : `Date.now()` pendant le rendu rendrait le
@@ -254,14 +258,10 @@ export default function CommanderClient({
               <div className="sm:col-span-2">
                 <label htmlFor="valeur_declaree" className={labelClass}>Valeur déclarée (FCFA)</label>
                 <input id="valeur_declaree" name="valeur_declaree" type="number" inputMode="numeric" min="0" placeholder="Optionnel" className={inputClass} />
-                {/* Le champ était demandé sans rien promettre. Le dire est plus
-                    honnête que de laisser entendre une couverture inexistante :
-                    une politique d'indemnisation est une décision commerciale,
-                    pas une déduction à faire depuis ce champ. */}
-                <p className="mt-1 text-xs text-public-text-faint">
-                  Indicatif : nous aide à prendre les précautions de manutention adaptées.
-                  Ne vaut pas assurance — aucune indemnisation ne s&apos;y rattache.
-                </p>
+                {/* Le texte suit le régime piloté depuis l'admin : tant qu'aucune
+                    indemnisation n'est prévue, il le dit — c'est l'omission qui
+                    serait trompeuse, pas la franchise. */}
+                <p className="mt-1 text-xs text-public-text-faint">{texteIndemnisation}</p>
               </div>
               <div className="sm:col-span-2">
                 <label htmlFor="photos" className={labelClass}>Photos du colis (optionnel)</label>

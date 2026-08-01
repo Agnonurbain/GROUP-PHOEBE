@@ -158,6 +158,7 @@ group-phoebe/
 | `/admin/biens/nouveau` | Ajout bien |
 | `/admin/biens/[id]` | Édition bien |
 | `/admin/expeditions` | Gestion expéditions |
+| `/admin/pages-legales` | Pages légales et régime d'indemnisation — propriétaire seul. Une page ne se publie pas tant qu'elle contient un `[À COMPLÉTER]` |
 | `/admin/contrats` | Abonnements — propriétaire seul : créneau desservi, facturation, échéances, suspension/résiliation |
 | `/admin/chauffeurs` | Chauffeurs — staff : création, téléphone, activation, véhicules rattachés et courses en cours. Alerte sur les véhicules qui vendent l'option « avec chauffeur » sans chauffeur actif rattaché |
 | `/admin/livreurs` | Livreurs — propriétaire seul : communes desservies, capacité quotidienne, charge en cours, activation |
@@ -700,7 +701,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 507 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 528 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -716,6 +717,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | `role-guards.test.ts`, `permissions.test.ts` | Cloisonnement des rôles |
 | `exclusion.test.ts` | Non-chevauchement des périodes (contrainte GiST) |
 | `annulation-48h.test.ts` | Rétention de caution sous 48 h |
+| `legal-indemnisation.test.ts` | Indemnisation : rien tant que le régime n'est pas activé, plafond à 0 = pas de plafond, montant figé à la clôture. Pages légales : édition propriétaire, publication refusée s'il reste un `[À COMPLÉTER]`, brouillon `noindex`. Couverture d'article déposée dans le bucket |
 | `crons.test.ts` | Toute route cron est planifiée, toute planification vise une route existante, aucune expression n'est réutilisée, et chaque route échoue fermée sans secret |
 | `contrats.test.ts` | Abonnements : ce que le créneau mobilise vraiment (un ramassage scolaire ne bloque pas le véhicule neuf mois), périodes de facturation bornées au terme, génération idempotente par conflit d'unicité, contrat résilié non réactivable. Échéance de devis portée par `devis_expire_at`, et retrait de `creerReservation` sans perdre la collecte du second conducteur |
 | `chauffeurs.test.ts` | Documents du client (contrat et état des lieux lisibles par leur client, signés pour le staff sinon) et conducteurs secondaires (décision non rejouable, permis en URL signée). Gestion des chauffeurs : téléphone normalisé et unique (base comprise), pas de désactivation avec courses en cours. Affectation : un chauffeur inactif n'est plus candidat, et le manque de chauffeur ne se dit plus comme un manque de véhicule |
@@ -793,6 +795,8 @@ casser doit être un choix conscient, pas un effet de bord :
 | 2026-08-01 | **Une route cron n'était pas planifiée.** En branchant le cron des échéances d'abonnement, constat que `expirer-demandes-immobilier` — route complète, gardée, en place depuis 00048 — ne figurait dans aucun `schedule` du workflow : elle n'a jamais été appelée. Les demandes immobilières sans réponse depuis 7 jours restaient donc ouvertes indéfiniment, et le bien masqué du catalogue. Panne parfaitement silencieuse : un cron qui ne tourne pas ne produit aucune erreur. Les deux routes sont planifiées (immobilier à 5h30, échéances à 6h), et `crons.test.ts` verrouille désormais la correspondance dans les deux sens — toute route doit être planifiée, toute planification doit viser une route existante, et aucune expression cron ne peut servir deux fois puisque le `case` du workflow n'en retiendrait qu'une. |
 
 | 2026-08-01 | **Nouveaux logos, et retrait de deux tables remplacées** (00070). Les cinq visuels fournis remplacent l'ancien jeu ; le fichier `logo-trans-livr` combinait transport et livraison, désormais distincts — la carte « Livraison » de l'accueil se rabattait faute de mieux sur le logo générique, elle a le sien. Icônes d'application régénérées, et le manifeste PWA corrigé : il déclarait `612x408` pour un visuel qui n'a jamais eu cette taille, ce qui peut faire rejeter l'icône à l'installation ; il expose maintenant 192, 512 et une variante maskable. Côté base, `avis_transport` (remplacée par `avis` en 00059) et `audit_logs` (posée en 00025, jamais utilisée) sont supprimées. Le coût n'était pas le stockage — elles étaient vides — mais la lecture : `audit_log` et `audit_logs` ne diffèrent que par un « s », et le prochain à journaliser avait une chance sur deux de viser la mauvaise. Un test qui figeait le nom du fichier logo a été rendu au sujet qu'il gardait, le domaine. |
+
+| 2026-08-01 | **Ce que je ne pouvais pas décider devient pilotable** (00071). Deux sujets étaient bloqués sur une décision qui ne m'appartient pas : le contenu juridique et le barème d'indemnisation. Une mention légale inventée est pire qu'absente, un plafond improvisé engagerait l'entreprise sur une somme que personne n'a arrêtée. La réponse n'était donc pas d'écrire ces valeurs mais de bâtir de quoi les saisir. Les **trois pages légales** quittent le fichier TypeScript — où les corriger demandait un déploiement — pour la table `pages_legales`, éditée depuis `/admin/pages-legales` par le propriétaire seul. Une page **ne peut pas être publiée tant qu'elle contient un `[À COMPLÉTER]`** : la publier trouée la présenterait comme un engagement ferme auquel il manque une mention obligatoire. Non publiée, elle garde son bandeau et reste `noindex`. La **valeur déclarée** cesse d'être décorative : `parametres_livraison` porte taux, plafond et conditions ; la phrase affichée sous le champ en découle — et dit explicitement qu'aucune indemnisation ne s'y rattache tant que rien n'est activé, l'omission étant le vrai risque. Le montant est **figé sur l'expédition à la clôture** d'un échec, pour la même raison que le taux de TVA sur une facture : faire évoluer le barème ne doit pas réécrire un engagement pris. Enfin la **couverture d'article** passe d'une URL libre à un dépôt dans `blog-images` — bucket créé en 00059 pour cela et resté inutilisé — ce qui permet enfin `next/image` : une URL externe pouvait faire lever le rendu et casser la page entière. |
 
 ## 13. ÉVOLUTION
 

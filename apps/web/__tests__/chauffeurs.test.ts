@@ -167,12 +167,8 @@ describe("Transport — consentement et pages légales", () => {
     expect(footer).toContain("/legal/confidentialite");
   });
 
-  // Un brouillon indexé serait cité comme engagement de l'entreprise.
-  it("un document encore provisoire n'est pas indexable", () => {
-    const page = src("app/(public)/legal/[slug]/page.tsx");
-    expect(page).toMatch(/robots: \{ index: false/);
-    expect(page).toContain("Document provisoire");
-  });
+  // Le brouillon et le noindex sont désormais couverts par
+  // legal-indemnisation.test.ts, qui teste la page devenue éditable en base.
 
   // `demandes_transport.categorie` qualifie la demande, pas le véhicule : on y
   // écrivait `leger`, que la contrainte rejette — tout achat échouait.

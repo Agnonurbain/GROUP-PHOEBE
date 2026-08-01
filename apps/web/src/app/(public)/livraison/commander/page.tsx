@@ -3,6 +3,8 @@ import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getCommunes, getTarifsLivraison } from "@/lib/public-cache"
 import CommanderClient from "./commander-client"
+import { getParametresIndemnisation } from "@/lib/legal"
+import { libelleIndemnisation } from "@/lib/indemnisation"
 
 export const metadata: Metadata = {
   title: "Commander une livraison",
@@ -37,6 +39,7 @@ export default async function CommanderLivraisonPage() {
       communes={communes}
       grille={tarifs.grille}
       paliers={tarifs.paliers}
+      texteIndemnisation={libelleIndemnisation(await getParametresIndemnisation())}
     />
   )
 }

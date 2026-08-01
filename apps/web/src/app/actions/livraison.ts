@@ -22,6 +22,8 @@ import {
   type CommuneMatch,
 } from "@/lib/livraison";
 import { logAudit } from "@/lib/audit";
+import { getParametresIndemnisation } from "@/lib/legal";
+import { calculerIndemnisation } from "@/lib/indemnisation";
 import { getCommunes, getTarifsLivraison } from "@/lib/public-cache";
 import { compressImage } from "@/lib/compress-image";
 import { validateImageUpload } from "@/lib/upload-validation";
@@ -607,7 +609,7 @@ export async function cloturerEchecLivraison(
 
   const { data: exp } = await admin
     .from("expeditions")
-    .select("statut, client_id, numero_suivi")
+    .select("statut, client_id, numero_suivi, valeur_declaree, indemnisation_montant")
     .eq("id", expeditionId)
     .single();
   if (!exp) return { error: "Expédition introuvable." };
@@ -625,6 +627,26 @@ export async function cloturerEchecLivraison(
 
   let messageClient = `Votre envoi ${exp.numero_suivi} est clôturé : ${motif}.`;
   let sortPaiement: string | null = null;
+
+  // Indemnisation calculée avec le barème en vigueur AUJOURD'HUI, puis figée sur
+  // l'expédition : faire évoluer les paramètres plus tard ne doit pas réécrire
+  // ce qui a été promis à ce client. C'est la même raison qui fait figer le taux
+  // de TVA sur une facture.
+  const indemnisation =
+    exp.indemnisation_montant != null
+      ? Number(exp.indemnisation_montant)
+      : calculerIndemnisation(exp.valeur_declaree, await getParametresIndemnisation());
+
+  if (indemnisation > 0 && exp.indemnisation_montant == null) {
+    await admin
+      .from("expeditions")
+      .update({ indemnisation_montant: indemnisation } as never)
+      .eq("id", expeditionId);
+
+    messageClient +=
+      ` Une indemnisation de ${indemnisation.toLocaleString("fr-FR")} FCFA vous est due` +
+      ` au titre de la valeur déclarée ; notre équipe vous recontacte.`;
+  }
 
   if (paiement) {
     // Le filtre porte sur le statut ATTENDU, jamais sur celui qu'on vient de
@@ -667,7 +689,7 @@ export async function cloturerEchecLivraison(
     tableName: "expeditions",
     recordId: expeditionId,
     oldValues: { statut: exp.statut, paiement: paiement?.statut ?? null },
-    newValues: { motif, paiement: sortPaiement },
+    newValues: { motif, paiement: sortPaiement, indemnisation },
   });
 
   await notifierClient(exp.client_id, "Envoi clôturé", messageClient);

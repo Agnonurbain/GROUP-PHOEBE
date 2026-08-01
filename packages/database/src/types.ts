@@ -1034,6 +1034,7 @@ export type Database = {
           expediteur_contact: string
           expediteur_nom: string
           id: string
+          indemnisation_montant: number | null
           livree_at: string | null
           livreur_id: string | null
           mode: string
@@ -1068,6 +1069,7 @@ export type Database = {
           expediteur_contact: string
           expediteur_nom: string
           id?: string
+          indemnisation_montant?: number | null
           livree_at?: string | null
           livreur_id?: string | null
           mode: string
@@ -1102,6 +1104,7 @@ export type Database = {
           expediteur_contact?: string
           expediteur_nom?: string
           id?: string
+          indemnisation_montant?: number | null
           livree_at?: string | null
           livreur_id?: string | null
           mode?: string
@@ -1529,6 +1532,63 @@ export type Database = {
           client_id?: string
           created_at?: string
           items?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pages_legales: {
+        Row: {
+          chapeau: string
+          publie: boolean
+          sections: Json
+          slug: string
+          titre: string
+          updated_at: string
+          updated_par: string | null
+        }
+        Insert: {
+          chapeau?: string
+          publie?: boolean
+          sections?: Json
+          slug: string
+          titre: string
+          updated_at?: string
+          updated_par?: string | null
+        }
+        Update: {
+          chapeau?: string
+          publie?: boolean
+          sections?: Json
+          slug?: string
+          titre?: string
+          updated_at?: string
+          updated_par?: string | null
+        }
+        Relationships: []
+      }
+      parametres_livraison: {
+        Row: {
+          id: boolean
+          indemnisation_active: boolean
+          indemnisation_conditions: string
+          indemnisation_plafond: number
+          indemnisation_taux: number
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          indemnisation_active?: boolean
+          indemnisation_conditions?: string
+          indemnisation_plafond?: number
+          indemnisation_taux?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          indemnisation_active?: boolean
+          indemnisation_conditions?: string
+          indemnisation_plafond?: number
+          indemnisation_taux?: number
           updated_at?: string
         }
         Relationships: []
