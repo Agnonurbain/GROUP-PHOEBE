@@ -51,6 +51,12 @@ type ReservationItem = {
   preuve: { recuPar: string | null; livreeAt: string | null } | null
   /** Table d'origine, pour rattacher un avis à la bonne prestation. */
   referenceTable: string
+  /**
+   * Documents d'une location : contrat dès qu'elle est engagée, état des lieux
+   * dès qu'il a été fait. Le second justifie ce qui est retenu sur la caution —
+   * il était saisi côté admin et jamais montré au client.
+   */
+  documents: { contrat: boolean; etatLieux: boolean; cautionRetenue: number } | null
 }
 
 const TABS = [
@@ -95,7 +101,7 @@ export default async function CompteReservations({
   const [transportRes, immobilierRes, assistanceRes, livraisonRes, billetsRes] = await Promise.all([
     supabase
       .from("demandes_transport")
-      .select("id, created_at, statut, montant, categorie, type, prix_negocie, vehicule_id, vehicules!inner(marque, modele)")
+      .select("id, created_at, statut, montant, categorie, type, prix_negocie, vehicule_id, caution_retenue, etat_lieux_depart_photos, etat_lieux_retour_photos, kilometrage_depart, vehicules!inner(marque, modele)")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
     supabase
@@ -192,6 +198,18 @@ export default async function CompteReservations({
     contreOffre: null,
     factures: facturesDe(d.id),
     preuve: null,
+    // Le contrat n'a de sens qu'une fois la location engagée ; l'état des lieux
+    // dès qu'un relevé existe, au départ comme au retour.
+    documents: ["acceptee", "en_cours", "terminee"].includes(d.statut)
+      ? {
+          contrat: true,
+          etatLieux:
+            d.kilometrage_depart != null ||
+            (d.etat_lieux_depart_photos?.length ?? 0) > 0 ||
+            (d.etat_lieux_retour_photos?.length ?? 0) > 0,
+          cautionRetenue: Number(d.caution_retenue ?? 0),
+        }
+      : null,
   })) ?? []
 
   // Le libellé disait « Visite: <date de création> » pour toutes les demandes
@@ -241,6 +259,7 @@ export default async function CompteReservations({
         : null,
     factures: facturesDe(d.id),
     preuve: null,
+    documents: null,
   })) ?? []
 
   const assistanceReservations: ReservationItem[] = assistanceRes.data?.map((d) => ({
@@ -259,6 +278,7 @@ export default async function CompteReservations({
     contreOffre: null,
     factures: facturesDe(d.id),
     preuve: null,
+    documents: null,
   })) ?? []
 
   const livraisonReservations: ReservationItem[] = livraisonRes.data?.map((d) => ({
@@ -278,6 +298,7 @@ export default async function CompteReservations({
     factures: facturesDe(d.id),
     // La preuve n'existe que sur un colis effectivement remis.
     preuve: d.preuve_chemin ? { recuPar: d.recu_par, livreeAt: d.livree_at } : null,
+    documents: null,
   })) ?? []
 
   const maintenant = new Date()
@@ -307,6 +328,7 @@ export default async function CompteReservations({
     contreOffre: null,
     factures: facturesDe(d.id),
     preuve: null,
+    documents: null,
   })) ?? []
 
   const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations, ...billetReservations]
@@ -413,6 +435,35 @@ export default async function CompteReservations({
                   </Link>
                   {/* Une facture par paiement encaissé : le numéro n'est affiché
                       que s'il y en a plusieurs, sinon il n'apprend rien. */}
+                  {/* Le contrat et l'état des lieux : le second justifie ce qui
+                      est retenu sur la caution, et n'était visible que du staff. */}
+                  {r.documents && (
+                    <div className="flex flex-col items-end gap-0.5">
+                      {r.documents.cautionRetenue > 0 && (
+                        <span className="text-[11px] text-[#EF4444]">
+                          Caution retenue : {r.documents.cautionRetenue.toLocaleString("fr-FR")} FCFA
+                        </span>
+                      )}
+                      <a
+                        href={`/api/contrat-pdf?id=${r.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-public-text-muted transition-colors hover:text-accent-gold"
+                      >
+                        Contrat de location
+                      </a>
+                      {r.documents.etatLieux && (
+                        <a
+                          href={`/api/etat-lieux-pdf?id=${r.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-public-text-muted transition-colors hover:text-accent-gold"
+                        >
+                          État des lieux
+                        </a>
+                      )}
+                    </div>
+                  )}
                   {/* L'avis n'a de sens qu'une fois la prestation rendue. */}
                   {isTerminee(r.status) && (
                     <DeposerAvis referenceTable={r.referenceTable} referenceId={r.id} />

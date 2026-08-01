@@ -34,16 +34,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.sub)
-    .single();
-
-  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
-    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
-  }
-
   const { data: demande } = await supabase
     .from("demandes_transport")
     .select("*, vehicules(marque, modele), users!demandes_transport_client_id_fkey(nom, telephone)")
@@ -52,6 +42,20 @@ export async function GET(request: NextRequest) {
 
   if (!demande) {
     return NextResponse.json({ error: "Demande introuvable" }, { status: 404 });
+  }
+
+  // Le client lit l'état des lieux de sa propre location — même garde que le
+  // contrat. C'est le document qui justifie ce qu'on retient sur sa caution :
+  // le lui refuser rendait la retenue incontestable faute d'être consultable.
+  if (demande.client_id !== user.sub) {
+    const { data: profile } = await supabase
+      .from("users")
+      .select("role")
+      .eq("id", user.sub)
+      .single();
+    if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+      return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
+    }
   }
 
   const pdf = await PDFDocument.create();
