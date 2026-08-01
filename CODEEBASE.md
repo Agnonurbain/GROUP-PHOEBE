@@ -157,6 +157,7 @@ group-phoebe/
 | `/admin/biens/nouveau` | Ajout bien |
 | `/admin/biens/[id]` | Édition bien |
 | `/admin/expeditions` | Gestion expéditions |
+| `/admin/chauffeurs` | Chauffeurs — staff : création, téléphone, activation, véhicules rattachés et courses en cours. Alerte sur les véhicules qui vendent l'option « avec chauffeur » sans chauffeur actif rattaché |
 | `/admin/livreurs` | Livreurs — propriétaire seul : communes desservies, capacité quotidienne, charge en cours, activation |
 | `/admin/demandes-immobilier` | Demandes immobilières (statuts, visites, agent, contre-offre) |
 | `/admin/transactions-immobilier` | Registre : qui a loué / acheté quel bien, à quel prix et quand (cumul des sommes réservé au propriétaire) |
@@ -214,7 +215,7 @@ qui est généré depuis la base — c'est la référence en cas de doute.
 |---|---|---|
 | `agences` | Transverse | Multi-site |
 | `users` | Auth | 5 rôles, vérification identité |
-| `chauffeurs` | Transport | Chauffeurs avec permis |
+| `chauffeurs` | Transport | Ressource, pas un compte : géré depuis `/admin/chauffeurs` comme un véhicule. `telephone` unique — deux identifiants pour une même personne rendraient l'exclusion GiST de `disponibilites_chauffeur` inopérante. `actif` filtre l'affectation automatique |
 | `vehicules` | Transport | Catalogue avec prix, statut |
 | `vehicule_photos` | Transport | Photos par véhicule |
 | `vehicule_chauffeurs` | Transport | Affectation chauffeur ↔ véhicule |
@@ -698,7 +699,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 442 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 451 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -714,6 +715,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | `role-guards.test.ts`, `permissions.test.ts` | Cloisonnement des rôles |
 | `exclusion.test.ts` | Non-chevauchement des périodes (contrainte GiST) |
 | `annulation-48h.test.ts` | Rétention de caution sous 48 h |
+| `chauffeurs.test.ts` | Gestion des chauffeurs : téléphone normalisé et unique (base comprise), pas de désactivation avec courses en cours. Affectation : un chauffeur inactif n'est plus candidat, et le manque de chauffeur ne se dit plus comme un manque de véhicule |
 | `statuts-paiement.test.ts` | **Règle de dépôt** : un statut de paiement ne se réécrit jamais depuis celui qu'on vient de lire. Balaie tout `src/` et casse sur un `.eq("statut", <variable>)` ou un `statut:` calculé depuis `paiement.statut` — le filtre doit porter sur le statut **attendu**, écrit en clair |
 | `livreur.test.ts` | Paiement à la livraison (court-circuit du prestataire, encaissement indissociable de la remise), fins de parcours (clôture d'échec, annulation client, désaffectation). Cycle d'une expédition : `livree` terminal, transit non contournable, échec repris. Cloisonnement du livreur (n'agit que sur ses colis, désactivé il perd l'accès), preuve obligatoire à la remise et non publique, et lecture du SQL de 00063 pour que la garde reste en `security invoker`. Couverture d'un livreur : vide = dessert tout, accents et casse indifférents, et **une classe de trajet n'est jamais une commune** |
 | `facture.test.ts` | Facturation : client résolu depuis la table référencée (le paiement ne le porte pas), numéros distincts, webhook rejoué sans doublon ni numéro brûlé, échec de facture qui ne fait pas échouer l'encaissement, et chemin stocké plutôt qu'URL. Lit aussi le source de `telechargerFacture` : casse si la lecture bascule en clé de service ou si l'URL cesse d'être signée |
@@ -776,6 +778,8 @@ casser doit être un choix conscient, pas un effet de bord :
 | 2026-07-31 | **Une annulation n'est pas un échec de livraison** (00067). L'annulation client réutilisait `echec_livraison` avec le motif « Annulée par le client », pour éviter un sixième statut. Économie de façade, et cinq conséquences. Le colis **restait sur l'écran du livreur** (`echec_livraison` compte parmi les statuts actifs) et l'annulation ne le désaffectait pas : il pouvait le reprendre et le livrer, alors que le paiement était déjà marqué remboursable. La transition `echec_livraison → prise_en_charge` existe justement pour reprendre un échec — sur une annulation, c'est un contresens. Le **taux d'échec du tableau de bord** comptait les annulations : la mesure censée juger la performance de livraison était polluée par des décisions de clients. `echec_motif` portait un texte qui n'était pas un motif d'échec. Et le pire : la **clôture d'échec pouvait rejouer sur une annulation** — un paiement passé en `remboursement_requis` était relu par `cloturerEchecLivraison`, qui ne le voyant pas en `capture` le basculait en `echoue` ; le remboursement disparaissait de la file, sans bruit, et le client n'était jamais remboursé. Statut `annulee` dédié, terminal, atteignable depuis `creee` seulement, exclu des deux termes du taux d'échec, et le livreur retiré à l'annulation. |
 
 | 2026-07-31 | **Audit : la même erreur ailleurs ?** Recherche systématique du motif « un statut réutilisé hérite de règles qui ne s'y appliquent pas ». Résultat rassurant sur l'existant : `demandes_transport.annulee` est bien écrit par cinq chemins (annulation client, non-présentation, négociation expirée, échec de paiement), mais **chacun calcule ses propres conséquences et notifie son propre message** — le statut n'y sert qu'à l'affichage, aucun lecteur n'en déduit quoi que ce soit. Idem pour `refusee` / `annulee` en immobilier. En revanche l'audit a trouvé **deux occurrences, toutes deux dans le code écrit ce jour** : `cloturerEchecLivraison` et `annulerExpeditionParClient` conditionnaient l'écriture du paiement au statut **observé** (`.eq("statut", paiement.statut)`) au lieu du statut **attendu**. Ça ressemble à une garde de concurrence sans en être une : la clôture ne changeant pas le statut de l'expédition, elle reste rejouable, et un second passage basculait un `remboursement_requis` en `echoue` — le remboursement quittait la file, sans bruit. Corrigé en branches explicites, et l'annulation acquiert désormais sa transition **avant** de toucher au paiement (l'inverse modifiait l'argent avant d'avoir le droit d'annuler). Tout le reste du dépôt suivait déjà la bonne discipline (`rembourserPaiement`, `marquerRembourse`, l'expiration, la capture à la livraison) ; `statuts-paiement.test.ts` la rend obligatoire en balayant `src/` — vérifié en réintroduisant le bug d'origine, le test casse. |
+
+| 2026-07-31 | **Audit du module transport, et gestion des chauffeurs** (00068). L'audit s'est fait en code et en base. Le cœur est sain — l'affectation véhicule/chauffeur tente l'insertion et libère en cas de conflit, sans jamais se fier à un « il en reste un ». Mais l'option « avec chauffeur » est vendue depuis l'origine **sans qu'aucun chemin ne permette de créer un chauffeur** : les deux pages admin qui touchent la table ne font que la lire, et `/admin/comptes` ne crée que des comptes. Avec zéro chauffeur en base, toute réservation avec chauffeur échouait sur « Ce véhicule n'est pas disponible » — alors que le véhicule l'était. Nouveau `/admin/chauffeurs` (staff) : création, activation, véhicules rattachés, courses en cours. Deux défauts trouvés en chemin et corrigés : l'affectation **ne filtrait pas sur `actif`**, donc la désactivation ne servait qu'à l'affichage ; et le manque de chauffeur se disait comme un manque de véhicule, ce qui poussait le client à renoncer ou à réessayer à l'identique. `chauffeurs.telephone` devient unique — deux identifiants pour une même personne rendraient l'exclusion GiST de `disponibilites_chauffeur` inopérante. La page signale enfin les véhicules qui annoncent l'option sans aucun chauffeur actif rattaché : `vehicules.chauffeur_disponible` est un drapeau commercial indépendant de la ressource, et c'est ce découplage qui produisait la panne. |
 
 ## 13. ÉVOLUTION
 

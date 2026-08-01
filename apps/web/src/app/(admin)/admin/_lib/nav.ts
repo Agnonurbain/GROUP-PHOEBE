@@ -19,6 +19,7 @@ import {
   Settings,
   MessageSquare,
   Bike as BikeIcon,
+  UserCog,
   PenLine,
   Receipt,
   type LucideIcon,
@@ -67,6 +68,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/demandes", label: "Demandes", icon: ClipboardList, badge: "demandes" },
       { href: "/admin/vehicules", label: "Véhicules", icon: Car },
+      { href: "/admin/chauffeurs", label: "Chauffeurs", icon: UserCog, masquePourAgent: true },
       { href: "/admin/reserver-pour-client", label: "Réserver pour client", icon: CalendarPlus },
       { href: "/admin/verifications", label: "Vérifications", icon: ShieldCheck, exact: true },
       { href: "/admin/verifications/historique", label: "Historique vérif.", icon: History },

@@ -55,6 +55,11 @@ export async function assignerVehiculesGroupe(
     };
   }
 
+  // Distingue « plus de véhicule » de « plus de chauffeur » : les deux menaient
+  // au même message, qui parlait du véhicule alors qu'il était libre. Un client
+  // renonçait, ou réessayait à l'identique.
+  let bloqueParChauffeur = false;
+
   const reserved: {
     vehiculeId: string;
     chauffeurId: string | null;
@@ -104,6 +109,7 @@ export async function assignerVehiculesGroupe(
 
     if (avecChauffeur) {
       if (!v.chauffeur_disponible) {
+        bloqueParChauffeur = true;
         await admin
           .from("disponibilites_vehicule")
           .delete()
@@ -114,10 +120,14 @@ export async function assignerVehiculesGroupe(
         continue;
       }
 
+      // `!inner` + filtre sur `actif` : sans lui, un chauffeur désactivé restait
+      // candidat à toute nouvelle course. La désactivation ne servait à rien
+      // d'autre qu'à l'affichage.
       const { data: vcLinks } = await admin
         .from("vehicule_chauffeurs")
-        .select("chauffeur_id")
-        .eq("vehicule_id", v.id);
+        .select("chauffeur_id, chauffeurs!inner(actif)")
+        .eq("vehicule_id", v.id)
+        .eq("chauffeurs.actif", true);
 
       const candidatsChauffeur = vcLinks?.map((l) => l.chauffeur_id) ?? [];
 
@@ -136,6 +146,7 @@ export async function assignerVehiculesGroupe(
       }
 
       if (!chauffeurId) {
+        bloqueParChauffeur = true;
         await admin
           .from("disponibilites_vehicule")
           .delete()
@@ -166,6 +177,14 @@ export async function assignerVehiculesGroupe(
 
   if (reserved.length < quantite) {
     await rollback();
+    if (bloqueParChauffeur) {
+      return {
+        ok: false,
+        error:
+          `Aucun chauffeur disponible pour ${marque} ${modele} sur cette période. ` +
+          `Le véhicule reste réservable sans chauffeur.`,
+      };
+    }
     return {
       ok: false,
       error: `Seulement ${reserved.length} ${marque} ${modele} disponible(s) sur cette période, vous en demandez ${quantite}.`,
