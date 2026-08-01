@@ -6,6 +6,7 @@ import { useActionState, useEffect, useState, useCallback, useRef, useMemo } fro
 import { useCart } from "@/lib/cart-context"
 import { createClient } from "@/lib/supabase/client"
 import { PanierStepper } from "@/components/panier-stepper"
+import { AccepterCgv } from "@/components/public/accepter-cgv"
 import { BackLink } from "@/components/public/back-link"
 import { Button, Card, Badge } from "@/components/ui"
 import { checkoutCart, type CheckoutState } from "@/app/actions/checkout"
@@ -528,6 +529,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
             </div>
 
             <div className="mt-6 space-y-3">
+              <AccepterCgv />
               <Link
                 href="/panier"
                 className="flex w-full items-center justify-center rounded-lg border border-public-border py-3 text-sm font-semibold text-public-text hover:bg-public-bg-elevated transition-colors"

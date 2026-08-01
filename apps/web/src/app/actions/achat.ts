@@ -47,10 +47,15 @@ export async function creerDemandeAchat(
   const vehiculeId = formData.get("vehicule_id") as string;
   const marque = formData.get("marque") as string;
   const modele = formData.get("modele") as string;
-  const categorie = formData.get("categorie") as string;
 
   if (!vehiculeId || !marque || !modele) {
     return { error: "Véhicule invalide." };
+  }
+
+  // Une case cochée dans le DOM n'est pas une preuve : le consentement est exigé
+  // côté serveur, et c'est lui qui est enregistré.
+  if (formData.get("accepte_cgv") !== "on") {
+    return { error: "Vous devez accepter les conditions générales de vente." };
   }
 
   const admin = getAdmin();
@@ -74,7 +79,14 @@ export async function creerDemandeAchat(
       client_id: user.sub,
       vehicule_id: vehiculeId,
       type: "achat",
-      categorie: categorie || "leger",
+      // `demandes_transport.categorie` qualifie la DEMANDE
+      // (classique | evenementiel | scolaire | personnel), pas le véhicule. On y
+      // écrivait la catégorie du véhicule (leger | car | minibus), qu'aucune de
+      // ces valeurs ne satisfait : la contrainte rejetait l'insert et le client
+      // recevait l'erreur Postgres brute. Un achat est une demande classique ;
+      // la catégorie du véhicule vit sur `vehicules`.
+      categorie: "classique",
+      accepte_cgv: true,
       statut: "en_attente_validation",
       montant,
       avec_chauffeur: false,

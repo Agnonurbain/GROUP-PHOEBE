@@ -144,3 +144,41 @@ describe("Transport — conducteurs secondaires", () => {
     expect(corps).not.toContain("getPublicUrl");
   });
 });
+
+// Trois liens du pied de page pointaient vers `#`, et `accepte_cgv` — présente
+// depuis la migration initiale — n'était jamais remplie faute de case à cocher.
+describe("Transport — consentement et pages légales", () => {
+  const achat = src("app/actions/achat.ts");
+  const checkout = src("app/actions/checkout.ts");
+
+  it.each([
+    ["achat", "app/actions/achat.ts"],
+    ["checkout", "app/actions/checkout.ts"],
+  ])("%s exige le consentement côté serveur", (_, chemin) => {
+    const code = src(chemin);
+    expect(code).toMatch(/formData\.get\("accepte_cgv"\) !== "on"/);
+    expect(code).toContain("accepte_cgv: true");
+  });
+
+  it("le pied de page ne renvoie plus vers des ancres mortes", () => {
+    const footer = src("components/public/footer.tsx");
+    expect(footer).toContain("/legal/mentions-legales");
+    expect(footer).toContain("/legal/cgv");
+    expect(footer).toContain("/legal/confidentialite");
+  });
+
+  // Un brouillon indexé serait cité comme engagement de l'entreprise.
+  it("un document encore provisoire n'est pas indexable", () => {
+    const page = src("app/(public)/legal/[slug]/page.tsx");
+    expect(page).toMatch(/robots: \{ index: false/);
+    expect(page).toContain("Document provisoire");
+  });
+
+  // `demandes_transport.categorie` qualifie la demande, pas le véhicule : on y
+  // écrivait `leger`, que la contrainte rejette — tout achat échouait.
+  it("un achat n'écrit plus une catégorie de véhicule", () => {
+    expect(achat).toContain('categorie: "classique"');
+    expect(achat).not.toMatch(/categorie \|\| "leger"/);
+    expect(checkout).toContain('categorie: "classique"');
+  });
+});

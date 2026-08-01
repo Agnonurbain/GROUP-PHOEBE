@@ -121,6 +121,7 @@ group-phoebe/
 | `/blog` | `page.tsx` + `page-client.tsx` | Blog / Guides |
 | `/blog/[slug]` | `page.tsx` | Article blog |
 | `/contact` | `page.tsx` | Contact |
+| `/legal/[slug]` | Mentions légales, CGV, politique de confidentialité. **Textes d'exemple** : les passages `[À COMPLÉTER]` attendent des données que seule l'entreprise détient, et la page est `noindex` tant qu'il en reste |
 | `/suivi` | `page.tsx` | Suivi expédition |
 | `/offline` | `page.tsx` | Page hors-ligne |
 | `/design-system` | `page.tsx` | Galerie des composants (hors groupe de routes) |
@@ -699,7 +700,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 459 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 464 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -782,6 +783,8 @@ casser doit être un choix conscient, pas un effet de bord :
 | 2026-07-31 | **Audit du module transport, et gestion des chauffeurs** (00068). L'audit s'est fait en code et en base. Le cœur est sain — l'affectation véhicule/chauffeur tente l'insertion et libère en cas de conflit, sans jamais se fier à un « il en reste un ». Mais l'option « avec chauffeur » est vendue depuis l'origine **sans qu'aucun chemin ne permette de créer un chauffeur** : les deux pages admin qui touchent la table ne font que la lire, et `/admin/comptes` ne crée que des comptes. Avec zéro chauffeur en base, toute réservation avec chauffeur échouait sur « Ce véhicule n'est pas disponible » — alors que le véhicule l'était. Nouveau `/admin/chauffeurs` (staff) : création, activation, véhicules rattachés, courses en cours. Deux défauts trouvés en chemin et corrigés : l'affectation **ne filtrait pas sur `actif`**, donc la désactivation ne servait qu'à l'affichage ; et le manque de chauffeur se disait comme un manque de véhicule, ce qui poussait le client à renoncer ou à réessayer à l'identique. `chauffeurs.telephone` devient unique — deux identifiants pour une même personne rendraient l'exclusion GiST de `disponibilites_chauffeur` inopérante. La page signale enfin les véhicules qui annoncent l'option sans aucun chauffeur actif rattaché : `vehicules.chauffeur_disponible` est un drapeau commercial indépendant de la ressource, et c'est ce découplage qui produisait la panne. |
 
 | 2026-07-31 | **Le client voit enfin ce qui le concerne, et les conducteurs secondaires sont relus.** `/api/contrat-pdf` était une route complète, écrite pour le client — elle gère déjà son cas d'accès — et **appelée de nulle part** ; elle est branchée sur « Mes réservations ». L'état des lieux, lui, refusait la session du client alors que c'est **le document qui justifie ce qu'on retient sur sa caution** : le lui refuser rendait la retenue incontestable faute d'être consultable. Sa garde suit désormais celle du contrat, et le montant retenu s'affiche à côté du justificatif. Les **conducteurs secondaires** étaient saisis à la réservation — nom et permis déposés dans le bucket privé — puis jamais relus : `statut_verification` restait à `documents_soumis` pour toujours, le circuit que la colonne suppose n'existait pas, et au retrait personne ne savait qui d'autre avait le droit de conduire. Ils apparaissent dans `/admin/demandes` avec le permis en URL signée au clic et une décision valider/rejeter, non rejouable (le filtre porte sur l'état attendu, comme pour les paiements). |
+
+| 2026-08-01 | **Pages légales, consentement CGV, et un blocage sur l'achat.** Les trois liens légaux du pied de page pointaient vers `#` et `accepte_cgv` — présente depuis la migration initiale — n'était jamais remplie faute de case à cocher. Trois pages sont créées sous `/legal/[slug]` avec un **contenu d'exemple** : la structure attendue, et les passages `[À COMPLÉTER]` nommant ce qui manque (RCCM, capital, siège, hébergeur, durées de conservation). Un bandeau les annonce comme provisoires et la page est `noindex` tant qu'il reste un trou — un brouillon indexé serait cité comme engagement de l'entreprise. La case de consentement est exigée **côté serveur** sur les deux chemins vivants (panier et achat), et c'est ce consentement qui est enregistré : une case cochée dans le DOM n'est pas une preuve. En la branchant, découverte d'un **blocage complet sur l'achat de véhicule** : `creerDemandeAchat` écrivait dans `demandes_transport.categorie` la catégorie du *véhicule* (`leger` \| `car` \| `minibus`), alors que la colonne qualifie la *demande* (`classique` \| `evenementiel` \| `scolaire` \| `personnel`). La contrainte rejetait l'insert — vérifié en base, erreur `23514` — et le client recevait l'erreur Postgres brute. Aucune demande d'achat ne pouvait aboutir. |
 
 ## 13. ÉVOLUTION
 

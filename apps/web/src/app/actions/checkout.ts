@@ -49,6 +49,12 @@ export async function checkoutCart(
     .single();
 
   if (!profile) return { error: "Profil introuvable." };
+
+  // Une case cochée dans le DOM n'est pas une preuve : le consentement est exigé
+  // côté serveur, et c'est lui qui est enregistré sur chaque demande.
+  if (formData.get("accepte_cgv") !== "on") {
+    return { error: "Vous devez accepter les conditions générales de vente." };
+  }
   if (profile.statut_verification !== "verifie") {
     return { error: "Votre identité doit être vérifiée avant de réserver. Rendez-vous sur votre profil pour soumettre vos documents." };
   }
@@ -178,6 +184,7 @@ export async function checkoutCart(
           vehicule_id: vehicule.id,
           type: "reservation_directe",
           categorie: "classique",
+          accepte_cgv: true,
           periode: peri,
           ville_depart: villeDepart,
           destination,
