@@ -2,6 +2,8 @@
 
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
+import { parsePeriodeRange } from "@/lib/periode";
+import { contratMobilise, type CreneauContrat } from "@/lib/contrats";
 
 const CAUTION_BASE_DEFAUT = 50000;
 
@@ -67,6 +69,34 @@ export async function assignerVehiculesGroupe(
     caution: number;
   }[] = [];
 
+  // Abonnements en cours sur ces véhicules. Un contrat n'occupe pas
+  // `disponibilites_vehicule` — un ramassage scolaire de neuf mois y bloquerait
+  // le véhicule en bloc alors qu'il ne sert que matin et soir. On confronte donc
+  // la demande au créneau, ici, avant de poser quoi que ce soit.
+  const bornes = parsePeriodeRange(periode);
+  const { data: contrats } = await admin
+    .from("contrats_recurrents")
+    .select("vehicule_id, jours_semaine, heure_debut, heure_fin, date_debut, date_fin, statut")
+    .eq("statut", "actif")
+    .in("vehicule_id", candidats.map((c) => c.id));
+
+  const contratsParVehicule = new Map<string, CreneauContrat[]>();
+  for (const c of contrats ?? []) {
+    if (!c.vehicule_id) continue;
+    const liste = contratsParVehicule.get(c.vehicule_id) ?? [];
+    liste.push(c as CreneauContrat);
+    contratsParVehicule.set(c.vehicule_id, liste);
+  }
+
+  function prisParAbonnement(vehiculeId: string): boolean {
+    if (!bornes) return false;
+    const liste = contratsParVehicule.get(vehiculeId);
+    if (!liste?.length) return false;
+    const debut = new Date(bornes.debut);
+    const fin = new Date(bornes.fin);
+    return liste.some((c) => contratMobilise(c, debut, fin));
+  }
+
   const reservedVehicules: { vehiculeId: string; periode: string }[] = [];
   const reservedChauffeurs: { chauffeurId: string; periode: string }[] = [];
 
@@ -92,6 +122,10 @@ export async function assignerVehiculesGroupe(
     if (reserved.length >= quantite) break;
 
     if (!v.prix_journalier) continue;
+
+    // Écarté avant toute écriture : inutile de poser une réservation pour la
+    // retirer juste après.
+    if (prisParAbonnement(v.id)) continue;
 
     const { error: dispoErr } = await admin
       .from("disponibilites_vehicule")

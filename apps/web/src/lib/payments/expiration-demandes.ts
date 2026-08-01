@@ -178,13 +178,26 @@ export async function expirerNonPresentations(): Promise<number> {
 
 export async function expirerNegociationsAbandonnees(): Promise<number> {
   const admin = getAdminClient();
-  const seuil = new Date(Date.now() - DELAI_NEGOCIATION_MS).toISOString();
+  const maintenant = new Date().toISOString();
+
+  // L'échéance est lue sur `devis_expire_at`, écrite à l'ouverture de la
+  // négociation. Elle se calculait avant depuis `updated_at` et une constante :
+  // toute écriture sur la demande — une note d'opérateur, un changement de prix —
+  // repoussait l'expiration sans que personne ne l'ait décidé, et le client ne
+  // pouvait pas savoir jusqu'à quand son devis tenait.
+  //
+  // Repli sur l'ancien calcul pour les demandes ouvertes avant ce câblage :
+  // sans lui, elles ne seraient jamais expirées.
+  const seuilHerite = new Date(Date.now() - DELAI_NEGOCIATION_MS).toISOString();
 
   const { data: expirees } = await admin
     .from("demandes_transport")
     .select("id, client_id, vehicule_id, chauffeur_id, periode")
     .eq("statut", "en_negociation")
-    .lt("updated_at", seuil);
+    .or(
+      `devis_expire_at.lt.${maintenant},` +
+      `and(devis_expire_at.is.null,updated_at.lt.${seuilHerite})`
+    );
 
   if (!expirees || expirees.length === 0) return 0;
 

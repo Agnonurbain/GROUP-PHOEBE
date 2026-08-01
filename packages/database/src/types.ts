@@ -517,38 +517,56 @@ export type Database = {
       contrats_recurrents: {
         Row: {
           categorie: string
+          chauffeur_id: string | null
           client_id: string
           created_at: string
           date_debut: string
+          heure_debut: string | null
+          heure_fin: string | null
+          jour_facturation: number
+          jours_semaine: number[]
           date_fin: string | null
           frequence_facturation: string | null
           id: string
           montant_periodique: number | null
           statut: string
+          updated_at: string
           vehicule_id: string | null
         }
         Insert: {
           categorie: string
+          chauffeur_id?: string | null
           client_id: string
           created_at?: string
           date_debut: string
+          heure_debut?: string | null
+          heure_fin?: string | null
+          jour_facturation?: number
+          jours_semaine?: number[]
           date_fin?: string | null
           frequence_facturation?: string | null
           id?: string
           montant_periodique?: number | null
           statut?: string
+          updated_at?: string
           vehicule_id?: string | null
         }
         Update: {
           categorie?: string
+          chauffeur_id?: string | null
           client_id?: string
           created_at?: string
           date_debut?: string
+          heure_debut?: string | null
+          heure_fin?: string | null
+          jour_facturation?: number
+          jours_semaine?: number[]
           date_fin?: string | null
           frequence_facturation?: string | null
           id?: string
           montant_periodique?: number | null
           statut?: string
+          updated_at?: string
           vehicule_id?: string | null
         }
         Relationships: [
@@ -1036,6 +1054,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      echeances_contrat: {
+        Row: {
+          contrat_id: string
+          created_at: string
+          id: string
+          montant: number
+          paiement_id: string | null
+          periode_debut: string
+          periode_fin: string
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          contrat_id: string
+          created_at?: string
+          id?: string
+          montant: number
+          paiement_id?: string | null
+          periode_debut: string
+          periode_fin: string
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          contrat_id?: string
+          created_at?: string
+          id?: string
+          montant?: number
+          paiement_id?: string | null
+          periode_debut?: string
+          periode_fin?: string
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       expeditions: {
         Row: {

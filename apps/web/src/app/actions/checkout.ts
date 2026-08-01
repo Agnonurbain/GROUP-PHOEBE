@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
+import { validateDocumentUpload } from "@/lib/upload-validation";
 import { creerSessionStripe } from "@/lib/payments/stripe";
 import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { computeItemPricing, type ZonePricing } from "@/lib/pricing";
@@ -219,6 +220,48 @@ export async function checkoutCart(
 
   if (createdDemandes.length === 0) {
     return { error: "Aucun véhicule disponible parmi les articles sélectionnés." };
+  }
+
+  // Second conducteur, s'il est déclaré. Il était collecté par `creerReservation`
+  // — fonction morte, appelée de nulle part : la donnée n'arrivait jamais, et
+  // l'écran de vérification côté admin n'avait rien à montrer. Rattaché à la
+  // première demande du panier : c'est le véhicule que le client vient chercher.
+  const conducteurNom = ((formData.get("conducteur_secondaire_nom") as string) || "").trim();
+  const conducteurPermis = formData.get("conducteur_secondaire_permis") as File | null;
+
+  if (
+    conducteurNom &&
+    conducteurPermis &&
+    typeof conducteurPermis !== "string" &&
+    conducteurPermis.size > 0 &&
+    createdDemandes.length > 0
+  ) {
+    let ext: string;
+    try {
+      ({ ext } = validateDocumentUpload(conducteurPermis));
+    } catch {
+      ext = "";
+    }
+
+    if (ext) {
+      const premiere = createdDemandes[0];
+      // Bucket privé : c'est le chemin qui est stocké, l'URL se signe à la
+      // demande côté admin.
+      const chemin = `conducteurs/${premiere.id}/${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await admin.storage
+        .from("identity-documents")
+        .upload(chemin, await conducteurPermis.arrayBuffer(), {
+          contentType: conducteurPermis.type,
+        });
+
+      if (!upErr) {
+        await admin.from("conducteurs_secondaires").insert({
+          demande_transport_id: premiere.id,
+          nom: conducteurNom,
+          permis_conduire_url: chemin,
+        });
+      }
+    }
   }
 
   const totalMontant = createdDemandes.reduce((s, d) => s + d.montant, 0);

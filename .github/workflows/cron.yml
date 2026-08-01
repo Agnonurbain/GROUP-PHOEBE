@@ -6,6 +6,14 @@ on:
     - cron: '0 */2 * * 1-5'
     - cron: '0 */4 * * *'
     - cron: '*/30 * * * *'
+    # Expiration des demandes immobilieres a 7 jours : la route existait depuis
+    # 00048 mais n'etait planifiee nulle part, donc jamais appelee. Une demande
+    # sans reponse restait ouverte indefiniment, et le bien masque du catalogue.
+    - cron: '30 5 * * *'
+    # Echeances d'abonnement. Quotidien : la generation est rejouable
+    # (unicite contrat_id + periode_debut), donc repasser chaque jour ne
+    # facture jamais deux fois et rattrape un jour manque.
+    - cron: '0 6 * * *'
   # Permet de tester la chaine complete sans attendre le prochain creneau.
   # Sans route associee, l'execution manuelle echoue explicitement.
   workflow_dispatch:
@@ -34,6 +42,8 @@ jobs:
             "0 */2 * * 1-5")   echo "path=api/cron/expirer-demandes-sans-reponse" >> $GITHUB_OUTPUT;;
             "0 */4 * * *")     echo "path=api/cron/expirer-non-presentations" >> $GITHUB_OUTPUT;;
             "*/30 * * * *")    echo "path=api/cron/expirer-negociations" >> $GITHUB_OUTPUT;;
+            "30 5 * * *")      echo "path=api/cron/expirer-demandes-immobilier" >> $GITHUB_OUTPUT;;
+            "0 6 * * *")       echo "path=api/cron/echeances-contrats" >> $GITHUB_OUTPUT;;
           esac
 
   call:
