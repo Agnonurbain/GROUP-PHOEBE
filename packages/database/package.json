@@ -9,7 +9,8 @@
     "./types": "./src/types.ts"
   },
   "scripts": {
-    "generate-types": "supabase gen types typescript --local > src/types.ts",
+    "generate-types": "cd ../.. && supabase gen types typescript --linked > packages/database/src/types.ts",
+    "generate-types:local": "cd ../.. && supabase gen types typescript --local > packages/database/src/types.ts",
     "build": "tsc",
     "type-check": "tsc --noEmit"
   },

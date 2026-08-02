@@ -68,7 +68,11 @@ group-phoebe/
 │       ├── types.ts             # Types auto-générés (supabase gen types)
 │       └── index.ts             # Exports
 │
-├── supabase/migrations/         # 59 migrations SQL
+├── supabase/                    # Projet Supabase — UNIQUE source de vérité
+│   ├── migrations/              # 76 migrations SQL
+│   ├── tests/                   # SQL de vérification (contrainte d'exclusion)
+│   ├── config.toml              # Ports de la pile locale
+│   └── seed*.sql                # Jeux de données de développement
 ├── docs/                        # Documentation
 │   ├── Cahier_des_charges_GROUP_PHOEBE.md
 │   ├── Modele_de_donnees_GROUP_PHOEBE.md
@@ -207,12 +211,13 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-59 migrations Supabase (00001 → 00059).
+76 migrations Supabase (00001 → 00076), toutes dans `supabase/migrations/`.
 
 ### 5.1 Tables
 
-52 tables. La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
-qui est généré depuis la base — c'est la référence en cas de doute.
+La liste ci-dessous est celle des `Tables` de `packages/database/src/types.ts`,
+généré depuis la base distante (`pnpm -F @group-phoebe/database generate-types`) —
+c'est la référence en cas de doute.
 
 | Table | Module | Description |
 |---|---|---|
@@ -738,6 +743,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-08-02 | **Un seul dossier de migrations** : `packages/database/supabase/` est supprimé. Ce second projet Supabase était figé au 00034 (42 migrations de retard) et réutilisait le numéro **00032** pour un fichier différent de celui du dossier racine — deux historiques incompatibles, dont un seul était poussé. Sa seule définition unique, `propositions_zones_tarifaires`, a été reprise en 00076. `config.toml`, les seeds et `tests/` remontent à la racine, où le CLI travaille déjà. Le script `generate-types` visait `--local`, donc une base construite depuis le dossier périmé : il pointe désormais sur `--linked`, ce qui correspond à la façon dont `types.ts` était réellement produit. Reconstruction complète depuis les 76 migrations vérifiée avant suppression. |
 | 2026-08-02 | **L'atelier de propositions tarifaires : un chemin gardé, un chemin fermé** (00076). Trois ateliers coexistaient ; `propositions_tarifs` (00034) n'avait jamais eu d'écran, et était un doublon **défait** de la proposition de zone : son type acceptait « prix_base » et « intervalles », mais la fonction d'application ne traitait que « coefficients » et « geojson » — accepter une proposition des deux autres types la marquait « acceptée » **sans rien appliquer**. Supprimé plutôt que fini. Au passage, `propositions_zones_tarifaires` — l'atelier qui SERT — n'existait dans aucune migration de `supabase/migrations/` : sa seule définition vivait dans `packages/database/supabase/migrations/`, dossier figé au 00034 qui réutilise le numéro 00032 pour un autre fichier. Redéclarée en idempotent, et `tables-migrees.test.ts` verrouille la classe entière. Enfin, **l'approbation automatique sous 15 % est supprimée** : elle laissait un opérateur écrire un prix véhicule ou un coefficient de zone avec le client service_role, donc hors RLS, et l'écart se mesurant depuis la valeur courante, quelques passages tous sous le seuil doublaient le tarif sans qu'aucun ne le franchisse — le propriétaire n'étant averti que dans le cas contraire. |
 | 2026-07-29 | **Les paramètres des billets deviennent pilotables** (00056), onglet « Billets d'avion » dans `/admin/tarifs`, propriétaire seul. Étaient figés dans le code : les **frais de service** par billet, la **validité de passeport exigée** après le départ, le **plafond de voyageurs** et le **délai de réponse** annoncé au client. `validerDemandeBillet` prend désormais ces paramètres au lieu de constantes — les tests vérifient qu'un plafond ou une validité modifiés changent réellement le verdict. Les frais sont **figés sur la demande** à sa création, comme la commission immobilière : le barème peut évoluer sans réécrire ce qui a été annoncé au client. Le devis affiche le total (vol + frais) côté client comme côté admin, et la notification l'annonce détaillé. Même précaution que pour `taux_max_reduction` sur la lecture en cache : le repli ne joue que sur une valeur absente ou non numérique, jamais sur 0 — 0 est légitime pour les frais comme pour la validité exigée. |
 | 2026-07-29 | **Vente de billets d'avion** dans le module Assistance (00055). Zone de demande sur `/assistance#billet`, inspirée des comparateurs de vols : aller simple / aller-retour, origine et destination (avec liste d'aéroports en aide, champ libre), dates, ventilation adultes / enfants / bébés, classe, et le passeport du voyageur principal — nom exact, numéro, expiration. Table `demandes_billet` distincte de `dossiers_voyage` : ni les mêmes champs, ni les mêmes statuts, les fondre aurait donné une table à moitié nulle selon le cas. **Pas de recherche de vol en direct** (aucune connexion GDS) : le client décrit son besoin, l'équipe cherche et répond par un devis depuis `/admin/billets`. Le vocabulaire de l'interface le dit — « Demander mon billet », pas « Rechercher ». Le chiffrage (`montant_propose`) suit la règle du projet : propriétaire seul, garde applicative **et** trigger `garde_montant`. Contraintes en base : un aller simple n'a pas de retour, un aller-retour en a un postérieur au départ. Validation applicative : la validité du passeport se juge **après la date de départ** (6 mois), pas à la date de la demande, et un bébé ne voyage pas sans adulte. |
