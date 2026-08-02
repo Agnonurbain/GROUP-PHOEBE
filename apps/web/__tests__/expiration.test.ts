@@ -18,9 +18,16 @@ vi.mock("@/lib/notifications", () => ({
   notifierClient: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/constants", () => ({
-  DELAI_SANS_REPONSE_HEURES: 24,
-  DELAI_NON_PRESENTATION_HEURES: 4,
+// Les délais viennent désormais de `parametres_transport` (00074) : c'est cette
+// source qu'on contrôle, pas la constante de repli — sinon le test vérifierait
+// un chemin que le code n'emprunte plus.
+vi.mock("@/lib/parametres-transport", () => ({
+  getParametresTransport: vi.fn().mockResolvedValue({
+    delai_negociation_heures: 4,
+    delai_sans_reponse_heures: 24,
+    delai_non_presentation_heures: 4,
+  }),
+  heuresEnMs: (h: number) => h * 60 * 60 * 1000,
 }));
 
 describe("Expiration — réservation abandonnée (en_attente_paiement > 30 min)", () => {

@@ -10,7 +10,7 @@ import { DemanderPrix, type CommuneOption } from "@/components/public/demander-p
 import { trackEvent } from "@/lib/analytics"
 import { useEffect } from "react"
 
-export default function Panier({ communes }: { communes: CommuneOption[] }) {
+export default function Panier({ communes, delai }: { communes: CommuneOption[]; delai: string }) {
   const t = useT()
   const { items, removeItem, updateQuantity, toggleChauffeur, clearCart, count } = useCart()
 
@@ -230,6 +230,7 @@ export default function Panier({ communes }: { communes: CommuneOption[] }) {
             <div className="mt-3">
               <DemanderPrix
                 communes={communes}
+                delai={delai}
                 lignes={items.map((i) => ({
                   groupKey: i.groupKey,
                   marque: i.marque,
