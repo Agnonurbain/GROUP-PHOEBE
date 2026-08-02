@@ -190,7 +190,13 @@
       "Bash(pnpm -F web test expiration)",
       "Bash(pnpm -F web test heures-ouvrees)",
       "Bash(cd /home/aymeric/GROUP-PHOEBE/apps/web *)",
-      "Read(//home/supabase/**)"
+      "Read(//home/supabase/**)",
+      "Bash(docker info *)",
+      "Bash(git mv *)",
+      "Bash(git rm *)",
+      "Bash(supabase start *)",
+      "Bash(break)",
+      "Bash(supabase stop *)"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",

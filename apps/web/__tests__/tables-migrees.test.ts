@@ -8,11 +8,12 @@ import { join } from "node:path";
  *
  * Ça paraît acquis, ça ne l'était pas : `propositions_zones_tarifaires` était
  * utilisée par trois fichiers vivants alors que sa seule définition dormait
- * dans `packages/database/supabase/migrations/`, un ancien dossier figé au
- * 00034 — et qui réutilise le numéro 00032 pour un tout autre fichier. La table
- * existait en production parce qu'elle y avait été créée à l'époque. Un
+ * dans un second dossier de migrations, sous `packages/database/`, figé au
+ * 00034 — et qui réutilisait le numéro 00032 pour un tout autre fichier. La
+ * table existait en production parce qu'elle y avait été créée à l'époque. Un
  * environnement reconstruit depuis le dossier courant ne l'aurait pas eue, et
- * rien n'aurait prévenu avant l'erreur en production.
+ * rien n'aurait prévenu avant l'erreur en production. Ce second dossier a été
+ * supprimé depuis ; ce test veille à ce que l'écart ne se recreuse pas.
  *
  * Ce test lit les deux côtés et les compare. Il ne dépend d'aucune base.
  */

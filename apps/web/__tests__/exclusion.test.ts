@@ -3,7 +3,7 @@ import { describe, it, expect } from "vitest";
 // These tests verify the exclusion constraint logic that the DB enforces.
 // The actual constraint is a GiST exclusion on (vehicule_id/chauffeur_id, periode).
 // Supabase returns error code "23P01" for exclusion violations.
-// See also: packages/database/supabase/tests/test_exclusion_constraint.sql
+// See also: supabase/tests/test_exclusion_constraint.sql
 
 const EXCLUSION_VIOLATION_CODE = "23P01";
 

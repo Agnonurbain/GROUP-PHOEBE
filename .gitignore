@@ -20,8 +20,8 @@ out
 .DS_Store
 *.tsbuildinfo
 
-# supabase
-packages/database/supabase/.temp
+# supabase — état du lien vers le projet distant, propre à chaque poste
+supabase/.temp
 
 # vercel
 .vercel
