@@ -1581,23 +1581,41 @@ export type Database = {
       parametres_transport: {
         Row: {
           delai_negociation_heures: number
+          delai_negociation_ouvre: boolean
           delai_non_presentation_heures: number
+          delai_non_presentation_ouvre: boolean
           delai_sans_reponse_heures: number
+          delai_sans_reponse_ouvre: boolean
+          heure_fermeture: string
+          heure_ouverture: string
           id: boolean
+          jours_ouvres: number[]
           updated_at: string
         }
         Insert: {
           delai_negociation_heures?: number
+          delai_negociation_ouvre?: boolean
           delai_non_presentation_heures?: number
+          delai_non_presentation_ouvre?: boolean
           delai_sans_reponse_heures?: number
+          delai_sans_reponse_ouvre?: boolean
+          heure_fermeture?: string
+          heure_ouverture?: string
           id?: boolean
+          jours_ouvres?: number[]
           updated_at?: string
         }
         Update: {
           delai_negociation_heures?: number
+          delai_negociation_ouvre?: boolean
           delai_non_presentation_heures?: number
+          delai_non_presentation_ouvre?: boolean
           delai_sans_reponse_heures?: number
+          delai_sans_reponse_ouvre?: boolean
+          heure_fermeture?: string
+          heure_ouverture?: string
           id?: boolean
+          jours_ouvres?: number[]
           updated_at?: string
         }
         Relationships: []

@@ -12,6 +12,7 @@ import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations, expirerNegociationsAbandonnees } from "@/lib/payments/expiration-demandes";
 import { assignerVehiculesGroupe, type AssignedVehicle, type ZoneTarif } from "@/app/actions/vehicle-assignment";
 import { getParametresTransport, heuresEnMs } from "@/lib/parametres-transport";
+import { echeanceOuvree } from "@/lib/heures-ouvrees";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -85,7 +86,13 @@ export async function creerDemandeNegociation(
   if (nbJours < 1) return { error: "La durée minimale est d'un jour." };
 
   const periode = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
-  const { delai_negociation_heures: delaiNegociation } = await getParametresTransport();
+  const parametres = await getParametresTransport();
+  // L'échéance est ARRÊTÉE ICI, en heures ouvrées si le réglage le demande :
+  // une demande du vendredi 17 h expire alors le lundi matin. Le cron n'aura
+  // qu'à comparer cette date à l'instant présent.
+  const echeance = parametres.delai_negociation_ouvre
+    ? echeanceOuvree(new Date(), parametres.delai_negociation_heures, parametres.horaires)
+    : new Date(Date.now() + heuresEnMs(parametres.delai_negociation_heures));
   const admin = getAdmin();
 
   await Promise.all([
@@ -180,7 +187,7 @@ export async function creerDemandeNegociation(
       // Échéance portée par la donnée, plus par un calcul implicite du cron.
       // Elle devient variable par demande, et surtout affichable au client :
       // un délai qui n'existe que dans une constante ne peut pas se montrer.
-      devis_expire_at: new Date(Date.now() + heuresEnMs(delaiNegociation)).toISOString(),
+      devis_expire_at: echeance.toISOString(),
       negociation_note: note,
     })
     .select("id")

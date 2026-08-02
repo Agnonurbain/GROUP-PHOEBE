@@ -5,11 +5,17 @@ import {
   DELAI_SANS_REPONSE_HEURES,
   DELAI_NON_PRESENTATION_HEURES,
 } from "@/lib/constants";
+import { HORAIRES_DEFAUT, type HorairesOuvres } from "@/lib/heures-ouvrees";
 
 export type ParametresTransport = {
   delai_negociation_heures: number;
   delai_sans_reponse_heures: number;
   delai_non_presentation_heures: number;
+  /** Chaque délai décompte-t-il en heures ouvrées ou en temps calendaire ? */
+  delai_negociation_ouvre: boolean;
+  delai_sans_reponse_ouvre: boolean;
+  delai_non_presentation_ouvre: boolean;
+  horaires: HorairesOuvres;
 };
 
 /**
@@ -23,6 +29,10 @@ export const PARAMETRES_TRANSPORT_DEFAUT: ParametresTransport = {
   delai_negociation_heures: DELAI_NEGOCIATION_HEURES_DEFAUT,
   delai_sans_reponse_heures: DELAI_SANS_REPONSE_HEURES,
   delai_non_presentation_heures: DELAI_NON_PRESENTATION_HEURES,
+  delai_negociation_ouvre: true,
+  delai_sans_reponse_ouvre: false,
+  delai_non_presentation_ouvre: true,
+  horaires: HORAIRES_DEFAUT,
 };
 
 export const getParametresTransport = unstable_cache(
@@ -30,7 +40,7 @@ export const getParametresTransport = unstable_cache(
     const supabase = createPublicClient();
     const { data } = await supabase
       .from("parametres_transport")
-      .select("delai_negociation_heures, delai_sans_reponse_heures, delai_non_presentation_heures")
+      .select("*")
       .eq("id", true)
       .maybeSingle();
 
@@ -40,6 +50,14 @@ export const getParametresTransport = unstable_cache(
       delai_negociation_heures: Number(data.delai_negociation_heures),
       delai_sans_reponse_heures: Number(data.delai_sans_reponse_heures),
       delai_non_presentation_heures: Number(data.delai_non_presentation_heures),
+      delai_negociation_ouvre: data.delai_negociation_ouvre,
+      delai_sans_reponse_ouvre: data.delai_sans_reponse_ouvre,
+      delai_non_presentation_ouvre: data.delai_non_presentation_ouvre,
+      horaires: {
+        jours: data.jours_ouvres ?? HORAIRES_DEFAUT.jours,
+        ouverture: data.heure_ouverture ?? HORAIRES_DEFAUT.ouverture,
+        fermeture: data.heure_fermeture ?? HORAIRES_DEFAUT.fermeture,
+      },
     };
   },
   ["parametres-transport"],

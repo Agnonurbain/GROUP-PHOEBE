@@ -4,6 +4,7 @@ import { notifierClient } from "@/lib/notifications";
 import { getStripe } from "@/lib/payments/stripe";
 import { parsePeriodeDebut } from "@/lib/periode";
 import { getParametresTransport, heuresEnMs } from "@/lib/parametres-transport";
+import { heuresOuvreesEcoulees } from "@/lib/heures-ouvrees";
 
 type AdminClient = ReturnType<typeof getAdminClient>;
 
@@ -77,16 +78,31 @@ export async function rembourserPaiement(
 export async function expirerDemandesSansReponse(): Promise<number> {
   if (!estJourOuvre()) return 0;
   const admin = getAdminClient();
-  const { delai_sans_reponse_heures } = await getParametresTransport();
+  const parametres = await getParametresTransport();
+  const { delai_sans_reponse_heures } = parametres;
+  // Préfiltre CALENDAIRE : le temps ouvré ne dépasse jamais le temps
+  // calendaire, donc ce seuil ne peut pas écarter une ligne qui aurait dû
+  // expirer. Le tri fin se fait ensuite, ligne par ligne.
   const seuil = new Date(Date.now() - heuresEnMs(delai_sans_reponse_heures)).toISOString();
 
-  const { data: expirees } = await admin
+  const { data: candidates } = await admin
     .from("demandes_transport")
-    .select("id, client_id, vehicule_id, chauffeur_id, periode")
+    .select("id, client_id, vehicule_id, chauffeur_id, periode, updated_at")
     .eq("statut", "en_attente_validation")
     .lt("updated_at", seuil);
 
-  if (!expirees || expirees.length === 0) return 0;
+  // Tri fin : en mode ouvré, une demande acceptée vendredi soir n'a pas encore
+  // consommé son délai le samedi matin.
+  const maintenant = new Date();
+  const expirees = parametres.delai_sans_reponse_ouvre
+    ? (candidates ?? []).filter(
+        (d) =>
+          heuresOuvreesEcoulees(new Date(d.updated_at), maintenant, parametres.horaires) >=
+          delai_sans_reponse_heures
+      )
+    : candidates ?? [];
+
+  if (expirees.length === 0) return 0;
 
   let nb = 0;
   for (const d of expirees) {
@@ -116,9 +132,11 @@ export async function expirerDemandesSansReponse(): Promise<number> {
 
 export async function expirerNonPresentations(): Promise<number> {
   const admin = getAdminClient();
-  const { delai_non_presentation_heures } = await getParametresTransport();
-  const seuil = new Date(Date.now() - heuresEnMs(delai_non_presentation_heures)).toISOString();
-
+  const parametres = await getParametresTransport();
+  const { delai_non_presentation_heures } = parametres;
+  // Pas de préfiltre SQL ici : l'échéance se calcule depuis le début de la
+  // période, pas depuis `updated_at`. Le tri se fait donc entièrement plus bas,
+  // où le décompte ouvré évite de retenir une caution pour une agence fermée.
   const { data: expirees } = await admin
     .from("demandes_transport")
     .select("id, client_id, vehicule_id, chauffeur_id, periode, caution")
@@ -127,10 +145,18 @@ export async function expirerNonPresentations(): Promise<number> {
   if (!expirees || expirees.length === 0) return 0;
 
   let nb = 0;
+  const maintenantNP = new Date();
   for (const d of expirees) {
     if (!d.periode) continue;
     const debut = parsePeriodeDebut(d.periode);
-    if (!debut || new Date(seuil) <= debut) continue;
+    if (!debut) continue;
+
+    // En mode ouvré, un retrait prévu samedi 17 h laisse jusqu'au lundi : sans
+    // cela la caution serait retenue pour une agence fermée.
+    const ecoule = parametres.delai_non_presentation_ouvre
+      ? heuresOuvreesEcoulees(debut, maintenantNP, parametres.horaires)
+      : (maintenantNP.getTime() - debut.getTime()) / 3_600_000;
+    if (ecoule < delai_non_presentation_heures) continue;
 
     if (d.vehicule_id) {
       await admin
