@@ -24,7 +24,7 @@ async function requireStaff() {
 }
 
 // Champs tarifaires : seul le propriétaire les fixe. L'opérateur passe par
-// « Proposer un prix » (table propositions_tarifs), sinon le workflow de
+// « Proposer un prix » (table propositions_prix), sinon le workflow de
 // validation ne sert à rien — il pouvait éditer le prix directement ici.
 const CHAMPS_PRIX = [
   "prix_journalier",

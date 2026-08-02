@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
-import { SEUIL_APPROBATION_AUTO_PCT } from "@/lib/constants";
 import { logAudit } from "@/lib/audit";
 import { notifier } from "@/lib/notifications";
 
@@ -59,12 +58,11 @@ export async function proposerPrix(
 
   const valeurActuelle = vehicule[champ as keyof typeof vehicule] as number | null;
 
-  const reductionPct = valeurActuelle && valeurActuelle > 0
-    ? Math.abs(valeurProposee - valeurActuelle) / valeurActuelle * 100
-    : null;
-
-  const autoApprouve = reductionPct !== null && reductionPct <= SEUIL_APPROBATION_AUTO_PCT;
-
+  // Aucune approbation automatique. Un écart « raisonnable » restait un prix
+  // facturé écrit par un opérateur, et il se répétait : chaque passage repartant
+  // de la valeur courante, quelques propositions sous le seuil doublaient le
+  // tarif sans qu'aucune ne le franchisse. Le propriétaire n'en était même pas
+  // averti, la notification n'étant envoyée que dans le cas contraire.
   const { error } = await admin.from("propositions_prix").insert({
     vehicule_id: vehiculeId,
     operateur_id: user.sub,
@@ -72,43 +70,30 @@ export async function proposerPrix(
     valeur_actuelle: valeurActuelle,
     valeur_proposee: valeurProposee,
     commentaire,
-    ...(autoApprouve ? { statut: "acceptee" as const } : {}),
   });
 
   if (error) return { error: error.message };
 
-  if (!autoApprouve) {
-    const { data: proprios } = await getAdmin()
-      .from("users")
-      .select("id, telephone")
-      .eq("role", "proprietaire");
+  await logAudit({
+    userId: user.sub,
+    action: "proposer_prix",
+    tableName: "propositions_prix",
+    recordId: vehiculeId,
+    oldValues: { [champ]: valeurActuelle },
+    newValues: { [champ]: valeurProposee },
+  });
 
-    for (const p of proprios ?? []) {
-      await notifier({
-        userId: p.id,
-        evenement: "Nouvelle proposition de prix",
-        contenu: `Une proposition de modification de prix a été soumise pour ${vehicule.marque} ${vehicule.modele} par ${profile.nom}. Consultez-la dans votre back-office.`,
-        telephone: p.telephone ?? undefined,
-      });
-    }
-  }
+  const { data: proprios } = await admin
+    .from("users")
+    .select("id, telephone")
+    .eq("role", "proprietaire");
 
-  if (autoApprouve) {
-    await admin
-      .from("vehicules")
-      .update({
-        [champ]: valeurProposee,
-        updated_at: new Date().toISOString(),
-      } as never)
-      .eq("id", vehiculeId);
-
-    await logAudit({
-      userId: user.sub,
-      action: "auto_approuver",
-      tableName: "propositions_prix",
-      recordId: vehiculeId,
-      oldValues: { [champ]: valeurActuelle },
-      newValues: { [champ]: valeurProposee, ecart_pct: reductionPct },
+  for (const p of proprios ?? []) {
+    await notifier({
+      userId: p.id,
+      evenement: "Nouvelle proposition de prix",
+      contenu: `Une proposition de modification de prix a été soumise pour ${vehicule.marque} ${vehicule.modele} par ${profile.nom}. Consultez-la dans votre back-office.`,
+      telephone: p.telephone ?? undefined,
     });
   }
 
