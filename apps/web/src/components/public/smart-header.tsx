@@ -9,6 +9,7 @@ import { LogoutButton } from "@/components/logout-button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LocaleSwitcher } from "@/components/public/locale-switcher"
 import type { Langue } from "@/lib/langues"
+import { verticaleDeChemin } from "@/lib/verticales"
 import { useT } from "@/lib/langue-context"
 
 type Vertical = "transport" | "livraison" | "immobilier" | "assistance" | "default"
@@ -41,12 +42,19 @@ const verticales = [
   { id: "assistance" as const, cle: "assistance" as const, href: "/assistance" },
 ]
 
+/**
+ * Le logo suit le service de la page.
+ *
+ * Cette liste ne connaissait que les chemins portant le nom du service :
+ * le panier, le tunnel de réservation et le suivi de colis retombaient sur le
+ * logo générique alors qu'ils appartiennent clairement à l'un d'eux. Le client
+ * changeait d'univers en cours de parcours, au moment précis où il paie.
+ *
+ * La correspondance vit désormais dans `lib/verticales.ts`, partagée avec
+ * `VerticalLayout` — qui en tenait une seconde, différente.
+ */
 function detectVertical(pathname: string): Vertical {
-  if (pathname.startsWith("/transport")) return "transport"
-  if (pathname.startsWith("/livraison")) return "livraison"
-  if (pathname.startsWith("/immobilier")) return "immobilier"
-  if (pathname.startsWith("/assistance")) return "assistance"
-  return "default"
+  return verticaleDeChemin(pathname) ?? "default"
 }
 
 export function SmartHeader({ vertical: forcedVertical, session, langues, langue }: SmartHeaderProps) {
