@@ -292,6 +292,25 @@ export const fr = {
     mesDossiers: "Mes dossiers",
   },
 
+  negociation: {
+    demanderPrix: "Demander un prix",
+    titre: "Faites-nous une demande",
+    explication: "Indiquez vos dates et votre besoin : notre équipe vous répond avec un prix.",
+    du: "Du",
+    au: "Au",
+    villeDepart: "Ville de départ",
+    destination: "Destination",
+    choisir: "Choisir…",
+    autre: "Autre",
+    preciser: "Précisez",
+    votreDemande: "Votre demande",
+    exempleNote: "Budget envisagé, usage prévu, contraintes particulières…",
+    // Le client doit savoir que sa demande expire : sinon il ne comprend pas
+    // de la voir disparaître, et le véhicule qu'on lui réservait avec.
+    delai: "Le véhicule vous est réservé 30 minutes, le temps que nous répondions.",
+    envoyer: "Envoyer ma demande",
+  },
+
   langue: {
     choisir: "Choisir la langue",
     // Affiché sous le contenu métier resté en français : le taire laisserait

@@ -283,6 +283,23 @@ export const en: Dictionnaire = {
     mesDossiers: "My files",
   },
 
+  negociation: {
+    demanderPrix: "Request a quote",
+    titre: "Send us a request",
+    explication: "Tell us your dates and your needs — our team will come back with a price.",
+    du: "From",
+    au: "To",
+    villeDepart: "Departure city",
+    destination: "Destination",
+    choisir: "Select…",
+    autre: "Other",
+    preciser: "Please specify",
+    votreDemande: "Your request",
+    exempleNote: "Budget in mind, intended use, particular constraints…",
+    delai: "The vehicle is held for you for 30 minutes while we reply.",
+    envoyer: "Send my request",
+  },
+
   langue: {
     choisir: "Choose language",
     contenuNonTraduit:
