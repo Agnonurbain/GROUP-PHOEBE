@@ -242,6 +242,56 @@ export const fr = {
     explorer: "Explorer",
   },
 
+  immobilier: {
+    // Source unique des libellés de type : le filtre affichait « Villa » et
+    // « Local commercial » là où les fiches disaient « Maison » et « Bureau ».
+    // L'utilisateur filtrait sur un mot et en voyait un autre.
+    typeTerrain: "Terrain",
+    typeMaison: "Maison",
+    typeAppartement: "Appartement",
+    typeBureau: "Bureau",
+    tousTypes: "Tous types",
+    toutes: "Toutes",
+    transaction: "Transaction",
+    vente: "Vente",
+    location: "Location",
+    type: "Type",
+    localisation: "Localisation",
+    prixMin: "Prix min (FCFA)",
+    prixMax: "Prix max (FCFA)",
+    surfaceMin: "Surface min (m²)",
+    pieces: "Pièces",
+    exLocalisation: "Abidjan, Cocody…",
+    exPrixMin: "Ex : 10 000 000",
+    exPrixMax: "Ex : 100 000 000",
+    exSurface: "Ex : 50",
+    aucunBien: "Aucun bien trouvé",
+    elargirCriteres: "Essayez d'élargir vos critères de recherche.",
+    voirDetail: "Voir le détail",
+    caracteristiques: "Caractéristiques",
+    prix: "Prix",
+    demandeEnvoyee: "Demande envoyée",
+    mesDemandes: "Mes demandes",
+    voirAutresBiens: "Voir d'autres biens",
+    vendeurTitre: "Vous vendez ? Connaissez",
+    vendeurTitreEmphase: "sa vraie valeur.",
+    vendeurTexte: "Estimez votre bien en 2 minutes. Notre expertise au service de votre patrimoine.",
+  },
+
+  assistancePays: {
+    nosPrestations: "Nos prestations",
+    commentCaSePasse: "Comment ça se passe",
+    procedure: "Procédure",
+    calendrier: "Calendrier",
+    lesBourses: "Les bourses",
+    recommande: "Recommandé",
+    sansEngagement: "Sans engagement — l'équipe vous recontacte après votre demande.",
+    destinationIndisponible: "Destination non disponible",
+    pasEncoreProposee: "Cette destination n'est pas encore proposée.",
+    autresDestinations: "Autres destinations",
+    mesDossiers: "Mes dossiers",
+  },
+
   langue: {
     choisir: "Choisir la langue",
     // Affiché sous le contenu métier resté en français : le taire laisserait

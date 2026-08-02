@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { MapPin } from "lucide-react"
@@ -37,6 +38,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function BienDetail({ params }: { params: Promise<{ id: string }> }) {
+  const t = await getT()
   const { id } = await params
   const result = await getBienById(id)
   if (!result) notFound()
@@ -88,9 +90,9 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
         <BackLink href="/immobilier" label="Retour à l'immobilier" />
         <span aria-hidden="true">·</span>
         <ol className="flex flex-wrap items-center gap-1.5">
-          <li><Link href="/" className="transition-colors hover:text-accent-green">Accueil</Link></li>
+          <li><Link href="/" className="transition-colors hover:text-accent-green">{t.nav.accueil}</Link></li>
           <li aria-hidden="true">›</li>
-          <li><Link href="/immobilier" className="transition-colors hover:text-accent-green">Immobilier</Link></li>
+          <li><Link href="/immobilier" className="transition-colors hover:text-accent-green">{t.nav.immobilier}</Link></li>
           <li aria-hidden="true">›</li>
           <li aria-current="page" className="text-public-text-muted">{typeBienLabel(bien.type)} — {bien.localisation}</li>
         </ol>
@@ -139,7 +141,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
           )}
 
           <div className="mt-10">
-            <h2 className="text-lg font-semibold text-public-text">Caractéristiques</h2>
+            <h2 className="text-lg font-semibold text-public-text">{t.immobilier.caracteristiques}</h2>
             <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-3">
               {specs.map((s) => (
                 <div key={s.label}>
@@ -154,7 +156,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
         <div className="lg:col-span-2">
           <div className="sticky top-24 space-y-4">
             <div className="rounded-2xl border border-public-border bg-public-bg-card p-6">
-              <p className="text-sm text-public-text-muted">Prix</p>
+              <p className="text-sm text-public-text-muted">{t.immobilier.prix}</p>
               <p className="mt-1 text-2xl font-bold text-accent-green">{Number(bien.prix).toLocaleString("fr-FR")} FCFA</p>
               {offreCount > 0 && (
                 <p className="mt-2 text-xs text-public-text-muted">

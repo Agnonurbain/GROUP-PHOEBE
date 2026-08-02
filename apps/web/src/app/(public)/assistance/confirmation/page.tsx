@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui"
@@ -13,6 +14,7 @@ export default async function ConfirmationAssistance({
 }: {
   searchParams: Promise<{ pays?: string; type?: string }>
 }) {
+  const t = await getT()
   const { pays, type } = await searchParams
   const estBillet = type === "billet"
 
@@ -43,10 +45,10 @@ export default async function ConfirmationAssistance({
       </p>
       <div className="flex gap-4">
         <Link href="/assistance">
-          <Button variant="ghost">Autres destinations</Button>
+          <Button variant="ghost">{t.assistancePays.autresDestinations}</Button>
         </Link>
         <Link href="/compte/reservations">
-          <Button variant="default">Mes dossiers</Button>
+          <Button variant="default">{t.assistancePays.mesDossiers}</Button>
         </Link>
       </div>
     </main>
