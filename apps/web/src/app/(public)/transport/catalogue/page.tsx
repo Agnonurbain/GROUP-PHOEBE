@@ -305,8 +305,8 @@ export default async function TransportCatalogue({
             alt="Transport"
             width={374}
             height={395}
-            sizes="(min-width: 640px) 160px, 128px"
-            className="h-32 w-auto object-contain animate-service-logo opacity-90 sm:h-40"
+            sizes="(min-width: 640px) 208px, 160px"
+            className="h-44 w-auto rounded-2xl bg-logo-plate-fixe object-contain p-3 animate-service-logo sm:h-56"
             priority
           />
         }

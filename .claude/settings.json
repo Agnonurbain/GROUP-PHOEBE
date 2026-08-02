@@ -214,7 +214,10 @@
       "Skill(browser-automation:*)",
       "Bash(curl -s -o /dev/null -m 3 http://localhost:3000/)",
       "Bash(node /home/aymeric/.claude/skills/browser-automation/browser.mjs http://localhost:3000/ --script /tmp/claude-1000/-home-aymeric-GROUP-PHOEBE/bacc1af6-57f6-4c75-9f41-60f8eab61789/scratchpad/net.mjs)",
-      "Bash(pkill -f \"pnpm dev\")"
+      "Bash(pkill -f \"pnpm dev\")",
+      "Bash(pnpm lint *)",
+      "Bash(pnpm vitest *)",
+      "Bash(exit 0)"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",

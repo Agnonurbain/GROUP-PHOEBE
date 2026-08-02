@@ -17,6 +17,25 @@
   --color-public-text-muted: #A79F95;
   /* 4,9:1 : plancher AA conservé pour le texte discret */
   --color-public-text-faint: #8A8279;
+
+  /* Plaque sous les logos de service.
+
+     Les sigles sont dessinés pour un fond clair : sur le charbon du site,
+     59,6 % de leurs pixels tombent sous 3:1 — le vert du « PHOEBE » et des
+     pictogrammes disparaît presque. Sur cette teinte, 36,3 %. Le blanc pur
+     ferait 31,4 %, mais on garde la surface claire déjà documentée par le
+     projet plutôt que d'introduire une sixième valeur.
+
+     Le site public est SOMBRE par défaut : la plaque est donc l'état normal,
+     et c'est le mode clair qui la retire (voir `.light [data-vertical]`). */
+  --color-logo-plate: #FAF9F7;
+
+  /* Variante NON basculée, pour les logos posés sur un hero.
+     Un hero garde sa photo sous un dégradé sombre quel que soit le thème :
+     retirer la plaque en mode clair y rendrait le sigle illisible, exactement
+     là où on venait de le corriger. */
+  --color-logo-plate-fixe: #FAF9F7;
+
   --color-accent-gold: #C9A84C;
   --color-accent-gold-hover: #B8943A;
   --color-accent-orange: #F97316;
@@ -483,6 +502,10 @@ textarea {
   --color-accent-green: #047857;
   --color-accent-green-hover: #036249;
   --color-accent-blue-on-dark: #1d4ed8;
+
+  /* En clair, le fond de page joue déjà le rôle de la plaque : l'ajouter
+     dessinerait un rectangle blanc sur blanc, visible seulement par son ombre. */
+  --color-logo-plate: transparent;
 }
 
 /* Les APLATS gardent les couleurs vives : un bouton or reste or, c'est
