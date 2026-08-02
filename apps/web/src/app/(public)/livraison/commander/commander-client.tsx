@@ -4,6 +4,7 @@ import { useActionState, useCallback, useState } from "react"
 import Link from "next/link"
 import { BackLink } from "@/components/public/back-link"
 import { Card } from "@/components/ui"
+import { useT } from "@/lib/langue-context"
 import { creerExpedition, type LivraisonState } from "@/app/actions/livraison"
 import {
   MODES_LIVRAISON,
@@ -47,6 +48,7 @@ function CommuneField({
   text: string
   setText: (v: string) => void
 }) {
+  const t = useT()
   return (
     <div>
       <label htmlFor={id} className={labelClass}>{label}</label>
@@ -58,7 +60,7 @@ function CommuneField({
         onChange={(e) => setText(e.target.value)}
         className={inputClass}
       >
-        <option value="">— Choisir une commune —</option>
+        <option value="">{t.livraisonForm.choisirCommune}</option>
         {communes.map((c) => (
           <option key={c.id} value={c.nom}>{c.nom}</option>
         ))}
@@ -88,6 +90,7 @@ export default function CommanderClient({
      décide de rien, il affiche ce que le propriétaire a arrêté. */
   texteIndemnisation: string
 }) {
+  const t = useT()
   const [state, formAction, pending] = useActionState<LivraisonState, FormData>(creerExpedition, {})
   // Calculé une fois au montage : `Date.now()` pendant le rendu rendrait le
   // composant impur, et la borne pourrait bouger d'un rendu à l'autre.
@@ -129,7 +132,7 @@ export default function CommanderClient({
       <div className="mb-6">
         <BackLink href="/livraison" label="Retour à la livraison" />
       </div>
-      <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">Commander une livraison</h1>
+      <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">{t.livraisonForm.commanderLivraison}</h1>
       <p className="mt-2 text-sm text-public-text-muted">
         Choisissez les communes et indiquez le poids : la zone et le prix sont calculés automatiquement.
       </p>
@@ -144,50 +147,50 @@ export default function CommanderClient({
         <div className="space-y-6 lg:col-span-2">
           {/* Expéditeur / Destinataire */}
           <Card>
-            <h2 className="text-base font-semibold text-public-text">Expéditeur & destinataire</h2>
+            <h2 className="text-base font-semibold text-public-text">{t.livraisonForm.expediteurDestinataire}</h2>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="expediteur_nom" className={labelClass}>Votre nom *</label>
+                <label htmlFor="expediteur_nom" className={labelClass}>{t.livraisonForm.votreNom} *</label>
                 <input id="expediteur_nom" name="expediteur_nom" required defaultValue={defaultNom} className={inputClass} />
               </div>
               <div>
-                <label htmlFor="expediteur_contact" className={labelClass}>Votre contact *</label>
-                <input id="expediteur_contact" name="expediteur_contact" required defaultValue={defaultContact} placeholder="+225 07 00 00 00 00" className={inputClass} />
+                <label htmlFor="expediteur_contact" className={labelClass}>{t.livraisonForm.votreContact} *</label>
+                <input id="expediteur_contact" name="expediteur_contact" required defaultValue={defaultContact} placeholder={t.livraisonForm.exTelephone} className={inputClass} />
               </div>
               <div>
-                <label htmlFor="destinataire_nom" className={labelClass}>Nom du destinataire *</label>
+                <label htmlFor="destinataire_nom" className={labelClass}>{t.livraisonForm.nomDestinataire} *</label>
                 <input id="destinataire_nom" name="destinataire_nom" required className={inputClass} />
               </div>
               <div>
-                <label htmlFor="destinataire_contact" className={labelClass}>Contact du destinataire *</label>
-                <input id="destinataire_contact" name="destinataire_contact" required placeholder="+225 07 00 00 00 00" className={inputClass} />
+                <label htmlFor="destinataire_contact" className={labelClass}>{t.livraisonForm.contactDestinataire} *</label>
+                <input id="destinataire_contact" name="destinataire_contact" required placeholder={t.livraisonForm.exTelephone} className={inputClass} />
               </div>
             </div>
           </Card>
 
           {/* Adresses — la zone en découle */}
           <Card>
-            <h2 className="text-base font-semibold text-public-text">Adresses</h2>
-            <p className="mt-1 text-xs text-public-text-muted">La zone de livraison se déduit des communes saisies.</p>
+            <h2 className="text-base font-semibold text-public-text">{t.livraisonForm.adresses}</h2>
+            <p className="mt-1 text-xs text-public-text-muted">{t.livraisonForm.zoneDeduite}</p>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <CommuneField id="commune_collecte" name="commune_collecte" label="Commune de collecte *" communes={communes} text={communeCollecte} setText={setCommuneCollecte} />
               <CommuneField id="commune_livraison" name="commune_livraison" label="Commune de livraison *" communes={communes} text={communeLivraison} setText={setCommuneLivraison} />
               <div>
-                <label htmlFor="adresse_collecte" className={labelClass}>Adresse de collecte *</label>
-                <input id="adresse_collecte" name="adresse_collecte" required placeholder="Quartier, rue, repère…" className={inputClass} />
+                <label htmlFor="adresse_collecte" className={labelClass}>{t.livraisonForm.adresseCollecte} *</label>
+                <input id="adresse_collecte" name="adresse_collecte" required placeholder={t.livraisonForm.exQuartier} className={inputClass} />
               </div>
               <div>
-                <label htmlFor="adresse_livraison" className={labelClass}>Adresse de livraison *</label>
-                <input id="adresse_livraison" name="adresse_livraison" required placeholder="Quartier, rue, repère…" className={inputClass} />
+                <label htmlFor="adresse_livraison" className={labelClass}>{t.livraisonForm.adresseLivraison} *</label>
+                <input id="adresse_livraison" name="adresse_livraison" required placeholder={t.livraisonForm.exQuartier} className={inputClass} />
               </div>
             </div>
           </Card>
 
           {/* Mode */}
           <Card>
-            <h2 className="text-base font-semibold text-public-text">Mode de livraison</h2>
+            <h2 className="text-base font-semibold text-public-text">{t.livraisonForm.modeLivraison}</h2>
             <div className="mt-5">
-              <label htmlFor="mode" className={labelClass}>Mode *</label>
+              <label htmlFor="mode" className={labelClass}>{t.livraisonForm.mode} *</label>
               <select id="mode" name="mode" value={mode} onChange={(e) => setMode(e.target.value)} className={inputClass}>
                 {MODES_LIVRAISON.map((m) => (
                   <option key={m} value={m}>{MODE_LABELS[m]}</option>
@@ -201,7 +204,7 @@ export default function CommanderClient({
                 indiquer. */}
             {mode === "programmee" && (
               <div className="mt-5">
-                <label htmlFor="date_souhaitee" className={labelClass}>Date de livraison souhaitée *</label>
+                <label htmlFor="date_souhaitee" className={labelClass}>{t.livraisonForm.dateSouhaitee} *</label>
                 <input
                   id="date_souhaitee"
                   name="date_souhaitee"
@@ -219,14 +222,14 @@ export default function CommanderClient({
 
           {/* Colis */}
           <Card>
-            <h2 className="text-base font-semibold text-public-text">Détails du colis</h2>
+            <h2 className="text-base font-semibold text-public-text">{t.livraisonForm.detailsColis}</h2>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <div className="sm:col-span-2">
-                <label htmlFor="nature_colis" className={labelClass}>Nature du colis</label>
-                <input id="nature_colis" name="nature_colis" placeholder="Documents, vêtements, électronique…" className={inputClass} />
+                <label htmlFor="nature_colis" className={labelClass}>{t.livraisonForm.natureColis}</label>
+                <input id="nature_colis" name="nature_colis" placeholder={t.livraisonForm.exNature} className={inputClass} />
               </div>
               <div>
-                <label htmlFor="poids_kg" className={labelClass}>Poids (kg) *</label>
+                <label htmlFor="poids_kg" className={labelClass}>{t.livraisonForm.poids} *</label>
                 <input
                   id="poids_kg"
                   name="poids_kg"
@@ -238,7 +241,7 @@ export default function CommanderClient({
                   required
                   value={poids}
                   onChange={(e) => setPoids(e.target.value)}
-                  placeholder="Ex : 2.5"
+                  placeholder={t.livraisonForm.exPoids}
                   aria-describedby="poids-aide"
                   className={inputClass}
                 />
@@ -252,19 +255,19 @@ export default function CommanderClient({
                 )}
               </div>
               <div>
-                <label htmlFor="dimensions" className={labelClass}>Dimensions</label>
-                <input id="dimensions" name="dimensions" placeholder="Ex : 30 × 20 × 15 cm" className={inputClass} />
+                <label htmlFor="dimensions" className={labelClass}>{t.livraisonForm.dimensions}</label>
+                <input id="dimensions" name="dimensions" placeholder={t.livraisonForm.exDimensions} className={inputClass} />
               </div>
               <div className="sm:col-span-2">
-                <label htmlFor="valeur_declaree" className={labelClass}>Valeur déclarée (FCFA)</label>
-                <input id="valeur_declaree" name="valeur_declaree" type="number" inputMode="numeric" min="0" placeholder="Optionnel" className={inputClass} />
+                <label htmlFor="valeur_declaree" className={labelClass}>{t.livraisonForm.valeurDeclaree}</label>
+                <input id="valeur_declaree" name="valeur_declaree" type="number" inputMode="numeric" min="0" placeholder={t.livraisonForm.optionnel} className={inputClass} />
                 {/* Le texte suit le régime piloté depuis l'admin : tant qu'aucune
                     indemnisation n'est prévue, il le dit — c'est l'omission qui
                     serait trompeuse, pas la franchise. */}
                 <p className="mt-1 text-xs text-public-text-faint">{texteIndemnisation}</p>
               </div>
               <div className="sm:col-span-2">
-                <label htmlFor="photos" className={labelClass}>Photos du colis (optionnel)</label>
+                <label htmlFor="photos" className={labelClass}>{t.livraisonForm.photos}</label>
                 <input
                   id="photos"
                   name="photos"
@@ -273,14 +276,14 @@ export default function CommanderClient({
                   multiple
                   className="block w-full text-sm text-public-text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-accent-orange/10 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-accent-orange hover:file:bg-accent-orange/20"
                 />
-                <p className="mt-1 text-xs text-public-text-faint">Ajoutez une ou plusieurs photos pour faciliter la prise en charge.</p>
+                <p className="mt-1 text-xs text-public-text-faint">{t.livraisonForm.aidePhotos}</p>
               </div>
             </div>
           </Card>
 
           {/* Paiement */}
           <Card>
-            <h2 className="text-base font-semibold text-public-text">Moyen de paiement</h2>
+            <h2 className="text-base font-semibold text-public-text">{t.paiement.moyenPaiement}</h2>
             <div className="mt-5 space-y-3">
               {[
                 {
@@ -306,20 +309,20 @@ export default function CommanderClient({
         {/* Récapitulatif */}
         <div className="lg:col-span-1">
           <Card className="sticky top-24">
-            <h2 className="text-base font-semibold text-public-text">Récapitulatif</h2>
+            <h2 className="text-base font-semibold text-public-text">{t.panier.recapitulatif}</h2>
             <div className="mt-5 space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-public-text-muted">Zone (auto)</span>
+                <span className="text-public-text-muted">{t.livraisonForm.zoneAuto}</span>
                 <span className="font-medium text-public-text">
                   {adressesRenseignees ? ZONE_LABELS[zone] : "—"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-public-text-muted">Mode</span>
+                <span className="text-public-text-muted">{t.livraisonForm.mode}</span>
                 <span className="font-medium text-public-text">{MODE_LABELS[mode as keyof typeof MODE_LABELS]}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-public-text-muted">Palier de poids</span>
+                <span className="text-public-text-muted">{t.livraisonForm.palierPoids}</span>
                 <span className="font-medium text-public-text">
                   {palier ? palier.label : "—"}
                   {palier && palier.multiplicateur !== 1 && (
@@ -330,7 +333,7 @@ export default function CommanderClient({
             </div>
             <hr className="my-4 border-public-border" />
             <div className="flex items-baseline justify-between gap-4">
-              <span className="text-sm font-semibold text-public-text">Total</span>
+              <span className="text-sm font-semibold text-public-text">{t.paiement.total}</span>
               <span className="font-display text-3xl font-medium text-accent-orange">
                 {prix !== null ? `${prix.toLocaleString("fr-FR")} FCFA` : "—"}
               </span>

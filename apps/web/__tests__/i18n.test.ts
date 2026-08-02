@@ -40,7 +40,18 @@ describe("i18n — les deux dictionnaires restent alignés", () => {
   // c'est visible, mais seulement si quelqu'un regarde. Quelques exceptions
   // légitimes : les noms propres et la devise.
   it("l'anglais n'est pas resté français", () => {
-    const exceptions = new Set(["Transport", "Blog", "Contact", "Menu", "FCFA", "Mobile Money", "Administration", "Services", "Total"]);
+    // Valeurs légitimement identiques dans les deux langues. La liste est
+    // explicite pour qu'elle reste un choix : y verser une vraie traduction
+    // manquante ferait taire le test au lieu de le satisfaire.
+    const exceptions = new Set([
+      // Mots identiques en français et en anglais
+      "Transport", "Blog", "Contact", "Menu", "Total", "Services",
+      "Administration", "Destination", "Dimensions",
+      // Noms propres et devise
+      "FCFA", "Mobile Money",
+      // Exemple de saisie : un numéro ivoirien ne se traduit pas
+      "+225 07 00 00 00 00",
+    ]);
     const identiques = chemins(fr).filter((chemin) => {
       const lire = (o: unknown) =>
         chemin.split(".").reduce<unknown>((acc, k) => (acc as Record<string, unknown>)?.[k], o);

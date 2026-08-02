@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { useT } from "@/lib/langue-context"
 import { useCart } from "@/lib/cart-context"
 import { PanierStepper } from "@/components/panier-stepper"
 import { BackLink } from "@/components/public/back-link"
@@ -9,6 +10,7 @@ import { trackEvent } from "@/lib/analytics"
 import { useEffect } from "react"
 
 export default function Panier() {
+  const t = useT()
   const { items, removeItem, updateQuantity, toggleChauffeur, clearCart, count } = useCart()
 
   useEffect(() => {
@@ -52,8 +54,8 @@ export default function Panier() {
             <rect x="68" y="55" width="8" height="12" rx="1" fill="currentColor" fillOpacity="0.1" />
             <rect x="80" y="58" width="8" height="10" rx="1" fill="currentColor" fillOpacity="0.08" />
           </svg>
-          <h2 className="font-display text-3xl font-medium text-public-text">Votre panier est vide</h2>
-          <p className="text-sm text-public-text-muted">Parcourez notre catalogue pour ajouter des véhicules.</p>
+          <h2 className="font-display text-3xl font-medium text-public-text">{t.paiement.panierVide}</h2>
+          <p className="text-sm text-public-text-muted">{t.panier.parcourirCatalogue}</p>
           <Link
             href="/transport/catalogue"
             className="rounded-lg bg-accent-orange px-6 py-3 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-orange-hover transition-colors"
@@ -100,7 +102,7 @@ export default function Panier() {
                     <span className="font-display text-xl font-medium text-public-text">
                       {item.prixJournalier.toLocaleString("fr-FR")} FCFA
                     </span>
-                    <span className="text-sm text-public-text-muted"> /jour</span>
+                    <span className="text-sm text-public-text-muted"> {t.panier.parJour}</span>
                     {item.cautionBaseFcfa > 0 && (
                       <span className="block text-xs text-public-text-muted">
                         Caution : {Math.round(item.cautionBaseFcfa * 100)} % (remboursable)
@@ -156,7 +158,7 @@ export default function Panier() {
               </div>
 
               <div className="mt-4 flex items-center justify-between border-t border-public-border pt-3">
-                <span className="text-sm text-public-text-muted">Sous-total / jour</span>
+                <span className="text-sm text-public-text-muted">{t.panier.sousTotalJour}</span>
                 <span className="font-display text-xl font-medium text-public-text">
                   {(item.prixJournalier * item.quantite).toLocaleString("fr-FR")} FCFA
                 </span>
@@ -167,16 +169,16 @@ export default function Panier() {
 
         <div className="lg:col-span-2">
           <Card className="sticky top-24">
-            <h2 className="font-display border-b border-public-border pb-3 text-2xl font-medium text-public-text">Récapitulatif</h2>
+            <h2 className="font-display border-b border-public-border pb-3 text-2xl font-medium text-public-text">{t.panier.recapitulatif}</h2>
             <div className="mt-6 space-y-3">
               <div className="flex items-baseline justify-between gap-4 text-sm">
                 <span className="text-public-text-muted">Location ({count} véhicule{count > 1 ? "s" : ""})</span>
                 <span className="font-display text-lg font-medium text-public-text">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
               </div>
-              <p className="text-sm text-public-text-muted">Prix par jour, hors caution.</p>
+              <p className="text-sm text-public-text-muted">{t.panier.prixHorsCaution}</p>
               <hr className="border-public-border" />
               <div className="flex items-baseline justify-between gap-4">
-                <span className="text-sm font-semibold text-public-text">Sous-total / jour</span>
+                <span className="text-sm font-semibold text-public-text">{t.panier.sousTotalJour}</span>
                 <span className="font-display text-3xl font-medium text-accent-orange">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
               </div>
               <p className="text-xs text-public-text-muted">
@@ -200,7 +202,7 @@ export default function Panier() {
             </div>
 
             <div className="mt-6">
-              <p className="text-sm text-public-text-muted">Moyens de paiement</p>
+              <p className="text-sm text-public-text-muted">{t.panier.moyensPaiement}</p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {["Orange Money", "MTN MoMo", "Wave", "Carte Bancaire"].map((m) => (
                   <span key={m} className="rounded-lg border border-public-border px-3 py-1.5 text-[11px] text-public-text-muted">{m}</span>

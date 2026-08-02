@@ -12,11 +12,11 @@ import {
   GoldTrail,
   HeroSlideshow,
 } from "@/components/effects"
+import { useT } from "@/lib/langue-context"
 
 const services = [
   {
-    title: "Transport",
-    desc: "Vente et location de véhicules, avec ou sans chauffeur.",
+    cle: "transport" as const,
     color: "#F97316",
     href: "/transport/catalogue",
     logo: "/logos/transport.png",
@@ -25,8 +25,7 @@ const services = [
     logoH: 500,
   },
   {
-    title: "Immobilier",
-    desc: "Achat, vente et location de biens à Abidjan et au-delà.",
+    cle: "immobilier" as const,
     color: "#059669",
     href: "/immobilier",
     logo: "/logos/immobilier.png",
@@ -35,8 +34,7 @@ const services = [
     logoH: 500,
   },
   {
-    title: "Assistance Voyages",
-    desc: "Visas, études et voyages internationaux, accompagnés de bout en bout.",
+    cle: "assistance" as const,
     color: "#2563EB",
     href: "/assistance",
     logo: "/logos/assistance.png",
@@ -45,8 +43,7 @@ const services = [
     logoH: 500,
   },
   {
-    title: "Livraison",
-    desc: "Colis pris en charge, suivis et livrés partout dans le pays.",
+    cle: "livraison" as const,
     color: "#C9A84C",
     href: "/livraison",
     logo: "/logos/livraison.png",
@@ -95,6 +92,7 @@ export default function HomePage({
   vehiculeCount?: number
   modeleCount?: number
 }) {
+  const t = useT()
   const isGuest = role === null
   const isStaff = role === "operateur" || role === "proprietaire"
 
@@ -166,7 +164,7 @@ export default function HomePage({
         <div className="mx-auto max-w-6xl">
           <ScrollReveal variant="fade-up">
             <div className="flex flex-col gap-4 border-b border-public-border pb-8 sm:flex-row sm:items-end sm:justify-between">
-              <h2 className="font-display text-4xl font-medium tracking-tight text-public-text md:text-5xl">Nos services</h2>
+              <h2 className="font-display text-4xl font-medium tracking-tight text-public-text md:text-5xl">{t.verticales.nosServices}</h2>
               <p className="max-w-xs text-sm text-public-text-muted sm:text-right">
                 Quatre métiers complémentaires, une même signature de qualité.
               </p>
@@ -175,7 +173,7 @@ export default function HomePage({
 
           <StaggerContainer>
             {services.map((s, i) => (
-              <ServiceCard key={s.title} index={i} tilt={false}>
+              <ServiceCard key={s.cle} index={i} tilt={false}>
                 <Link
                   href={s.href}
                   className="group relative grid grid-cols-[3rem_1fr] items-center gap-5 overflow-hidden border-b border-public-border py-8 transition-colors duration-300 hover:bg-public-bg-card/60 sm:grid-cols-[6rem_1fr_auto] sm:gap-10 sm:px-4"
@@ -191,11 +189,11 @@ export default function HomePage({
                   <div>
                     <div className="flex items-center gap-3">
                       <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full" style={{ background: s.color }} />
-                      <h3 className="font-display text-2xl font-medium text-public-text sm:text-3xl">{s.title}</h3>
+                      <h3 className="font-display text-2xl font-medium text-public-text sm:text-3xl">{t.verticales[`${s.cle}Titre`]}</h3>
                     </div>
-                    <p className="mt-2 max-w-md text-sm text-public-text-muted sm:text-base">{s.desc}</p>
+                    <p className="mt-2 max-w-md text-sm text-public-text-muted sm:text-base">{t.verticales[`${s.cle}Desc`]}</p>
                     <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-gold transition-all group-hover:gap-3">
-                      Explorer <ArrowRight className="size-4" />
+                      {t.verticales.explorer} <ArrowRight className="size-4" />
                     </span>
                   </div>
                   <div className="hidden h-20 w-32 shrink-0 items-center justify-end sm:flex">
@@ -219,7 +217,7 @@ export default function HomePage({
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <ScrollReveal variant="slide-right">
             <div className="lg:sticky lg:top-28">
-              <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent-gold">Notre engagement</p>
+              <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent-gold">{t.verticales.notreEngagement}</p>
               <h2 className="font-display mt-4 text-4xl font-medium tracking-tight text-public-text md:text-5xl">
                 Pourquoi nous choisir
               </h2>
@@ -252,7 +250,7 @@ export default function HomePage({
       <section className="px-6 py-24 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <ScrollReveal variant="fade-up">
-            <h2 className="font-display text-4xl font-medium tracking-tight text-public-text md:text-5xl">Comment ça marche</h2>
+            <h2 className="font-display text-4xl font-medium tracking-tight text-public-text md:text-5xl">{t.verticales.commentCaMarche}</h2>
             <p className="mt-4 max-w-xl text-base text-public-text-muted">
               Réserver n&apos;a jamais été aussi simple — en quatre étapes.
             </p>
@@ -282,9 +280,9 @@ export default function HomePage({
             <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
               <h2 className="font-display max-w-2xl text-3xl font-medium leading-[1.15] tracking-tight text-public-text sm:text-4xl md:text-5xl">
                 {isGuest ? (
-                  <>Commencez par le service <em className="italic text-accent-gold">qui vous ressemble.</em></>
+                  <>{t.verticales.commencezPar}<em className="italic text-accent-gold">{t.verticales.quiVousRessemble}</em></>
                 ) : (
-                  <>Une question ? Notre équipe <em className="italic text-accent-gold">est à votre écoute.</em></>
+                  <>{t.verticales.uneQuestion}<em className="italic text-accent-gold">{t.verticales.aVotreEcoute}</em></>
                 )}
               </h2>
               <div className="flex flex-col gap-4 sm:flex-row lg:shrink-0">
