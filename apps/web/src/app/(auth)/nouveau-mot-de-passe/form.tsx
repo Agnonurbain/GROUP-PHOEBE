@@ -5,6 +5,7 @@ import { changerMotDePasse, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { PasswordInput } from "@/components/password-input";
 import { ScrollReveal } from "@/components/effects";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export default function NouveauMotDePasseForm() {
   const [state, action] = useActionState<AuthState, FormData>(
@@ -45,7 +46,7 @@ export default function NouveauMotDePasseForm() {
             htmlFor="password"
             className="mb-1.5 block text-sm font-medium text-phoebe-anthracite"
           >
-            Nouveau mot de passe
+            Nouveau mot de passe<Obligatoire />
           </label>
           <PasswordInput
             id="password"
@@ -62,7 +63,7 @@ export default function NouveauMotDePasseForm() {
             htmlFor="confirmation"
             className="mb-1.5 block text-sm font-medium text-phoebe-anthracite"
           >
-            Confirmer le mot de passe
+            Confirmer le mot de passe<Obligatoire />
           </label>
           <PasswordInput
             id="confirmation"

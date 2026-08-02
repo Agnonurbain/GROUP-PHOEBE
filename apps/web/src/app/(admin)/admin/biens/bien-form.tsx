@@ -9,6 +9,7 @@ import {
   STATUT_BIEN_LABELS,
 } from "@/lib/immobilier";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 type Agent = { id: string; nom: string };
 
@@ -51,7 +52,7 @@ export default function BienForm({ bien, agents = [], action, estProprietaire }:
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="type" className={labelClass}>Type *</label>
+              <label htmlFor="type" className={labelClass}>Type *<Obligatoire /></label>
               <select id="type" name="type" required defaultValue={bien?.type ?? "maison"} className={inputClass}>
                 {Object.entries(TYPE_BIEN_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
@@ -59,7 +60,7 @@ export default function BienForm({ bien, agents = [], action, estProprietaire }:
               </select>
             </div>
             <div>
-              <label htmlFor="transaction" className={labelClass}>Transaction *</label>
+              <label htmlFor="transaction" className={labelClass}>Transaction *<Obligatoire /></label>
               <select id="transaction" name="transaction" required defaultValue={bien?.transaction ?? "vente"} className={inputClass}>
                 {Object.entries(TRANSACTION_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>{label}</option>
@@ -69,7 +70,7 @@ export default function BienForm({ bien, agents = [], action, estProprietaire }:
           </div>
 
           <div>
-            <label htmlFor="localisation" className={labelClass}>Localisation *</label>
+            <label htmlFor="localisation" className={labelClass}>Localisation *<Obligatoire /></label>
             <input
               id="localisation"
               name="localisation"

@@ -12,6 +12,7 @@ import { envoyerPrixAchat, type AchatState } from "@/app/actions/achat";
 import { finaliserInspection, type EtatLieuxState } from "@/app/actions/etat-lieux";
 import { Button } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export function DemandeActions({
   demandeId,
@@ -113,11 +114,15 @@ export function DemandeActions({
           {showRefusForm && (
             <form action={refusAction} className="space-y-2">
               <input type="hidden" name="demande_id" value={demandeId} />
+              <label htmlFor={`motif-refus-${demandeId}`} className="block text-xs font-medium text-phoebe-anthracite">
+                Motif du refus<Obligatoire />
+              </label>
               <textarea
-                name="motif_refus" aria-label="Motif du refus"
+                id={`motif-refus-${demandeId}`}
+                name="motif_refus"
                 required
                 rows={2}
-                placeholder="Motif du refus (obligatoire)…"
+                placeholder="Motif du refus…"
                 className="w-full rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 focus:border-error focus:outline-none focus:ring-1 focus:ring-error/30"
               />
               <SubmitButton className="rounded-lg bg-error px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-error/90 hover:shadow-md">
@@ -176,11 +181,15 @@ export function DemandeActions({
               {showRefusForm && (
                 <form action={refusAction} className="space-y-2">
                   <input type="hidden" name="demande_id" value={demandeId} />
+                  <label htmlFor={`motif-refus-2-${demandeId}`} className="block text-xs font-medium text-phoebe-anthracite">
+                    Motif du refus<Obligatoire />
+                  </label>
                   <textarea
-                    name="motif_refus" aria-label="Motif du refus"
+                    id={`motif-refus-2-${demandeId}`}
+                    name="motif_refus"
                     required
                     rows={2}
-                    placeholder="Motif du refus (obligatoire)…"
+                    placeholder="Motif du refus…"
                     className="w-full rounded-lg border border-error/20 bg-error/5 px-3 py-2 text-xs text-phoebe-anthracite placeholder:text-phoebe-anthracite/70 focus:border-error focus:outline-none focus:ring-1 focus:ring-error/30"
                   />
                   <SubmitButton className="rounded-lg bg-error px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-error/90 hover:shadow-md">
@@ -195,7 +204,7 @@ export function DemandeActions({
               <div className="flex items-end gap-2">
                 <div>
                   <label htmlFor={`da-${demandeId}-prix_final`} className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">
-                    Prix convenu (FCFA)
+                    Prix convenu (FCFA)<Obligatoire />
                   </label>
                   <input id={`da-${demandeId}-prix_final`}
                     name="prix_final"
@@ -255,7 +264,7 @@ export function DemandeActions({
             <form action={negoAction} className="flex items-end gap-2">
               <input type="hidden" name="demande_id" value={demandeId} />
               <div>
-                <label htmlFor={`da-${demandeId}-prix_negocie`} className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">Prix (FCFA)</label>
+                <label htmlFor={`da-${demandeId}-prix_negocie`} className="mb-0.5 block text-[10px] text-phoebe-anthracite/70">Prix (FCFA)<Obligatoire /></label>
                 <input id={`da-${demandeId}-prix_negocie`}
                   name="prix_negocie"
                   type="number"

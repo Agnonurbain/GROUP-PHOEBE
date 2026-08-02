@@ -13,6 +13,7 @@ import {
   MODE_LABELS,
   type GrilleTarifs,
 } from "@/lib/livraison";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 type PalierRow = {
   id: string;
@@ -53,7 +54,7 @@ function TarifCell({ zone, mode, prix }: { zone: string; mode: string; prix: num
       <input type="hidden" name="zone" value={zone} />
       <input type="hidden" name="mode" value={mode} />
       <label htmlFor={`t-${zone}-${mode}`} className="sr-only">
-        {ZONE_LABELS[zone as keyof typeof ZONE_LABELS]} — {MODE_LABELS[mode as keyof typeof MODE_LABELS]}
+        {ZONE_LABELS[zone as keyof typeof ZONE_LABELS]} — {MODE_LABELS[mode as keyof typeof MODE_LABELS]}<Obligatoire />
       </label>
       <input
         id={`t-${zone}-${mode}`}
@@ -82,13 +83,13 @@ function PalierRowForm({ palier }: { palier: PalierRow }) {
         <input type="hidden" name="id" value={palier.id} />
         <div className="min-w-[10rem] flex-1">
           <label htmlFor={`lbl-${palier.id}`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-            Libellé
+            Libellé<Obligatoire />
           </label>
           <input id={`lbl-${palier.id}`} name="label" defaultValue={palier.label} required className={inputClass} />
         </div>
         <div>
           <label htmlFor={`max-${palier.id}`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-            Jusqu&apos;à (kg)
+            Jusqu&apos;à (kg)<Obligatoire />
           </label>
           <input
             id={`max-${palier.id}`}
@@ -103,7 +104,7 @@ function PalierRowForm({ palier }: { palier: PalierRow }) {
         </div>
         <div>
           <label htmlFor={`mul-${palier.id}`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-            Coefficient
+            Coefficient<Obligatoire />
           </label>
           <input
             id={`mul-${palier.id}`}

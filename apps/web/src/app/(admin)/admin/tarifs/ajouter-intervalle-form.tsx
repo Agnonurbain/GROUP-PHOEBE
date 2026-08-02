@@ -3,6 +3,7 @@
 import { useActionState, useRef } from "react";
 import { ajouterIntervalle, type TarifState } from "@/app/actions/tarifs";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -19,7 +20,7 @@ export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
     <form ref={formRef} action={formAction} className="flex flex-wrap items-end gap-2">
       <input type="hidden" name="zone_id" value={zoneId} />
       <div>
-        <label htmlFor={`interv-${zoneId}-categorie_vehicule`} className="mb-1 block text-xs text-phoebe-anthracite/70">Catégorie</label>
+        <label htmlFor={`interv-${zoneId}-categorie_vehicule`} className="mb-1 block text-xs text-phoebe-anthracite/70">Catégorie<Obligatoire /></label>
         <select id={`interv-${zoneId}-categorie_vehicule`}
           name="categorie_vehicule"
           required
@@ -31,7 +32,7 @@ export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
         </select>
       </div>
       <div>
-        <label htmlFor={`interv-${zoneId}-type`} className="mb-1 block text-xs text-phoebe-anthracite/70">Type</label>
+        <label htmlFor={`interv-${zoneId}-type`} className="mb-1 block text-xs text-phoebe-anthracite/70">Type<Obligatoire /></label>
         <select id={`interv-${zoneId}-type`}
           name="type"
           required
@@ -42,7 +43,7 @@ export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
         </select>
       </div>
       <div>
-        <label htmlFor={`interv-${zoneId}-prix_min`} className="mb-1 block text-xs text-phoebe-anthracite/70">Min (FCFA)</label>
+        <label htmlFor={`interv-${zoneId}-prix_min`} className="mb-1 block text-xs text-phoebe-anthracite/70">Min (FCFA)<Obligatoire /></label>
         <input id={`interv-${zoneId}-prix_min`}
           name="prix_min"
           type="number"
@@ -54,7 +55,7 @@ export function AjouterIntervalleForm({ zoneId }: { zoneId: string }) {
         />
       </div>
       <div>
-        <label htmlFor={`interv-${zoneId}-prix_max`} className="mb-1 block text-xs text-phoebe-anthracite/70">Max (FCFA)</label>
+        <label htmlFor={`interv-${zoneId}-prix_max`} className="mb-1 block text-xs text-phoebe-anthracite/70">Max (FCFA)<Obligatoire /></label>
         <input id={`interv-${zoneId}-prix_max`}
           name="prix_max"
           type="number"

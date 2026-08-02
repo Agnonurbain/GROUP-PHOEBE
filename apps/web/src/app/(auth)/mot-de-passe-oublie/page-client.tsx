@@ -11,6 +11,7 @@ import {
 import { envoyerCodeReset, envoyerResetEmail, renvoyerCode, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { ScrollReveal } from "@/components/effects";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const RESEND_COOLDOWN = 60;
 
@@ -98,7 +99,7 @@ export default function MotDePasseOubliePage() {
               htmlFor="telephone"
               className="mb-1.5 block text-sm font-medium text-phoebe-anthracite"
             >
-              Téléphone
+              Téléphone<Obligatoire />
             </label>
             <input
               id="telephone"
@@ -120,7 +121,7 @@ export default function MotDePasseOubliePage() {
               htmlFor="email"
               className="mb-1.5 block text-sm font-medium text-phoebe-anthracite"
             >
-              Adresse email
+              Adresse email<Obligatoire />
             </label>
             <input
               id="email"

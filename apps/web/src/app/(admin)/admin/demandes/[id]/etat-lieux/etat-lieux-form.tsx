@@ -7,6 +7,7 @@ import {
   type EtatLieuxState,
 } from "@/app/actions/etat-lieux";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -87,7 +88,7 @@ export function EtatLieuxForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="el-kilometrage" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-              Kilométrage *
+              Kilométrage *<Obligatoire />
             </label>
             <input
               id="el-kilometrage"
@@ -104,7 +105,7 @@ export function EtatLieuxForm({
           </div>
           <div>
             <label htmlFor="el-carburant" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-              Niveau de carburant *
+              Niveau de carburant *<Obligatoire />
             </label>
             <select id="el-carburant"
               name="carburant"

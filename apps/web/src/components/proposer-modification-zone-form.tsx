@@ -3,6 +3,7 @@
 import { useState, useActionState } from "react";
 import { proposerModificationZone, type PropositionZoneState } from "@/app/actions/propositions-zones";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -57,7 +58,7 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
       <form action={action} className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">Zone</label>
+            <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">Zone<Obligatoire /></label>
             <select
               name="zone_id"
               required
@@ -71,7 +72,7 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
             </select>
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">Champ</label>
+            <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">Champ<Obligatoire /></label>
             <select
               name="champ"
               required
@@ -94,7 +95,7 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
         )}
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">Nouvelle valeur</label>
+          <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">Nouvelle valeur<Obligatoire /></label>
           <input
             name="valeur_proposee"
             type="text"

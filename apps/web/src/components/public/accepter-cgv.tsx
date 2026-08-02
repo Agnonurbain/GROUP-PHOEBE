@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 /**
  * Consentement aux conditions générales.
@@ -33,7 +34,7 @@ export function AccepterCgv({ id = "accepte_cgv" }: { id?: string }) {
         <Link href="/legal/confidentialite" target="_blank" className="font-medium text-accent-orange underline">
           politique de confidentialité
         </Link>
-        .
+        .<Obligatoire />
       </span>
     </label>
   )

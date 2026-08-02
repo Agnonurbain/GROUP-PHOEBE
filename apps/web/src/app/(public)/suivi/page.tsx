@@ -72,10 +72,14 @@ export default async function SuiviPage({
       </p>
 
       <form method="get" className="mt-6 flex gap-2">
+        <label htmlFor="numero-suivi" className="sr-only">
+          Numéro de suivi (obligatoire)
+        </label>
         <input
+          id="numero-suivi"
           name="numero"
           defaultValue={numeroNorm}
-          placeholder="GP-XXXXXXXX"
+          placeholder="GP-XXXXXXXX *"
           required
           className="w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint focus:border-accent-orange focus:outline-none focus:ring-2 focus:ring-accent-orange/20"
         />

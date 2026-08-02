@@ -15,6 +15,7 @@ import { PasswordInput } from "@/components/password-input";
 import { GoogleButton } from "@/components/google-button";
 import { ScrollReveal } from "@/components/effects";
 import { Tabs, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export default function InscriptionForm() {
   const [state, action] = useActionState<AuthState, FormData>(inscription, {});
@@ -76,7 +77,7 @@ export default function InscriptionForm() {
 
         <div>
           <label htmlFor="nom" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-            Nom complet
+            Nom complet<Obligatoire />
           </label>
           <input
             id="nom"
@@ -91,7 +92,7 @@ export default function InscriptionForm() {
         {mode === "phone" ? (
           <div>
             <label htmlFor="telephone" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-              Téléphone
+              Téléphone<Obligatoire />
             </label>
             <input
               id="telephone"
@@ -108,7 +109,7 @@ export default function InscriptionForm() {
         ) : (
           <div>
             <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-              Adresse email
+              Adresse email<Obligatoire />
             </label>
             <input
               id="email"
@@ -123,7 +124,7 @@ export default function InscriptionForm() {
 
         <div>
           <label htmlFor="date_naissance" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-            Date de naissance
+            Date de naissance<Obligatoire />
           </label>
           <input
             id="date_naissance"
@@ -138,7 +139,7 @@ export default function InscriptionForm() {
 
         <div>
           <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-            Mot de passe
+            Mot de passe<Obligatoire />
           </label>
           <PasswordInput id="password" name="password" required minLength={8} placeholder="8 caractères minimum" />
         </div>

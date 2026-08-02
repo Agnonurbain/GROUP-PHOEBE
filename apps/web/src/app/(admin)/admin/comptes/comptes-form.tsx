@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { creerCompteInterne, type AdminState } from "@/app/actions/admin";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export function ComptesForm() {
   const [state, action] = useActionState<AdminState, FormData>(
@@ -33,7 +34,7 @@ export function ComptesForm() {
       <form action={action} className="space-y-4 rounded-xl border border-phoebe-pearl bg-white p-6">
         <div>
           <label htmlFor="nom" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Nom complet
+            Nom complet<Obligatoire />
           </label>
           <input
             id="nom"
@@ -46,7 +47,7 @@ export function ComptesForm() {
 
         <div>
           <label htmlFor="telephone" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Téléphone ou Email
+            Téléphone ou Email<Obligatoire />
           </label>
           <input
             id="telephone"
@@ -60,7 +61,7 @@ export function ComptesForm() {
 
         <div>
           <label htmlFor="role" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Rôle
+            Rôle<Obligatoire />
           </label>
           <select
             id="role"
@@ -122,7 +123,7 @@ export function ComptesForm() {
         {role === "agent_immobilier" && (
           <div>
             <label htmlFor="zone_couverture" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-              Zone de couverture
+              Zone de couverture<Obligatoire />
             </label>
             <input
               id="zone_couverture"
@@ -142,7 +143,7 @@ export function ComptesForm() {
 
         <div>
           <label htmlFor="password" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-            Mot de passe temporaire
+            Mot de passe temporaire<Obligatoire />
           </label>
           <input
             id="password"

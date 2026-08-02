@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react";
 import { updateProfile, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "./submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export function ProfileEditForm({
   nom,
@@ -102,7 +103,7 @@ export function ProfileEditForm({
             htmlFor="nom"
             className="mb-1.5 block text-sm font-medium text-public-text"
           >
-            Nom *
+            Nom *<Obligatoire />
           </label>
           <input
             id="nom"

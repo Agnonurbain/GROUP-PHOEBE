@@ -7,6 +7,7 @@ import {
   type DispoState,
 } from "@/app/actions/disponibilites";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -39,7 +40,7 @@ export function BlocageVehiculeForm({
       <div className="grid gap-3 sm:grid-cols-3">
         <div>
           <label htmlFor="bloc-v-debut" className="mb-1 block text-sm text-phoebe-anthracite/70">
-            Début
+            Début<Obligatoire />
           </label>
           <input
             id="bloc-v-debut"
@@ -51,7 +52,7 @@ export function BlocageVehiculeForm({
         </div>
         <div>
           <label htmlFor="bloc-v-fin" className="mb-1 block text-sm text-phoebe-anthracite/70">
-            Fin
+            Fin<Obligatoire />
           </label>
           <input
             id="bloc-v-fin"
@@ -143,7 +144,7 @@ export function BlocageChauffeurForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
           <label htmlFor="bloc-c-debut" className="mb-1 block text-sm text-phoebe-anthracite/70">
-            Début
+            Début<Obligatoire />
           </label>
           <input
             id="bloc-c-debut"
@@ -155,7 +156,7 @@ export function BlocageChauffeurForm({
         </div>
         <div>
           <label htmlFor="bloc-c-fin" className="mb-1 block text-sm text-phoebe-anthracite/70">
-            Fin
+            Fin<Obligatoire />
           </label>
           <input
             id="bloc-c-fin"

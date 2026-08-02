@@ -4,6 +4,7 @@ import { useState, useTransition, useRef, type FormEvent } from "react"
 import Compressor from "compressorjs"
 import { Card } from "@/components/ui"
 import { soumettreDocuments, type VerificationState } from "@/app/actions/verification"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 
 function compressFile(file: File): Promise<File> {
@@ -155,7 +156,7 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
       <form ref={formRef} onSubmit={handleSubmit} className="mt-6 space-y-6">
         <Card>
           <label htmlFor="v-piece" className="mb-2 block text-sm font-medium text-public-text">
-            Pi&egrave;ce d&apos;identit&eacute; (CNI, passeport)
+            Pi&egrave;ce d&apos;identit&eacute; (CNI, passeport)<Obligatoire />
           </label>
           <input
             id="v-piece"
@@ -186,7 +187,7 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
 
         <Card>
           <label htmlFor="v-permis" className="mb-2 block text-sm font-medium text-public-text">
-            Permis de conduire
+            Permis de conduire<Obligatoire />
           </label>
           <input
             id="v-permis"

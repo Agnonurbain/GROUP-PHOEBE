@@ -7,6 +7,7 @@ import {
   type ChauffeurState,
 } from "@/app/actions/chauffeurs"
 import { SubmitButton } from "@/components/submit-button"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite transition-colors focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
@@ -42,11 +43,11 @@ export function NouveauChauffeur() {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="nouveau-nom" className={labelClass}>Nom</label>
+          <label htmlFor="nouveau-nom" className={labelClass}>Nom<Obligatoire /></label>
           <input id="nouveau-nom" name="nom" required className={inputClass} />
         </div>
         <div>
-          <label htmlFor="nouveau-tel" className={labelClass}>Téléphone</label>
+          <label htmlFor="nouveau-tel" className={labelClass}>Téléphone<Obligatoire /></label>
           <input
             id="nouveau-tel"
             name="telephone"
@@ -109,7 +110,7 @@ export function ChauffeurForm({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor={`nom-${chauffeurId}`} className={labelClass}>Nom</label>
+          <label htmlFor={`nom-${chauffeurId}`} className={labelClass}>Nom<Obligatoire /></label>
           <input
             id={`nom-${chauffeurId}`}
             name="nom"
@@ -119,7 +120,7 @@ export function ChauffeurForm({
           />
         </div>
         <div>
-          <label htmlFor={`tel-${chauffeurId}`} className={labelClass}>Téléphone</label>
+          <label htmlFor={`tel-${chauffeurId}`} className={labelClass}>Téléphone<Obligatoire /></label>
           <input
             id={`tel-${chauffeurId}`}
             name="telephone"

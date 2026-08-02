@@ -8,6 +8,7 @@ import {
 } from "@/app/actions/reservation-operateur";
 import { Button } from "@/components/ui";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -408,7 +409,7 @@ export function ReservationPourClientForm({
                 htmlFor="op-debut"
                 className="mb-1 block text-sm font-medium text-phoebe-anthracite"
               >
-                Date de début *
+                Date de début *<Obligatoire />
               </label>
               <input
                 id="op-debut"
@@ -426,7 +427,7 @@ export function ReservationPourClientForm({
                 htmlFor="op-fin"
                 className="mb-1 block text-sm font-medium text-phoebe-anthracite"
               >
-                Date de fin *
+                Date de fin *<Obligatoire />
               </label>
               <input
                 id="op-fin"

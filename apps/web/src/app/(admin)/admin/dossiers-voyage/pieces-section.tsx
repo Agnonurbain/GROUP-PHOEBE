@@ -134,10 +134,14 @@ function LignePiece({ piece }: { piece: PieceAdmin }) {
         <form action={action} className="flex flex-wrap items-center gap-2">
           <input type="hidden" name="document_id" value={piece.id} />
           <input type="hidden" name="decision" value="rejete" />
+          <label htmlFor={`commentaire-${piece.id}`} className="sr-only">
+            Motif du rejet (obligatoire)
+          </label>
           <input
+            id={`commentaire-${piece.id}`}
             name="commentaire"
             required
-            placeholder="Ce qui ne va pas — le client doit savoir quoi corriger"
+            placeholder="Ce qui ne va pas — le client doit savoir quoi corriger *"
             className="min-w-[16rem] flex-1 rounded-lg border border-phoebe-anthracite/15 px-2.5 py-1.5 text-xs"
           />
           <button
