@@ -125,6 +125,44 @@ describe("Logos — chaque page service porte le sien", () => {
     expect(src(page)).toContain(`/logos/${logo}.png`);
   });
 
+  /**
+   * La plaque claire sous les logos existe parce que 59,6 % de leurs pixels
+   * tombent sous 3:1 sur le charbon du site. Deux jetons, et la différence
+   * compte : `--color-logo-plate` s'efface en mode clair, `-fixe` non.
+   *
+   * Un hero garde sa photo sous un dégradé sombre QUEL QUE SOIT le thème.
+   * Y utiliser le jeton basculé retirerait la plaque en mode clair, donc
+   * précisément là où elle sert.
+   */
+  it("les heros utilisent la plaque non basculée", () => {
+    for (const page of [
+      "app/(public)/livraison/page.tsx",
+      "app/(public)/immobilier/page.tsx",
+      "app/(public)/assistance/page-client.tsx",
+      "app/(public)/transport/catalogue/page.tsx",
+    ]) {
+      const code = src(page);
+      expect(code, page).toContain("bg-logo-plate-fixe");
+      expect(code, page).not.toMatch(/bg-logo-plate(?!-fixe)/);
+    }
+  });
+
+  it("le jeton basculé s'efface en clair, le fixe jamais", () => {
+    const css = readFileSync(join(RACINE, "app", "globals.css"), "utf8");
+    // On vise la RÈGLE, pas sa mention en commentaire : `indexOf` sur le
+    // sélecteur seul tombait sur le commentaire qui l'évoque, plus haut.
+    const debutClair = css.search(/^\.light \[data-vertical\] \{/m);
+    expect(debutClair).toBeGreaterThan(-1);
+    const clair = css.slice(debutClair);
+    expect(clair).toContain("--color-logo-plate: transparent");
+    expect(clair).not.toContain("--color-logo-plate-fixe");
+    // Les deux doivent exister dans @theme, sinon Tailwind ne génère rien et
+    // la classe passe en silence sans peindre quoi que ce soit.
+    const theme = css.slice(css.indexOf("@theme"), debutClair);
+    expect(theme).toMatch(/--color-logo-plate:\s*#/i);
+    expect(theme).toMatch(/--color-logo-plate-fixe:\s*#/i);
+  });
+
   it("les logos rendus en largeur libre sont contenus, jamais étirés", () => {
     const suspects: string[] = [];
     for (const f of fichiers(RACINE, [".tsx"])) {

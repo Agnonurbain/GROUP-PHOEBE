@@ -196,14 +196,24 @@ export default function HomePage({
                       {t.verticales.explorer} <ArrowRight className="size-4" />
                     </span>
                   </div>
-                  <div className="hidden h-28 w-44 shrink-0 items-center justify-end sm:flex lg:h-32 lg:w-52">
+                  {/* Hauteur laissée libre : à cette taille le logo dépasse le
+                      bloc de texte, c'est donc lui qui porte la hauteur de la
+                      ligne — 257 px au lieu des 193 px dictés par le texte.
+                      Le choix est assumé : réduire pour tenir dans 193 px
+                      ramènerait le sigle sous sa taille précédente une fois le
+                      rembourrage de la plaque déduit. */}
+                  <div className="hidden w-52 shrink-0 items-center justify-end sm:flex lg:w-60">
                     <Image
                       src={s.logo}
                       alt={s.logoAlt}
                       width={s.logoW}
                       height={s.logoH}
-                      sizes="(min-width: 1024px) 208px, 176px"
-                      className="h-24 w-auto object-contain opacity-80 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100 lg:h-28"
+                      sizes="(min-width: 1024px) 192px, 176px"
+                      /* `h-*` couvre le rembourrage : à p-3, le sigle visible
+                         mesure 24 px de moins que la valeur affichée ici.
+                         La plaque n'existe qu'en sombre — en clair le jeton
+                         vaut `transparent` et l'image reste posée sur le fond. */
+                      className="h-44 w-auto rounded-2xl bg-logo-plate object-contain p-3 opacity-90 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100 lg:h-48"
                     />
                   </div>
                 </Link>
