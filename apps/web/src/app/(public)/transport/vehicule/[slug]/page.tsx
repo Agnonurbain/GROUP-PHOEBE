@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui"
 import { VehicleGallery } from "@/components/public/vehicle-gallery"
 import { VehicleBooking } from "@/components/public/vehicle-booking"
 import { VehiclePurchase } from "@/components/public/vehicle-purchase"
+import { DemanderPrix } from "@/components/public/demander-prix"
+import { getCommunes } from "@/lib/public-cache"
 import Link from "next/link"
 import { ViewItemTracker } from "@/components/analytics/view-item-tracker"
 import { BackLink } from "@/components/public/back-link"
@@ -85,6 +87,10 @@ export default async function VehicleDetail({
     .from("zones_tarifaires")
     .select("id, nom, description, ordre")
     .order("ordre")
+
+  // Mêmes communes que partout ailleurs (cache partagé) : la zone déduite de
+  // la destination correspond ainsi à celle qui sera appliquée au devis.
+  const communesNegociation = (await getCommunes()).map((c) => ({ id: c.id, nom: c.nom }))
 
   let zonePrices: { nom: string; prixMin: number; prixMax: number }[] = []
   if (zones && zones.length > 0) {
@@ -316,6 +322,28 @@ export default async function VehicleDetail({
               zonePrices={zonePrices}
               defaultPrice={rep.prix_journalier ?? 0}
             />
+          )}
+
+          {/* « Réserver » reste l'action première ; la demande de prix est
+              l'issue pour qui hésite sur le tarif affiché plutôt que de partir.
+              Absente sur un véhicule à vendre : négocier un achat passe par un
+              autre circuit. */}
+          {!modeAchat && (
+            <div className="mt-4">
+              <DemanderPrix
+                variante="discret"
+                communes={communesNegociation}
+                lignes={[
+                  {
+                    groupKey: slug,
+                    marque: rep.marque,
+                    modele: rep.modele,
+                    quantite: 1,
+                    avecChauffeur: false,
+                  },
+                ]}
+              />
+            </div>
           )}
         </div>
       </div>

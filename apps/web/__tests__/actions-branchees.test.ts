@@ -45,10 +45,6 @@ const SANS_APPELANT_CONNUS = new Map<string, string>([
   ["proposerModificationTarifs", "workflow de proposition tarifaire jamais branché"],
   ["traiterPropositionTarifs", "workflow de proposition tarifaire jamais branché"],
   ["getPropositionsTarifs", "workflow de proposition tarifaire jamais branché"],
-  // Seul point d'entrée du statut `en_negociation` — et sans appelant, donc
-  // toute la négociation (cron d'expiration, contre-offre, devis_expire_at)
-  // est inatteignable.
-  ["creerDemandeNegociation", "aucun point d'entrée client vers la négociation"],
 ]);
 
 describe("Actions serveur — chacune a un appelant", () => {

@@ -6,10 +6,11 @@ import { useCart } from "@/lib/cart-context"
 import { PanierStepper } from "@/components/panier-stepper"
 import { BackLink } from "@/components/public/back-link"
 import { Badge, Button, Card } from "@/components/ui"
+import { DemanderPrix, type CommuneOption } from "@/components/public/demander-prix"
 import { trackEvent } from "@/lib/analytics"
 import { useEffect } from "react"
 
-export default function Panier() {
+export default function Panier({ communes }: { communes: CommuneOption[] }) {
   const t = useT()
   const { items, removeItem, updateQuantity, toggleChauffeur, clearCart, count } = useCart()
 
@@ -222,6 +223,22 @@ export default function Panier() {
                 </svg>
               </Button>
             </Link>
+
+            {/* Sur tout le lot : `creerDemandeNegociation` sait déjà traiter
+                plusieurs lignes, c'est le même chemin serveur que pour un
+                véhicule unique. */}
+            <div className="mt-3">
+              <DemanderPrix
+                communes={communes}
+                lignes={items.map((i) => ({
+                  groupKey: i.groupKey,
+                  marque: i.marque,
+                  modele: i.modele,
+                  quantite: i.quantite,
+                  avecChauffeur: i.avecChauffeur,
+                }))}
+              />
+            </div>
           </Card>
         </div>
       </div>
