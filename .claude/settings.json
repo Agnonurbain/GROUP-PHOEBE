@@ -183,7 +183,10 @@
       "Bash(timeout 900 pnpm -F web build)",
       "Bash(pnpm -F web add server-only)",
       "Bash(grep -oE 'label>[^<]{3,}|placeholder=\"[^\"]{3,}\"|<h2[^>]*>[^<]{3,}' \"app/\\(public\\)/livraison/commander/commander-client.tsx\")",
-      "Bash(grep -oE \">[^<>{}\\\\n]{4,}<\" \"app/\\(public\\)/panier/paiement/page-client.tsx\")"
+      "Bash(grep -oE \">[^<>{}\\\\n]{4,}<\" \"app/\\(public\\)/panier/paiement/page-client.tsx\")",
+      "Bash(awk 'NR<=178 && /^export async function/ {f=$4} END{}{}' app/actions/negociation.ts)",
+      "Bash(awk 'NR<=178 && /^export async function/ {print NR\": \"$0}' app/actions/negociation.ts)",
+      "Bash(pnpm -F web test actions-branchees)"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
