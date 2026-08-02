@@ -50,10 +50,12 @@ function ChoixBloc({
 export default function Assistance({
   tarifs,
   isLoggedIn,
+  userId,
   paramsBillet,
 }: {
   tarifs: TarifsAssistance
   isLoggedIn: boolean
+  userId: string
   paramsBillet: ParametresBillet
 }) {
   const pays = appliquerTarifsListe(PAYS_LIST, tarifs)
@@ -107,7 +109,7 @@ export default function Assistance({
             className="border-b-0 pb-0"
           />
           <div className="mt-10">
-            <BilletForm isLoggedIn={isLoggedIn} params={paramsBillet} />
+            <BilletForm isLoggedIn={isLoggedIn} userId={userId} params={paramsBillet} />
           </div>
         </div>
       </section>

@@ -13,6 +13,7 @@ import {
   libelleDelai,
   type ParametresBillet,
 } from "@/lib/billets"
+import { DeposerPasseport, PasseportAccompagnant } from "@/components/public/passeport-voyageur"
 
 const champ =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-blue focus:outline-none focus:ring-2 focus:ring-accent-blue/20"
@@ -31,9 +32,12 @@ const aujourdHui = () => new Date().toISOString().slice(0, 10)
 
 export function BilletForm({
   isLoggedIn,
+  userId,
   params,
 }: {
   isLoggedIn: boolean
+  /** Identifiant du client : préfixe du chemin de dépôt des passeports. */
+  userId: string
   /** Frais et règles pilotés par le propriétaire depuis /admin/tarifs. */
   params: ParametresBillet
 }) {
@@ -46,6 +50,16 @@ export function BilletForm({
 
   const majVoyageurs = (cle: keyof typeof voyageurs, delta: number) =>
     setVoyageurs((v) => ({ ...v, [cle]: Math.max(cle === "adultes" ? 1 : 0, v[cle] + delta) }))
+
+  /**
+   * Un bloc par accompagnant, dans l'ordre : les adultes puis les enfants.
+   * Le voyageur 1 est le titulaire de la demande, déjà saisi au-dessus — d'où
+   * `adultes - 1`. Les bébés de moins de 2 ans n'en ont pas.
+   */
+  const accompagnants: ("adulte" | "enfant")[] = [
+    ...Array<"adulte">(Math.max(0, voyageurs.adultes - 1)).fill("adulte"),
+    ...Array<"enfant">(voyageurs.enfants).fill("enfant"),
+  ]
 
   if (!isLoggedIn) {
     return (
@@ -249,7 +263,48 @@ export function BilletForm({
             />
           </div>
         </div>
+        <div className="mt-4">
+          <DeposerPasseport name="passeport_fichier" userId={userId} id="passeport_fichier_input" />
+          <p className="mt-1 text-[11px] text-public-text-faint">
+            Joindre la page du passeport nous évite une faute de saisie sur un nom
+            translittéré. Ce n&apos;est pas obligatoire : les champs ci-dessus suffisent.
+          </p>
+        </div>
       </fieldset>
+
+      {/* Accompagnants : la compagnie exige le passeport de CHAQUE voyageur pour
+          émettre son billet. Ils étaient demandés à l'étape du paiement, où
+          aucun champ ne les envoyait — toute demande à plus d'un voyageur était
+          donc impayable. */}
+      {accompagnants.length > 0 && (
+        <fieldset className="rounded-2xl border border-public-border bg-public-bg-card p-5">
+          <legend className="px-1 text-sm font-semibold text-public-text">
+            Passeports des autres voyageurs ({accompagnants.length})
+          </legend>
+          <p className="mt-1 text-xs text-public-text-muted">
+            Les mêmes informations que ci-dessus, pour chaque personne qui voyage.
+            Sans elles, la compagnie ne peut pas émettre son billet.
+          </p>
+          {voyageurs.bebes > 0 && (
+            <p className="mt-1.5 text-xs text-accent-blue/80">
+              Les {voyageurs.bebes === 1 ? "bébés" : "bébés"} de moins de 2 ans ne sont pas
+              à saisir ici : ils voyagent sur les genoux d&apos;un adulte. Nous reviendrons
+              vers vous pour leur document avant l&apos;émission.
+            </p>
+          )}
+          <div className="mt-4 space-y-3">
+            {accompagnants.map((type, i) => (
+              <PasseportAccompagnant
+                key={i}
+                index={i}
+                type={type}
+                userId={userId}
+                moisValidite={params.mois_validite_passeport}
+              />
+            ))}
+          </div>
+        </fieldset>
+      )}
 
       {/* Documents obligatoires : fièvre jaune et autorisation parentale */}
       <fieldset className="rounded-2xl border border-public-border bg-public-bg-card p-5">

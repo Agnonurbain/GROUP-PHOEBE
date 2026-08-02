@@ -79,6 +79,8 @@ export default async function AssistancePage() {
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
   const isLoggedIn = !!claimsData?.claims
+  // Préfixe du chemin de dépôt des passeports : le client n'écrit que chez lui.
+  const userId = (claimsData?.claims?.sub as string | undefined) ?? ""
 
   return (
     <>
@@ -86,7 +88,7 @@ export default async function AssistancePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(serviceSchema) }}
       />
-      <AssistanceClient tarifs={tarifs} isLoggedIn={isLoggedIn} paramsBillet={paramsBillet} />
+      <AssistanceClient tarifs={tarifs} isLoggedIn={isLoggedIn} userId={userId} paramsBillet={paramsBillet} />
     </>
   )
 }

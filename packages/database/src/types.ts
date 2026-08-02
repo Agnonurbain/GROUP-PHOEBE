@@ -540,6 +540,7 @@ export type Database = {
           nb_bebes: number
           nb_enfants: number
           passeport_expiration: string
+          passeport_fichier: string | null
           passeport_nom: string
           passeport_numero: string
           statut: string
@@ -570,6 +571,7 @@ export type Database = {
           nb_bebes?: number
           nb_enfants?: number
           passeport_expiration: string
+          passeport_fichier?: string | null
           passeport_nom: string
           passeport_numero: string
           statut?: string
@@ -600,6 +602,7 @@ export type Database = {
           nb_bebes?: number
           nb_enfants?: number
           passeport_expiration?: string
+          passeport_fichier?: string | null
           passeport_nom?: string
           passeport_numero?: string
           statut?: string
@@ -1835,30 +1838,36 @@ export type Database = {
       passagers_billet: {
         Row: {
           created_at: string
-          date_naissance: string
+          date_naissance: string | null
           demande_id: string
           id: string
           nom: string
           passeport_expiration: string
+          passeport_fichier: string | null
           passeport_numero: string
+          type: string | null
         }
         Insert: {
           created_at?: string
-          date_naissance: string
+          date_naissance?: string | null
           demande_id: string
           id?: string
           nom: string
           passeport_expiration: string
+          passeport_fichier?: string | null
           passeport_numero: string
+          type?: string | null
         }
         Update: {
           created_at?: string
-          date_naissance?: string
+          date_naissance?: string | null
           demande_id?: string
           id?: string
           nom?: string
           passeport_expiration?: string
+          passeport_fichier?: string | null
           passeport_numero?: string
+          type?: string | null
         }
         Relationships: [
           {
