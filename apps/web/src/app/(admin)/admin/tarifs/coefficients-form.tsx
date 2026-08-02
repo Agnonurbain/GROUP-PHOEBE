@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { modifierCoefficients, type TarifState } from "@/app/actions/tarifs";
 import { SubmitButton } from "@/components/submit-button";
 import { Button } from "@/components/ui";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite transition-colors focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -62,7 +63,7 @@ export function CoefficientsForm({
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <div>
               <label htmlFor={`coef-${zoneId}-coefficient_majoration`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-                Coefficient prix
+                Coefficient prix<Obligatoire />
               </label>
               <input id={`coef-${zoneId}-coefficient_majoration`}
                 name="coefficient_majoration"
@@ -77,7 +78,7 @@ export function CoefficientsForm({
             </div>
             <div>
               <label htmlFor={`coef-${zoneId}-caution_multiplicateur`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-                Multiplicateur caution
+                Multiplicateur caution<Obligatoire />
               </label>
               <input id={`coef-${zoneId}-caution_multiplicateur`}
                 name="caution_multiplicateur"
@@ -92,7 +93,7 @@ export function CoefficientsForm({
             </div>
             <div>
               <label htmlFor={`coef-${zoneId}-km_inclus_par_jour`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-                KM inclus/jour
+                KM inclus/jour<Obligatoire />
               </label>
               <input id={`coef-${zoneId}-km_inclus_par_jour`}
                 name="km_inclus_par_jour"
@@ -105,7 +106,7 @@ export function CoefficientsForm({
             </div>
             <div>
               <label htmlFor={`coef-${zoneId}-supplement_km_fcfa`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-                Supplément km (FCFA)
+                Supplément km (FCFA)<Obligatoire />
               </label>
               <input id={`coef-${zoneId}-supplement_km_fcfa`}
                 name="supplement_km_fcfa"
@@ -118,7 +119,7 @@ export function CoefficientsForm({
             </div>
             <div>
               <label htmlFor={`coef-${zoneId}-chauffeur_statut`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-                Chauffeur
+                Chauffeur<Obligatoire />
               </label>
               <select id={`coef-${zoneId}-chauffeur_statut`}
                 name="chauffeur_statut"
@@ -133,7 +134,7 @@ export function CoefficientsForm({
             </div>
             <div>
               <label htmlFor={`coef-${zoneId}-tarif_chauffeur_journalier`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-                Tarif chauffeur/jour (FCFA)
+                Tarif chauffeur/jour (FCFA)<Obligatoire />
               </label>
               <input id={`coef-${zoneId}-tarif_chauffeur_journalier`}
                 name="tarif_chauffeur_journalier"
@@ -148,7 +149,7 @@ export function CoefficientsForm({
 
           <div>
             <label htmlFor={`coef-${zoneId}-commentaire`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-              Commentaire *
+              Commentaire<Obligatoire />
             </label>
             <textarea id={`coef-${zoneId}-commentaire`}
               name="commentaire"

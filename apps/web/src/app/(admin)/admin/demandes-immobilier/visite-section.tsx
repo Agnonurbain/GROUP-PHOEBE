@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react"
 import { creerVisite, changerStatutVisite, type VisiteState } from "@/app/actions/immobilier"
 import { STATUT_VISITE_LABELS, STATUT_VISITE_COLORS, STATUTS_VISITE } from "@/lib/immobilier"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "rounded-lg border border-phoebe-anthracite/15 bg-white px-3 py-2 text-xs text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/20"
@@ -53,7 +54,7 @@ export function VisiteSection({
             <input type="hidden" name="client_id" value={clientId} />
             <input type="hidden" name="agent_id" value={agentId} />
             <div>
-              <label className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/60">Créneau</label>
+              <label className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/60">Créneau<Obligatoire /></label>
               <input type="datetime-local" name="creneau" required className={inputClass} />
             </div>
             <button type="submit" disabled={creerPending} className={btnClass}>

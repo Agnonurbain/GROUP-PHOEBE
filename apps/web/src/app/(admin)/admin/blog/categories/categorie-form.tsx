@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { BlogState } from "@/app/actions/blog";
 import { creerCategorie } from "@/app/actions/blog";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -28,7 +29,7 @@ export function CategorieForm() {
       <form action={formAction} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="nom" className={labelClass}>Nom *</label>
+            <label htmlFor="nom" className={labelClass}>Nom<Obligatoire /></label>
             <input id="nom" name="nom" required placeholder="Ex. Guides voyage" className={inputClass} />
           </div>
           <div>

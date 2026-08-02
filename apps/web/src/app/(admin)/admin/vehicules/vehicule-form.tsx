@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import type { Tables } from "@group-phoebe/database/types";
 import type { VehiculeState } from "@/app/actions/vehicules";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 type Chauffeur = { id: string; nom: string };
 
@@ -90,7 +91,7 @@ export default function VehiculeForm({
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="categorie" className={labelClass}>
-                Catégorie *
+                Catégorie<Obligatoire />
               </label>
               <select
                 id="categorie"
@@ -107,7 +108,7 @@ export default function VehiculeForm({
             </div>
             <div>
               <label htmlFor="marque" className={labelClass}>
-                Marque *
+                Marque<Obligatoire />
               </label>
               <input
                 id="marque"
@@ -119,7 +120,7 @@ export default function VehiculeForm({
             </div>
             <div>
               <label htmlFor="modele" className={labelClass}>
-                Modèle *
+                Modèle<Obligatoire />
               </label>
               <input
                 id="modele"
@@ -191,7 +192,7 @@ export default function VehiculeForm({
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="etat" className={labelClass}>
-                État *
+                État<Obligatoire />
               </label>
               <select
                 id="etat"
@@ -418,7 +419,7 @@ export default function VehiculeForm({
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="prix_journalier" className={labelClass}>
-                Prix journalier *
+                Prix journalier
               </label>
               <input
                 id="prix_journalier"

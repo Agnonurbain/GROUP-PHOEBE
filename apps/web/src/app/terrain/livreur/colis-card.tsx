@@ -8,6 +8,7 @@ import {
   type LivreurState,
 } from "@/app/actions/livreur";
 import { STATUT_LIVRAISON, TRANSITIONS_LIVRAISON, type StatutLivraison } from "@/lib/livraison";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 type Colis = {
   id: string;
@@ -196,7 +197,7 @@ export function ColisCard({ colis }: { colis: Colis }) {
           <form action={echouer} className="space-y-2 rounded-xl border border-public-border p-3">
             <input type="hidden" name="expedition_id" value={colis.id} />
             <label htmlFor={`motif-${colis.id}`} className="block text-xs font-medium">
-              Que s&apos;est-il passé ?
+              Que s&apos;est-il passé ?<Obligatoire />
             </label>
             <textarea
               id={`motif-${colis.id}`}
@@ -278,7 +279,7 @@ function FormulaireLivraison({
 
       <div>
         <label htmlFor={`recu-${colisId}`} className="block text-xs font-medium">
-          Reçu par
+          Reçu par<Obligatoire />
         </label>
         <input
           id={`recu-${colisId}`}
@@ -294,7 +295,7 @@ function FormulaireLivraison({
 
       <div>
         <label htmlFor={`photo-${colisId}`} className="block text-xs font-medium">
-          Photo de la remise
+          Photo de la remise<Obligatoire />
         </label>
         <input
           id={`photo-${colisId}`}
@@ -332,6 +333,7 @@ function FormulaireLivraison({
           <span>
             J&apos;ai bien encaissé{" "}
             <strong>{aEncaisser.toLocaleString("fr-FR")} FCFA</strong>
+            <Obligatoire />
             <span className="mt-0.5 block text-[11px] text-public-text-muted">
               Espèces ou Mobile Money. Ne remettez pas le colis avant.
             </span>

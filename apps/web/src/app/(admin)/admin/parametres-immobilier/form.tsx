@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { modifierParametresImmobilier, type ParametresImmoState } from "@/app/actions/immobilier";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite transition-colors focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -32,7 +33,7 @@ export function ParametresImmoForm({
 
       <div className="space-y-2">
         <label htmlFor="frais_visite" className="block text-sm font-medium text-phoebe-anthracite">
-          Frais de visite (FCFA)
+          Frais de visite (FCFA)<Obligatoire />
         </label>
         <input
           id="frais_visite"
@@ -51,7 +52,7 @@ export function ParametresImmoForm({
 
       <div className="space-y-2">
         <label htmlFor="taux_commission" className="block text-sm font-medium text-phoebe-anthracite">
-          Commission GROUP PHOEBE (%)
+          Commission GROUP PHOEBE (%)<Obligatoire />
         </label>
         <input
           id="taux_commission"
@@ -73,7 +74,7 @@ export function ParametresImmoForm({
 
       <div className="space-y-2">
         <label htmlFor="taux_max_reduction" className="block text-sm font-medium text-phoebe-anthracite">
-          Taux max. de réduction (%)
+          Taux max. de réduction (%)<Obligatoire />
         </label>
         <input
           id="taux_max_reduction"
@@ -92,7 +93,7 @@ export function ParametresImmoForm({
 
       <div className="space-y-2">
         <label htmlFor="max_offres_client" className="block text-sm font-medium text-phoebe-anthracite">
-          Nombre max. d&apos;offres par client
+          Nombre max. d&apos;offres par client<Obligatoire />
         </label>
         <input
           id="max_offres_client"

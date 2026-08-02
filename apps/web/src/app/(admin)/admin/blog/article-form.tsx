@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { Tables } from "@group-phoebe/database/types";
 import type { BlogState } from "@/app/actions/blog";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 type Props = {
   article?: Tables<"articles">;
@@ -40,7 +41,7 @@ export default function ArticleForm({ article, categories, action }: Props) {
           </legend>
 
           <div>
-            <label htmlFor="titre" className={labelClass}>Titre *</label>
+            <label htmlFor="titre" className={labelClass}>Titre<Obligatoire /></label>
             <input
               id="titre"
               name="titre"
@@ -89,7 +90,7 @@ export default function ArticleForm({ article, categories, action }: Props) {
           </div>
 
           <div>
-            <label htmlFor="contenu" className={labelClass}>Contenu *</label>
+            <label htmlFor="contenu" className={labelClass}>Contenu<Obligatoire /></label>
             <textarea
               id="contenu"
               name="contenu"

@@ -8,6 +8,7 @@ import {
   type BilletState,
 } from "@/app/actions/billets"
 import { STATUTS_BILLET, STATUT_BILLET_LABELS } from "@/lib/billets"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const btnPrimary =
   "rounded-lg bg-phoebe-green px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-phoebe-green-deep disabled:opacity-50"
@@ -100,7 +101,7 @@ export function BilletActions({
           <input type="hidden" name="demande_id" value={demandeId} />
           <div>
             <label htmlFor={`devis-${demandeId}`} className="block text-[11px] font-medium text-phoebe-anthracite">
-              Prix du billet (FCFA)
+              Prix du billet (FCFA)<Obligatoire />
             </label>
             <input
               id={`devis-${demandeId}`}

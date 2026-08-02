@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { proposerPrix, type PropositionState } from "@/app/actions/propositions";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -58,7 +59,7 @@ export function ProposerPrixForm({
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="ppf-champ" className="mb-1 block text-xs font-medium text-phoebe-anthracite">
-              Champ
+              Champ<Obligatoire />
             </label>
             <select id="ppf-champ" name="champ" required className={inputClass}>
               {CHAMP_OPTIONS.map((o) => (
@@ -68,7 +69,7 @@ export function ProposerPrixForm({
           </div>
           <div>
             <label htmlFor="ppf-valeur_proposee" className="mb-1 block text-xs font-medium text-phoebe-anthracite">
-              Nouveau prix (FCFA)
+              Nouveau prix (FCFA)<Obligatoire />
             </label>
             <input id="ppf-valeur_proposee"
               name="valeur_proposee"

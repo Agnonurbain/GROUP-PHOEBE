@@ -111,6 +111,36 @@ describe("Logos — les dimensions déclarées viennent du fichier", () => {
   });
 });
 
+/**
+ * La signature de marque.
+ *
+ * Le site affichait « Leader Excellence Brilliant » alors que le logo — la
+ * source, dessinée par la marque — porte « Leader-Excellence-Efficacité ».
+ * Personne ne pouvait le voir en relisant du code : les deux orthographes sont
+ * des chaînes valides, et l'écart n'apparaît qu'en regardant le sigle de près.
+ */
+describe("Signature de marque", () => {
+  const RACINE_DEPOT = join(process.cwd(), "..", "..");
+
+  it("le mot juste est Efficacité, et l'ancien a disparu", () => {
+    const fautifs: string[] = [];
+    for (const f of [
+      ...fichiers(RACINE, [".ts", ".tsx"]),
+      join(RACINE_DEPOT, "design-system.dsl"),
+      join(RACINE_DEPOT, "group-phoebe-design.op"),
+    ]) {
+      const code = readFileSync(f, "utf8");
+      if (/Leader[\s-]Excellence[\s-]Brilliant/i.test(code)) fautifs.push(f);
+    }
+    expect(fautifs).toEqual([]);
+  });
+
+  it("le pied de page porte la signature", () => {
+    expect(readFileSync(join(RACINE, "components", "public", "footer.tsx"), "utf8"))
+      .toContain("Leader Excellence Efficacité");
+  });
+});
+
 describe("Logos — chaque page service porte le sien", () => {
   const src = (p: string) => readFileSync(join(RACINE, p), "utf8");
 

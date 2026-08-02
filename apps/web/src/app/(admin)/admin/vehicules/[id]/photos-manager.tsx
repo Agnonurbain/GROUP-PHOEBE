@@ -9,6 +9,7 @@ import {
   type VehiculeState,
 } from "@/app/actions/vehicules";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 type Photo = {
   id: string;
@@ -55,7 +56,11 @@ export default function PhotosManager({
       <form action={uploadAction} className="flex items-end gap-3">
         <input type="hidden" name="vehicule_id" value={vehiculeId} />
         <div className="flex-1">
+          <label htmlFor="photos-vehicule" className="mb-1 block text-xs font-medium text-phoebe-anthracite">
+            Photos à envoyer<Obligatoire />
+          </label>
           <input
+            id="photos-vehicule"
             type="file"
             name="photos"
             multiple

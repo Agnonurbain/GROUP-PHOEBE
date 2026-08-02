@@ -4,6 +4,7 @@ import { useActionState, useState } from "react"
 import Link from "next/link"
 import { creerDemandeImmobilier, type ImmobilierState } from "@/app/actions/immobilier"
 import { TYPES_DEMANDE, TYPE_DEMANDE_LABELS } from "@/lib/immobilier"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-green focus:outline-none focus:ring-2 focus:ring-accent-green/20"
@@ -133,7 +134,7 @@ export function BienInteractionForm({
           <>
             <div>
               <label htmlFor="montant" className="mb-1.5 block text-sm font-medium text-public-text">
-                {estLocation ? "Votre offre de loyer mensuel (FCFA) *" : "Votre offre (FCFA) *"}
+                {estLocation ? "Votre offre de loyer mensuel (FCFA)" : "Votre offre (FCFA)"}<Obligatoire />
               </label>
               <input
                 id="montant"
@@ -151,7 +152,7 @@ export function BienInteractionForm({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="location_debut" className="mb-1.5 block text-sm font-medium text-public-text">
-                    Début souhaité *
+                    Début souhaité<Obligatoire />
                   </label>
                   <input
                     id="location_debut"
@@ -164,7 +165,7 @@ export function BienInteractionForm({
                 </div>
                 <div>
                   <label htmlFor="location_duree_mois" className="mb-1.5 block text-sm font-medium text-public-text">
-                    Durée (mois) *
+                    Durée (mois)<Obligatoire />
                   </label>
                   <input
                     id="location_duree_mois"

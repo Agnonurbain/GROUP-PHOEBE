@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { changerMotDePasseProfil, type AuthState } from "@/app/actions/auth";
 import { PasswordInput } from "@/components/password-input";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export function ChangePasswordForm() {
   const [open, setOpen] = useState(false);
@@ -58,19 +59,19 @@ export function ChangePasswordForm() {
       <div className="space-y-4">
         <div>
           <label htmlFor="mdp-actuel" className="mb-1.5 block text-sm font-medium text-public-text">
-            Mot de passe actuel
+            Mot de passe actuel<Obligatoire />
           </label>
           <PasswordInput id="mdp-actuel" name="mot_de_passe_actuel" required autoComplete="current-password" placeholder="Votre mot de passe actuel" variant="dark" />
         </div>
         <div>
           <label htmlFor="mdp-nouveau" className="mb-1.5 block text-sm font-medium text-public-text">
-            Nouveau mot de passe
+            Nouveau mot de passe<Obligatoire />
           </label>
           <PasswordInput id="mdp-nouveau" name="nouveau_mot_de_passe" required minLength={8} autoComplete="new-password" placeholder="8 caractères minimum" variant="dark" />
         </div>
         <div>
           <label htmlFor="mdp-confirmation" className="mb-1.5 block text-sm font-medium text-public-text">
-            Confirmer le nouveau mot de passe
+            Confirmer le nouveau mot de passe<Obligatoire />
           </label>
           <PasswordInput id="mdp-confirmation" name="confirmation" required minLength={8} autoComplete="new-password" placeholder="Répétez le nouveau mot de passe" variant="dark" />
         </div>

@@ -3,6 +3,7 @@
 import { useActionState } from "react"
 import { modifierLivreur, type LivreurAdminState } from "@/app/actions/livreurs-admin"
 import { SubmitButton } from "@/components/submit-button"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite transition-colors focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
@@ -63,7 +64,7 @@ export function LivreurForm({
             htmlFor={`capacite-${livreurId}`}
             className="mb-1 block text-xs font-medium text-phoebe-anthracite"
           >
-            Charge simultanée max
+            Charge simultanée max<Obligatoire />
           </label>
           <input
             id={`capacite-${livreurId}`}

@@ -14,6 +14,7 @@ import { checkoutCart, type CheckoutState } from "@/app/actions/checkout"
 import { computeItemPricing, type ZonePricing } from "@/lib/pricing"
 import { trackBeginCheckout } from "@/lib/analytics"
 import { whatsappHref } from "@/lib/contact"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 type Commune = { id: string; nom: string; zone_id: string; zone_nom: string }
 type Zone = {
@@ -308,7 +309,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="debut" className="block text-sm font-medium text-public-text-muted mb-1.5">{t.paiement.debut}</label>
+                <label htmlFor="debut" className="block text-sm font-medium text-public-text-muted mb-1.5">{t.paiement.debut}<Obligatoire /></label>
                 <input
                   id="debut" name="debut" type="date" required
                   value={debut}
@@ -317,7 +318,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
                 />
               </div>
               <div>
-                <label htmlFor="fin" className="block text-sm font-medium text-public-text-muted mb-1.5">Fin</label>
+                <label htmlFor="fin" className="block text-sm font-medium text-public-text-muted mb-1.5">Fin<Obligatoire /></label>
                 <input
                   id="fin" name="fin" type="date" required
                   value={fin}
@@ -342,7 +343,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
             </div>
             <div className="relative">
               <label htmlFor="destination" className="block text-sm font-medium text-public-text-muted mb-1.5">
-                Ville de livraison
+                Ville de livraison<Obligatoire />
               </label>
               <input
                 ref={inputRef}
@@ -417,7 +418,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
           <Card>
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-[#0A0A0A]">3</span>
-              <h2 className="text-base font-semibold text-public-text">{t.paiement.moyenPaiement}</h2>
+              <h2 className="text-base font-semibold text-public-text">{t.paiement.moyenPaiement}<Obligatoire /></h2>
             </div>
             <div className="space-y-3">
               {[

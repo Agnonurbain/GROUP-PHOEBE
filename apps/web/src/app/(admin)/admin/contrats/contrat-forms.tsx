@@ -9,6 +9,7 @@ import {
 } from "@/app/actions/contrats"
 import { SubmitButton } from "@/components/submit-button"
 import { CATEGORIES_CONTRAT, CATEGORIE_CONTRAT_LABELS, FREQUENCES, FREQUENCE_LABELS, JOURS_LABELS } from "@/lib/contrats"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
@@ -56,7 +57,7 @@ export function NouveauContrat({
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label htmlFor="client_id" className={labelClass}>Client</label>
+          <label htmlFor="client_id" className={labelClass}>Client<Obligatoire /></label>
           <select id="client_id" name="client_id" required defaultValue="" className={inputClass}>
             <option value="" disabled>Choisir…</option>
             {clients.map((c) => (
@@ -65,7 +66,7 @@ export function NouveauContrat({
           </select>
         </div>
         <div>
-          <label htmlFor="categorie" className={labelClass}>Type</label>
+          <label htmlFor="categorie" className={labelClass}>Type<Obligatoire /></label>
           <select id="categorie" name="categorie" required defaultValue="scolaire" className={inputClass}>
             {CATEGORIES_CONTRAT.map((c) => (
               <option key={c} value={c}>{CATEGORIE_CONTRAT_LABELS[c]}</option>
@@ -91,7 +92,7 @@ export function NouveauContrat({
           </select>
         </div>
         <div>
-          <label htmlFor="date_debut" className={labelClass}>Début</label>
+          <label htmlFor="date_debut" className={labelClass}>Début<Obligatoire /></label>
           <input id="date_debut" name="date_debut" type="date" required className={inputClass} />
         </div>
         <div>
@@ -99,7 +100,7 @@ export function NouveauContrat({
           <input id="date_fin" name="date_fin" type="date" className={inputClass} />
         </div>
         <div>
-          <label htmlFor="frequence_facturation" className={labelClass}>Facturation</label>
+          <label htmlFor="frequence_facturation" className={labelClass}>Facturation<Obligatoire /></label>
           <select id="frequence_facturation" name="frequence_facturation" required defaultValue="mensuelle" className={inputClass}>
             {FREQUENCES.map((f) => (
               <option key={f} value={f}>{FREQUENCE_LABELS[f]}</option>
@@ -107,7 +108,7 @@ export function NouveauContrat({
           </select>
         </div>
         <div>
-          <label htmlFor="montant_periodique" className={labelClass}>Montant par période (FCFA)</label>
+          <label htmlFor="montant_periodique" className={labelClass}>Montant par période (FCFA)<Obligatoire /></label>
           <input
             id="montant_periodique"
             name="montant_periodique"
@@ -143,11 +144,11 @@ export function NouveauContrat({
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
-            <label htmlFor="heure_debut" className={labelClass}>De</label>
+            <label htmlFor="heure_debut" className={labelClass}>De<Obligatoire /></label>
             <input id="heure_debut" name="heure_debut" type="time" required defaultValue="06:30" className={inputClass} />
           </div>
           <div>
-            <label htmlFor="heure_fin" className={labelClass}>À</label>
+            <label htmlFor="heure_fin" className={labelClass}>À<Obligatoire /></label>
             <input id="heure_fin" name="heure_fin" type="time" required defaultValue="08:00" className={inputClass} />
           </div>
         </div>

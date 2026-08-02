@@ -4,6 +4,7 @@ import { useActionState } from "react"
 import { modifierDelaisTransport, type TarifState } from "@/app/actions/tarifs"
 import { SubmitButton } from "@/components/submit-button"
 import { formaterDelai } from "@/lib/parametres-transport"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
@@ -50,7 +51,7 @@ export function DelaisForm({
       <div className="grid gap-4 sm:grid-cols-3">
         <div>
           <label htmlFor="delai_negociation_heures" className={labelClass}>
-            Réponse à une demande de prix (h)
+            Réponse à une demande de prix (h)<Obligatoire />
           </label>
           <input
             id="delai_negociation_heures"
@@ -81,7 +82,7 @@ export function DelaisForm({
 
         <div>
           <label htmlFor="delai_sans_reponse_heures" className={labelClass}>
-            Demande acceptée sans suite (h)
+            Demande acceptée sans suite (h)<Obligatoire />
           </label>
           <input
             id="delai_sans_reponse_heures"
@@ -111,7 +112,7 @@ export function DelaisForm({
 
         <div>
           <label htmlFor="delai_non_presentation_heures" className={labelClass}>
-            Retard au retrait (h)
+            Retard au retrait (h)<Obligatoire />
           </label>
           <input
             id="delai_non_presentation_heures"
@@ -165,7 +166,7 @@ export function DelaisForm({
         </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div>
-            <label htmlFor="heure_ouverture" className={labelClass}>Ouverture</label>
+            <label htmlFor="heure_ouverture" className={labelClass}>Ouverture<Obligatoire /></label>
             <input
               id="heure_ouverture"
               name="heure_ouverture"
@@ -176,7 +177,7 @@ export function DelaisForm({
             />
           </div>
           <div>
-            <label htmlFor="heure_fermeture" className={labelClass}>Fermeture</label>
+            <label htmlFor="heure_fermeture" className={labelClass}>Fermeture<Obligatoire /></label>
             <input
               id="heure_fermeture"
               name="heure_fermeture"

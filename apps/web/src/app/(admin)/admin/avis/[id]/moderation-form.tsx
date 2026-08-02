@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { modererAvisForm, type AvisState } from "@/app/actions/avis";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite transition-colors focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -33,7 +34,7 @@ export function AvisModerationForm({
 
       <div className="space-y-2">
         <label htmlFor="statut" className="block text-sm font-medium text-phoebe-anthracite">
-          Statut
+          Statut<Obligatoire />
         </label>
         <select
           id="statut"

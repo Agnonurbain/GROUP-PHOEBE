@@ -15,6 +15,7 @@ import { PasswordInput } from "@/components/password-input";
 import { GoogleButton } from "@/components/google-button";
 import { ScrollReveal } from "@/components/effects";
 import { Tabs, TabsList, TabsTrigger } from "@/components/shadcn/tabs";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export default function ConnexionForm() {
   const [state, action] = useActionState<AuthState, FormData>(connexion, {});
@@ -66,7 +67,7 @@ export default function ConnexionForm() {
         {loginMode === "phone" && (
           <div>
             <label htmlFor="telephone" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-              Téléphone
+              Téléphone<Obligatoire />
             </label>
             <input
               id="telephone"
@@ -85,7 +86,7 @@ export default function ConnexionForm() {
         {loginMode === "email" && (
           <div>
             <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-              Email
+              Email<Obligatoire />
             </label>
             <input
               id="email"
@@ -101,7 +102,7 @@ export default function ConnexionForm() {
 
         <div>
           <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-phoebe-anthracite">
-            Mot de passe
+            Mot de passe<Obligatoire />
           </label>
           <PasswordInput id="password" name="password" required placeholder="Votre mot de passe" />
         </div>

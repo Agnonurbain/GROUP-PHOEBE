@@ -9,6 +9,7 @@ import {
   type BienState,
 } from "@/app/actions/biens";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 type Photo = {
   id: string;
@@ -55,7 +56,11 @@ export default function BienPhotosManager({
       <form action={uploadAction} className="flex items-end gap-3">
         <input type="hidden" name="bien_id" value={bienId} />
         <div className="flex-1">
+          <label htmlFor="photos-bien" className="mb-1 block text-xs font-medium text-phoebe-anthracite">
+            Photos à envoyer<Obligatoire />
+          </label>
           <input
+            id="photos-bien"
             type="file"
             name="photos"
             multiple

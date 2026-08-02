@@ -12,6 +12,7 @@ import {
   STATUT_DOCUMENT_LABELS,
   type TypeDocument,
 } from "@/lib/assistance"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export type PieceClient = {
   id: string
@@ -71,7 +72,7 @@ export function DossierPieces({
         <input type="hidden" name="dossier_id" value={dossierId} />
 
         <label htmlFor={`type-${dossierId}`} className="block text-[11px] font-medium">
-          Ajouter une pièce
+          Ajouter une pièce<Obligatoire />
         </label>
         <select
           id={`type-${dossierId}`}
@@ -85,7 +86,11 @@ export function DossierPieces({
             <option key={t} value={t}>{TYPE_DOCUMENT_LABELS[t as TypeDocument]}</option>
           ))}
         </select>
+        <label htmlFor={`fichier-${dossierId}`} className="block text-[11px] font-medium">
+          Fichier<Obligatoire />
+        </label>
         <input
+          id={`fichier-${dossierId}`}
           name="fichier"
           type="file"
           accept="application/pdf,image/*"

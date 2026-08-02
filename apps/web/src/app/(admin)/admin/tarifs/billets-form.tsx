@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { modifierParametresBillet, type BilletState } from "@/app/actions/billets";
 import { libelleDelai, type ParametresBillet } from "@/lib/billets";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -35,7 +36,7 @@ export function BilletsParamsForm({ params }: { params: ParametresBillet }) {
       <form action={action} className="space-y-6 rounded-xl border border-phoebe-pearl bg-white p-6">
         <div>
           <label htmlFor="frais_service" className={labelClass}>
-            Frais de service (FCFA par billet)
+            Frais de service (FCFA par billet)<Obligatoire />
           </label>
           <input
             id="frais_service"
@@ -57,7 +58,7 @@ export function BilletsParamsForm({ params }: { params: ParametresBillet }) {
 
         <div>
           <label htmlFor="mois_validite_passeport" className={labelClass}>
-            Validité de passeport exigée après le départ (mois)
+            Validité de passeport exigée après le départ (mois)<Obligatoire />
           </label>
           <input
             id="mois_validite_passeport"
@@ -80,7 +81,7 @@ export function BilletsParamsForm({ params }: { params: ParametresBillet }) {
 
         <div>
           <label htmlFor="max_voyageurs" className={labelClass}>
-            Nombre maximum de voyageurs par demande
+            Nombre maximum de voyageurs par demande<Obligatoire />
           </label>
           <input
             id="max_voyageurs"
@@ -100,7 +101,7 @@ export function BilletsParamsForm({ params }: { params: ParametresBillet }) {
 
         <div>
           <label htmlFor="delai_reponse_heures" className={labelClass}>
-            Délai de réponse annoncé (heures)
+            Délai de réponse annoncé (heures)<Obligatoire />
           </label>
           <input
             id="delai_reponse_heures"
@@ -122,7 +123,7 @@ export function BilletsParamsForm({ params }: { params: ParametresBillet }) {
 
         <div>
           <label htmlFor="validite_devis_heures" className={labelClass}>
-            Validité du devis (heures)
+            Validité du devis (heures)<Obligatoire />
           </label>
           <input
             id="validite_devis_heures"

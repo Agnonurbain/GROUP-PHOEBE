@@ -19,6 +19,7 @@ import {
   type GrilleTarifs,
   type PalierPoids,
 } from "@/lib/livraison"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 type Commune = { id: string; nom: string; zoneId: string | null }
 
@@ -51,7 +52,7 @@ function CommuneField({
   const t = useT()
   return (
     <div>
-      <label htmlFor={id} className={labelClass}>{label}</label>
+      <label htmlFor={id} className={labelClass}>{label}<Obligatoire /></label>
       <select
         id={id}
         name={name}
@@ -150,19 +151,19 @@ export default function CommanderClient({
             <h2 className="text-base font-semibold text-public-text">{t.livraisonForm.expediteurDestinataire}</h2>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="expediteur_nom" className={labelClass}>{t.livraisonForm.votreNom} *</label>
+                <label htmlFor="expediteur_nom" className={labelClass}>{t.livraisonForm.votreNom}<Obligatoire /></label>
                 <input id="expediteur_nom" name="expediteur_nom" required defaultValue={defaultNom} className={inputClass} />
               </div>
               <div>
-                <label htmlFor="expediteur_contact" className={labelClass}>{t.livraisonForm.votreContact} *</label>
+                <label htmlFor="expediteur_contact" className={labelClass}>{t.livraisonForm.votreContact}<Obligatoire /></label>
                 <input id="expediteur_contact" name="expediteur_contact" required defaultValue={defaultContact} placeholder={t.livraisonForm.exTelephone} className={inputClass} />
               </div>
               <div>
-                <label htmlFor="destinataire_nom" className={labelClass}>{t.livraisonForm.nomDestinataire} *</label>
+                <label htmlFor="destinataire_nom" className={labelClass}>{t.livraisonForm.nomDestinataire}<Obligatoire /></label>
                 <input id="destinataire_nom" name="destinataire_nom" required className={inputClass} />
               </div>
               <div>
-                <label htmlFor="destinataire_contact" className={labelClass}>{t.livraisonForm.contactDestinataire} *</label>
+                <label htmlFor="destinataire_contact" className={labelClass}>{t.livraisonForm.contactDestinataire}<Obligatoire /></label>
                 <input id="destinataire_contact" name="destinataire_contact" required placeholder={t.livraisonForm.exTelephone} className={inputClass} />
               </div>
             </div>
@@ -176,11 +177,11 @@ export default function CommanderClient({
               <CommuneField id="commune_collecte" name="commune_collecte" label="Commune de collecte *" communes={communes} text={communeCollecte} setText={setCommuneCollecte} />
               <CommuneField id="commune_livraison" name="commune_livraison" label="Commune de livraison *" communes={communes} text={communeLivraison} setText={setCommuneLivraison} />
               <div>
-                <label htmlFor="adresse_collecte" className={labelClass}>{t.livraisonForm.adresseCollecte} *</label>
+                <label htmlFor="adresse_collecte" className={labelClass}>{t.livraisonForm.adresseCollecte}<Obligatoire /></label>
                 <input id="adresse_collecte" name="adresse_collecte" required placeholder={t.livraisonForm.exQuartier} className={inputClass} />
               </div>
               <div>
-                <label htmlFor="adresse_livraison" className={labelClass}>{t.livraisonForm.adresseLivraison} *</label>
+                <label htmlFor="adresse_livraison" className={labelClass}>{t.livraisonForm.adresseLivraison}<Obligatoire /></label>
                 <input id="adresse_livraison" name="adresse_livraison" required placeholder={t.livraisonForm.exQuartier} className={inputClass} />
               </div>
             </div>
@@ -190,7 +191,7 @@ export default function CommanderClient({
           <Card>
             <h2 className="text-base font-semibold text-public-text">{t.livraisonForm.modeLivraison}</h2>
             <div className="mt-5">
-              <label htmlFor="mode" className={labelClass}>{t.livraisonForm.mode} *</label>
+              <label htmlFor="mode" className={labelClass}>{t.livraisonForm.mode}</label>
               <select id="mode" name="mode" value={mode} onChange={(e) => setMode(e.target.value)} className={inputClass}>
                 {MODES_LIVRAISON.map((m) => (
                   <option key={m} value={m}>{MODE_LABELS[m]}</option>
@@ -204,7 +205,7 @@ export default function CommanderClient({
                 indiquer. */}
             {mode === "programmee" && (
               <div className="mt-5">
-                <label htmlFor="date_souhaitee" className={labelClass}>{t.livraisonForm.dateSouhaitee} *</label>
+                <label htmlFor="date_souhaitee" className={labelClass}>{t.livraisonForm.dateSouhaitee}<Obligatoire /></label>
                 <input
                   id="date_souhaitee"
                   name="date_souhaitee"
@@ -229,7 +230,7 @@ export default function CommanderClient({
                 <input id="nature_colis" name="nature_colis" placeholder={t.livraisonForm.exNature} className={inputClass} />
               </div>
               <div>
-                <label htmlFor="poids_kg" className={labelClass}>{t.livraisonForm.poids} *</label>
+                <label htmlFor="poids_kg" className={labelClass}>{t.livraisonForm.poids}<Obligatoire /></label>
                 <input
                   id="poids_kg"
                   name="poids_kg"
@@ -283,7 +284,7 @@ export default function CommanderClient({
 
           {/* Paiement */}
           <Card>
-            <h2 className="text-base font-semibold text-public-text">{t.paiement.moyenPaiement}</h2>
+            <h2 className="text-base font-semibold text-public-text">{t.paiement.moyenPaiement}<Obligatoire /></h2>
             <div className="mt-5 space-y-3">
               {[
                 {

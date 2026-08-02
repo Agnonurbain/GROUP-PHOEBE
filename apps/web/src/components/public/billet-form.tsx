@@ -14,6 +14,7 @@ import {
   type ParametresBillet,
 } from "@/lib/billets"
 import { DeposerPasseport, PasseportAccompagnant } from "@/components/public/passeport-voyageur"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const champ =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-blue focus:outline-none focus:ring-2 focus:ring-accent-blue/20"
@@ -133,11 +134,11 @@ export function BilletForm({
       {/* Ligne principale : trajet, dates, voyageurs */}
       <div className="grid gap-4 rounded-2xl border border-public-border bg-public-bg-card p-5 md:grid-cols-2 lg:grid-cols-5">
         <div>
-          <label htmlFor="depart" className={label}>D&apos;où partez-vous ?</label>
+          <label htmlFor="depart" className={label}>D&apos;où partez-vous ?<Obligatoire /></label>
           <input id="depart" name="depart" list="aeroports" required placeholder="Abidjan (ABJ)" className={champ} />
         </div>
         <div>
-          <label htmlFor="destination" className={label}>Où allez-vous ?</label>
+          <label htmlFor="destination" className={label}>Où allez-vous ?<Obligatoire /></label>
           <input id="destination" name="destination" list="aeroports" required placeholder="Paris (CDG)" className={champ} />
         </div>
         <datalist id="aeroports">
@@ -145,7 +146,7 @@ export function BilletForm({
         </datalist>
 
         <div>
-          <label htmlFor="date_depart" className={label}>Date de départ</label>
+          <label htmlFor="date_depart" className={label}>Date de départ<Obligatoire /></label>
           <input
             id="date_depart"
             name="date_depart"
@@ -244,15 +245,15 @@ export function BilletForm({
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div>
-            <label htmlFor="passeport_nom" className={label}>Nom et prénoms</label>
+            <label htmlFor="passeport_nom" className={label}>Nom et prénoms<Obligatoire /></label>
             <input id="passeport_nom" name="passeport_nom" required placeholder="Tels qu'inscrits" className={champ} />
           </div>
           <div>
-            <label htmlFor="passeport_numero" className={label}>Numéro de passeport</label>
+            <label htmlFor="passeport_numero" className={label}>Numéro de passeport<Obligatoire /></label>
             <input id="passeport_numero" name="passeport_numero" required placeholder="Ex. 21AB45678" className={champ} />
           </div>
           <div>
-            <label htmlFor="passeport_expiration" className={label}>Date d&apos;expiration</label>
+            <label htmlFor="passeport_expiration" className={label}>Date d&apos;expiration<Obligatoire /></label>
             <input
               id="passeport_expiration"
               name="passeport_expiration"

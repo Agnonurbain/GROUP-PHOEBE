@@ -6,6 +6,7 @@ import {
   type ParametresFacturationState,
 } from "@/app/actions/factures";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite transition-colors focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -49,7 +50,7 @@ export function ParametresFacturationForm({
           htmlFor="taux_tva"
           className="block text-sm font-medium text-phoebe-anthracite"
         >
-          Taux de TVA (%)
+          Taux de TVA (%)<Obligatoire />
         </label>
         <input
           id="taux_tva"
@@ -73,7 +74,7 @@ export function ParametresFacturationForm({
           htmlFor="prefixe_facture"
           className="block text-sm font-medium text-phoebe-anthracite"
         >
-          Préfixe de numérotation
+          Préfixe de numérotation<Obligatoire />
         </label>
         <input
           id="prefixe_facture"

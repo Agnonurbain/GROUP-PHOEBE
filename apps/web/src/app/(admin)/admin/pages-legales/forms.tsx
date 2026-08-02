@@ -10,6 +10,7 @@ import {
 import { SubmitButton } from "@/components/submit-button"
 import type { PageLegale, SectionLegale } from "@/lib/legal"
 import { libelleIndemnisation } from "@/lib/indemnisation"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
@@ -43,7 +44,7 @@ export function PageLegaleForm({ page }: { page: PageLegale }) {
       )}
 
       <div>
-        <label htmlFor={`titre-${page.slug}`} className={labelClass}>Titre</label>
+        <label htmlFor={`titre-${page.slug}`} className={labelClass}>Titre<Obligatoire /></label>
         <input
           id={`titre-${page.slug}`}
           name="titre"

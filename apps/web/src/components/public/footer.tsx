@@ -59,7 +59,7 @@ export async function Footer() {
               />
             </Link>
             <p className="font-display mt-5 text-2xl font-medium leading-snug text-public-text">
-              Leader Excellence Brilliant.
+              Leader Excellence Efficacité.
             </p>
             <p className="mt-3 max-w-xs text-sm text-public-text-muted">
               Transport, immobilier, assistance voyages et livraison en Côte d&apos;Ivoire.

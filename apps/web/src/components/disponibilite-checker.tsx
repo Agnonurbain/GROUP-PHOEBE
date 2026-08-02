@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { verifierDisponibilite } from "@/app/actions/disponibilites";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export function DisponibiliteChecker({
   vehiculeId,
@@ -44,7 +45,7 @@ export function DisponibiliteChecker({
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
             <label htmlFor="dispo-debut" className="mb-1 block text-sm text-phoebe-anthracite/70">
-              Du
+              Du<Obligatoire />
             </label>
             <input
               id="dispo-debut"
@@ -57,7 +58,7 @@ export function DisponibiliteChecker({
           </div>
           <div>
             <label htmlFor="dispo-fin" className="mb-1 block text-sm text-phoebe-anthracite/70">
-              Au
+              Au<Obligatoire />
             </label>
             <input
               id="dispo-fin"

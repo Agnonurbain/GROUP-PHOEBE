@@ -67,7 +67,7 @@
                 },
                 {
                   "type": "text",
-                  "content": "H1 \u2014 Inter Bold 48px \u2014 Leader Excellence Brilliant",
+                  "content": "H1 \u2014 Inter Bold 48px \u2014 Leader Excellence Efficacité",
                   "fontSize": 48,
                   "fontWeight": 700,
                   "fontFamily": "Inter",
@@ -1462,7 +1462,7 @@
                         },
                         {
                           "type": "text",
-                          "content": "Leader Excellence Brilliant",
+                          "content": "Leader Excellence Efficacité",
                           "fontSize": 14,
                           "fontWeight": 400,
                           "fontFamily": "Inter",
@@ -4723,7 +4723,7 @@
                     },
                     {
                       "type": "text",
-                      "content": "Leader Excellence Brilliant.",
+                      "content": "Leader Excellence Efficacité.",
                       "fontSize": 14,
                       "fontWeight": 400,
                       "fontFamily": "Inter",
@@ -9373,7 +9373,7 @@
                     },
                     {
                       "type": "text",
-                      "content": "Leader Excellence Brilliant.",
+                      "content": "Leader Excellence Efficacité.",
                       "fontSize": 14,
                       "fontWeight": 400,
                       "fontFamily": "Inter",

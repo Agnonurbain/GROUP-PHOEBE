@@ -6,6 +6,7 @@ import {
   type NegociationState,
 } from "@/app/actions/negociation"
 import { useT } from "@/lib/langue-context"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export type LigneNegociation = {
   groupKey: string
@@ -94,11 +95,11 @@ export function DemanderPrix({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div>
-          <label htmlFor="neg-debut" className={labelClass}>{t.negociation.du}</label>
+          <label htmlFor="neg-debut" className={labelClass}>{t.negociation.du}<Obligatoire /></label>
           <input id="neg-debut" name="debut" type="date" required min={demain} className={inputClass} />
         </div>
         <div>
-          <label htmlFor="neg-fin" className={labelClass}>{t.negociation.au}</label>
+          <label htmlFor="neg-fin" className={labelClass}>{t.negociation.au}<Obligatoire /></label>
           <input id="neg-fin" name="fin" type="date" required min={demain} className={inputClass} />
         </div>
       </div>

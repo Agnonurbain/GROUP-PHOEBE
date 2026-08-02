@@ -10,6 +10,7 @@ import {
   desaffecterLivreur,
   type ExpeditionActionState,
 } from "@/app/actions/livraison"
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const btnPrimary =
   "rounded-lg bg-phoebe-green px-3 py-2 text-xs font-semibold text-white transition-colors hover:bg-phoebe-green-deep disabled:opacity-50"
@@ -68,7 +69,7 @@ export function ExpeditionActions({
           {livreurs.length > 0 && (
             <form action={manuelAction} className="flex items-center gap-2">
               <input type="hidden" name="expedition_id" value={expeditionId} />
-              <label htmlFor={`liv-${expeditionId}`} className="sr-only">Livreur</label>
+              <label htmlFor={`liv-${expeditionId}`} className="sr-only">Livreur<Obligatoire /></label>
               <select id={`liv-${expeditionId}`} name="livreur_id" required defaultValue="" className={selectClass}>
                 <option value="" disabled>Choisir un livreur…</option>
                 {livreurs.map((l) => (
@@ -114,7 +115,7 @@ export function ExpeditionActions({
           <input type="hidden" name="expedition_id" value={expeditionId} />
           <div>
             <label htmlFor={`prix-${expeditionId}`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-              Ajuster le prix (FCFA)
+              Ajuster le prix (FCFA)<Obligatoire />
             </label>
             <input
               id={`prix-${expeditionId}`}
@@ -129,7 +130,7 @@ export function ExpeditionActions({
           </div>
           <div className="flex-1 min-w-[12rem]">
             <label htmlFor={`motif-${expeditionId}`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-              Motif
+              Motif<Obligatoire />
             </label>
             <input
               id={`motif-${expeditionId}`}
@@ -156,7 +157,7 @@ export function ExpeditionActions({
           <input type="hidden" name="expedition_id" value={expeditionId} />
           <div className="flex-1 min-w-[14rem]">
             <label htmlFor={`cloture-${expeditionId}`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-              Clôturer définitivement — motif
+              Clôturer définitivement — motif<Obligatoire />
             </label>
             <input
               id={`cloture-${expeditionId}`}

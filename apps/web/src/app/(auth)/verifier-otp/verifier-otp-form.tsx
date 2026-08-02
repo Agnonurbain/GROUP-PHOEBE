@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { verifierOtp, renvoyerCode, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "@/components/submit-button";
 import { ScrollReveal } from "@/components/effects";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 const RESEND_COOLDOWN = 60;
 
@@ -59,7 +60,7 @@ export default function VerifierOtpForm() {
         {next && <input type="hidden" name="next" value={next} />}
         <div>
           <label htmlFor="token" className="mb-1.5 block text-sm font-medium text-public-text">
-            Code de vérification
+            Code de vérification<Obligatoire />
           </label>
           <input
             id="token"

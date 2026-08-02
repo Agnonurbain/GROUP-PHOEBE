@@ -3,6 +3,7 @@
 import { useActionState, useRef } from "react";
 import { ajouterCommune, type TarifState } from "@/app/actions/tarifs";
 import { SubmitButton } from "@/components/submit-button";
+import { Obligatoire } from "@/components/ui/obligatoire"
 
 export function AjouterCommuneForm({ zoneId }: { zoneId: string }) {
   const formRef = useRef<HTMLFormElement>(null);
@@ -19,7 +20,7 @@ export function AjouterCommuneForm({ zoneId }: { zoneId: string }) {
     <form ref={formRef} action={formAction} className="space-y-2">
       <input type="hidden" name="zone_id" value={zoneId} />
       <label htmlFor={`commune-${zoneId}`} className="sr-only">
-        Nouvelle commune
+        Nouvelle commune<Obligatoire />
       </label>
       <div className="flex gap-2">
         <input
