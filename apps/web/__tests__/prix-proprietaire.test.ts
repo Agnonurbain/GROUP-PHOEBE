@@ -99,6 +99,32 @@ describe("les prix ne sont modifiables que par le propriétaire", () => {
     expect(corps).toContain("requireProprietaireAvecId()");
   });
 
+  /**
+   * L'atelier de propositions est la porte de service du prix : un opérateur y
+   * dépose une valeur que le propriétaire applique. Approuver automatiquement
+   * sous un seuil rouvrait la porte principale — l'opérateur écrivait le prix
+   * lui-même, avec le client service_role, donc sans RLS pour l'arrêter.
+   *
+   * Et l'écart se mesurait à chaque fois depuis la valeur COURANTE : quelques
+   * propositions toutes sous le seuil doublaient le tarif sans qu'aucune ne le
+   * franchisse. Le propriétaire n'en était pas averti, la notification n'étant
+   * envoyée que lorsque le seuil était dépassé.
+   */
+  it.each([
+    ["propositions.ts", "proposerPrix"],
+    ["propositions-zones.ts", "proposerModificationZone"],
+  ])("%s n'approuve rien automatiquement", (fichier, nom) => {
+    const corps = corpsDeFonction(src(`app/actions/${fichier}`), nom);
+    expect(corps).not.toContain("autoApprouve");
+    expect(corps).not.toContain("SEUIL_APPROBATION_AUTO_PCT");
+    // Poser « acceptee » à l'insertion revient au même par un autre chemin.
+    expect(corps).not.toContain('statut: "acceptee"');
+  });
+
+  it("le seuil d'approbation automatique n'existe plus", () => {
+    expect(src("lib/constants.ts")).not.toContain("SEUIL_APPROBATION_AUTO_PCT");
+  });
+
   it("les champs tarifaires du véhicule sont retirés pour un opérateur", () => {
     const source = src("app/actions/vehicules.ts");
     // Le filtre existe et couvre tous les champs monétaires.

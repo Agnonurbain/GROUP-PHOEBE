@@ -39,12 +39,10 @@ function fichiers(dossier: string, ext: string[]): string[] {
  * corbeille.
  */
 const SANS_APPELANT_CONNUS = new Map<string, string>([
-  // Atelier de propositions tarifaires : l'équivalent pour les ZONES est
-  // branché (`propositions-zones.ts`, écran /admin/propositions), celui des
-  // tarifs ne l'a jamais été. Fonctionnalité à moitié construite.
-  ["proposerModificationTarifs", "workflow de proposition tarifaire jamais branché"],
-  ["traiterPropositionTarifs", "workflow de proposition tarifaire jamais branché"],
-  ["getPropositionsTarifs", "workflow de proposition tarifaire jamais branché"],
+  // Vide, et c'est l'état recherché. Le dernier occupant était l'atelier
+  // `propositions_tarifs` : un doublon jamais branché de la proposition de
+  // zone, qui marquait « acceptée » sans rien appliquer pour deux de ses
+  // quatre types. Supprimé en 00076 plutôt que fini.
 ]);
 
 describe("Actions serveur — chacune a un appelant", () => {

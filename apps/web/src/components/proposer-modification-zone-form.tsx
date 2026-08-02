@@ -38,8 +38,9 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
         Proposer une modification de coefficient zone
       </h2>
       <p className="mb-3 text-xs text-phoebe-anthracite/70">
-        La proposition sera soumise au propriétaire pour validation.
-        Les modifications de ±15 % ou moins sont approuvées automatiquement.
+        La proposition est soumise au propriétaire, qui seul l&apos;applique.
+        Un coefficient de zone multiplie un prix facturé : aucune valeur ne
+        change tant qu&apos;il n&apos;a pas tranché.
       </p>
 
       {state.error && (

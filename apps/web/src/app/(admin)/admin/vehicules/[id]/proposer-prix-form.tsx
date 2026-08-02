@@ -32,8 +32,8 @@ export function ProposerPrixForm({
         Proposer une modification de prix
       </h2>
       <p className="mb-3 text-xs text-phoebe-anthracite/70">
-        La proposition sera soumise au propriétaire pour validation.
-        Les modifications de ±15 % ou moins sont approuvées automatiquement.
+        La proposition est soumise au propriétaire, qui seul l&apos;applique.
+        Le prix affiché ne change pas tant qu&apos;il n&apos;a pas tranché.
       </p>
 
       <div className="mb-3 text-xs text-phoebe-anthracite/70 space-y-0.5">

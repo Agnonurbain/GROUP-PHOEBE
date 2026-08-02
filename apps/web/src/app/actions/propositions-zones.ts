@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
-import { SEUIL_APPROBATION_AUTO_PCT } from "@/lib/constants";
 import { logAudit } from "@/lib/audit";
 import { notifier } from "@/lib/notifications";
 
@@ -67,14 +66,9 @@ export async function proposerModificationZone(
 
   const valeurActuelle = String((zone as Record<string, unknown>)[champ] ?? "");
 
-  const numActuel = parseFloat(valeurActuelle);
-  const numPropose = parseFloat(valeurProposee);
-  const reductionPct = !isNaN(numActuel) && numActuel > 0 && !isNaN(numPropose)
-    ? Math.abs(numPropose - numActuel) / numActuel * 100
-    : null;
-
-  const autoApprouve = reductionPct !== null && reductionPct <= SEUIL_APPROBATION_AUTO_PCT;
-
+  // Aucune approbation automatique : un coefficient de zone multiplie un prix
+  // facturé, et l'écart se mesurait à chaque fois depuis la valeur courante —
+  // des propositions toutes sous le seuil finissaient par doubler le tarif.
   const { error } = await supabase.from("propositions_zones_tarifaires" as never).insert({
     zone_id: zoneId,
     operateur_id: user.sub,
@@ -82,43 +76,30 @@ export async function proposerModificationZone(
     valeur_actuelle: valeurActuelle || null,
     valeur_proposee: valeurProposee,
     commentaire,
-    ...(autoApprouve ? { statut: "acceptee" } : {}),
   } as never);
 
   if (error) return { error: error.message };
 
-  if (!autoApprouve) {
-    const { data: proprios } = await supabase
-      .from("users")
-      .select("id, telephone")
-      .eq("role", "proprietaire");
+  await logAudit({
+    userId: user.sub,
+    action: "proposer_zone",
+    tableName: "propositions_zones_tarifaires",
+    recordId: zoneId,
+    oldValues: { [champ]: valeurActuelle },
+    newValues: { [champ]: valeurProposee },
+  });
 
-    for (const p of proprios ?? []) {
-      await notifier({
-        userId: p.id,
-        evenement: "Nouvelle proposition de modification de zone",
-        contenu: `Une modification de ${champ} a été proposée pour la zone ${zone.nom} par ${profile.nom}. Consultez-la dans votre back-office.`,
-        telephone: p.telephone ?? undefined,
-      });
-    }
-  }
+  const { data: proprios } = await supabase
+    .from("users")
+    .select("id, telephone")
+    .eq("role", "proprietaire");
 
-  if (autoApprouve) {
-    await admin
-      .from("zones_tarifaires")
-      .update({
-        [champ]: isNaN(numPropose) ? valeurProposee : numPropose,
-        updated_at: new Date().toISOString(),
-      } as never)
-      .eq("id", zoneId);
-
-    await logAudit({
-      userId: user.sub,
-      action: "auto_approuver_zone",
-      tableName: "zones_tarifaires",
-      recordId: zoneId,
-      oldValues: { [champ]: valeurActuelle },
-      newValues: { [champ]: valeurProposee, ecart_pct: reductionPct },
+  for (const p of proprios ?? []) {
+    await notifier({
+      userId: p.id,
+      evenement: "Nouvelle proposition de modification de zone",
+      contenu: `Une modification de ${champ} a été proposée pour la zone ${zone.nom} par ${profile.nom}. Consultez-la dans votre back-office.`,
+      telephone: p.telephone ?? undefined,
     });
   }
 
