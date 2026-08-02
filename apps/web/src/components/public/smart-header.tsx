@@ -20,13 +20,18 @@ interface SmartHeaderProps {
   langue?: string
 }
 
-// Dimensions intrinsèques des PNG (marges transparentes rognées)
+// Dimensions RÉELLES des fichiers, marges transparentes rognées à la source.
+//
+// Elles étaient auparavant approximatives — 429×346 annoncés pour un fichier
+// carré, par exemple. Sans `object-contain`, le navigateur étire l'image pour
+// remplir le cadre déduit de ces valeurs : le logo Assistance était allongé de
+// près d'un quart. Toute correction de ces chiffres doit venir du fichier.
 const logos: Record<Vertical, { src: string; alt: string; w: number; h: number }> = {
-  default: { src: "/logos/phoebe.png", alt: "GROUP PHOEBE", w: 334, h: 303 },
-  transport: { src: "/logos/transport.png", alt: "Transport", w: 500, h: 500 },
-  livraison: { src: "/logos/livraison.png", alt: "Livraison", w: 500, h: 500 },
-  immobilier: { src: "/logos/immobilier.png", alt: "Immobilier", w: 308, h: 278 },
-  assistance: { src: "/logos/assistance.png", alt: "Assistance Voyages & Études", w: 429, h: 346 },
+  default: { src: "/logos/phoebe.png", alt: "GROUP PHOEBE", w: 445, h: 457 },
+  transport: { src: "/logos/transport.png", alt: "Transport", w: 374, h: 395 },
+  livraison: { src: "/logos/livraison.png", alt: "Livraison", w: 411, h: 424 },
+  immobilier: { src: "/logos/immobilier.png", alt: "Immobilier", w: 407, h: 424 },
+  assistance: { src: "/logos/assistance.png", alt: "Assistance Voyages & Études", w: 423, h: 429 },
 }
 
 const verticales = [
@@ -95,7 +100,9 @@ export function SmartHeader({ vertical: forcedVertical, session, langues, langue
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
         <Link href="/" className="shrink-0">
-          <Image src={logo.src} alt={logo.alt} width={logo.w} height={logo.h} className="h-14 w-auto" priority />
+          {/* `object-contain` : si les dimensions déclarées venaient à ne plus
+              correspondre au fichier, le logo serait recadré plutôt qu'étiré. */}
+          <Image src={logo.src} alt={logo.alt} width={logo.w} height={logo.h} sizes="64px" className="h-14 w-auto object-contain" priority />
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">

@@ -21,8 +21,8 @@ const services = [
     href: "/transport/catalogue",
     logo: "/logos/transport.png",
     logoAlt: "Transport",
-    logoW: 500,
-    logoH: 500,
+    logoW: 374,
+    logoH: 395,
   },
   {
     cle: "immobilier" as const,
@@ -30,8 +30,8 @@ const services = [
     href: "/immobilier",
     logo: "/logos/immobilier.png",
     logoAlt: "Immobilier",
-    logoW: 500,
-    logoH: 500,
+    logoW: 407,
+    logoH: 424,
   },
   {
     cle: "assistance" as const,
@@ -39,8 +39,8 @@ const services = [
     href: "/assistance",
     logo: "/logos/assistance.png",
     logoAlt: "Assistance Voyages & Études",
-    logoW: 500,
-    logoH: 500,
+    logoW: 423,
+    logoH: 429,
   },
   {
     cle: "livraison" as const,
@@ -48,8 +48,8 @@ const services = [
     href: "/livraison",
     logo: "/logos/livraison.png",
     logoAlt: "Livraison",
-    logoW: 500,
-    logoH: 500,
+    logoW: 411,
+    logoH: 424,
   },
 ]
 
@@ -196,14 +196,14 @@ export default function HomePage({
                       {t.verticales.explorer} <ArrowRight className="size-4" />
                     </span>
                   </div>
-                  <div className="hidden h-20 w-32 shrink-0 items-center justify-end sm:flex">
+                  <div className="hidden h-28 w-44 shrink-0 items-center justify-end sm:flex lg:h-32 lg:w-52">
                     <Image
                       src={s.logo}
                       alt={s.logoAlt}
                       width={s.logoW}
                       height={s.logoH}
-                      sizes="128px"
-                      className="h-16 w-auto object-contain opacity-80 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100"
+                      sizes="(min-width: 1024px) 208px, 176px"
+                      className="h-24 w-auto object-contain opacity-80 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100 lg:h-28"
                     />
                   </div>
                 </Link>
