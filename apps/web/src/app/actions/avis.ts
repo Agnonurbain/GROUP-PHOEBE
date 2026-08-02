@@ -8,6 +8,21 @@ export type AvisState = {
   success?: boolean
 }
 
+/**
+ * Motifs renvoyés par `public.avis_refus_motif` (00077), mis en français.
+ *
+ * `introuvable` couvre volontairement deux cas — la prestation n'existe pas, ou
+ * elle n'est pas la vôtre. Les distinguer indiquerait à un curieux quels
+ * identifiants existent.
+ */
+const MESSAGES_REFUS: Record<string, string> = {
+  non_connecte: "Vous devez être connecté.",
+  service_inconnu: "Ce service n'accepte pas d'avis.",
+  introuvable: "Réservation introuvable.",
+  non_terminee: "Vous pourrez donner votre avis une fois la prestation terminée.",
+  delai_depasse: "Le délai pour donner votre avis sur cette prestation est écoulé.",
+}
+
 export async function soumettreAvis(
   prevState: AvisState,
   formData: FormData
@@ -31,6 +46,15 @@ export async function soumettreAvis(
 
   if (!reference_table || !reference_id) return { error: "Réservation requise." }
   if (isNaN(note) || note < 1 || note > 5) return { error: "Note invalide (1-5)." }
+
+  // La règle vit en base (`avis_refus_motif`, 00077) et la policy d'insertion
+  // s'en sert : cet appel ne garde rien, il sert à dire POURQUOI plutôt que de
+  // laisser remonter une violation de policy que personne ne peut lire.
+  const { data: motif } = await supabase.rpc("avis_refus_motif", {
+    p_reference_table: reference_table,
+    p_reference_id: reference_id,
+  })
+  if (motif) return { error: MESSAGES_REFUS[motif] ?? MESSAGES_REFUS.introuvable }
 
   const { error } = await supabase.from("avis").insert({
     reference_table,

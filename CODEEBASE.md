@@ -69,7 +69,7 @@ group-phoebe/
 │       └── index.ts             # Exports
 │
 ├── supabase/                    # Projet Supabase — UNIQUE source de vérité
-│   ├── migrations/              # 76 migrations SQL
+│   ├── migrations/              # 78 migrations SQL
 │   ├── tests/                   # SQL de vérification (contrainte d'exclusion)
 │   ├── config.toml              # Ports de la pile locale
 │   └── seed*.sql                # Jeux de données de développement
@@ -211,7 +211,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-76 migrations Supabase (00001 → 00076), toutes dans `supabase/migrations/`.
+78 migrations Supabase (00001 → 00078), toutes dans `supabase/migrations/`.
 
 ### 5.1 Tables
 
@@ -707,7 +707,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 630 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 643 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -728,6 +728,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | `immobilier-cycle.test.ts` | Cycle d'une demande immobilière : une demande refusée ne se ré-accepte pas (double engagement sur un même bien), acceptée ne retourne pas en négociation, `visite_realisee` distinct de `finalisee`. Cycle d'une visite et réponse du client à son créneau |
 | `legal-indemnisation.test.ts` | Indemnisation : rien tant que le régime n'est pas activé, plafond à 0 = pas de plafond, montant figé à la clôture. Pages légales : édition propriétaire, publication refusée s'il reste un `[À COMPLÉTER]`, brouillon `noindex`. Couverture d'article déposée dans le bucket |
 | `actions-branchees.test.ts` | **Règle de dépôt** : toute action serveur a un appelant. Les exceptions sont listées nommément avec leur raison, et un second test vérifie qu'elles sont encore réellement orphelines — une exception périmée couvrirait une régression |
+| `avis-garde.test.ts` | Un avis ne se dépose que sur SA prestation, terminée, et dans la fenêtre. Lit le SQL de 00077 : les cinq services et leur statut terminal propre, la propriété vérifiée, « introuvable » qui ne distingue pas l'inexistant du non-possédé, et la fenêtre qui part du plus tardif entre fin réelle et clôture — le client ne paie pas notre lenteur |
 | `tables-migrees.test.ts` | **Règle de dépôt** : toute table lue ou écrite par le code est créée par une migration de `supabase/migrations/`, et n'a pas été supprimée depuis. Née d'une table vivante dont la seule définition dormait dans un ancien dossier de migrations figé — la production l'avait, une reconstruction ne l'aurait pas eue |
 | `heures-ouvrees.test.ts` | Décompte en heures ouvrées : une demande du vendredi 17 h expire le lundi matin, un dimanche ne consomme rien, des horaires inexploitables retombent sur le calendaire. Et la propriété dont dépendent les crons — le temps ouvré ne dépasse jamais le calendaire |
 | `crons.test.ts` | Toute route cron est planifiée, toute planification vise une route existante, aucune expression n'est réutilisée, et chaque route échoue fermée sans secret |
@@ -743,6 +744,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-08-02 | **Un avis ne se dépose que sur SA prestation** (00077). La policy d'insertion annonçait « sur une réservation terminée le concernant » et ne vérifiait ni l'un ni l'autre : seulement que `client_id` valait `auth.uid()` et que le compte était client. Comme `avis` porte un `unique (reference_table, reference_id)`, la conséquence dépassait le faux avis — le premier à écrire sur un identifiant occupait la place, donc n'importe quel client pouvait **empêcher le vrai client de s'exprimer**. Une fonction `avis_refus_motif` en `security definer` devient la source unique : la policy s'en sert pour trancher, l'écran pour expliquer. Chacun des cinq services a son statut terminal propre (`terminee`, `finalisee`, `finalise`, `emise`, `livree`), et la fenêtre `delai_apres_terme_jours` — jusque-là lue par personne — part du plus tardif entre la fin réelle et la clôture, pour qu'une clôture tardive de notre part ne rogne pas le délai du client. `moderation_obligatoire` est retirée : elle décrivait le comportement sans pouvoir le changer, et la brancher aurait offert un interrupteur pour publier sans relecture. Garde éprouvée sur base réelle, huit cas dont l'INSERT sous RLS par le mauvais client. **00078** : `agences` est documentée comme dormante par intention — le multi-agences est au programme, un audit ne doit plus la proposer à la suppression. |
 | 2026-08-02 | **Un seul dossier de migrations** : `packages/database/supabase/` est supprimé. Ce second projet Supabase était figé au 00034 (42 migrations de retard) et réutilisait le numéro **00032** pour un fichier différent de celui du dossier racine — deux historiques incompatibles, dont un seul était poussé. Sa seule définition unique, `propositions_zones_tarifaires`, a été reprise en 00076. `config.toml`, les seeds et `tests/` remontent à la racine, où le CLI travaille déjà. Le script `generate-types` visait `--local`, donc une base construite depuis le dossier périmé : il pointe désormais sur `--linked`, ce qui correspond à la façon dont `types.ts` était réellement produit. Reconstruction complète depuis les 76 migrations vérifiée avant suppression. |
 | 2026-08-02 | **L'atelier de propositions tarifaires : un chemin gardé, un chemin fermé** (00076). Trois ateliers coexistaient ; `propositions_tarifs` (00034) n'avait jamais eu d'écran, et était un doublon **défait** de la proposition de zone : son type acceptait « prix_base » et « intervalles », mais la fonction d'application ne traitait que « coefficients » et « geojson » — accepter une proposition des deux autres types la marquait « acceptée » **sans rien appliquer**. Supprimé plutôt que fini. Au passage, `propositions_zones_tarifaires` — l'atelier qui SERT — n'existait dans aucune migration de `supabase/migrations/` : sa seule définition vivait dans `packages/database/supabase/migrations/`, dossier figé au 00034 qui réutilise le numéro 00032 pour un autre fichier. Redéclarée en idempotent, et `tables-migrees.test.ts` verrouille la classe entière. Enfin, **l'approbation automatique sous 15 % est supprimée** : elle laissait un opérateur écrire un prix véhicule ou un coefficient de zone avec le client service_role, donc hors RLS, et l'écart se mesurant depuis la valeur courante, quelques passages tous sous le seuil doublaient le tarif sans qu'aucun ne le franchisse — le propriétaire n'étant averti que dans le cas contraire. |
 | 2026-07-29 | **Les paramètres des billets deviennent pilotables** (00056), onglet « Billets d'avion » dans `/admin/tarifs`, propriétaire seul. Étaient figés dans le code : les **frais de service** par billet, la **validité de passeport exigée** après le départ, le **plafond de voyageurs** et le **délai de réponse** annoncé au client. `validerDemandeBillet` prend désormais ces paramètres au lieu de constantes — les tests vérifient qu'un plafond ou une validité modifiés changent réellement le verdict. Les frais sont **figés sur la demande** à sa création, comme la commission immobilière : le barème peut évoluer sans réécrire ce qui a été annoncé au client. Le devis affiche le total (vol + frais) côté client comme côté admin, et la notification l'annonce détaillé. Même précaution que pour `taux_max_reduction` sur la lecture en cache : le repli ne joue que sur une valeur absente ou non numérique, jamais sur 0 — 0 est légitime pour les frais comme pour la validité exigée. |
