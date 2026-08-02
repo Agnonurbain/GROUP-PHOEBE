@@ -307,7 +307,9 @@ export const fr = {
     exempleNote: "Budget envisagé, usage prévu, contraintes particulières…",
     // Le client doit savoir que sa demande expire : sinon il ne comprend pas
     // de la voir disparaître, et le véhicule qu'on lui réservait avec.
-    delai: "Le véhicule vous est réservé 30 minutes, le temps que nous répondions.",
+    // {delai} : la valeur vient du réglage admin, pas d'un nombre figé dans
+    // la phrase — les deux divergeraient au premier changement.
+    delai: "Le véhicule vous est réservé {delai}, le temps que nous répondions.",
     envoyer: "Envoyer ma demande",
   },
 

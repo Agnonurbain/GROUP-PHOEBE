@@ -5,7 +5,7 @@ import { ConducteursSecondaires, type Conducteur } from "./conducteurs-secondair
 import { ExportCsvButton } from "./export-csv-button";
 import { NegotiationTimer } from "./negotiation-timer";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
-import { DELAI_NEGOCIATION_MS } from "@/lib/constants";
+import { getParametresTransport } from "@/lib/parametres-transport";
 import { ScrollReveal } from "@/components/effects";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ const TOUS_STATUTS = [...STATUTS_ACTIFS, ...STATUTS_HISTORIQUE]
 
 const TYPES = ["reservation_directe", "achat"]
 
-const DELAI_NEGOCIATION_MINUTES = DELAI_NEGOCIATION_MS / (1000 * 60);
+
 
 export default async function DemandesPage({
   searchParams,
@@ -85,6 +85,11 @@ export default async function DemandesPage({
   if (afficheHistorique && !filtreDateDebut && !filtreDateFin && filtreType === "all") {
     limitHistorique = 20
   }
+
+  // Le compte à rebours suit le délai réglé, pas une constante : les deux
+  // divergeraient dès le premier changement.
+  const { delai_negociation_heures } = await getParametresTransport();
+  const delaiNegociationMinutes = delai_negociation_heures * 60;
 
   const { data: demandes } = await query;
 
@@ -236,7 +241,7 @@ export default async function DemandesPage({
                             <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${s.color}`}>{s.label}</span>
                           )}
                           {d.statut === "en_negociation" && (
-                            <NegotiationTimer updatedAt={d.updated_at} delaiMinutes={DELAI_NEGOCIATION_MINUTES} />
+                            <NegotiationTimer updatedAt={d.updated_at} delaiMinutes={delaiNegociationMinutes} />
                           )}
                           {d.type === "achat" && (
                             <span className="rounded-full bg-phoebe-gold/10 px-2.5 py-0.5 text-xs font-semibold text-phoebe-gold-dark">Achat</span>

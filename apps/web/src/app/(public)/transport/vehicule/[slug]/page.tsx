@@ -8,6 +8,7 @@ import { VehicleBooking } from "@/components/public/vehicle-booking"
 import { VehiclePurchase } from "@/components/public/vehicle-purchase"
 import { DemanderPrix } from "@/components/public/demander-prix"
 import { getCommunes } from "@/lib/public-cache"
+import { getParametresTransport, formaterDelai } from "@/lib/parametres-transport"
 import Link from "next/link"
 import { ViewItemTracker } from "@/components/analytics/view-item-tracker"
 import { BackLink } from "@/components/public/back-link"
@@ -91,6 +92,7 @@ export default async function VehicleDetail({
   // Mêmes communes que partout ailleurs (cache partagé) : la zone déduite de
   // la destination correspond ainsi à celle qui sera appliquée au devis.
   const communesNegociation = (await getCommunes()).map((c) => ({ id: c.id, nom: c.nom }))
+  const delaiNegociation = formaterDelai((await getParametresTransport()).delai_negociation_heures)
 
   let zonePrices: { nom: string; prixMin: number; prixMax: number }[] = []
   if (zones && zones.length > 0) {
@@ -333,6 +335,7 @@ export default async function VehicleDetail({
               <DemanderPrix
                 variante="discret"
                 communes={communesNegociation}
+                delai={delaiNegociation}
                 lignes={[
                   {
                     groupKey: slug,

@@ -15,6 +15,8 @@ import { LivraisonTarifsForm } from "./livraison-form";
 import { AssistanceTarifsForm } from "./assistance-form";
 import { ContactParamsForm } from "./contact-form";
 import { BilletsParamsForm } from "./billets-form";
+import { DelaisForm } from "./delais-form";
+import { getParametresTransport } from "@/lib/parametres-transport";
 import { CAT_LABELS } from "@/lib/constants";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getTarifsLivraison, getTarifsAssistance, getParametresContact, getParametresBillet } from "@/lib/public-cache";
@@ -109,6 +111,8 @@ export default async function TarifsPage() {
     })
     .filter(Boolean) as { categorie: string; catLabel: string; min: number; max: number; count: number }[];
 
+  const delaisTransport = await getParametresTransport();
+
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <ScrollReveal variant="fade-up">
@@ -119,6 +123,22 @@ export default async function TarifsPage() {
           Pilotez vos marges en ajustant les coefficients par zone. Les prix finaux sont
           calculés automatiquement depuis le prix de base de chaque véhicule.
         </p>
+      </ScrollReveal>
+
+      <ScrollReveal variant="fade-up" delay={0.05}>
+        <section className="space-y-3">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
+              Délais du cycle transport
+            </h2>
+            <p className="mt-1 text-xs text-phoebe-anthracite/60">
+              Ces trois délais pilotent les expirations automatiques. Ils vivaient
+              dans le code : les changer demandait un déploiement, alors que l&apos;un
+              d&apos;eux décide d&apos;une rétention de caution.
+            </p>
+          </div>
+          <DelaisForm initial={delaisTransport} />
+        </section>
       </ScrollReveal>
 
       <ScrollReveal variant="fade-up" delay={0.1}>

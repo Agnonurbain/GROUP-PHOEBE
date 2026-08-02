@@ -37,10 +37,13 @@ const labelClass = "mb-1 block text-xs font-medium text-public-text"
 export function DemanderPrix({
   lignes,
   communes,
+  delai,
   variante = "principal",
 }: {
   lignes: LigneNegociation[]
   communes: CommuneOption[]
+  /** Délai réglé en admin, déjà mis en forme (« 4 h », « 30 min »). */
+  delai: string
   /** `discret` sur la fiche véhicule, où « Réserver » reste l'action première. */
   variante?: "principal" | "discret"
 }) {
@@ -166,7 +169,9 @@ export function DemanderPrix({
         </p>
       )}
 
-      <p className="text-[11px] text-public-text-muted">{t.negociation.delai}</p>
+      <p className="text-[11px] text-public-text-muted">
+        {t.negociation.delai.replace("{delai}", delai)}
+      </p>
 
       <div className="flex gap-2">
         <button

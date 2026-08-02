@@ -1578,6 +1578,30 @@ export type Database = {
         }
         Relationships: []
       }
+      parametres_transport: {
+        Row: {
+          delai_negociation_heures: number
+          delai_non_presentation_heures: number
+          delai_sans_reponse_heures: number
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          delai_negociation_heures?: number
+          delai_non_presentation_heures?: number
+          delai_sans_reponse_heures?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          delai_negociation_heures?: number
+          delai_non_presentation_heures?: number
+          delai_sans_reponse_heures?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       parametres_livraison: {
         Row: {
           id: boolean

@@ -11,7 +11,7 @@ import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations, expirerNegociationsAbandonnees } from "@/lib/payments/expiration-demandes";
 import { assignerVehiculesGroupe, type AssignedVehicle, type ZoneTarif } from "@/app/actions/vehicle-assignment";
-import { DELAI_NEGOCIATION_MS } from "@/lib/constants";
+import { getParametresTransport, heuresEnMs } from "@/lib/parametres-transport";
 
 function getAdmin() {
   return createAdminClient<Database>(
@@ -85,6 +85,7 @@ export async function creerDemandeNegociation(
   if (nbJours < 1) return { error: "La durée minimale est d'un jour." };
 
   const periode = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
+  const { delai_negociation_heures: delaiNegociation } = await getParametresTransport();
   const admin = getAdmin();
 
   await Promise.all([
@@ -179,7 +180,7 @@ export async function creerDemandeNegociation(
       // Échéance portée par la donnée, plus par un calcul implicite du cron.
       // Elle devient variable par demande, et surtout affichable au client :
       // un délai qui n'existe que dans une constante ne peut pas se montrer.
-      devis_expire_at: new Date(Date.now() + DELAI_NEGOCIATION_MS).toISOString(),
+      devis_expire_at: new Date(Date.now() + heuresEnMs(delaiNegociation)).toISOString(),
       negociation_note: note,
     })
     .select("id")

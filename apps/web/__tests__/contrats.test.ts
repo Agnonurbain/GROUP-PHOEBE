@@ -226,3 +226,57 @@ describe("Réservation — le code mort est retiré, pas la donnée", () => {
     expect(page).toContain('name="conducteur_secondaire_permis"');
   });
 });
+
+// Les trois délais du cycle transport vivaient dans `lib/constants.ts` : les
+// changer demandait un déploiement, alors que l'un d'eux décide d'une rétention
+// de caution.
+describe("Transport — délais pilotables", () => {
+  const actions = src("app/actions/tarifs.ts");
+
+  it("le réglage est réservé au propriétaire", () => {
+    const corps = corpsDeFonction(actions, "modifierDelaisTransport");
+    expect(corps).toContain("requireProprietaireAvecId()");
+  });
+
+  // Un délai nul ferait expirer instantanément tout ce qui entre dans le
+  // circuit ; au-delà d'une semaine, l'expiration ne protège plus rien.
+  it("les délais sont bornés", () => {
+    const corps = corpsDeFonction(actions, "modifierDelaisTransport");
+    expect(corps).toMatch(/valeur <= 0 \|\| valeur > 168/);
+  });
+
+  it("les trois délais sont pilotés, pas seulement la négociation", () => {
+    const corps = corpsDeFonction(actions, "modifierDelaisTransport");
+    for (const champ of [
+      "delai_negociation_heures",
+      "delai_sans_reponse_heures",
+      "delai_non_presentation_heures",
+    ]) {
+      expect(corps, champ).toContain(champ);
+    }
+  });
+
+  // Le repli compte : ces délais pilotent des crons qui libèrent des véhicules
+  // et retiennent des cautions. Une lecture ratée les rendrait nuls, et
+  // l'expiration s'appliquerait à tout — y compris à une réservation d'hier.
+  it("une lecture ratée retombe sur les constantes historiques", () => {
+    const lib = src("lib/parametres-transport.ts");
+    expect(lib).toContain("PARAMETRES_TRANSPORT_DEFAUT");
+    expect(lib).toMatch(/if \(!data\) return PARAMETRES_TRANSPORT_DEFAUT/);
+  });
+
+  // Les deux divergeraient au premier changement.
+  it("le délai annoncé au client suit le réglage", () => {
+    const composant = src("components/public/demander-prix.tsx");
+    expect(composant).toMatch(/delai: string/);
+    expect(composant).toMatch(/replace\("\{delai\}", delai\)/);
+    // Aucune durée figée dans la phrase du dictionnaire.
+    expect(src("lib/i18n/fr.ts")).not.toMatch(/réservé 30 minutes/);
+  });
+
+  it("les crons lisent le paramètre, plus la constante", () => {
+    const expiration = src("lib/payments/expiration-demandes.ts");
+    expect(expiration).toContain("getParametresTransport");
+    expect(expiration).not.toContain("DELAI_SANS_REPONSE_HEURES *");
+  });
+});

@@ -3,7 +3,7 @@ import type { Database } from "@group-phoebe/database/types";
 import { notifierClient } from "@/lib/notifications";
 import { getStripe } from "@/lib/payments/stripe";
 import { parsePeriodeDebut } from "@/lib/periode";
-import { DELAI_SANS_REPONSE_HEURES, DELAI_NON_PRESENTATION_HEURES, DELAI_NEGOCIATION_MS } from "@/lib/constants";
+import { getParametresTransport, heuresEnMs } from "@/lib/parametres-transport";
 
 type AdminClient = ReturnType<typeof getAdminClient>;
 
@@ -77,7 +77,8 @@ export async function rembourserPaiement(
 export async function expirerDemandesSansReponse(): Promise<number> {
   if (!estJourOuvre()) return 0;
   const admin = getAdminClient();
-  const seuil = new Date(Date.now() - DELAI_SANS_REPONSE_HEURES * 60 * 60 * 1000).toISOString();
+  const { delai_sans_reponse_heures } = await getParametresTransport();
+  const seuil = new Date(Date.now() - heuresEnMs(delai_sans_reponse_heures)).toISOString();
 
   const { data: expirees } = await admin
     .from("demandes_transport")
@@ -115,7 +116,8 @@ export async function expirerDemandesSansReponse(): Promise<number> {
 
 export async function expirerNonPresentations(): Promise<number> {
   const admin = getAdminClient();
-  const seuil = new Date(Date.now() - DELAI_NON_PRESENTATION_HEURES * 60 * 60 * 1000).toISOString();
+  const { delai_non_presentation_heures } = await getParametresTransport();
+  const seuil = new Date(Date.now() - heuresEnMs(delai_non_presentation_heures)).toISOString();
 
   const { data: expirees } = await admin
     .from("demandes_transport")
@@ -188,7 +190,8 @@ export async function expirerNegociationsAbandonnees(): Promise<number> {
   //
   // Repli sur l'ancien calcul pour les demandes ouvertes avant ce câblage :
   // sans lui, elles ne seraient jamais expirées.
-  const seuilHerite = new Date(Date.now() - DELAI_NEGOCIATION_MS).toISOString();
+  const { delai_negociation_heures } = await getParametresTransport();
+  const seuilHerite = new Date(Date.now() - heuresEnMs(delai_negociation_heures)).toISOString();
 
   const { data: expirees } = await admin
     .from("demandes_transport")

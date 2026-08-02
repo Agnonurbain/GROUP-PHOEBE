@@ -296,7 +296,7 @@ export const en: Dictionnaire = {
     preciser: "Please specify",
     votreDemande: "Your request",
     exempleNote: "Budget in mind, intended use, particular constraints…",
-    delai: "The vehicle is held for you for 30 minutes while we reply.",
+    delai: "The vehicle is held for you for {delai} while we reply.",
     envoyer: "Send my request",
   },
 

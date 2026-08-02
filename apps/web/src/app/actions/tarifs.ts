@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -674,5 +674,62 @@ export async function modifierParametresContact(
   revalidatePath("/admin/tarifs");
   const { revalidateTag } = await import("next/cache");
   (revalidateTag as (tag: string) => void)("parametres_contact");
+  return { success: true };
+}
+
+/**
+ * Délais du cycle transport.
+ *
+ * L'un d'eux décide d'une **rétention de caution** : c'est un montant, donc
+ * propriétaire seul, comme tout ce qui touche à l'argent dans ce projet.
+ */
+export async function modifierDelaisTransport(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  const userId = await requireProprietaireAvecId();
+  const admin = getAdmin();
+
+  const champs = {
+    delai_negociation_heures: Number(formData.get("delai_negociation_heures")),
+    delai_sans_reponse_heures: Number(formData.get("delai_sans_reponse_heures")),
+    delai_non_presentation_heures: Number(formData.get("delai_non_presentation_heures")),
+  };
+
+  for (const [nom, valeur] of Object.entries(champs)) {
+    // Un délai nul ferait expirer instantanément tout ce qui entre dans le
+    // circuit : les demandes seraient annulées avant d'être vues. Une semaine
+    // est la borne haute au-delà de laquelle l'expiration ne protège plus rien.
+    if (!Number.isFinite(valeur) || valeur <= 0 || valeur > 168) {
+      return { error: `Le délai « ${nom} » doit être compris entre 0 et 168 heures.` };
+    }
+  }
+
+  const { data: ancien } = await admin
+    .from("parametres_transport")
+    .select("delai_negociation_heures, delai_sans_reponse_heures, delai_non_presentation_heures")
+    .eq("id", true)
+    .maybeSingle();
+
+  const { error } = await admin
+    .from("parametres_transport")
+    .update({ ...champs, updated_at: new Date().toISOString() })
+    .eq("id", true);
+
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: "modifier_delais_transport",
+    tableName: "parametres_transport",
+    oldValues: ancien ?? undefined,
+    newValues: champs,
+  });
+
+  // Next 16 type revalidateTag(tag, profile) mais 1 arg suffit à l'exécution
+  // (même contournement que public-cache.ts et biens.ts).
+  (revalidateTag as (tag: string) => void)("parametres-transport");
+  revalidatePath("/admin/tarifs");
+  revalidatePath("/admin/demandes");
   return { success: true };
 }
