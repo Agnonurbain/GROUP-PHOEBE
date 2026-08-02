@@ -7,7 +7,7 @@ title=I(root, {"type":"text","content":"GROUP PHOEBE — Design System","fontSiz
 typo=I(root, {"type":"frame","role":"section","width":"fill_container","height":"fit_content","layout":"vertical","gap":24})
 typo_title=I(typo, {"type":"text","content":"Typography — Inter","fontSize":28,"fontWeight":600,"fontFamily":"Inter","fill":[{"type":"solid","color":"#C9A84C"}],"letterSpacing":-0.01})
 
-h1_demo=I(typo, {"type":"text","content":"H1 — Inter Bold 48px — Leader Excellence Brilliant","fontSize":48,"fontWeight":700,"fontFamily":"Inter","fill":[{"type":"solid","color":"#F5F5F5"}],"letterSpacing":-0.02,"lineHeight":1.1})
+h1_demo=I(typo, {"type":"text","content":"H1 — Inter Bold 48px — Leader Excellence Efficacité","fontSize":48,"fontWeight":700,"fontFamily":"Inter","fill":[{"type":"solid","color":"#F5F5F5"}],"letterSpacing":-0.02,"lineHeight":1.1})
 h2_demo=I(typo, {"type":"text","content":"H2 — Inter SemiBold 36px — Notre Flotte de Véhicules","fontSize":36,"fontWeight":600,"fontFamily":"Inter","fill":[{"type":"solid","color":"#F5F5F5"}],"letterSpacing":-0.01,"lineHeight":1.2})
 h3_demo=I(typo, {"type":"text","content":"H3 — Inter SemiBold 24px — Toyota Prado V6","fontSize":24,"fontWeight":600,"fontFamily":"Inter","fill":[{"type":"solid","color":"#F5F5F5"}],"lineHeight":1.3})
 body_demo=I(typo, {"type":"text","content":"Body — Inter Regular 16px — Découvrez nos véhicules d'exception pour vos déplacements.","fontSize":16,"fontWeight":400,"fontFamily":"Inter","fill":[{"type":"solid","color":"#8A8A8A"}],"lineHeight":1.6})
@@ -149,7 +149,7 @@ footer_title=I(footer_section, {"type":"text","content":"Footer","fontSize":28,"
 footer=I(footer_section, {"type":"frame","role":"footer","width":"fill_container","height":"fit_content","layout":"horizontal","padding":[48,32],"gap":60,"fill":[{"type":"solid","color":"#0A0A0A"}],"stroke":{"thickness":1,"fill":[{"type":"solid","color":"#2A2A2A"]}},"cornerRadius":12})
 col1=I(footer, {"type":"frame","layout":"vertical","gap":16,"width":240})
 I(col1, {"type":"text","content":"GROUP PHOEBE","fontSize":20,"fontWeight":700,"fontFamily":"Inter","fill":[{"type":"solid","color":"#C9A84C"]})
-I(col1, {"type":"text","content":"Leader Excellence Brilliant","fontSize":14,"fontFamily":"Inter","fill":[{"type":"solid","color":"#8A8A8A"]})
+I(col1, {"type":"text","content":"Leader Excellence Efficacité","fontSize":14,"fontFamily":"Inter","fill":[{"type":"solid","color":"#8A8A8A"]})
 col2=I(footer, {"type":"frame","layout":"vertical","gap":12,"width":"fit_content"})
 I(col2, {"type":"text","content":"Services","fontSize":14,"fontWeight":600,"fontFamily":"Inter","fill":[{"type":"solid","color":"#F5F5F5"]})
 I(col2, {"type":"text","content":"Transport & Livraison","fontSize":14,"fontFamily":"Inter","fill":[{"type":"solid","color":"#8A8A8A"]})
