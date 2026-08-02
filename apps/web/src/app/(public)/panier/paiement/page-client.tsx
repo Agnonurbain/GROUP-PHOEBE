@@ -5,6 +5,7 @@ import Image from "next/image"
 import { useActionState, useEffect, useState, useCallback, useRef, useMemo } from "react"
 import { useCart } from "@/lib/cart-context"
 import { createClient } from "@/lib/supabase/client"
+import { useT } from "@/lib/langue-context"
 import { PanierStepper } from "@/components/panier-stepper"
 import { AccepterCgv } from "@/components/public/accepter-cgv"
 import { BackLink } from "@/components/public/back-link"
@@ -31,6 +32,7 @@ const ZONE_COLORS: Record<string, string> = {
 }
 
 function ZonePin({ zone }: { zone: string }) {
+  const t = useT()
   const color = ZONE_COLORS[zone] || "#C9A84C"
   return (
     <div className="flex items-center gap-3">
@@ -39,7 +41,7 @@ function ZonePin({ zone }: { zone: string }) {
         <circle cx="16" cy="14" r="6" fill="white" />
       </svg>
       <div>
-        <p className="text-xs text-public-text-faint">Zone détectée</p>
+        <p className="text-xs text-public-text-faint">{t.paiement.zoneDetectee}</p>
         <p className="text-sm font-semibold text-public-text">{zone}</p>
       </div>
     </div>
@@ -67,6 +69,7 @@ function MobileMoneyLogo({ name }: { name: string }) {
 }
 
 export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) {
+  const t = useT()
   const { items, count } = useCart()
   // Numéro piloté depuis /admin/tarifs : sans numéro, pas de lien.
   const negocierHref = whatsappHref(
@@ -225,7 +228,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
       <>
         <PanierStepper current={1} />
         <div className="flex flex-col items-center gap-6 px-6 py-20">
-          <h2 className="font-display text-3xl font-medium text-public-text">Votre panier est vide</h2>
+          <h2 className="font-display text-3xl font-medium text-public-text">{t.paiement.panierVide}</h2>
           <Link
             href="/transport/catalogue"
             className="rounded-lg bg-accent-orange px-6 py-3 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-orange-hover transition-colors"
@@ -246,7 +249,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
       </div>
 
       <div className="mx-auto max-w-6xl px-6 py-8 sm:px-10">
-        <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">Paiement</h1>
+        <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">{t.paiement.paiement}</h1>
         <p className="mt-2 text-sm text-public-text-muted">
           Choisissez vos dates, votre destination et votre moyen de paiement pour finaliser la réservation.
         </p>
@@ -274,7 +277,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
         <div className="space-y-6 lg:col-span-3">
           {/* Vehicle summary */}
           <Card>
-            <h2 className="text-base font-semibold text-public-text mb-4">Véhicule</h2>
+            <h2 className="text-base font-semibold text-public-text mb-4">{t.paiement.vehicule}</h2>
             {items.map((i) => (
               <div key={i.groupKey} className="flex items-center gap-4 border-b border-public-border pb-4 last:border-0 last:pb-0 mb-4 last:mb-0">
                 {i.photoUrl ? (
@@ -301,11 +304,11 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
           <Card>
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-[#0A0A0A]">1</span>
-              <h2 className="text-base font-semibold text-public-text">Dates de location</h2>
+              <h2 className="text-base font-semibold text-public-text">{t.paiement.datesLocation}</h2>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label htmlFor="debut" className="block text-sm font-medium text-public-text-muted mb-1.5">Début</label>
+                <label htmlFor="debut" className="block text-sm font-medium text-public-text-muted mb-1.5">{t.paiement.debut}</label>
                 <input
                   id="debut" name="debut" type="date" required
                   value={debut}
@@ -335,7 +338,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
           <Card>
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-[#0A0A0A]">2</span>
-              <h2 className="text-base font-semibold text-public-text">Destination</h2>
+              <h2 className="text-base font-semibold text-public-text">{t.paiement.destination}</h2>
             </div>
             <div className="relative">
               <label htmlFor="destination" className="block text-sm font-medium text-public-text-muted mb-1.5">
@@ -391,14 +394,14 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
                 </button>
                 {showManual && (
                   <div className="mt-3 animate-fade-in">
-                    <label htmlFor="zone-manuelle" className="block text-xs font-medium text-public-text-faint mb-1.5">Zone tarifaire</label>
+                    <label htmlFor="zone-manuelle" className="block text-xs font-medium text-public-text-faint mb-1.5">{t.paiement.zoneTarifaire}</label>
                     <select
                       id="zone-manuelle"
                       value={manualZone}
                       onChange={(e) => setManualZone(e.target.value)}
                       className="w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text focus:border-accent-orange focus:outline-none focus:ring-1 focus:ring-accent-orange/30"
                     >
-                      <option value="">Sélectionnez une zone</option>
+                      <option value="">{t.paiement.selectionnerZone}</option>
                       {zones.map((z) => (
                         <option key={z.id} value={z.nom}>{z.nom}</option>
                       ))}
@@ -414,7 +417,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
           <Card>
             <div className="flex items-center gap-3 mb-4">
               <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-orange text-xs font-bold text-[#0A0A0A]">3</span>
-              <h2 className="text-base font-semibold text-public-text">Moyen de paiement</h2>
+              <h2 className="text-base font-semibold text-public-text">{t.paiement.moyenPaiement}</h2>
             </div>
             <div className="space-y-3">
               {[
@@ -446,7 +449,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
         {/* Sidebar — Recap */}
         <div className="lg:col-span-2">
           <Card className="sticky top-24">
-            <h2 className="text-base font-semibold text-public-text mb-4">Récapitulatif</h2>
+            <h2 className="text-base font-semibold text-public-text mb-4">{t.panier.recapitulatif}</h2>
             <div className="space-y-3">
               {perItem.map(({ i: item, montant }) => (
                 <div key={item.groupKey} className="flex items-center justify-between border-b border-public-border pb-3 last:border-0 last:pb-0">
@@ -466,7 +469,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
             <hr className="my-4 border-public-border" />
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
-                <span className="text-public-text-muted">Location</span>
+                <span className="text-public-text-muted">{t.paiement.location}</span>
                 <span className="font-medium text-public-text">{totalLocation.toLocaleString("fr-FR")} FCFA</span>
               </div>
               {totalChauffeur > 0 && (
@@ -478,13 +481,13 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
                 </div>
               )}
               <div className="flex justify-between text-sm">
-                <span className="text-public-text-muted">Caution (remboursable)</span>
+                <span className="text-public-text-muted">{t.paiement.caution}</span>
                 <span className="font-medium text-public-text">{totalCaution.toLocaleString("fr-FR")} FCFA</span>
               </div>
             </div>
             <hr className="my-4 border-public-border" />
             <div className="flex items-baseline justify-between gap-4">
-              <span className="text-sm font-semibold text-public-text">Total à payer</span>
+              <span className="text-sm font-semibold text-public-text">{t.paiement.totalAPayer}</span>
               <span className="font-display text-3xl font-medium text-accent-orange">
                 {totalAvecDuree.toLocaleString("fr-FR")} FCFA
               </span>
@@ -496,7 +499,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
             )}
             {detectedZone && (
               <div className="mt-3 rounded-lg border px-3 py-2 text-xs" style={{ borderColor: `${zoneColor}40`, backgroundColor: `${zoneColor}08` }}>
-                <p className="text-public-text-muted">Zone appliquée</p>
+                <p className="text-public-text-muted">{t.paiement.zoneAppliquee}</p>
                 <p className="font-semibold text-public-text" style={{ color: zoneColor }}>{detectedZone}</p>
               </div>
             )}
@@ -519,7 +522,7 @@ export default function PaiementPage({ whatsapp }: { whatsapp: string | null }) 
 
             {/* Payment logos */}
             <div className="mt-4">
-              <p className="text-xs text-public-text-faint mb-2">Moyens de paiement acceptés</p>
+              <p className="text-xs text-public-text-faint mb-2">{t.paiement.moyensAcceptes}</p>
               <div className="flex flex-wrap gap-2">
                 <MobileMoneyLogo name="Orange Money" />
                 <MobileMoneyLogo name="MTN MoMo" />
