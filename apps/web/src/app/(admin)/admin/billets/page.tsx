@@ -1,3 +1,4 @@
+import { VerificationPiece } from "./verification-pieces"
 import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
@@ -136,6 +137,13 @@ export default async function BilletsAdminPage() {
                         {d.certificat_fievre_jaune_valide === false && (
                           <span className="ml-1.5 text-error">· À régulariser</span>
                         )}
+                        <VerificationPiece
+                          demandeId={d.id}
+                          piece="fievre_jaune"
+                          declaree={d.certificat_fievre_jaune}
+                          valide={d.certificat_fievre_jaune_valide}
+                          aUnDocument={Boolean(d.certificat_fievre_jaune_url)}
+                        />
                       </span>
                       {(d.nb_enfants > 0 || d.nb_bebes > 0) && (
                         <span>
@@ -149,6 +157,13 @@ export default async function BilletsAdminPage() {
                           {d.mineur_autorisation_verifie === false && (
                             <span className="ml-1.5 text-error">· À régulariser</span>
                           )}
+                          <VerificationPiece
+                            demandeId={d.id}
+                            piece="autorisation_mineur"
+                            declaree={d.mineur_autorisation_parentale}
+                            valide={d.mineur_autorisation_verifie}
+                            aUnDocument={Boolean(d.mineur_autorisation_url)}
+                          />
                         </span>
                       )}
                     </div>
