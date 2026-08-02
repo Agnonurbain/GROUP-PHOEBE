@@ -1,5 +1,6 @@
 "use client"
 
+import { useT } from "@/lib/langue-context"
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useActionState, useMemo, useRef, useEffect, useState } from "react"
@@ -53,12 +54,13 @@ function VisaCard({
   prestation: { key: string; name: string; prix: number | null; description?: string; recommended?: boolean }
   paysSlug: string
 }) {
+  const t = useT()
   const [state, formAction, pending] = useActionState<AssistanceState, FormData>(creerDossierVoyage, {})
 
   return (
     <div className={`relative rounded-2xl border p-6 transition-all ${prestation.recommended ? "border-accent-gold bg-accent-gold/5" : "border-public-border bg-public-bg-card"}`}>
       {prestation.recommended && (
-        <Badge variant="gold" className="absolute -top-2.5 right-4">Recommandé</Badge>
+        <Badge variant="gold" className="absolute -top-2.5 right-4">{t.assistancePays.recommande}</Badge>
       )}
       <h3 className="text-base font-semibold text-public-text">{prestation.name}</h3>
       <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">{prixLabel(prestation.prix)}</p>
@@ -86,6 +88,7 @@ function VisaCard({
 }
 
 export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) {
+  const t = useT()
   const params = useParams()
   const slug = params.slug as string
 
@@ -95,8 +98,8 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
   if (!pays) {
     return (
       <div className="px-6 py-20 text-center">
-        <h1 className="text-3xl font-bold text-public-text">Destination non disponible</h1>
-        <p className="mt-3 text-sm text-public-text-muted">Cette destination n&apos;est pas encore proposée.</p>
+        <h1 className="text-3xl font-bold text-public-text">{t.assistancePays.destinationIndisponible}</h1>
+        <p className="mt-3 text-sm text-public-text-muted">{t.assistancePays.pasEncoreProposee}</p>
         <Link href="/assistance" className="mt-6 inline-block text-sm font-semibold text-accent-blue-on-dark hover:underline">
           Retour à l&apos;assistance
         </Link>
@@ -110,9 +113,9 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
         <BackLink href="/assistance" label="Retour à l'assistance" />
         <span aria-hidden="true">·</span>
         <ol className="flex flex-wrap items-center gap-1.5">
-          <li><Link href="/" className="transition-colors hover:text-accent-blue-on-dark">Accueil</Link></li>
+          <li><Link href="/" className="transition-colors hover:text-accent-blue-on-dark">{t.nav.accueil}</Link></li>
           <li aria-hidden="true">›</li>
-          <li><Link href="/assistance" className="transition-colors hover:text-accent-blue-on-dark">Assistance</Link></li>
+          <li><Link href="/assistance" className="transition-colors hover:text-accent-blue-on-dark">{t.nav.assistance}</Link></li>
           <li aria-hidden="true">›</li>
           <li aria-current="page" className="text-public-text-muted">{pays.name}</li>
         </ol>
@@ -136,7 +139,7 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
         <div className="lg:col-span-3">
           {pays.procedure && (
             <section>
-              <h2 className="text-3xl font-semibold text-public-text">Procédure</h2>
+              <h2 className="text-3xl font-semibold text-public-text">{t.assistancePays.procedure}</h2>
               <div className="mt-6 space-y-6">
                 {pays.procedure.map((etape, i) => (
                   <StepCard key={etape.titre} num={String(i + 1)} title={etape.titre} desc={etape.detail} index={i} />
@@ -147,7 +150,7 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
 
           {pays.bourses && (
             <section className="mt-12">
-              <h2 className="text-3xl font-semibold text-public-text">Les bourses</h2>
+              <h2 className="text-3xl font-semibold text-public-text">{t.assistancePays.lesBourses}</h2>
               <div className="mt-6 grid gap-4 sm:grid-cols-2">
                 {pays.bourses.map((b) => (
                   <div key={b.code} className="rounded-2xl border border-public-border bg-public-bg-card p-5">
@@ -168,14 +171,14 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
 
           {(pays.rentrees || pays.depots) && (
             <section className="mt-8 rounded-2xl border border-accent-blue/20 bg-accent-blue/5 p-5">
-              <h3 className="text-sm font-semibold text-public-text">Calendrier</h3>
+              <h3 className="text-sm font-semibold text-public-text">{t.assistancePays.calendrier}</h3>
               {pays.rentrees && <p className="mt-2 text-sm text-public-text-muted">{pays.rentrees}</p>}
               {pays.depots && <p className="mt-1 text-sm text-public-text-muted">{pays.depots}</p>}
             </section>
           )}
 
           <section className="mt-12">
-            <h2 className="text-3xl font-semibold text-public-text">Comment ça se passe</h2>
+            <h2 className="text-3xl font-semibold text-public-text">{t.assistancePays.commentCaSePasse}</h2>
             <div className="mt-6 space-y-6">
               {[
                 { title: "Soumettez votre demande", desc: "Choisissez une prestation et envoyez votre demande en ligne, sans engagement." },
@@ -190,8 +193,8 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
 
         {/* Colonne droite : prestations */}
         <div className="lg:col-span-2">
-          <h2 className="text-3xl font-semibold text-public-text">Nos prestations</h2>
-          <p className="mt-1 text-sm text-public-text-muted">Sans engagement — l&apos;équipe vous recontacte après votre demande.</p>
+          <h2 className="text-3xl font-semibold text-public-text">{t.assistancePays.nosPrestations}</h2>
+          <p className="mt-1 text-sm text-public-text-muted">{t.assistancePays.sansEngagement}</p>
           <div className="mt-6 space-y-4">
             {pays.prestations.map((prestation) => (
               <VisaCard key={prestation.key} prestation={prestation} paysSlug={pays.slug} />

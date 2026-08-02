@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n/server"
 import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
@@ -36,6 +37,7 @@ export default async function Immobilier({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
+  const t = await getT()
   const sp = await searchParams
 
   const filters = {
@@ -196,7 +198,7 @@ export default async function Immobilier({
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-green transition-all group-hover:gap-2">Voir le détail <ChevronRight size={12} /></span>
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold text-accent-green transition-all group-hover:gap-2">{t.immobilier.voirDetail} <ChevronRight size={12} /></span>
                   <GarantieDocuments variante="ligne" />
                 </CardFooter>
               </Card>
@@ -204,8 +206,8 @@ export default async function Immobilier({
             )
           }) : (
             <div className="col-span-2 flex flex-col items-center gap-4 rounded-xl border border-public-border bg-public-bg-card py-16 text-center">
-              <p className="text-lg font-semibold text-public-text">Aucun bien trouvé</p>
-              <p className="text-sm text-public-text-muted">Essayez d&apos;élargir vos critères de recherche.</p>
+              <p className="text-lg font-semibold text-public-text">{t.immobilier.aucunBien}</p>
+              <p className="text-sm text-public-text-muted">{t.immobilier.elargirCriteres}</p>
             </div>
           )}
         </div>
@@ -239,10 +241,10 @@ export default async function Immobilier({
         <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <h2 className="font-display text-3xl font-medium leading-[1.15] tracking-tight text-public-text sm:text-4xl">
-              Vous vendez ? Connaissez <em className="italic text-accent-green">sa vraie valeur.</em>
+              {t.immobilier.vendeurTitre} <em className="italic text-accent-green">{t.immobilier.vendeurTitreEmphase}</em>
             </h2>
             <p className="mt-4 text-base text-public-text-muted">
-              Estimez votre bien en 2 minutes. Notre expertise au service de votre patrimoine.
+              {t.immobilier.vendeurTexte}
             </p>
           </div>
           <div className="lg:shrink-0">

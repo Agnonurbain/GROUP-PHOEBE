@@ -46,11 +46,12 @@ describe("i18n — les deux dictionnaires restent alignés", () => {
     const exceptions = new Set([
       // Mots identiques en français et en anglais
       "Transport", "Blog", "Contact", "Menu", "Total", "Services",
-      "Administration", "Destination", "Dimensions",
+      "Administration", "Destination", "Dimensions", "Transaction", "Type",
       // Noms propres et devise
       "FCFA", "Mobile Money",
-      // Exemple de saisie : un numéro ivoirien ne se traduit pas
-      "+225 07 00 00 00 00",
+      // Exemples de saisie : un numéro ivoirien et des noms de communes ne se
+      // traduisent pas.
+      "+225 07 00 00 00 00", "Abidjan, Cocody…",
     ]);
     const identiques = chemins(fr).filter((chemin) => {
       const lire = (o: unknown) =>
