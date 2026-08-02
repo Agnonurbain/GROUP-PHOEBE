@@ -75,9 +75,10 @@ export default function Assistance({
           <Image
             src="/logos/assistance.png"
             alt="Assistance Voyages & Études"
-            width={500}
-            height={500}
-            className="h-24 w-auto animate-service-logo opacity-90"
+            width={423}
+            height={429}
+            sizes="(min-width: 640px) 160px, 128px"
+            className="h-32 w-auto object-contain animate-service-logo opacity-90 sm:h-40"
             priority
           />
         }

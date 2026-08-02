@@ -209,7 +209,12 @@
       "Bash(pnpm -F @group-phoebe/database generate-types:local)",
       "Bash(git stash *)",
       "Bash(grep -oP '^ \\\\K[a-z_0-9]+\\(?=: \\\\{$\\)' packages/database/src/types.ts)",
-      "Bash(git diff *)"
+      "Bash(git diff *)",
+      "Skill(browser-automation)",
+      "Skill(browser-automation:*)",
+      "Bash(curl -s -o /dev/null -m 3 http://localhost:3000/)",
+      "Bash(node /home/aymeric/.claude/skills/browser-automation/browser.mjs http://localhost:3000/ --script /tmp/claude-1000/-home-aymeric-GROUP-PHOEBE/bacc1af6-57f6-4c75-9f41-60f8eab61789/scratchpad/net.mjs)",
+      "Bash(pkill -f \"pnpm dev\")"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",

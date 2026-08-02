@@ -52,9 +52,10 @@ export async function Footer() {
               <Image
                 src="/logos/phoebe.png"
                 alt="GROUP PHOEBE"
-                width={500}
-                height={500}
-                className="h-16 w-auto"
+                width={445}
+                height={457}
+                sizes="96px"
+                className="h-16 w-auto object-contain"
               />
             </Link>
             <p className="font-display mt-5 text-2xl font-medium leading-snug text-public-text">
