@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   public: {
     Tables: {
       agences: {
@@ -448,13 +443,13 @@ export type Database = {
           client_id: string
           created_at: string
           date_debut: string
-          heure_debut: string | null
-          heure_fin: string | null
-          jour_facturation: number
-          jours_semaine: number[]
           date_fin: string | null
           frequence_facturation: string | null
+          heure_debut: string | null
+          heure_fin: string | null
           id: string
+          jour_facturation: number
+          jours_semaine: number[]
           montant_periodique: number | null
           statut: string
           updated_at: string
@@ -466,13 +461,13 @@ export type Database = {
           client_id: string
           created_at?: string
           date_debut: string
-          heure_debut?: string | null
-          heure_fin?: string | null
-          jour_facturation?: number
-          jours_semaine?: number[]
           date_fin?: string | null
           frequence_facturation?: string | null
+          heure_debut?: string | null
+          heure_fin?: string | null
           id?: string
+          jour_facturation?: number
+          jours_semaine?: number[]
           montant_periodique?: number | null
           statut?: string
           updated_at?: string
@@ -484,19 +479,26 @@ export type Database = {
           client_id?: string
           created_at?: string
           date_debut?: string
-          heure_debut?: string | null
-          heure_fin?: string | null
-          jour_facturation?: number
-          jours_semaine?: number[]
           date_fin?: string | null
           frequence_facturation?: string | null
+          heure_debut?: string | null
+          heure_fin?: string | null
           id?: string
+          jour_facturation?: number
+          jours_semaine?: number[]
           montant_periodique?: number | null
           statut?: string
           updated_at?: string
           vehicule_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "contrats_recurrents_chauffeur_id_fkey"
+            columns: ["chauffeur_id"]
+            isOneToOne: false
+            referencedRelation: "chauffeurs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "contrats_recurrents_client_id_fkey"
             columns: ["client_id"]
@@ -628,12 +630,12 @@ export type Database = {
           client_id: string
           created_at: string
           date_souhaitee: string | null
+          id: string
           location_debut: string | null
           location_duree_mois: number | null
-          id: string
           message: string | null
-          montant_contre_offre: number | null
           montant_commission: number | null
+          montant_contre_offre: number | null
           montant_convenu: number | null
           montant_offre: number | null
           statut: string
@@ -647,12 +649,12 @@ export type Database = {
           client_id: string
           created_at?: string
           date_souhaitee?: string | null
+          id?: string
           location_debut?: string | null
           location_duree_mois?: number | null
-          id?: string
           message?: string | null
-          montant_contre_offre?: number | null
           montant_commission?: number | null
+          montant_contre_offre?: number | null
           montant_convenu?: number | null
           montant_offre?: number | null
           statut?: string
@@ -666,12 +668,12 @@ export type Database = {
           client_id?: string
           created_at?: string
           date_souhaitee?: string | null
+          id?: string
           location_debut?: string | null
           location_duree_mois?: number | null
-          id?: string
           message?: string | null
-          montant_contre_offre?: number | null
           montant_commission?: number | null
+          montant_contre_offre?: number | null
           montant_convenu?: number | null
           montant_offre?: number | null
           statut?: string
@@ -965,35 +967,6 @@ export type Database = {
           },
         ]
       }
-      expedition_statut_historique: {
-        Row: {
-          expedition_id: string
-          horodatage: string
-          id: string
-          statut: string
-        }
-        Insert: {
-          expedition_id: string
-          horodatage?: string
-          id?: string
-          statut: string
-        }
-        Update: {
-          expedition_id?: string
-          horodatage?: string
-          id?: string
-          statut?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "expedition_statut_historique_expedition_id_fkey"
-            columns: ["expedition_id"]
-            isOneToOne: false
-            referencedRelation: "expeditions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       echeances_contrat: {
         Row: {
           contrat_id: string
@@ -1028,7 +1001,51 @@ export type Database = {
           statut?: string
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "echeances_contrat_contrat_id_fkey"
+            columns: ["contrat_id"]
+            isOneToOne: false
+            referencedRelation: "contrats_recurrents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "echeances_contrat_paiement_id_fkey"
+            columns: ["paiement_id"]
+            isOneToOne: false
+            referencedRelation: "paiements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      expedition_statut_historique: {
+        Row: {
+          expedition_id: string
+          horodatage: string
+          id: string
+          statut: string
+        }
+        Insert: {
+          expedition_id: string
+          horodatage?: string
+          id?: string
+          statut: string
+        }
+        Update: {
+          expedition_id?: string
+          horodatage?: string
+          id?: string
+          statut?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expedition_statut_historique_expedition_id_fkey"
+            columns: ["expedition_id"]
+            isOneToOne: false
+            referencedRelation: "expeditions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       expeditions: {
         Row: {
@@ -1056,11 +1073,11 @@ export type Database = {
           paiement_encaisse_par: string | null
           photos: string[]
           poids_kg: number | null
+          preuve_chemin: string | null
           preuve_latitude: number | null
           preuve_longitude: number | null
-          preuve_chemin: string | null
-          recu_par: string | null
           prix: number | null
+          recu_par: string | null
           statut: string
           updated_at: string
           valeur_declaree: number | null
@@ -1091,11 +1108,11 @@ export type Database = {
           paiement_encaisse_par?: string | null
           photos?: string[]
           poids_kg?: number | null
+          preuve_chemin?: string | null
           preuve_latitude?: number | null
           preuve_longitude?: number | null
-          preuve_chemin?: string | null
-          recu_par?: string | null
           prix?: number | null
+          recu_par?: string | null
           statut?: string
           updated_at?: string
           valeur_declaree?: number | null
@@ -1126,11 +1143,11 @@ export type Database = {
           paiement_encaisse_par?: string | null
           photos?: string[]
           poids_kg?: number | null
+          preuve_chemin?: string | null
           preuve_latitude?: number | null
           preuve_longitude?: number | null
-          preuve_chemin?: string | null
-          recu_par?: string | null
           prix?: number | null
+          recu_par?: string | null
           statut?: string
           updated_at?: string
           valeur_declaree?: number | null
@@ -1147,6 +1164,13 @@ export type Database = {
           {
             foreignKeyName: "expeditions_livreur_id_fkey"
             columns: ["livreur_id"]
+            isOneToOne: false
+            referencedRelation: "livreurs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expeditions_paiement_encaisse_par_fkey"
+            columns: ["paiement_encaisse_par"]
             isOneToOne: false
             referencedRelation: "livreurs"
             referencedColumns: ["id"]
@@ -1458,6 +1482,44 @@ export type Database = {
           },
         ]
       }
+      pages_legales: {
+        Row: {
+          chapeau: string
+          publie: boolean
+          sections: Json
+          slug: string
+          titre: string
+          updated_at: string
+          updated_par: string | null
+        }
+        Insert: {
+          chapeau?: string
+          publie?: boolean
+          sections?: Json
+          slug: string
+          titre: string
+          updated_at?: string
+          updated_par?: string | null
+        }
+        Update: {
+          chapeau?: string
+          publie?: boolean
+          sections?: Json
+          slug?: string
+          titre?: string
+          updated_at?: string
+          updated_par?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pages_legales_updated_par_fkey"
+            columns: ["updated_par"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       paiements: {
         Row: {
           commande_id: string | null
@@ -1548,125 +1610,23 @@ export type Database = {
         }
         Relationships: []
       }
-      pages_legales: {
-        Row: {
-          chapeau: string
-          publie: boolean
-          sections: Json
-          slug: string
-          titre: string
-          updated_at: string
-          updated_par: string | null
-        }
-        Insert: {
-          chapeau?: string
-          publie?: boolean
-          sections?: Json
-          slug: string
-          titre: string
-          updated_at?: string
-          updated_par?: string | null
-        }
-        Update: {
-          chapeau?: string
-          publie?: boolean
-          sections?: Json
-          slug?: string
-          titre?: string
-          updated_at?: string
-          updated_par?: string | null
-        }
-        Relationships: []
-      }
-      parametres_transport: {
-        Row: {
-          delai_negociation_heures: number
-          delai_negociation_ouvre: boolean
-          delai_non_presentation_heures: number
-          delai_non_presentation_ouvre: boolean
-          delai_sans_reponse_heures: number
-          delai_sans_reponse_ouvre: boolean
-          heure_fermeture: string
-          heure_ouverture: string
-          id: boolean
-          jours_ouvres: number[]
-          updated_at: string
-        }
-        Insert: {
-          delai_negociation_heures?: number
-          delai_negociation_ouvre?: boolean
-          delai_non_presentation_heures?: number
-          delai_non_presentation_ouvre?: boolean
-          delai_sans_reponse_heures?: number
-          delai_sans_reponse_ouvre?: boolean
-          heure_fermeture?: string
-          heure_ouverture?: string
-          id?: boolean
-          jours_ouvres?: number[]
-          updated_at?: string
-        }
-        Update: {
-          delai_negociation_heures?: number
-          delai_negociation_ouvre?: boolean
-          delai_non_presentation_heures?: number
-          delai_non_presentation_ouvre?: boolean
-          delai_sans_reponse_heures?: number
-          delai_sans_reponse_ouvre?: boolean
-          heure_fermeture?: string
-          heure_ouverture?: string
-          id?: boolean
-          jours_ouvres?: number[]
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      parametres_livraison: {
-        Row: {
-          id: boolean
-          indemnisation_active: boolean
-          indemnisation_conditions: string
-          indemnisation_plafond: number
-          indemnisation_taux: number
-          updated_at: string
-        }
-        Insert: {
-          id?: boolean
-          indemnisation_active?: boolean
-          indemnisation_conditions?: string
-          indemnisation_plafond?: number
-          indemnisation_taux?: number
-          updated_at?: string
-        }
-        Update: {
-          id?: boolean
-          indemnisation_active?: boolean
-          indemnisation_conditions?: string
-          indemnisation_plafond?: number
-          indemnisation_taux?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
       parametres_avis: {
         Row: {
           created_at: string
           delai_apres_terme_jours: number
           id: boolean
-          moderation_obligatoire: boolean
           updated_at: string
         }
         Insert: {
           created_at?: string
           delai_apres_terme_jours?: number
           id?: boolean
-          moderation_obligatoire?: boolean
           updated_at?: string
         }
         Update: {
           created_at?: string
           delai_apres_terme_jours?: number
           id?: boolean
-          moderation_obligatoire?: boolean
           updated_at?: string
         }
         Relationships: []
@@ -1700,44 +1660,6 @@ export type Database = {
           validite_devis_heures?: number
         }
         Relationships: []
-      }
-      passagers_billet: {
-        Row: {
-          created_at: string
-          date_naissance: string
-          demande_id: string
-          id: string
-          nom: string
-          passeport_expiration: string
-          passeport_numero: string
-        }
-        Insert: {
-          created_at?: string
-          date_naissance: string
-          demande_id: string
-          id?: string
-          nom: string
-          passeport_expiration: string
-          passeport_numero: string
-        }
-        Update: {
-          created_at?: string
-          date_naissance?: string
-          demande_id?: string
-          id?: string
-          nom?: string
-          passeport_expiration?: string
-          passeport_numero?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "passagers_billet_demande_id_fkey"
-            columns: ["demande_id"]
-            isOneToOne: false
-            referencedRelation: "demandes_billet"
-            referencedColumns: ["id"]
-          },
-        ]
       }
       parametres_contact: {
         Row: {
@@ -1841,6 +1763,113 @@ export type Database = {
         }
         Relationships: []
       }
+      parametres_livraison: {
+        Row: {
+          id: boolean
+          indemnisation_active: boolean
+          indemnisation_conditions: string
+          indemnisation_plafond: number
+          indemnisation_taux: number
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          indemnisation_active?: boolean
+          indemnisation_conditions?: string
+          indemnisation_plafond?: number
+          indemnisation_taux?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          indemnisation_active?: boolean
+          indemnisation_conditions?: string
+          indemnisation_plafond?: number
+          indemnisation_taux?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      parametres_transport: {
+        Row: {
+          delai_negociation_heures: number
+          delai_negociation_ouvre: boolean
+          delai_non_presentation_heures: number
+          delai_non_presentation_ouvre: boolean
+          delai_sans_reponse_heures: number
+          delai_sans_reponse_ouvre: boolean
+          heure_fermeture: string
+          heure_ouverture: string
+          id: boolean
+          jours_ouvres: number[]
+          updated_at: string
+        }
+        Insert: {
+          delai_negociation_heures?: number
+          delai_negociation_ouvre?: boolean
+          delai_non_presentation_heures?: number
+          delai_non_presentation_ouvre?: boolean
+          delai_sans_reponse_heures?: number
+          delai_sans_reponse_ouvre?: boolean
+          heure_fermeture?: string
+          heure_ouverture?: string
+          id?: boolean
+          jours_ouvres?: number[]
+          updated_at?: string
+        }
+        Update: {
+          delai_negociation_heures?: number
+          delai_negociation_ouvre?: boolean
+          delai_non_presentation_heures?: number
+          delai_non_presentation_ouvre?: boolean
+          delai_sans_reponse_heures?: number
+          delai_sans_reponse_ouvre?: boolean
+          heure_fermeture?: string
+          heure_ouverture?: string
+          id?: boolean
+          jours_ouvres?: number[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      passagers_billet: {
+        Row: {
+          created_at: string
+          date_naissance: string
+          demande_id: string
+          id: string
+          nom: string
+          passeport_expiration: string
+          passeport_numero: string
+        }
+        Insert: {
+          created_at?: string
+          date_naissance: string
+          demande_id: string
+          id?: string
+          nom: string
+          passeport_expiration: string
+          passeport_numero: string
+        }
+        Update: {
+          created_at?: string
+          date_naissance?: string
+          demande_id?: string
+          id?: string
+          nom?: string
+          passeport_expiration?: string
+          passeport_numero?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passagers_billet_demande_id_fkey"
+            columns: ["demande_id"]
+            isOneToOne: false
+            referencedRelation: "demandes_billet"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       propositions_prix: {
         Row: {
           champ: string
@@ -1891,63 +1920,6 @@ export type Database = {
             columns: ["vehicule_id"]
             isOneToOne: false
             referencedRelation: "vehicules"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      propositions_tarifs: {
-        Row: {
-          champ: string | null
-          commentaire: string | null
-          created_at: string
-          id: string
-          operateur_id: string
-          statut: string
-          type: string
-          updated_at: string
-          valeur_actuelle: Json | null
-          valeur_proposee: Json
-          zone_id: string
-        }
-        Insert: {
-          champ?: string | null
-          commentaire?: string | null
-          created_at?: string
-          id?: string
-          operateur_id: string
-          statut?: string
-          type: string
-          updated_at?: string
-          valeur_actuelle?: Json | null
-          valeur_proposee: Json
-          zone_id: string
-        }
-        Update: {
-          champ?: string | null
-          commentaire?: string | null
-          created_at?: string
-          id?: string
-          operateur_id?: string
-          statut?: string
-          type?: string
-          updated_at?: string
-          valeur_actuelle?: Json | null
-          valeur_proposee?: Json
-          zone_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "propositions_tarifs_operateur_id_fkey"
-            columns: ["operateur_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "propositions_tarifs_zone_id_fkey"
-            columns: ["zone_id"]
-            isOneToOne: false
-            referencedRelation: "zones_tarifaires"
             referencedColumns: ["id"]
           },
         ]
@@ -2430,6 +2402,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      avis_refus_motif: {
+        Args: { p_reference_id: string; p_reference_table: string }
+        Returns: string
+      }
       expirer_demandes_sans_reponse: { Args: never; Returns: number }
       expirer_non_presentations: { Args: never; Returns: number }
       expirer_reservations_abandonnees: { Args: never; Returns: number }
@@ -2437,9 +2413,9 @@ export type Database = {
       is_staff: { Args: never; Returns: boolean }
       own_livreur_id: { Args: never; Returns: string }
       own_role: { Args: never; Returns: string }
-      prochain_numero_facture: { Args: never; Returns: string }
       own_statut_verification: { Args: never; Returns: string }
       owns_paiement: { Args: { ref_id: string }; Returns: boolean }
+      prochain_numero_facture: { Args: never; Returns: string }
       stored_role: { Args: { target: string }; Returns: string }
       sync_vehicule_chauffeurs: {
         Args: { p_chauffeur_ids: string[]; p_vehicule_id: string }
@@ -2577,3 +2553,4 @@ export const Constants = {
     Enums: {},
   },
 } as const
+

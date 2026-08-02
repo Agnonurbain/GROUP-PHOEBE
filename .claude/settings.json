@@ -196,7 +196,20 @@
       "Bash(git rm *)",
       "Bash(supabase start *)",
       "Bash(break)",
-      "Bash(supabase stop *)"
+      "Bash(supabase stop *)",
+      "Bash(read f *)",
+      "Bash(echo '--- __TRACKED_VAR__')",
+      "Bash(echo \"######## MIGRATION agences ########\")",
+      "Bash(grep -rl \"create table.*agences\\\\|agences\" supabase/migrations/)",
+      "Bash(awk '/parametres_avis/,0' supabase/migrations/00059_avis_factures_blog_i18n.sql)",
+      "Bash(awk '/create table agences/,/^\\\\\\);/' supabase/migrations/00001_initial_schema.sql)",
+      "Bash(grep -vE \"^\\(INSERT|UPDATE|CREATE|SET|DO\\)$\")",
+      "Bash(grep -v \"^$\")",
+      "Bash(grep -vE \"^\\(INSERT|UPDATE|CREATE|SET|DO|BEGIN|ROLLBACK\\)$\")",
+      "Bash(pnpm -F @group-phoebe/database generate-types:local)",
+      "Bash(git stash *)",
+      "Bash(grep -oP '^ \\\\K[a-z_0-9]+\\(?=: \\\\{$\\)' packages/database/src/types.ts)",
+      "Bash(git diff *)"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
