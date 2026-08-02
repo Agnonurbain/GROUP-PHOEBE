@@ -149,6 +149,16 @@ export function totalVoyageurs(v: VoyageursParTranche): number {
   return v.adultes + v.enfants + v.bebes
 }
 
+/** Un accompagnant : les mêmes informations que le voyageur principal. */
+export type PassagerSaisie = {
+  nom: string
+  passeportNumero: string
+  passeportExpiration: string
+  /** Chemin dans le bucket. Facultatif. */
+  passeportFichier?: string | null
+  type: "adulte" | "enfant"
+}
+
 export type DemandeBilletSaisie = {
   typeTrajet: string
   depart: string
@@ -162,6 +172,21 @@ export type DemandeBilletSaisie = {
   passeportExpiration: string
   certificatFievreJaune: boolean
   mineurAutorisationParentale: boolean
+  /** Accompagnants. Un dossier à un seul voyageur en a zéro. */
+  passagers?: PassagerSaisie[]
+}
+
+/**
+ * Combien d'accompagnants doivent fournir un passeport.
+ *
+ * Les bébés de moins de deux ans en sont exclus : ils voyagent sur les genoux
+ * d'un adulte, sans siège ni billet propre. Leur document se régularise avant
+ * l'émission — c'est le choix retenu par l'exploitant, pas une affirmation sur
+ * ce que réclament les compagnies, qui exigent bien un titre pour un nourrisson
+ * sur un vol international.
+ */
+export function nbPassagersAttendus(v: VoyageursParTranche): number {
+  return Math.max(0, v.adultes - 1) + v.enfants
 }
 
 /**
@@ -242,22 +267,75 @@ export function validerDemandeBillet(
     return { error: "Un enfant voyageant sans ses deux parents doit disposer d'une autorisation parentale. Cochez la case correspondante." }
   }
 
-  if (!passeportNom.trim()) return { error: "Le nom figurant sur le passeport est obligatoire." }
-  if (!passeportNumero.trim()) return { error: "Le numéro de passeport est obligatoire." }
+  /**
+   * Un passeport, quel que soit son porteur. Le voyageur principal et ses
+   * accompagnants montent dans le même avion : leur passeport se juge à la même
+   * aune, et une règle écrite deux fois finit par diverger.
+   *
+   * `qui` sert à nommer la personne dans le message — « Votre passeport » pour
+   * le titulaire de la demande, « Le passeport du voyageur 2 » pour les autres.
+   */
+  const validerPasseport = (
+    nom: string,
+    numero: string,
+    expirationBrute: string,
+    qui: { possessif: string; sujet: string }
+  ): { error: string } | null => {
+    if (!nom.trim()) return { error: `Le nom figurant sur ${qui.possessif} est obligatoire.` }
+    if (!numero.trim()) return { error: `Le numéro de ${qui.possessif} est obligatoire.` }
 
-  const expiration = jour(passeportExpiration)
-  if (!expiration) return { error: "Date d'expiration du passeport invalide." }
-  if (expiration <= debutJournee) return { error: "Ce passeport est expiré." }
+    const expiration = jour(expirationBrute)
+    if (!expiration) return { error: `Date d'expiration invalide pour ${qui.possessif}.` }
+    if (expiration <= debutJournee) return { error: `${qui.sujet} est expiré.` }
 
-  // La validité se juge à la date du voyage, pas à celle de la demande.
-  if (params.mois_validite_passeport > 0) {
-    const minimum = new Date(depart_)
-    minimum.setMonth(minimum.getMonth() + params.mois_validite_passeport)
-    if (expiration < minimum) {
-      return {
-        error: `Votre passeport doit rester valable au moins ${params.mois_validite_passeport} mois après le départ. Renouvelez-le avant de réserver.`,
+    // La validité se juge à la date du voyage, pas à celle de la demande.
+    if (params.mois_validite_passeport > 0) {
+      const minimum = new Date(depart_)
+      minimum.setMonth(minimum.getMonth() + params.mois_validite_passeport)
+      if (expiration < minimum) {
+        return {
+          error: `${qui.sujet} doit rester valable au moins ${params.mois_validite_passeport} mois après le départ. Renouvelez-le avant de réserver.`,
+        }
       }
     }
+    return null
+  }
+
+  const principal = validerPasseport(passeportNom, passeportNumero, passeportExpiration, {
+    possessif: "votre passeport",
+    sujet: "Votre passeport",
+  })
+  if (principal) return principal
+
+  // ─── Accompagnants ─────────────────────────────────────────────────────────
+  // Le compte doit tomber juste : une demande à trois voyageurs avec deux
+  // passeports laisserait un billet impossible à émettre, découvert à l'émission
+  // plutôt qu'ici.
+  const passagers = saisie.passagers ?? []
+  const attendus = nbPassagersAttendus(voyageurs)
+  if (passagers.length !== attendus) {
+    return {
+      error: attendus === 0
+        ? "Aucun accompagnant n'est attendu pour ce nombre de voyageurs."
+        : `Renseignez le passeport des ${attendus} accompagnant${attendus > 1 ? "s" : ""}.`,
+    }
+  }
+
+  const numeros = new Set([passeportNumero.trim().toUpperCase()])
+  for (const [i, p] of passagers.entries()) {
+    const erreur = validerPasseport(p.nom, p.passeportNumero, p.passeportExpiration, {
+      possessif: `le passeport du voyageur ${i + 2}`,
+      sujet: `Le passeport du voyageur ${i + 2}`,
+    })
+    if (erreur) return erreur
+
+    // Deux voyageurs ne partagent pas un passeport : c'est presque toujours la
+    // même ligne saisie deux fois, et la compagnie rejetterait l'émission.
+    const numero = p.passeportNumero.trim().toUpperCase()
+    if (numeros.has(numero)) {
+      return { error: `Le numéro de passeport du voyageur ${i + 2} est déjà utilisé par un autre voyageur.` }
+    }
+    numeros.add(numero)
   }
 
   return { ok: true }

@@ -13,6 +13,7 @@ import {
   STATUTS_BILLET_OUVERTS,
   libelleVoyageurs,
   TYPE_TRAJET_LABELS,
+  type PassagerSaisie,
 } from "@/lib/billets";
 import { getParametresBillet } from "@/lib/public-cache";
 import { notifierClient } from "@/lib/notifications";
@@ -62,6 +63,51 @@ const nombre = (v: FormDataEntryValue | null, defaut = 0): number => {
   return Number.isFinite(n) ? Math.trunc(n) : defaut;
 };
 
+const texte = (v: FormDataEntryValue | null): string =>
+  typeof v === "string" ? v.trim() : "";
+
+/**
+ * Le fichier est déposé par le NAVIGATEUR — une pièce va jusqu'à 10 Mo et un
+ * dossier jusqu'à 9 voyageurs, quand une Server Action plafonne à 1 Mo. Seul le
+ * chemin arrive ici, et un chemin est une chaîne que le client choisit.
+ *
+ * On n'accepte donc que `billets/<son propre identifiant>/…` : sans cela, un
+ * client attacherait à sa demande la pièce d'un autre, que le staff ouvrirait
+ * de bonne foi. La policy de dépôt pose la même borne côté base (00079) — les
+ * deux disent la même chose, et aucune ne suffit seule : celle-ci couvre le
+ * chemin d'un fichier qui existe déjà, l'autre le moment où il est écrit.
+ */
+function cheminAutorise(v: FormDataEntryValue | null, userId: string): string | null {
+  const chemin = texte(v);
+  if (!chemin) return null;
+  if (!chemin.startsWith(`billets/${userId}/`)) return null;
+  // Une remontée de dossier ferait sortir du préfixe qu'on vient de vérifier.
+  if (chemin.includes("..")) return null;
+  return chemin;
+}
+
+/**
+ * Accompagnants saisis dans le formulaire de demande.
+ *
+ * Ils étaient auparavant lus à l'étape du PAIEMENT, où aucun champ ne les
+ * envoyait : toute demande à plus d'un voyageur était impayable. La collecte
+ * remonte ici, là où le client saisit déjà son propre passeport.
+ */
+function lirePassagers(formData: FormData, userId: string): PassagerSaisie[] {
+  const out: PassagerSaisie[] = [];
+  for (let i = 0; formData.has(`passager_nom_${i}`); i++) {
+    const type = texte(formData.get(`passager_type_${i}`));
+    out.push({
+      nom: texte(formData.get(`passager_nom_${i}`)),
+      passeportNumero: texte(formData.get(`passager_passeport_numero_${i}`)),
+      passeportExpiration: texte(formData.get(`passager_passeport_expiration_${i}`)),
+      passeportFichier: cheminAutorise(formData.get(`passager_passeport_fichier_${i}`), userId),
+      type: type === "enfant" ? "enfant" : "adulte",
+    });
+  }
+  return out;
+}
+
 /**
  * Demande de réservation de billet. Aucun paiement à cette étape : il n'y a pas
  * de recherche de vol en direct, l'équipe cherche puis répond avec un prix.
@@ -104,6 +150,10 @@ export async function creerDemandeBillet(
     passeportExpiration: ((formData.get("passeport_expiration") as string) || "").trim(),
     certificatFievreJaune: formData.get("certificat_fievre_jaune") === "1",
     mineurAutorisationParentale: formData.get("mineur_autorisation_parentale") === "1",
+    passagers: lirePassagers(formData, user.sub as string),
+    // Chemin déposé par le navigateur : borné au dossier du client, sinon un
+    // chemin forgé désignerait la pièce d'un autre.
+    passeportFichier: cheminAutorise(formData.get("passeport_fichier"), user.sub as string),
   };
 
   // Règles pilotées depuis /admin/tarifs : validité de passeport exigée et
@@ -129,6 +179,7 @@ export async function creerDemandeBillet(
       passeport_nom: saisie.passeportNom,
       passeport_numero: saisie.passeportNumero,
       passeport_expiration: saisie.passeportExpiration,
+      passeport_fichier: saisie.passeportFichier,
       certificat_fievre_jaune: saisie.certificatFievreJaune,
       mineur_autorisation_parentale: saisie.mineurAutorisationParentale,
       message: ((formData.get("message") as string) || "").trim() || null,
@@ -142,6 +193,28 @@ export async function creerDemandeBillet(
 
   if (error || !demande) {
     return { error: "Impossible d'enregistrer la demande. Veuillez réessayer." };
+  }
+
+  // Les accompagnants sont écrits ici, pas au paiement. En un seul appel : neuf
+  // insertions séquentielles pouvaient échouer à la sixième et laisser un
+  // dossier à moitié peuplé, sans que rien ne le signale.
+  if (saisie.passagers.length > 0) {
+    const { error: passErr } = await admin.from("passagers_billet").insert(
+      saisie.passagers.map((p) => ({
+        demande_id: demande.id,
+        nom: p.nom,
+        passeport_numero: p.passeportNumero,
+        passeport_expiration: p.passeportExpiration,
+        passeport_fichier: p.passeportFichier,
+        type: p.type,
+      })) as never
+    );
+    if (passErr) {
+      // Sans les accompagnants, le billet ne peut pas être émis : mieux vaut
+      // refuser la demande que la laisser incomplète et paraître acceptée.
+      await admin.from("demandes_billet").delete().eq("id", demande.id);
+      return { error: "Impossible d'enregistrer les voyageurs. Veuillez réessayer." };
+    }
   }
 
   await notifierAdminNouvelleDemandeBillet(
@@ -327,34 +400,14 @@ export async function payerDevisBillet(
     return { error: "Ce devis a expiré. Contactez-nous pour un nouveau devis." };
   }
 
-  // Collecter les passagers supplémentaires depuis le formulaire
-  const passagers: Array<{
-    nom: string
-    date_naissance: string
-    passeport_numero: string
-    passeport_expiration: string
-  }> = []
-
-  const nbPassagersSuppl = (demande.nb_adultes - 1) + demande.nb_enfants + demande.nb_bebes
-
-  for (let i = 0; i < nbPassagersSuppl; i++) {
-    const nom = (formData.get(`passager_nom_${i}`) as string || "").trim()
-    const dateNaissance = (formData.get(`passager_date_naissance_${i}`) as string || "").trim()
-    const passeportNumero = (formData.get(`passager_passeport_numero_${i}`) as string || "").trim()
-    const passeportExpiration = (formData.get(`passager_passeport_expiration_${i}`) as string || "").trim()
-
-    if (!nom) return { error: `Le nom du passager ${i + 1} est obligatoire.` }
-    if (!dateNaissance) return { error: `La date de naissance du passager ${i + 1} est obligatoire.` }
-    if (!passeportNumero) return { error: `Le numéro de passeport du passager ${i + 1} est obligatoire.` }
-    if (!passeportExpiration) return { error: `La date d'expiration du passeport du passager ${i + 1} est obligatoire.` }
-
-    passagers.push({
-      nom,
-      date_naissance: dateNaissance,
-      passeport_numero: passeportNumero,
-      passeport_expiration: passeportExpiration,
-    })
-  }
+  // Les accompagnants ne sont plus demandés ici : ils sont saisis avec la
+  // demande, en même temps que le passeport du voyageur principal (00079).
+  //
+  // Cette étape les lisait dans le formulaire — `passager_nom_0` et suivants —
+  // alors que l'écran de paiement n'envoie que l'identifiant et la méthode.
+  // Toute demande à plus d'un voyageur était donc impayable : le client
+  // recevait « Le nom du passager 1 est obligatoire » pour un champ qui ne lui
+  // avait jamais été présenté.
 
   // Créer le paiement
   const total = Number(demande.montant_propose) + Number(demande.frais_service ?? 0)
@@ -375,21 +428,7 @@ export async function payerDevisBillet(
 
   if (paiementErr) return { error: paiementErr.message }
 
-  // Insérer les passagers supplémentaires
-  for (const p of passagers) {
-    const { error: passErr } = await admin
-      .from("passagers_billet")
-      .insert({
-        demande_id: demande.id,
-        nom: p.nom,
-        date_naissance: p.date_naissance,
-        passeport_numero: p.passeport_numero,
-        passeport_expiration: p.passeport_expiration,
-      })
-    if (passErr) return { error: "Erreur lors de l'enregistrement des passagers." }
-  }
-
-  const description = `Billet ${demande.depart} → ${demande.destination}`
+  const description =`Billet ${demande.depart} → ${demande.destination}`
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
 
   let paymentUrl: string
@@ -553,21 +592,38 @@ export async function lienPieceBillet(
     return { error: "Accès refusé." }
   }
 
-  const colonnes: Record<string, string> = {
-    fievre_jaune: "certificat_fievre_jaune_url",
-    autorisation_mineur: "mineur_autorisation_url",
-  }
-  const colonne = colonnes[piece]
-  if (!colonne) return { error: "Pièce inconnue." }
-
   const admin = getAdmin()
-  const { data } = await admin
-    .from("demandes_billet")
-    .select(colonne)
-    .eq("id", demandeId)
-    .single()
+  let chemin: string | null | undefined
 
-  const chemin = (data as Record<string, string | null> | null)?.[colonne]
+  // `passager:<id>` : la pièce vit dans la table fille, pas sur la demande.
+  // L'identifiant est recoupé avec la demande, sinon il suffirait d'en forger un
+  // pour lire le passeport d'un dossier auquel on n'a pas accès.
+  if (piece.startsWith("passager:")) {
+    const { data } = await admin
+      .from("passagers_billet")
+      .select("passeport_fichier")
+      .eq("id", piece.slice("passager:".length))
+      .eq("demande_id", demandeId)
+      .maybeSingle()
+    chemin = (data as { passeport_fichier: string | null } | null)?.passeport_fichier
+  } else {
+    const colonnes: Record<string, string> = {
+      fievre_jaune: "certificat_fievre_jaune_url",
+      autorisation_mineur: "mineur_autorisation_url",
+      passeport: "passeport_fichier",
+    }
+    const colonne = colonnes[piece]
+    if (!colonne) return { error: "Pièce inconnue." }
+
+    const { data } = await admin
+      .from("demandes_billet")
+      .select(colonne)
+      .eq("id", demandeId)
+      .single()
+
+    chemin = (data as Record<string, string | null> | null)?.[colonne]
+  }
+
   if (!chemin) return { error: "Aucun document déposé." }
 
   const { data: signee, error } = await admin.storage

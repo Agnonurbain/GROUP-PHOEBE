@@ -1,4 +1,4 @@
-import { VerificationPiece } from "./verification-pieces"
+import { VerificationPiece, LienPasseport } from "./verification-pieces"
 import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
@@ -53,6 +53,32 @@ export default async function BilletsAdminPage() {
     ? await db.from("users").select("id, nom, telephone, email").in("id", clientIds)
     : { data: [] }
   const clientById = new Map((clients ?? []).map((c) => [c.id, c]))
+
+  // Accompagnants : saisis avec la demande depuis 00079. Sans eux à l'écran, la
+  // saisie du client ne servirait à personne — et la compagnie exige le
+  // passeport de chaque voyageur pour émettre son billet.
+  const { data: passagers } = lignes.length
+    ? await db
+        .from("passagers_billet")
+        .select("id, demande_id, nom, type, passeport_numero, passeport_expiration, passeport_fichier")
+        .in("demande_id", lignes.map((d) => d.id))
+        .order("created_at")
+    : { data: [] }
+  type PassagerLigne = {
+    id: string
+    demande_id: string
+    nom: string
+    type: string | null
+    passeport_numero: string
+    passeport_expiration: string
+    passeport_fichier: string | null
+  }
+  const passagersParDemande = new Map<string, PassagerLigne[]>()
+  for (const p of (passagers ?? []) as PassagerLigne[]) {
+    const liste = passagersParDemande.get(p.demande_id) ?? []
+    liste.push(p)
+    passagersParDemande.set(p.demande_id, liste)
+  }
 
   const { data: staff } = await db
     .from("users")
@@ -124,6 +150,42 @@ export default async function BilletsAdminPage() {
                         </span>
                       )}
                     </p>
+
+                    {d.passeport_fichier && (
+                      <p className="mt-1 text-xs">
+                        <LienPasseport demandeId={d.id} piece="passeport" />
+                      </p>
+                    )}
+
+                    {(passagersParDemande.get(d.id) ?? []).length > 0 && (
+                      <div className="mt-2 rounded-lg border border-phoebe-pearl bg-phoebe-pearl/30 px-3 py-2">
+                        <p className="text-[11px] font-semibold text-phoebe-anthracite">
+                          Autres voyageurs ({(passagersParDemande.get(d.id) ?? []).length})
+                        </p>
+                        <ul className="mt-1 space-y-1">
+                          {(passagersParDemande.get(d.id) ?? []).map((p, i) => (
+                            <li key={p.id} className="text-xs text-phoebe-anthracite/70">
+                              <span className="font-medium text-phoebe-anthracite">
+                                {i + 2}. {p.nom}
+                              </span>
+                              {p.type ? ` (${p.type})` : ""}
+                              {" · "}n° {p.passeport_numero}
+                              {" · "}expire le {dateFr(p.passeport_expiration)}
+                              {new Date(p.passeport_expiration) < limite && (
+                                <span className="ml-2 rounded-md bg-error/10 px-2 py-0.5 text-[11px] font-semibold text-error">
+                                  validité insuffisante après le départ
+                                </span>
+                              )}
+                              {p.passeport_fichier && (
+                                <span className="ml-2">
+                                  <LienPasseport demandeId={d.id} piece={`passager:${p.id}`} />
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
                     <div className="mt-1.5 flex flex-wrap gap-3 text-xs text-phoebe-anthracite/70">
                       <span>

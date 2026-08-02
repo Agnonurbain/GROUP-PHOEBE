@@ -69,7 +69,7 @@ group-phoebe/
 │       └── index.ts             # Exports
 │
 ├── supabase/                    # Projet Supabase — UNIQUE source de vérité
-│   ├── migrations/              # 78 migrations SQL
+│   ├── migrations/              # 79 migrations SQL
 │   ├── tests/                   # SQL de vérification (contrainte d'exclusion)
 │   ├── config.toml              # Ports de la pile locale
 │   └── seed*.sql                # Jeux de données de développement
@@ -211,7 +211,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-78 migrations Supabase (00001 → 00078), toutes dans `supabase/migrations/`.
+79 migrations Supabase (00001 → 00079), toutes dans `supabase/migrations/`.
 
 ### 5.1 Tables
 
@@ -707,7 +707,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 653 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 666 tests dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -745,6 +745,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-08-02 | **Le passeport de chaque voyageur, dès la demande** (00079), et un blocage de paiement levé au passage. Le formulaire ne capturait que le passeport du voyageur principal ; les autres étaient lus à l'étape du PAIEMENT (`passager_nom_0`…) alors que l'écran de paiement n'envoie que l'identifiant et la méthode — **toute demande à plus d'un voyageur était impayable**, le client recevant « Le nom du passager 1 est obligatoire » pour un champ jamais présenté. Un dossier à une personne passait, d'où l'absence de signalement. La collecte remonte à la demande : nom, numéro et expiration obligatoires par voyageur, **fichier facultatif**, bébés de moins de 2 ans exclus. La règle de validité résiduelle est désormais écrite une fois et appliquée à tous. Le fichier monte **depuis le navigateur** — 10 Mo par pièce × 9 voyageurs contre 1 Mo de plafond pour une Server Action — donc seul le chemin transite, borné à `billets/<uid>/` par l'action ET par la policy de dépôt, qui laissait auparavant tout compte connecté écrire n'importe où dans le bucket. `bodySizeLimit` relevé à 10 Mo : `deposerPieceDossier` promettait 10 Mo et échouait au-delà de 1 Mo. Garde de dépôt éprouvée en base. |
 | 2026-08-02 | **Plaque claire sous les logos, et second agrandissement.** Mesure préalable : sur le charbon du site, **59,6 %** des pixels des sigles tombent sous 3:1 — le vert du « PHOEBE » et des pictogrammes disparaît. Sur `#FAF9F7`, 36,3 % (le blanc pur ferait 31,4 %, mais on garde la surface claire déjà documentée). Deux jetons, et la distinction est le piège du lot : `--color-logo-plate` s'efface en mode clair, `--color-logo-plate-fixe` non — car **un hero garde sa photo sous un dégradé sombre quel que soit le thème**, et y basculer la plaque la retirerait précisément là où elle sert. Le site public étant sombre par défaut, la plaque est l'état normal et c'est `.light [data-vertical]` qui la retire. Sigle visible porté de 112 à **168 px** sur l'accueil, 160 → 200 px sur les heros — `h-*` couvrant le rembourrage, une hausse naïve l'aurait au contraire rapetissé. La ligne de service passe de 193 à 257 px : c'est désormais le logo qui porte sa hauteur, choix assumé. Vérifié au navigateur en sombre ET en clair. |
 | 2026-08-02 | **Les logos des services paraissaient petits — la cause n'était pas la taille CSS.** Les cinq PNG étaient livrés en 500×500 avec une marge transparente occupant jusqu'à **41 %** de la surface (transport.png ne remplissait que 59 % de son cadre) : à taille égale, le sigle affiché était d'autant plus petit. Fichiers rognés au contenu. Second défaut au passage : l'en-tête déclarait des dimensions approximatives — 429×346 pour un fichier carré — et sans `object-contain` le navigateur étirait l'image pour remplir ce cadre, allongeant le logo Assistance de près d'un quart. Dimensions reprises du fichier partout, `object-contain` ajouté. Tailles augmentées ensuite : cartes de l'accueil 64 → 112 px, hero des pages service 96 → 160 px. **La page Livraison affichait le logo de la marque** au lieu du sien. Les attributs `sizes` corrigés dans la foulée : l'en-tête chargeait 411 px pour en afficher 55, le hero recevait 102 px pour un rendu de 155. Vérifié au navigateur : aucun logo étiré, aucun agrandi. |
 | 2026-08-02 | **Un avis ne se dépose que sur SA prestation** (00077). La policy d'insertion annonçait « sur une réservation terminée le concernant » et ne vérifiait ni l'un ni l'autre : seulement que `client_id` valait `auth.uid()` et que le compte était client. Comme `avis` porte un `unique (reference_table, reference_id)`, la conséquence dépassait le faux avis — le premier à écrire sur un identifiant occupait la place, donc n'importe quel client pouvait **empêcher le vrai client de s'exprimer**. Une fonction `avis_refus_motif` en `security definer` devient la source unique : la policy s'en sert pour trancher, l'écran pour expliquer. Chacun des cinq services a son statut terminal propre (`terminee`, `finalisee`, `finalise`, `emise`, `livree`), et la fenêtre `delai_apres_terme_jours` — jusque-là lue par personne — part du plus tardif entre la fin réelle et la clôture, pour qu'une clôture tardive de notre part ne rogne pas le délai du client. `moderation_obligatoire` est retirée : elle décrivait le comportement sans pouvoir le changer, et la brancher aurait offert un interrupteur pour publier sans relecture. Garde éprouvée sur base réelle, huit cas dont l'INSERT sous RLS par le mauvais client. **00078** : `agences` est documentée comme dormante par intention — le multi-agences est au programme, un audit ne doit plus la proposer à la suppression. |

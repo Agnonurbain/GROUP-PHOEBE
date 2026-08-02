@@ -2,6 +2,15 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // `deposerPieceDossier` accepte des pièces jusqu'à 10 Mo (`MAX_FILE_SIZE`),
+  // mais une Server Action plafonne à 1 Mo par défaut : tout fichier au-delà
+  // échouait sans message utile. On aligne la limite sur ce que le code promet.
+  //
+  // Les passeports du formulaire de billet ne passent PAS par ici : ils montent
+  // du navigateur vers le bucket, un dossier pouvant compter neuf voyageurs.
+  experimental: {
+    serverActions: { bodySizeLimit: "10mb" },
+  },
   images: {
     formats: ["image/avif", "image/webp"],
     // Next 16 exige de déclarer les qualités autorisées (75 par défaut + celles

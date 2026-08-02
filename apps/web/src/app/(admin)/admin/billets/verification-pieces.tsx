@@ -10,6 +10,43 @@ import {
 type Piece = "fievre_jaune" | "autorisation_mineur"
 
 /**
+ * Ouvre la page passeport d'un voyageur. Bucket privé : l'URL est signée au
+ * clic, jamais au rendu — une URL signée posée dans le HTML fuiterait dans les
+ * journaux et le cache du navigateur.
+ *
+ * `piece` vaut « passeport » pour le titulaire de la demande, ou
+ * « passager:<id> » pour un accompagnant.
+ */
+export function LienPasseport({ demandeId, piece }: { demandeId: string; piece: string }) {
+  const [pending, startTransition] = useTransition()
+  const [erreur, setErreur] = useState<string | null>(null)
+
+  return (
+    <>
+      <button
+        type="button"
+        disabled={pending}
+        onClick={() => {
+          setErreur(null)
+          startTransition(async () => {
+            const res = await lienPieceBillet(demandeId, piece)
+            if (res.error || !res.url) {
+              setErreur(res.error ?? "Indisponible.")
+              return
+            }
+            window.open(res.url, "_blank", "noopener,noreferrer")
+          })
+        }}
+        className="text-phoebe-green underline decoration-dotted disabled:opacity-50"
+      >
+        {pending ? "…" : "Voir le passeport"}
+      </button>
+      {erreur && <span role="alert" className="ml-1.5 text-[10px] text-error">{erreur}</span>}
+    </>
+  )
+}
+
+/**
  * Vérification d'une pièce de billet.
  *
  * Les deux drapeaux étaient affichés avec un « Vérifié » ou un « À régulariser »
