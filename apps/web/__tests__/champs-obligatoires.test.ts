@@ -101,6 +101,49 @@ describe("Champs obligatoires — chacun le dit à l'écran", () => {
   });
 
   /**
+   * La réciproque, et c'est le défaut qui existait avant cette règle : « Prix
+   * journalier » et « Mode de livraison » portaient une étoile écrite à la main
+   * sur des champs que rien n'obligeait à remplir. Le libellé promettait une
+   * contrainte que le formulaire n'appliquait pas — la colonne est nullable
+   * pour l'un, le menu a une valeur par défaut pour l'autre.
+   *
+   * On ne regarde que les `<label>` : dans un groupe de boutons radio l'étoile
+   * est portée par le titre du groupe, qui n'est pas un libellé de champ.
+   */
+  it("aucune étoile ne promet une obligation qui n'existe pas", () => {
+    const menteurs: string[] = [];
+    // Expression NEUVE à chaque usage : une regex globale conserve son
+    // `lastIndex` entre deux appels et saute des correspondances — c'est ce qui
+    // faisait passer ce test pour cassé alors que le code était juste.
+    const champ = () => /<(?:input|select|textarea|PasswordInput)\b((?:[^<>]|\{[^{}]*\})*?)\/?>/;
+
+    for (const { chemin, code } of sources) {
+      for (const m of code.matchAll(/<label\b([\s\S]*?)>([\s\S]*?)<\/label>/g)) {
+        if (!m[2].includes("<Obligatoire")) continue;
+
+        // Trois formes : champ englobé par le libellé, champ posé juste après,
+        // ou champ désigné par `htmlFor`.
+        const englobe = champ().exec(m[2])?.[0] ?? "";
+        const suivant = champ().exec(code.slice(m.index + m[0].length, m.index + m[0].length + 600))?.[0] ?? "";
+
+        const id = m[1].match(/htmlFor="([^"]+)"/)?.[1];
+        const parId = id
+          ? new RegExp(
+              `<(?:input|select|textarea|PasswordInput)(?:[^<>]|\\{[^{}]*\\})*?\\bid="${id.replace(
+                /[.*+?^${}()|[\]\\]/g, "\\$&"
+              )}"(?:[^<>]|\\{[^{}]*\\})*?\\/?>`
+            ).exec(code)?.[0] ?? ""
+          : "";
+
+        if (!/\brequired\b/.test(englobe + suivant + parId)) {
+          menteurs.push(`${chemin} :: ${m[2].replace(/\s+/g, " ").slice(0, 60)}`);
+        }
+      }
+    }
+    expect(menteurs).toEqual([]);
+  });
+
+  /**
    * `aria-hidden` sur l'étoile est délibéré : `required` dit déjà « champ
    * obligatoire » aux lecteurs d'écran. Sans lui, ils annonceraient en plus
    * « étoile », un signe de ponctuation lu au milieu du libellé.

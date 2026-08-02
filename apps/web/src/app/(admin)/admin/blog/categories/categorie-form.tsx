@@ -29,7 +29,7 @@ export function CategorieForm() {
       <form action={formAction} className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="nom" className={labelClass}>Nom *<Obligatoire /></label>
+            <label htmlFor="nom" className={labelClass}>Nom<Obligatoire /></label>
             <input id="nom" name="nom" required placeholder="Ex. Guides voyage" className={inputClass} />
           </div>
           <div>

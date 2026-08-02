@@ -149,7 +149,7 @@ export function CoefficientsForm({
 
           <div>
             <label htmlFor={`coef-${zoneId}-commentaire`} className="mb-1 block text-[11px] font-medium text-phoebe-anthracite/70">
-              Commentaire *<Obligatoire />
+              Commentaire<Obligatoire />
             </label>
             <textarea id={`coef-${zoneId}-commentaire`}
               name="commentaire"

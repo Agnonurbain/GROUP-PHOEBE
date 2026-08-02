@@ -91,7 +91,7 @@ export default function VehiculeForm({
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="categorie" className={labelClass}>
-                Catégorie *<Obligatoire />
+                Catégorie<Obligatoire />
               </label>
               <select
                 id="categorie"
@@ -108,7 +108,7 @@ export default function VehiculeForm({
             </div>
             <div>
               <label htmlFor="marque" className={labelClass}>
-                Marque *<Obligatoire />
+                Marque<Obligatoire />
               </label>
               <input
                 id="marque"
@@ -120,7 +120,7 @@ export default function VehiculeForm({
             </div>
             <div>
               <label htmlFor="modele" className={labelClass}>
-                Modèle *<Obligatoire />
+                Modèle<Obligatoire />
               </label>
               <input
                 id="modele"
@@ -192,7 +192,7 @@ export default function VehiculeForm({
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="etat" className={labelClass}>
-                État *<Obligatoire />
+                État<Obligatoire />
               </label>
               <select
                 id="etat"
@@ -419,7 +419,7 @@ export default function VehiculeForm({
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="prix_journalier" className={labelClass}>
-                Prix journalier<Obligatoire />
+                Prix journalier
               </label>
               <input
                 id="prix_journalier"

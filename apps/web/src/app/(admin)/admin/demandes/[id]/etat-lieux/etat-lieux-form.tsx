@@ -88,7 +88,7 @@ export function EtatLieuxForm({
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label htmlFor="el-kilometrage" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-              Kilométrage *<Obligatoire />
+              Kilométrage<Obligatoire />
             </label>
             <input
               id="el-kilometrage"
@@ -105,7 +105,7 @@ export function EtatLieuxForm({
           </div>
           <div>
             <label htmlFor="el-carburant" className="mb-1 block text-sm font-medium text-phoebe-anthracite">
-              Niveau de carburant *<Obligatoire />
+              Niveau de carburant<Obligatoire />
             </label>
             <select id="el-carburant"
               name="carburant"

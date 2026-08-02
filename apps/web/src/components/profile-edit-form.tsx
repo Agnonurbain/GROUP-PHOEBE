@@ -103,7 +103,7 @@ export function ProfileEditForm({
             htmlFor="nom"
             className="mb-1.5 block text-sm font-medium text-public-text"
           >
-            Nom *<Obligatoire />
+            Nom<Obligatoire />
           </label>
           <input
             id="nom"

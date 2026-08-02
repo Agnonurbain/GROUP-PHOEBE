@@ -134,7 +134,7 @@ export function BienInteractionForm({
           <>
             <div>
               <label htmlFor="montant" className="mb-1.5 block text-sm font-medium text-public-text">
-                {estLocation ? "Votre offre de loyer mensuel (FCFA) *" : "Votre offre (FCFA) *"}<Obligatoire />
+                {estLocation ? "Votre offre de loyer mensuel (FCFA)" : "Votre offre (FCFA)"}<Obligatoire />
               </label>
               <input
                 id="montant"
@@ -152,7 +152,7 @@ export function BienInteractionForm({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="location_debut" className="mb-1.5 block text-sm font-medium text-public-text">
-                    Début souhaité *<Obligatoire />
+                    Début souhaité<Obligatoire />
                   </label>
                   <input
                     id="location_debut"
@@ -165,7 +165,7 @@ export function BienInteractionForm({
                 </div>
                 <div>
                   <label htmlFor="location_duree_mois" className="mb-1.5 block text-sm font-medium text-public-text">
-                    Durée (mois) *<Obligatoire />
+                    Durée (mois)<Obligatoire />
                   </label>
                   <input
                     id="location_duree_mois"

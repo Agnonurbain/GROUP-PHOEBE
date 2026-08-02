@@ -409,7 +409,7 @@ export function ReservationPourClientForm({
                 htmlFor="op-debut"
                 className="mb-1 block text-sm font-medium text-phoebe-anthracite"
               >
-                Date de début *<Obligatoire />
+                Date de début<Obligatoire />
               </label>
               <input
                 id="op-debut"
@@ -427,7 +427,7 @@ export function ReservationPourClientForm({
                 htmlFor="op-fin"
                 className="mb-1 block text-sm font-medium text-phoebe-anthracite"
               >
-                Date de fin *<Obligatoire />
+                Date de fin<Obligatoire />
               </label>
               <input
                 id="op-fin"

@@ -41,7 +41,7 @@ export default function ArticleForm({ article, categories, action }: Props) {
           </legend>
 
           <div>
-            <label htmlFor="titre" className={labelClass}>Titre *<Obligatoire /></label>
+            <label htmlFor="titre" className={labelClass}>Titre<Obligatoire /></label>
             <input
               id="titre"
               name="titre"
@@ -90,7 +90,7 @@ export default function ArticleForm({ article, categories, action }: Props) {
           </div>
 
           <div>
-            <label htmlFor="contenu" className={labelClass}>Contenu *<Obligatoire /></label>
+            <label htmlFor="contenu" className={labelClass}>Contenu<Obligatoire /></label>
             <textarea
               id="contenu"
               name="contenu"
