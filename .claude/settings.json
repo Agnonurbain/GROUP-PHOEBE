@@ -181,7 +181,9 @@
       "Bash(pnpm -F web test assistance-cycle)",
       "Bash(pnpm -F web test i18n)",
       "Bash(timeout 900 pnpm -F web build)",
-      "Bash(pnpm -F web add server-only)"
+      "Bash(pnpm -F web add server-only)",
+      "Bash(grep -oE 'label>[^<]{3,}|placeholder=\"[^\"]{3,}\"|<h2[^>]*>[^<]{3,}' \"app/\\(public\\)/livraison/commander/commander-client.tsx\")",
+      "Bash(grep -oE \">[^<>{}\\\\n]{4,}<\" \"app/\\(public\\)/panier/paiement/page-client.tsx\")"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
