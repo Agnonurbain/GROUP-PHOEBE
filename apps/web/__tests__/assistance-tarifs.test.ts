@@ -73,6 +73,30 @@ describe("Assistance — pièces exigées par prestation", () => {
   const pieces = (key: string) =>
     chine.prestations.find((p) => p.key === key)?.pieces ?? [];
 
+  /**
+   * Le master valait le prix de la licence tant que GROUP PHOEBE ne l'avait pas
+   * communiqué — une hypothèse, signalée comme telle. Elle a été tranchée le
+   * 04/08/2026 : deux millions.
+   *
+   * Le montant est pilotable, mais il doit AUSSI vivre dans les migrations et
+   * dans le repli : sinon une base reconstruite repartirait de l'hypothèse.
+   */
+  it("le master coûte plus cher que la licence", () => {
+    const licence = chine.prestations.find((p) => p.key === "bourse_licence");
+    const master = chine.prestations.find((p) => p.key === "bourse_master");
+    expect(master?.prix).toBe(2_000_000);
+    expect(master!.prix!).toBeGreaterThan(licence!.prix!);
+  });
+
+  it("le montant du master est aussi corrigé en base", () => {
+    const migration = readFileSync(
+      join(process.cwd(), "..", "..", "supabase", "migrations", "00086_tarif_bourse_master.sql"),
+      "utf8"
+    );
+    expect(migration).toContain("bourse_master");
+    expect(migration).toContain("2000000");
+  });
+
   it("la Chine propose deux niveaux de bourse", () => {
     const bourses = chine.prestations.filter((p) => p.type === "etudes");
     expect(bourses.map((b) => b.key)).toEqual(["bourse_licence", "bourse_master"]);
