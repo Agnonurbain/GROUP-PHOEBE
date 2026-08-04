@@ -104,8 +104,8 @@ export default function Assistance({
       <section id="billet" className="border-t border-public-border px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
-            title="Billets d'avion"
-            lede="Dites-nous où et quand vous voulez partir : nous cherchons le vol et vous envoyons un devis."
+            title="Assistance réservation et achat de billets d'avion"
+            lede="Dites-nous où et quand vous voulez partir : nous cherchons le vol et vous envoyons un devis. Le règlement se fait en ligne ou à notre bureau, comme vous préférez."
             className="border-b-0 pb-0"
           />
           <div className="mt-10">
@@ -117,8 +117,8 @@ export default function Assistance({
       <section className="border-t border-public-border bg-public-bg-card px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
-            title="Destinations"
-            lede="Les pays que nous couvrons, avec le tarif de départ de notre accompagnement."
+            title="Assistance demande de visa et de bourses d'études"
+            lede="Les pays que nous couvrons, avec le tarif de départ de notre accompagnement — donné à titre indicatif."
             className="border-b-0 pb-0"
           />
           <div className="mt-10">
