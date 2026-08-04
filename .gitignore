@@ -28,4 +28,6 @@ supabase/.temp
 .env*
 
 # sources de contenu (notes vocales, briefs) — non versionnées
+# Leur transcription, elle, vit dans docs/retours/.
 assis/
+POI/

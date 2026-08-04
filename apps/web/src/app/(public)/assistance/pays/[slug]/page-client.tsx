@@ -8,7 +8,14 @@ import { Badge, Button } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
 import { CheckIcon } from "@/components/icons"
 import { creerDossierVoyage, type AssistanceState } from "@/app/actions/assistance"
-import { getPays, prixLabel, type TarifsAssistance } from "@/lib/assistance"
+import {
+  getPays,
+  prixLabel,
+  TYPE_DOCUMENT_LABELS,
+  MENTION_VISA_NON_GARANTI,
+  type TarifsAssistance,
+  type Prestation,
+} from "@/lib/assistance"
 
 function StepCard({ num, title, desc, index }: { num: string; title: string; desc?: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -51,7 +58,7 @@ function StepCard({ num, title, desc, index }: { num: string; title: string; des
 function VisaCard({
   prestation, paysSlug,
 }: {
-  prestation: { key: string; name: string; prix: number | null; description?: string; recommended?: boolean }
+  prestation: Prestation
   paysSlug: string
 }) {
   const t = useT()
@@ -64,9 +71,35 @@ function VisaCard({
       )}
       <h3 className="text-base font-semibold text-public-text">{prestation.name}</h3>
       <p className="mt-1 text-3xl font-bold text-accent-blue-on-dark">{prixLabel(prestation.prix)}</p>
+      {/* Le dossier ne se règle plus en ligne : le montant annoncé ici est un
+          ordre de grandeur, arrêté au rendez-vous. Le taire laisserait croire
+          à un prix ferme. */}
+      {prestation.prix !== null && (
+        <p className="mt-0.5 text-xs text-public-text-faint">À titre indicatif</p>
+      )}
       {prestation.description && (
         <p className="mt-3 text-sm text-public-text-muted">{prestation.description}</p>
       )}
+
+      {/* Les pièces exigées, avant de postuler et non après : c'est ce que le
+          candidat vient vérifier, et elles ne sont pas les mêmes d'un niveau à
+          l'autre. */}
+      {prestation.pieces.length > 0 && (
+        <div className="mt-4 rounded-xl border border-public-border bg-public-bg p-3">
+          <p className="text-xs font-semibold text-public-text">
+            Pièces à fournir ({prestation.pieces.length})
+          </p>
+          <ul className="mt-2 space-y-1">
+            {prestation.pieces.map((piece) => (
+              <li key={piece} className="flex items-start gap-2 text-xs text-public-text-muted">
+                <span aria-hidden="true" className="mt-0.5 text-accent-green">✓</span>
+                {TYPE_DOCUMENT_LABELS[piece]}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       {state?.error && (
         <p role="alert" className="mt-3 text-sm text-error">{state.error}</p>
       )}
@@ -80,7 +113,7 @@ function VisaCard({
           disabled={pending}
           className={`mt-4 w-full ${prestation.recommended ? "" : "border-accent-blue/60 text-accent-blue-on-dark hover:bg-accent-blue/10"}`}
         >
-          {pending ? "Envoi..." : "Soumettre ma demande"}
+          {pending ? "Envoi..." : "Postuler"}
         </Button>
       </form>
     </div>
@@ -200,6 +233,13 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
               <VisaCard key={prestation.key} prestation={prestation} paysSlug={pays.slug} />
             ))}
           </div>
+
+          {/* Placé sous les prestations, là où le client s'apprête à postuler :
+              plus bas il ne le lirait pas, plus haut il l'aurait oublié. */}
+          <p className="mt-6 rounded-xl border border-accent-blue/25 bg-accent-blue/5 p-4 text-xs leading-relaxed text-public-text-muted">
+            <strong className="text-public-text">Ce que couvre notre assistance.</strong>{" "}
+            {MENTION_VISA_NON_GARANTI}
+          </p>
         </div>
       </div>
     </>
