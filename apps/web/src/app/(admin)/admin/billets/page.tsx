@@ -1,4 +1,5 @@
 import { VerificationPiece, LienPasseport } from "./verification-pieces"
+import { EncaisserAuBureau } from "./encaisser-bureau"
 import type { Metadata } from "next"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
@@ -53,6 +54,21 @@ export default async function BilletsAdminPage() {
     ? await db.from("users").select("id, nom, telephone, email").in("id", clientIds)
     : { data: [] }
   const clientById = new Map((clients ?? []).map((c) => [c.id, c]))
+
+  // Règlements en attente : depuis que le paiement en ligne n'est plus
+  // obligatoire, un client peut venir payer au comptoir. Sans cette lecture,
+  // l'équipe n'aurait aucun moyen d'enregistrer ce qu'elle encaisse.
+  const { data: paiementsEnAttente } = lignes.length
+    ? await db
+        .from("paiements")
+        .select("reference_id, montant")
+        .eq("reference_table", "demandes_billet")
+        .eq("statut", "en_attente")
+        .in("reference_id", lignes.map((d) => d.id))
+    : { data: [] }
+  const aEncaisser = new Map(
+    (paiementsEnAttente ?? []).map((p) => [p.reference_id as string, Number(p.montant)])
+  )
 
   // Accompagnants : saisis avec la demande depuis 00079. Sans eux à l'écran, la
   // saisie du client ne servirait à personne — et la compagnie exige le
@@ -254,6 +270,15 @@ export default async function BilletsAdminPage() {
                     <p className="text-xs text-phoebe-anthracite/70">
                       Demandé le {dateFr(d.created_at)}
                     </p>
+                    {aEncaisser.has(d.id) && (
+                      <p className="mt-1.5">
+                        <EncaisserAuBureau
+                          referenceTable="demandes_billet"
+                          referenceId={d.id}
+                          montant={aEncaisser.get(d.id)!}
+                        />
+                      </p>
+                    )}
                     {d.statut === "devis_envoye" && d.devis_valable_jusqu_a && (
                       new Date(d.devis_valable_jusqu_a) < new Date()
                         ? <p className="mt-0.5 text-[11px] font-semibold text-error">Devis expiré</p>

@@ -7,8 +7,6 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
 import { validateDocumentUpload } from "@/lib/upload-validation";
 import { logAudit } from "@/lib/audit";
-import { creerSessionStripe } from "@/lib/payments/stripe";
-import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import {
   getPays,
   getPrestation,
@@ -229,91 +227,18 @@ export async function affecterConseiller(
  * paiement créée à la soumission, sur le tarif en vigueur ce jour-là. Le laisser
  * arriver du client permettrait de payer ce qu'on veut.
  */
-export async function payerDossierVoyage(
-  _prev: AssistanceState,
-  formData: FormData
-): Promise<AssistanceState> {
-  const supabase = await createClient();
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
-
-  const dossierId = formData.get("dossier_id") as string;
-  const methode = formData.get("methode_paiement") as string;
-  if (!dossierId) return { error: "Dossier invalide." };
-  if (!["cinetpay", "stripe"].includes(methode)) {
-    return { error: "Méthode de paiement invalide." };
-  }
-
-  const admin = getAdmin();
-
-  const { data: dossier } = await admin
-    .from("dossiers_voyage")
-    .select("id, client_id, pays_cible, prestation")
-    .eq("id", dossierId)
-    .single();
-
-  if (!dossier) return { error: "Dossier introuvable." };
-  if (dossier.client_id !== user.sub) return { error: "Ce dossier n'est pas le vôtre." };
-
-  const { data: paiement } = await admin
-    .from("paiements")
-    .select("id, montant, statut")
-    .eq("reference_table", "dossiers_voyage")
-    .eq("reference_id", dossierId)
-    .maybeSingle();
-
-  if (!paiement) return { error: "Aucun montant à régler pour ce dossier." };
-  if (paiement.statut !== "en_attente") {
-    return { error: "Ce dossier est déjà réglé." };
-  }
-
-  // La méthode est arrêtée maintenant : elle valait `agence` tant que le client
-  // n'avait rien choisi.
-  const { error: majErr } = await admin
-    .from("paiements")
-    .update({ methode })
-    .eq("id", paiement.id)
-    .eq("statut", "en_attente");
-  if (majErr) return { error: majErr.message };
-
-  const montant = Number(paiement.montant);
-  const description = `Assistance ${(dossier as { prestation?: string }).prestation ?? ""} — ${dossier.pays_cible}`.trim();
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
-  let paymentUrl: string;
-  try {
-    if (methode === "stripe") {
-      paymentUrl = await creerSessionStripe({
-        montantCFA: montant,
-        description,
-        paiementId: paiement.id,
-        successUrl: `${baseUrl}/compte/reservations`,
-        cancelUrl: `${baseUrl}/compte/reservations?echec=1`,
-      });
-    } else {
-      paymentUrl = await creerSessionCinetPay({
-        montantCFA: montant,
-        description,
-        paiementId: paiement.id,
-        returnUrl: `${baseUrl}/compte/reservations`,
-        notifyUrl: `${baseUrl}/api/webhooks/cinetpay`,
-      });
-    }
-  } catch (err) {
-    return {
-      error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
-    };
-  }
-
-  redirect(paymentUrl);
-}
-
-// ─── Pièces justificatives d'un dossier ──────────────────────────────────────
-// `documents_dossier_voyage` existait depuis la migration initiale, avec ses
-// policies posées en 00038, et zéro ligne de code. Le statut
-// `pieces_complementaires_requises` demandait des pièces qu'aucun canal ne
-// permettait d'envoyer.
+/**
+ * Le règlement d'un dossier ne passe plus par le site.
+ *
+ * `payerDossierVoyage` ouvrait une session Stripe ou CinetPay depuis « Mes
+ * réservations ». Retiré sur demande de l'exploitant : « il n'y a pas de
+ * paiement à faire en ligne, je ne veux pas qu'on fasse des paiements en
+ * ligne. Quand tu cliques sur soumettre dossier, tu prends rendez-vous. »
+ *
+ * La ligne de paiement, elle, reste créée à la soumission : elle porte ce qui
+ * est dû et se solde au bureau via `encaisserAuBureau`. La supprimer aurait
+ * ramené le défaut corrigé auparavant — un service rendu et jamais encaissé.
+ */
 
 export async function deposerPieceDossier(
   _prev: AssistanceState,

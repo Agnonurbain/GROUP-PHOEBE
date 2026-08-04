@@ -94,17 +94,65 @@ describe("Assistance — un dossier est enfin facturé", () => {
     expect(corpsDeFonction(source, "creerDossierVoyage")).toMatch(/prixPrestation > 0/);
   });
 
-  // Le laisser arriver du formulaire permettrait de payer ce qu'on veut.
-  it("le montant réglé vient de la base, jamais du formulaire", () => {
-    const corps = corpsDeFonction(source, "payerDossierVoyage");
-    expect(corps).toMatch(/montant = Number\(paiement\.montant\)/);
-    expect(corps).not.toMatch(/formData\.get\("montant/);
+  /**
+   * Le règlement en ligne d'un dossier est retiré (04/08/2026). Ce qui le
+   * protégeait — montant lu en base, dossier appartenant au client, paiement
+   * réglé une seule fois — est repris par `encaisserAuBureau`, à ceci près que
+   * l'acteur est désormais l'équipe et non le client.
+   */
+  it("plus aucun règlement en ligne d'un dossier", () => {
+    // On vise la DÉCLARATION et les IMPORTS, pas la prose : le commentaire qui
+    // explique le retrait nomme forcément ce qui a été retiré.
+    expect(source).not.toContain("export async function payerDossierVoyage");
+    expect(source).not.toMatch(/^import .*creerSession(Stripe|CinetPay)/m);
+  });
+});
+
+/**
+ * L'encaissement au comptoir.
+ *
+ * « On laisse la possibilité aux gens de venir payer au bureau ou en ligne.
+ * C'est pas une obligation de payer en ligne. » Sans cette action, l'argent
+ * rentrerait au comptoir et le système afficherait « en attente »
+ * indéfiniment — la moitié d'une fonctionnalité.
+ */
+describe("Assistance — encaisser au bureau", () => {
+  const source = src("app/actions/billets.ts");
+  const corps = corpsDeFonction(source, "encaisserAuBureau");
+
+  it("est réservé à l'équipe", () => {
+    expect(corps).toContain("requireStaff()");
   });
 
-  it("on ne règle que son propre dossier, et une seule fois", () => {
-    const corps = corpsDeFonction(source, "payerDossierVoyage");
-    expect(corps).toMatch(/dossier\.client_id !== user\.sub/);
-    expect(corps).toMatch(/paiement\.statut !== "en_attente"/);
+  // Écrire un second chemin de confirmation aurait fini par diverger de celui
+  // du webhook : même fonction, donc même statut attendu, même facture.
+  it("délègue au même chemin qu'un paiement en ligne", () => {
+    expect(corps).toContain("confirmerCommande");
+    expect(corps).not.toContain('statut: "capture"');
+  });
+
+  it("ne solde qu'un paiement réellement en attente", () => {
+    expect(corps).toMatch(/\.eq\("statut", "en_attente"\)/);
+  });
+
+  it("n'accepte que les références qu'il sait traiter", () => {
+    expect(corps).toContain('"demandes_billet"');
+    expect(corps).toContain('"dossiers_voyage"');
+  });
+
+  // Une action sans écran serait le défaut habituel : écrite, jamais appelée.
+  it("est branché sur les deux écrans d'administration", () => {
+    for (const page of ["app/(admin)/admin/billets/page.tsx", "app/(admin)/admin/dossiers-voyage/page.tsx"]) {
+      expect(src(page), page).toContain("EncaisserAuBureau");
+    }
+    expect(src("app/(admin)/admin/billets/encaisser-bureau.tsx")).toContain("encaisserAuBureau");
+  });
+
+  // Sans troisième bouton, un client sans carte ni Mobile Money resterait
+  // bloqué sur son devis.
+  it("le client peut choisir le bureau", () => {
+    expect(src("components/public/payer-billet.tsx")).toContain('value="agence"');
+    expect(src("app/actions/billets.ts")).toMatch(/\["cinetpay", "stripe", "agence"\]/);
   });
 });
 
@@ -195,9 +243,19 @@ describe("Assistance — ce que le client voit enfin", () => {
     expect(page).not.toMatch(/category: "Assistance",[\s\S]{0,400}price: "—"/);
   });
 
-  it("son conseiller, ses pièces et son règlement", () => {
+  it("son conseiller et ses pièces", () => {
     expect(page).toContain("conseiller_id");
     expect(page).toContain("DossierPieces");
-    expect(page).toContain("PayerDossier");
+  });
+
+  /**
+   * « Il n'y a pas de paiement à faire en ligne, je ne veux pas qu'on fasse des
+   * paiements en ligne. » Le bouton est retiré, mais le montant reste annoncé :
+   * le taire laisserait le client attendre un règlement qui ne vient jamais.
+   */
+  it("le dossier ne se règle plus en ligne, et le dit", () => {
+    expect(page).not.toContain("PayerDossier");
+    expect(page).toContain("à régler au bureau");
+    expect(page).toContain("Montant estimé");
   });
 });

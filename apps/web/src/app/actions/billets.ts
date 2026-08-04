@@ -375,7 +375,10 @@ export async function payerDevisBillet(
   const demandeId = formData.get("demande_id") as string;
   const methode = formData.get("methode_paiement") as string;
 
-  if (!["cinetpay", "stripe"].includes(methode)) {
+  // « agence » : le client vient régler au bureau. Demandé par l'exploitant —
+  // « on laisse la possibilité aux gens de venir payer le billet au bureau ou
+  // en ligne. C'est pas une obligation de payer en ligne. »
+  if (!["cinetpay", "stripe", "agence"].includes(methode)) {
     return { error: "Méthode de paiement invalide." };
   }
 
@@ -412,6 +415,24 @@ export async function payerDevisBillet(
   // Créer le paiement
   const total = Number(demande.montant_propose) + Number(demande.frais_service ?? 0)
 
+  // Un second clic ne doit pas fabriquer une seconde ligne : le client qui
+  // choisit le bureau reste sur la page, et rien ne l'empêche de recliquer.
+  const { data: dejaEnAttente } = await admin
+    .from("paiements")
+    .select("id, methode")
+    .eq("reference_table", "demandes_billet")
+    .eq("reference_id", demande.id)
+    .eq("statut", "en_attente")
+    .maybeSingle()
+
+  if (dejaEnAttente && methode === "agence") {
+    if (dejaEnAttente.methode !== "agence") {
+      await admin.from("paiements").update({ methode: "agence" })
+        .eq("id", dejaEnAttente.id).eq("statut", "en_attente")
+    }
+    return { success: true }
+  }
+
   const { data: paiement, error: paiementErr } = await admin
     .from("paiements")
     .insert({
@@ -430,6 +451,14 @@ export async function payerDevisBillet(
 
   const description =`Billet ${demande.depart} → ${demande.destination}`
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+
+  // Paiement au bureau : rien à initialiser chez un prestataire. La ligne
+  // reste `en_attente` jusqu'à ce que l'équipe encaisse — c'est le même
+  // principe que le paiement à la livraison d'un colis.
+  if (methode === "agence") {
+    revalidatePath("/compte/reservations")
+    return { success: true }
+  }
 
   let paymentUrl: string
   try {
@@ -632,4 +661,69 @@ export async function lienPieceBillet(
 
   if (error || !signee?.signedUrl) return { error: "Lien indisponible." }
   return { url: signee.signedUrl }
+}
+
+/**
+ * Encaissement au bureau, par l'équipe.
+ *
+ * Sans cette action, « payer au bureau » serait un cul-de-sac : l'argent
+ * rentrerait et le système afficherait « en attente » indéfiniment. C'est le
+ * pendant de l'encaissement du livreur à la remise d'un colis.
+ *
+ * Le travail réel est délégué à `confirmerCommande`, celui-là même que déclenche
+ * un webhook de paiement en ligne : il filtre sur le statut ATTENDU, fait
+ * avancer la demande et génère la facture. Écrire un second chemin ici aurait
+ * fini par diverger de celui-là.
+ */
+export async function encaisserAuBureau(
+  _prev: BilletState,
+  formData: FormData
+): Promise<BilletState> {
+  let userId: string
+  try {
+    ({ userId } = await requireStaff())
+  } catch {
+    return { error: "Session expirée ou accès refusé." }
+  }
+
+  const referenceTable = texte(formData.get("reference_table"))
+  const referenceId = texte(formData.get("reference_id"))
+  if (!["demandes_billet", "dossiers_voyage"].includes(referenceTable) || !referenceId) {
+    return { error: "Référence inconnue." }
+  }
+
+  const admin = getAdmin()
+  const { data: paiement } = await admin
+    .from("paiements")
+    .select("id, statut, montant")
+    .eq("reference_table", referenceTable)
+    .eq("reference_id", referenceId)
+    .eq("statut", "en_attente")
+    .maybeSingle()
+
+  if (!paiement) return { error: "Aucun montant en attente sur cette référence." }
+
+  // La méthode dit d'où vient l'argent : elle valait peut-être `stripe` si le
+  // client avait ouvert un tunnel qu'il n'a pas terminé.
+  await admin
+    .from("paiements")
+    .update({ methode: "agence" })
+    .eq("id", paiement.id)
+    .eq("statut", "en_attente")
+
+  const { confirmerCommande } = await import("@/lib/payments/traitement")
+  const r = await confirmerCommande(admin, paiement.id)
+  if (!r.ok) return { error: r.raison ?? "Encaissement impossible." }
+
+  await logAudit({
+    userId,
+    action: "encaisser_au_bureau",
+    tableName: referenceTable,
+    recordId: referenceId,
+    newValues: { montant: paiement.montant, methode: "agence" },
+  })
+
+  revalidatePath("/admin/billets")
+  revalidatePath("/admin/dossiers-voyage")
+  return { success: true }
 }
