@@ -4,6 +4,7 @@ import type { Database } from "@group-phoebe/database/types"
 import { PiecesSection, type PieceAdmin } from "./pieces-section"
 import { DossierActions } from "./dossiers-actions"
 import { EncaisserAuBureau } from "../billets/encaisser-bureau"
+import { libelleCreneau } from "@/lib/rendez-vous"
 import { STATUTS_DOSSIER, STATUT_DOSSIER_LABELS, prixLabel } from "@/lib/assistance"
 
 export const metadata: Metadata = {
@@ -46,6 +47,20 @@ export default async function DossiersVoyageAdminPage() {
   // Un dossier ne se règle plus en ligne : le montant est arrêté et encaissé au
   // bureau, lors du rendez-vous de dépôt. Sans cette lecture, l'équipe
   // encaisserait au comptoir sans pouvoir l'enregistrer nulle part.
+  // Le rendez-vous de dépôt : sans lui à l'écran, l'équipe découvrirait le
+  // client devant le comptoir.
+  const { data: rendezVous } = dossierIds.length
+    ? await db
+        .from("rendez_vous_dossier")
+        .select("dossier_id, debut, fin")
+        .eq("statut", "reserve")
+        .in("dossier_id", dossierIds)
+        .order("debut")
+    : { data: [] }
+  const rdvParDossier = new Map(
+    (rendezVous ?? []).map((r) => [r.dossier_id as string, { debut: String(r.debut), fin: String(r.fin) }])
+  )
+
   const { data: paiementsEnAttente } = dossierIds.length
     ? await db
         .from("paiements")
@@ -137,6 +152,11 @@ export default async function DossiersVoyageAdminPage() {
                   <p className="text-xs text-phoebe-anthracite/70">
                     {d.conseiller_id ? `Conseiller : ${userNom.get(d.conseiller_id) ?? "—"}` : "Non affecté"}
                   </p>
+                  {rdvParDossier.has(d.id) && (
+                    <p className="mt-1 text-[11px] font-medium text-phoebe-green-deep">
+                      Dépôt : {libelleCreneau(rdvParDossier.get(d.id)!.debut, rdvParDossier.get(d.id)!.fin)}
+                    </p>
+                  )}
                   {aEncaisser.has(d.id) && (
                     <p className="mt-1.5">
                       <EncaisserAuBureau
