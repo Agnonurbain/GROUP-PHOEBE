@@ -713,3 +713,271 @@ export async function modifierHorairesOuverture(
   revalidatePath("/compte/reservations")
   return { success: true }
 }
+
+// ─── Moyens de livraison ─────────────────────────────────────────────────────
+// « Il y a moto et puis il y a le cargo […] 3 types de cargo : petit, moyen,
+// grand. En fonction des types de cargo, il y a aussi les tarifs qui vont
+// avec. » Et la liste doit rester ouverte : un fourgon, un camion, une barque
+// s'ajoutent sans déploiement.
+
+const ZONES_TARIF = ["intracommunale", "intercommunale", "nationale"] as const
+
+/** `Cargo XXL` → `cargo_xxl`. Une clé stable, lisible, et jamais saisie à la main. */
+function cleDepuisLabel(label: string): string {
+  return label
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+}
+
+/**
+ * Créer un moyen de livraison, avec ses trois prix de zone.
+ *
+ * Les prix sont exigés à la création : un moyen sans tarif s'afficherait au
+ * client sans prix, et il faudrait deviner s'il est gratuit ou incomplet.
+ */
+export async function creerMoyenLivraison(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  let userId: string
+  try {
+    userId = await requireProprietaireAvecId()
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." }
+  }
+
+  const label = ((formData.get("label") as string) || "").trim()
+  const famille = ((formData.get("famille") as string) || "").trim()
+  const chargeMax = Number(formData.get("charge_max_kg"))
+
+  if (!label) return { error: "Donnez un nom au moyen de livraison." }
+  if (!famille) return { error: "Indiquez la famille (moto, cargo, fourgon…)." }
+  if (!Number.isFinite(chargeMax) || chargeMax <= 0) {
+    return { error: "La charge utile doit être un poids positif." }
+  }
+
+  const cle = cleDepuisLabel(label)
+  if (!cle) return { error: "Ce nom ne produit pas de clé utilisable." }
+
+  const prix: Record<string, number> = {}
+  for (const zone of ZONES_TARIF) {
+    const v = Number(formData.get(`prix_${zone}`))
+    if (!Number.isFinite(v) || v <= 0) {
+      return { error: `Indiquez un prix pour la zone « ${zone} ».` }
+    }
+    prix[zone] = v
+  }
+
+  const admin = getAdmin()
+
+  // L'ordre d'affichage suit la charge : le client raisonne du plus léger au
+  // plus lourd, et lui faire ranger des numéros à la main serait une corvée.
+  const { data: existants } = await admin
+    .from("moyens_livraison")
+    .select("ordre")
+    .order("ordre", { ascending: false })
+    .limit(1)
+  const ordre = (existants?.[0]?.ordre ?? 0) + 1
+
+  const { error: moyenErr } = await admin.from("moyens_livraison").insert({
+    cle, label, famille, charge_max_kg: chargeMax, ordre,
+  })
+
+  if (moyenErr) {
+    if ((moyenErr as { code?: string }).code === "23505") {
+      return { error: "Un moyen porte déjà ce nom." }
+    }
+    return { error: moyenErr.message }
+  }
+
+  const { error: tarifErr } = await admin.from("tarifs_livraison_moyen").insert(
+    ZONES_TARIF.map((zone) => ({ zone, moyen: cle, prix: prix[zone] }))
+  )
+
+  if (tarifErr) {
+    // Sans ses prix, le moyen s'afficherait muet : on retire ce qu'on vient de
+    // créer plutôt que de laisser un catalogue à moitié fait.
+    await admin.from("moyens_livraison").delete().eq("cle", cle)
+    return { error: "Prix non enregistrés. Le moyen n'a pas été créé." }
+  }
+
+  await logAudit({
+    userId,
+    action: "creer_moyen_livraison",
+    tableName: "moyens_livraison",
+    recordId: cle,
+    newValues: { label, famille, chargeMax, prix },
+  })
+
+  ;(revalidateTag as (tag: string) => void)("tarifs-livraison")
+  revalidatePath("/admin/tarifs")
+  revalidatePath("/livraison/commander")
+  return { success: true }
+}
+
+/** Modifier un moyen : son nom, sa famille, sa charge, ses prix. */
+export async function modifierMoyenLivraison(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  let userId: string
+  try {
+    userId = await requireProprietaireAvecId()
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." }
+  }
+
+  const cle = ((formData.get("cle") as string) || "").trim()
+  if (!cle) return { error: "Moyen inconnu." }
+
+  const label = ((formData.get("label") as string) || "").trim()
+  const famille = ((formData.get("famille") as string) || "").trim()
+  const chargeMax = Number(formData.get("charge_max_kg"))
+
+  if (!label || !famille) return { error: "Le nom et la famille sont obligatoires." }
+  if (!Number.isFinite(chargeMax) || chargeMax <= 0) {
+    return { error: "La charge utile doit être un poids positif." }
+  }
+
+  const admin = getAdmin()
+
+  // La clé ne bouge pas : des expéditions la référencent, et la renommer
+  // rendrait leur historique illisible. Seul l'affichage change.
+  const { error } = await admin
+    .from("moyens_livraison")
+    .update({ label, famille, charge_max_kg: chargeMax, updated_at: new Date().toISOString() })
+    .eq("cle", cle)
+
+  if (error) return { error: error.message }
+
+  for (const zone of ZONES_TARIF) {
+    const v = Number(formData.get(`prix_${zone}`))
+    if (!Number.isFinite(v) || v <= 0) {
+      return { error: `Prix invalide pour la zone « ${zone} ».` }
+    }
+    const { error: e } = await admin
+      .from("tarifs_livraison_moyen")
+      .upsert({ zone, moyen: cle, prix: v, updated_at: new Date().toISOString() },
+              { onConflict: "zone,moyen" })
+    if (e) return { error: e.message }
+  }
+
+  await logAudit({
+    userId,
+    action: "modifier_moyen_livraison",
+    tableName: "moyens_livraison",
+    recordId: cle,
+    newValues: { label, famille, chargeMax },
+  })
+
+  ;(revalidateTag as (tag: string) => void)("tarifs-livraison")
+  revalidatePath("/admin/tarifs")
+  revalidatePath("/livraison/commander")
+  return { success: true }
+}
+
+/**
+ * Retirer ou remettre un moyen au catalogue.
+ *
+ * On ne supprime pas : des expéditions passées le référencent, et effacer son
+ * nom rendrait leur historique illisible.
+ */
+export async function basculerMoyenLivraison(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  let userId: string
+  try {
+    userId = await requireProprietaireAvecId()
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." }
+  }
+
+  const cle = ((formData.get("cle") as string) || "").trim()
+  const actif = formData.get("actif") === "1"
+  if (!cle) return { error: "Moyen inconnu." }
+
+  const admin = getAdmin()
+
+  // Retirer le dernier moyen actif viderait le formulaire de commande : le
+  // client verrait un service sans aucune option.
+  if (!actif) {
+    const { data: restants } = await admin
+      .from("moyens_livraison")
+      .select("cle")
+      .eq("actif", true)
+      .neq("cle", cle)
+    if (!restants?.length) {
+      return { error: "C'est le dernier moyen actif : le formulaire de commande n'aurait plus rien à proposer." }
+    }
+  }
+
+  const { error } = await admin
+    .from("moyens_livraison")
+    .update({ actif, updated_at: new Date().toISOString() })
+    .eq("cle", cle)
+
+  if (error) return { error: error.message }
+
+  await logAudit({
+    userId,
+    action: actif ? "reactiver_moyen_livraison" : "retirer_moyen_livraison",
+    tableName: "moyens_livraison",
+    recordId: cle,
+    newValues: { actif },
+  })
+
+  ;(revalidateTag as (tag: string) => void)("tarifs-livraison")
+  revalidatePath("/admin/tarifs")
+  revalidatePath("/livraison/commander")
+  return { success: true }
+}
+
+/** Coefficient appliqué selon le délai. Pilotable, comme les prix de base. */
+export async function modifierCoefficientsMode(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  let userId: string
+  try {
+    userId = await requireProprietaireAvecId()
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." }
+  }
+
+  const admin = getAdmin()
+  const modes = ["standard", "express", "meme_jour", "programmee"] as const
+  const valeurs: Record<string, number> = {}
+
+  for (const mode of modes) {
+    const v = Number(formData.get(`coef_${mode}`))
+    // Un coefficient nul ou négatif rendrait la livraison gratuite ou absurde.
+    if (!Number.isFinite(v) || v <= 0 || v > 10) {
+      return { error: `Le coefficient « ${mode} » doit être compris entre 0 et 10.` }
+    }
+    valeurs[mode] = v
+  }
+
+  for (const mode of modes) {
+    const { error } = await admin
+      .from("coefficients_mode_livraison")
+      .upsert({ mode, coefficient: valeurs[mode], updated_at: new Date().toISOString() },
+              { onConflict: "mode" })
+    if (error) return { error: error.message }
+  }
+
+  await logAudit({
+    userId,
+    action: "modifier_coefficients_mode",
+    tableName: "coefficients_mode_livraison",
+    newValues: valeurs,
+  })
+
+  ;(revalidateTag as (tag: string) => void)("tarifs-livraison")
+  revalidatePath("/admin/tarifs")
+  revalidatePath("/livraison/commander")
+  return { success: true }
+}

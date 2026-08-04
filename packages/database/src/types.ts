@@ -369,6 +369,24 @@ export type Database = {
           },
         ]
       }
+      coefficients_mode_livraison: {
+        Row: {
+          coefficient: number
+          mode: string
+          updated_at: string
+        }
+        Insert: {
+          coefficient: number
+          mode: string
+          updated_at?: string
+        }
+        Update: {
+          coefficient?: number
+          mode?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       communes: {
         Row: {
           ajoutee_par_client: boolean
@@ -1070,6 +1088,7 @@ export type Database = {
           livree_at: string | null
           livreur_id: string | null
           mode: string
+          moyen: string | null
           nature_colis: string | null
           numero_suivi: string
           paiement_encaisse_at: string | null
@@ -1105,6 +1124,7 @@ export type Database = {
           livree_at?: string | null
           livreur_id?: string | null
           mode: string
+          moyen?: string | null
           nature_colis?: string | null
           numero_suivi: string
           paiement_encaisse_at?: string | null
@@ -1140,6 +1160,7 @@ export type Database = {
           livree_at?: string | null
           livreur_id?: string | null
           mode?: string
+          moyen?: string | null
           nature_colis?: string | null
           numero_suivi?: string
           paiement_encaisse_at?: string | null
@@ -1170,6 +1191,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "livreurs"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expeditions_moyen_fkey"
+            columns: ["moyen"]
+            isOneToOne: false
+            referencedRelation: "moyens_livraison"
+            referencedColumns: ["cle"]
           },
           {
             foreignKeyName: "expeditions_paiement_encaisse_par_fkey"
@@ -1506,6 +1534,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      moyens_livraison: {
+        Row: {
+          actif: boolean
+          charge_max_kg: number
+          cle: string
+          famille: string
+          label: string
+          ordre: number
+          updated_at: string
+        }
+        Insert: {
+          actif?: boolean
+          charge_max_kg: number
+          cle: string
+          famille: string
+          label: string
+          ordre: number
+          updated_at?: string
+        }
+        Update: {
+          actif?: boolean
+          charge_max_kg?: number
+          cle?: string
+          famille?: string
+          label?: string
+          ordre?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       notifications_log: {
         Row: {
@@ -2205,6 +2263,35 @@ export type Database = {
           zone?: string
         }
         Relationships: []
+      }
+      tarifs_livraison_moyen: {
+        Row: {
+          moyen: string
+          prix: number
+          updated_at: string
+          zone: string
+        }
+        Insert: {
+          moyen: string
+          prix: number
+          updated_at?: string
+          zone: string
+        }
+        Update: {
+          moyen?: string
+          prix?: number
+          updated_at?: string
+          zone?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tarifs_livraison_moyen_moyen_fkey"
+            columns: ["moyen"]
+            isOneToOne: false
+            referencedRelation: "moyens_livraison"
+            referencedColumns: ["cle"]
+          },
+        ]
       }
       users: {
         Row: {

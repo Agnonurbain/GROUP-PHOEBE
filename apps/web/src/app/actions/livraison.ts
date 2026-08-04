@@ -8,7 +8,7 @@ import type { Database } from "@group-phoebe/database/types";
 import { creerSessionStripe } from "@/lib/payments/stripe";
 import { creerSessionCinetPay } from "@/lib/payments/cinetpay";
 import {
-  computeLivraisonPrix,
+  computeLivraisonPrixMoyen,
   genererNumeroSuivi,
   deriverZoneLivraison,
   ZONE_LABELS,
@@ -150,7 +150,7 @@ export async function creerExpedition(
 
   // Grille et paliers pilotés depuis /admin/tarifs : même source que l'affichage
   // client, donc montant affiché == montant facturé.
-  const { grille, paliers } = await getTarifsLivraison();
+  const { paliers, moyens, grilleMoyens, coefficientsMode } = await getTarifsLivraison();
   const maxKg = poidsMax(paliers);
 
   // Le poids détermine le palier tarifaire : il est désormais obligatoire.
@@ -168,9 +168,26 @@ export async function creerExpedition(
     return { error: "La valeur déclarée est invalide." };
   }
 
-  // Prix recalculé côté serveur (autoritaire) : grille zone × mode, pondérée
-  // par le palier de poids.
-  const prix = computeLivraisonPrix(zone, mode, poidsKg, grille, paliers);
+  // Le moyen — le véhicule — a remplacé le poids dans le prix (00084). Le poids
+  // reste exigé : le livreur doit le connaître, et il écarte les moyens trop
+  // justes pour le colis.
+  const moyenCle = ((formData.get("moyen") as string) || "").trim();
+  if (!moyenCle) return { error: "Choisissez un moyen de livraison." };
+
+  const moyen = moyens.find((m) => m.cle === moyenCle);
+  if (!moyen) return { error: "Ce moyen de livraison n'est plus proposé." };
+
+  // Le navigateur filtre déjà la liste, mais rien n'oblige un formulaire à
+  // passer par le navigateur : sans ce contrôle, on accepterait une moto pour
+  // 40 kg et le livreur découvrirait le colis sur place.
+  if (poidsKg > moyen.chargeMaxKg) {
+    return {
+      error: `${moyen.label} porte jusqu'à ${moyen.chargeMaxKg} kg. Choisissez un moyen adapté à ${poidsKg} kg.`,
+    };
+  }
+
+  // Prix recalculé côté serveur, autoritaire : tarif(zone × moyen) × coefficient(mode).
+  const prix = computeLivraisonPrixMoyen(zone, moyen.cle, mode, grilleMoyens, coefficientsMode);
   if (prix === null) return { error: "Tarif indisponible pour cette combinaison." };
 
   const admin = getAdmin();
@@ -193,6 +210,7 @@ export async function creerExpedition(
       commune_collecte: communeCollecte,
       commune_livraison: communeLivraison,
       mode,
+      moyen: moyen.cle,
       date_souhaitee: mode === "programmee" ? dateSouhaitee : null,
       nature_colis: natureColis,
       dimensions,
