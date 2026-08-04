@@ -15,7 +15,6 @@ import { PreuveLivraison } from "@/components/public/preuve-livraison"
 import { DeposerAvis } from "@/components/public/deposer-avis"
 import { ReponseCreneauVisite } from "@/components/public/reponse-creneau-visite"
 import { DossierPieces, type PieceClient } from "@/components/public/dossier-pieces"
-import { PayerDossier } from "@/components/public/payer-dossier"
 import { formaterCreneau } from "@/lib/immobilier"
 import { getT } from "@/lib/i18n/server"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
@@ -563,8 +562,15 @@ export default async function CompteReservations({
                       Conseiller : {r.dossier.conseiller}
                     </span>
                   )}
+                  {/* Plus de règlement en ligne pour un dossier : le montant
+                      est un ordre de grandeur, arrêté puis encaissé au bureau
+                      lors du rendez-vous de dépôt. Le taire laisserait le
+                      client attendre un bouton qui ne viendra pas. */}
                   {r.dossier && r.dossier.aRegler != null && (
-                    <PayerDossier dossierId={r.id} montant={r.dossier.aRegler} />
+                    <span className="text-[11px] text-public-text-muted">
+                      Montant estimé : {r.dossier.aRegler.toLocaleString("fr-FR")} FCFA —
+                      à régler au bureau lors de votre rendez-vous.
+                    </span>
                   )}
                   {r.dossier && (
                     <DossierPieces dossierId={r.id} pieces={r.dossier.pieces} />

@@ -3,6 +3,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { PiecesSection, type PieceAdmin } from "./pieces-section"
 import { DossierActions } from "./dossiers-actions"
+import { EncaisserAuBureau } from "../billets/encaisser-bureau"
 import { STATUTS_DOSSIER, STATUT_DOSSIER_LABELS, prixLabel } from "@/lib/assistance"
 
 export const metadata: Metadata = {
@@ -41,6 +42,21 @@ export default async function DossiersVoyageAdminPage() {
   // ses policies posées en 00038, et personne ne la lisait — alors que le statut
   // `pieces_complementaires_requises` en réclamait.
   const dossierIds = (dossiers ?? []).map((d) => d.id)
+
+  // Un dossier ne se règle plus en ligne : le montant est arrêté et encaissé au
+  // bureau, lors du rendez-vous de dépôt. Sans cette lecture, l'équipe
+  // encaisserait au comptoir sans pouvoir l'enregistrer nulle part.
+  const { data: paiementsEnAttente } = dossierIds.length
+    ? await db
+        .from("paiements")
+        .select("reference_id, montant")
+        .eq("reference_table", "dossiers_voyage")
+        .eq("statut", "en_attente")
+        .in("reference_id", dossierIds)
+    : { data: [] }
+  const aEncaisser = new Map(
+    (paiementsEnAttente ?? []).map((p) => [p.reference_id as string, Number(p.montant)])
+  )
   const { data: piecesRaw } = dossierIds.length
     ? await db
         .from("documents_dossier_voyage")
@@ -121,6 +137,15 @@ export default async function DossiersVoyageAdminPage() {
                   <p className="text-xs text-phoebe-anthracite/70">
                     {d.conseiller_id ? `Conseiller : ${userNom.get(d.conseiller_id) ?? "—"}` : "Non affecté"}
                   </p>
+                  {aEncaisser.has(d.id) && (
+                    <p className="mt-1.5">
+                      <EncaisserAuBureau
+                        referenceTable="dossiers_voyage"
+                        referenceId={d.id}
+                        montant={aEncaisser.get(d.id)!}
+                      />
+                    </p>
+                  )}
                 </div>
               </div>
 
