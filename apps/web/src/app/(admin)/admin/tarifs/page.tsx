@@ -17,6 +17,8 @@ import { ContactParamsForm } from "./contact-form";
 import { BilletsParamsForm } from "./billets-form";
 import { DelaisForm } from "./delais-form";
 import { RendezVousForm } from "./rendez-vous-form";
+import { HorairesForm } from "./horaires-form";
+import { getHorairesOuverture } from "@/lib/parametres-ouverture";
 import { getParametresTransport } from "@/lib/parametres-transport";
 import { CAT_LABELS } from "@/lib/constants";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -113,6 +115,7 @@ export default async function TarifsPage() {
     .filter(Boolean) as { categorie: string; catLabel: string; min: number; max: number; count: number }[];
 
   const delaisTransport = await getParametresTransport();
+  const horaires = await getHorairesOuverture();
 
   // Rendez-vous de dépôt : réglages et fermetures exceptionnelles. Les jours et
   // heures d'ouverture, eux, sont déjà dans `delaisTransport` — un seul
@@ -154,6 +157,7 @@ export default async function TarifsPage() {
             </p>
           </div>
           <DelaisForm initial={delaisTransport} />
+          <HorairesForm initial={horaires} />
           <RendezVousForm
             initial={{
               duree_minutes: Number(paramsRdv?.duree_minutes ?? 30),

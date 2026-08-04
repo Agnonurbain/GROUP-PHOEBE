@@ -240,8 +240,12 @@ describe("Rendez-vous — ce que fait le serveur", () => {
    * second jeu produirait deux calendriers qui finiraient par diverger.
    */
   it("un seul calendrier pour toute la maison", () => {
+    // Les horaires ont quitté `parametres_transport` en 00083 : le nom mentait
+    // dès lors que les rendez-vous les lisaient aussi. Ce test suit la source
+    // partagée, quelle qu'elle soit — ce qui compte est qu'il n'y en ait
+    // qu'une, et que les rendez-vous ne redéfinissent rien.
     const params = src("lib/parametres-rendez-vous.ts");
-    expect(params).toContain("getParametresTransport");
+    expect(params).toContain("getHorairesOuverture");
     expect(params).not.toMatch(/jours_ouvres|heure_ouverture|heure_fermeture/);
 
     const migration = readFileSync(

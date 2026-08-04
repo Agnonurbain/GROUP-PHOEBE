@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
-import { getParametresTransport } from "@/lib/parametres-transport";
+import { getHorairesOuverture } from "@/lib/parametres-ouverture";
 import {
   PARAMETRES_RENDEZ_VOUS_DEFAUT,
   type ParametresRendezVous,
@@ -69,9 +69,9 @@ export const getParametresRendezVous = unstable_cache(
 
 /** L'agenda complet : réglages, horaires partagés et fermetures. */
 export async function getAgenda(): Promise<AgendaParametres> {
-  const [{ params, fermetures }, transport] = await Promise.all([
+  const [{ params, fermetures }, horaires] = await Promise.all([
     getParametresRendezVous(),
-    getParametresTransport(),
+    getHorairesOuverture(),
   ]);
-  return { params, fermetures, horaires: transport.horaires };
+  return { params, fermetures, horaires };
 }

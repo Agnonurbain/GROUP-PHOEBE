@@ -4,6 +4,7 @@ import { notifierClient } from "@/lib/notifications";
 import { getStripe } from "@/lib/payments/stripe";
 import { parsePeriodeDebut } from "@/lib/periode";
 import { getParametresTransport, heuresEnMs } from "@/lib/parametres-transport";
+import { getHorairesOuverture } from "@/lib/parametres-ouverture";
 import { heuresOuvreesEcoulees } from "@/lib/heures-ouvrees";
 
 type AdminClient = ReturnType<typeof getAdminClient>;
@@ -79,6 +80,7 @@ export async function expirerDemandesSansReponse(): Promise<number> {
   if (!estJourOuvre()) return 0;
   const admin = getAdminClient();
   const parametres = await getParametresTransport();
+  const horaires = await getHorairesOuverture();
   const { delai_sans_reponse_heures } = parametres;
   // Préfiltre CALENDAIRE : le temps ouvré ne dépasse jamais le temps
   // calendaire, donc ce seuil ne peut pas écarter une ligne qui aurait dû
@@ -97,7 +99,7 @@ export async function expirerDemandesSansReponse(): Promise<number> {
   const expirees = parametres.delai_sans_reponse_ouvre
     ? (candidates ?? []).filter(
         (d) =>
-          heuresOuvreesEcoulees(new Date(d.updated_at), maintenant, parametres.horaires) >=
+          heuresOuvreesEcoulees(new Date(d.updated_at), maintenant, horaires) >=
           delai_sans_reponse_heures
       )
     : candidates ?? [];
@@ -133,6 +135,7 @@ export async function expirerDemandesSansReponse(): Promise<number> {
 export async function expirerNonPresentations(): Promise<number> {
   const admin = getAdminClient();
   const parametres = await getParametresTransport();
+  const horaires = await getHorairesOuverture();
   const { delai_non_presentation_heures } = parametres;
   // Pas de préfiltre SQL ici : l'échéance se calcule depuis le début de la
   // période, pas depuis `updated_at`. Le tri se fait donc entièrement plus bas,
@@ -154,7 +157,7 @@ export async function expirerNonPresentations(): Promise<number> {
     // En mode ouvré, un retrait prévu samedi 17 h laisse jusqu'au lundi : sans
     // cela la caution serait retenue pour une agence fermée.
     const ecoule = parametres.delai_non_presentation_ouvre
-      ? heuresOuvreesEcoulees(debut, maintenantNP, parametres.horaires)
+      ? heuresOuvreesEcoulees(debut, maintenantNP, horaires)
       : (maintenantNP.getTime() - debut.getTime()) / 3_600_000;
     if (ecoule < delai_non_presentation_heures) continue;
 

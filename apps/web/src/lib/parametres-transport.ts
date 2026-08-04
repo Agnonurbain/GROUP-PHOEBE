@@ -5,8 +5,14 @@ import {
   DELAI_SANS_REPONSE_HEURES,
   DELAI_NON_PRESENTATION_HEURES,
 } from "@/lib/constants";
-import { HORAIRES_DEFAUT, type HorairesOuvres } from "@/lib/heures-ouvrees";
 
+/**
+ * Les trois délais du cycle transport, et leur mode de décompte.
+ *
+ * Les heures d'ouverture ne sont plus ici : elles valent pour toute la maison
+ * et vivent sur `parametres_ouverture` (00083). Les garder sous ce nom aurait
+ * fini par produire un doublon, le prochain usage ne les cherchant pas là.
+ */
 export type ParametresTransport = {
   delai_negociation_heures: number;
   delai_sans_reponse_heures: number;
@@ -15,7 +21,6 @@ export type ParametresTransport = {
   delai_negociation_ouvre: boolean;
   delai_sans_reponse_ouvre: boolean;
   delai_non_presentation_ouvre: boolean;
-  horaires: HorairesOuvres;
 };
 
 /**
@@ -32,7 +37,6 @@ export const PARAMETRES_TRANSPORT_DEFAUT: ParametresTransport = {
   delai_negociation_ouvre: true,
   delai_sans_reponse_ouvre: false,
   delai_non_presentation_ouvre: true,
-  horaires: HORAIRES_DEFAUT,
 };
 
 export const getParametresTransport = unstable_cache(
@@ -53,11 +57,6 @@ export const getParametresTransport = unstable_cache(
       delai_negociation_ouvre: data.delai_negociation_ouvre,
       delai_sans_reponse_ouvre: data.delai_sans_reponse_ouvre,
       delai_non_presentation_ouvre: data.delai_non_presentation_ouvre,
-      horaires: {
-        jours: data.jours_ouvres ?? HORAIRES_DEFAUT.jours,
-        ouverture: data.heure_ouverture ?? HORAIRES_DEFAUT.ouverture,
-        fermeture: data.heure_fermeture ?? HORAIRES_DEFAUT.fermeture,
-      },
     };
   },
   ["parametres-transport"],

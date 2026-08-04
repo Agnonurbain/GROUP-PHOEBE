@@ -504,23 +504,6 @@ export async function modifierDelaisTransport(
     }
   }
 
-  const jours = formData
-    .getAll("jours_ouvres")
-    .map((v) => Number(v))
-    .filter((n) => Number.isInteger(n) && n >= 1 && n <= 7);
-  const ouverture = (formData.get("heure_ouverture") as string) || "08:00";
-  const fermeture = (formData.get("heure_fermeture") as string) || "18:00";
-
-  // Sans jour ouvré, ou avec une fermeture avant l'ouverture, aucun délai ne
-  // s'épuiserait jamais : le code retomberait sur un décompte calendaire sans
-  // que personne l'ait voulu. Mieux vaut refuser la saisie.
-  if (jours.length === 0) {
-    return { error: "Sélectionnez au moins un jour d'ouverture." };
-  }
-  if (ouverture >= fermeture) {
-    return { error: "L'heure de fermeture doit suivre l'heure d'ouverture." };
-  }
-
   const modes = {
     delai_negociation_ouvre: formData.get("delai_negociation_ouvre") === "on",
     delai_sans_reponse_ouvre: formData.get("delai_sans_reponse_ouvre") === "on",
@@ -538,9 +521,6 @@ export async function modifierDelaisTransport(
     .update({
       ...champs,
       ...modes,
-      jours_ouvres: jours,
-      heure_ouverture: ouverture,
-      heure_fermeture: fermeture,
       updated_at: new Date().toISOString(),
     })
     .eq("id", true);
@@ -552,7 +532,7 @@ export async function modifierDelaisTransport(
     action: "modifier_delais_transport",
     tableName: "parametres_transport",
     oldValues: ancien ?? undefined,
-    newValues: { ...champs, ...modes, jours, ouverture, fermeture },
+    newValues: { ...champs, ...modes },
   });
 
   // Next 16 type revalidateTag(tag, profile) mais 1 arg suffit à l'exécution
@@ -659,5 +639,77 @@ export async function basculerFermetureAgence(
 
   ;(revalidateTag as (tag: string) => void)("parametres-rendez-vous")
   revalidatePath("/admin/tarifs")
+  return { success: true }
+}
+
+/**
+ * Jours et heures d'ouverture de GROUP PHOEBE.
+ *
+ * Ils vivaient sur `parametres_transport` et se réglaient avec les délais, ce
+ * qui était vrai tant que le transport était seul à s'en servir. Les rendez-vous
+ * de dépôt lisent les mêmes horaires depuis 00081 : le nom mentait, ils ont
+ * leur propre table depuis 00083.
+ */
+export async function modifierHorairesOuverture(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  let userId: string
+  try {
+    userId = await requireProprietaireAvecId()
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." }
+  }
+
+  const jours = formData
+    .getAll("jours_ouvres")
+    .map((v) => Number(v))
+    .filter((n) => Number.isInteger(n) && n >= 1 && n <= 7)
+  const ouverture = (formData.get("heure_ouverture") as string) || "08:00"
+  const fermeture = (formData.get("heure_fermeture") as string) || "18:00"
+
+  // Sans jour ouvré, ou avec une fermeture avant l'ouverture, aucun délai en
+  // heures ouvrées ne s'épuiserait jamais et l'agenda de rendez-vous ne
+  // proposerait rien. Le refus vaut mieux qu'un repli silencieux.
+  if (jours.length === 0) {
+    return { error: "Sélectionnez au moins un jour d'ouverture." }
+  }
+  if (ouverture >= fermeture) {
+    return { error: "L'heure de fermeture doit suivre l'heure d'ouverture." }
+  }
+
+  const admin = getAdmin()
+  const { data: ancien } = await admin
+    .from("parametres_ouverture")
+    .select("*")
+    .eq("id", true)
+    .maybeSingle()
+
+  const { error } = await admin
+    .from("parametres_ouverture")
+    .update({
+      jours_ouvres: jours,
+      heure_ouverture: ouverture,
+      heure_fermeture: fermeture,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", true)
+
+  if (error) return { error: error.message }
+
+  await logAudit({
+    userId,
+    action: "modifier_horaires_ouverture",
+    tableName: "parametres_ouverture",
+    oldValues: ancien ?? undefined,
+    newValues: { jours, ouverture, fermeture },
+  })
+
+  // Deux caches à invalider : les délais transport et les créneaux de
+  // rendez-vous lisent tous deux ces horaires.
+  ;(revalidateTag as (tag: string) => void)("parametres-ouverture")
+  ;(revalidateTag as (tag: string) => void)("parametres-rendez-vous")
+  revalidatePath("/admin/tarifs")
+  revalidatePath("/compte/reservations")
   return { success: true }
 }
