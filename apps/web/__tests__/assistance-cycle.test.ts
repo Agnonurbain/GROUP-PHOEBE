@@ -259,3 +259,69 @@ describe("Assistance — ce que le client voit enfin", () => {
     expect(page).toContain("Montant estimé");
   });
 });
+
+/**
+ * Écrire à l'équipe au sujet d'un dossier.
+ *
+ * « Au cas où ils veulent avoir plus de renseignements, il faut qu'il y ait
+ * l'option écrire à l'équipe. » Le formulaire de contact général existait, mais
+ * il ne sait pas de quel dossier on parle : l'équipe recevait « j'ai une
+ * question sur mon visa » sans rien pour le raccrocher.
+ */
+describe("Assistance — écrire à l'équipe", () => {
+  const source = src("app/actions/assistance.ts");
+  const corps = corpsDeFonction(source, "envoyerMessageDossier");
+
+  /**
+   * Le rôle est déterminé côté serveur, jamais reçu du formulaire : un client
+   * qui posterait `auteur_role=equipe` verrait sinon son message affiché comme
+   * une réponse officielle de GROUP PHOEBE.
+   */
+  it("le rôle de l'auteur ne vient pas du formulaire", () => {
+    expect(corps).toContain('estEquipe ? "equipe" : "client"');
+    expect(corps).not.toMatch(/formData\.get\("auteur_role/);
+  });
+
+  it("un client n'écrit que sur son dossier", () => {
+    expect(corps).toContain("dossier.client_id !== user.sub");
+  });
+
+  it("un message vide ou démesuré est refusé", () => {
+    expect(corps).toContain("Écrivez votre message.");
+    expect(corps).toContain("message.length > 4000");
+  });
+
+  // Un message que personne ne voit passer ne vaut pas mieux que pas de
+  // message.
+  it("l'autre partie est prévenue, dans les deux sens", () => {
+    expect(corps).toContain("notifierAdminMessageDossier");
+    expect(corps).toContain("notifierClient");
+  });
+
+  /**
+   * La lecture passe par le client de SESSION, dont la policy borne chacun à
+   * ses propres dossiers. En clé de service, le fil de n'importe quel dossier
+   * serait exposé à qui devine un identifiant.
+   */
+  it("le fil se lit sous la policy, pas en clé de service", () => {
+    const lecture = corpsDeFonction(source, "messagesDuDossier");
+    expect(lecture).toContain("await createClient()");
+    expect(lecture).toMatch(/supabase\s*\n?\s*\.from\("messages_dossier"\)/);
+  });
+
+  it("le fil est branché des deux côtés", () => {
+    expect(src("app/(public)/compte/reservations/page.tsx")).toContain("MessageEquipe");
+    expect(src("app/(admin)/admin/dossiers-voyage/page.tsx")).toContain("MessageEquipe");
+  });
+
+  // Un message envoyé est une trace, pas un brouillon : aucune policy UPDATE
+  // ni DELETE ne l'autorise à être réécrit.
+  it("un message ne se réécrit pas", () => {
+    const migration = readFileSync(
+      join(process.cwd(), "..", "..", "supabase", "migrations", "00082_messages_dossier.sql"),
+      "utf8"
+    );
+    expect(migration).toContain("messages_dossier_insert");
+    expect(migration).not.toMatch(/create policy[\s\S]{0,120}messages_dossier for (update|delete)/i);
+  });
+});

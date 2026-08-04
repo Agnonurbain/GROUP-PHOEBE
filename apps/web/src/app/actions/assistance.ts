@@ -27,6 +27,7 @@ import { notifierClient } from "@/lib/notifications";
 import {
   notifierAdminNouveauDossierVoyage,
   notifierAdminNouveauRendezVous,
+  notifierAdminMessageDossier,
 } from "./notifications-admin";
 
 export type AssistanceState = {
@@ -555,6 +556,123 @@ export async function annulerRendezVous(
 
   if (error) return { error: error.message };
   if (count === 0) return { error: "Ce rendez-vous n'est plus annulable." };
+
+  revalidatePath("/compte/reservations");
+  revalidatePath("/admin/dossiers-voyage");
+  return { success: true };
+}
+
+// ─── Écrire à l'équipe au sujet d'un dossier ─────────────────────────────────
+// « Au cas où ils veulent avoir plus de renseignements, il faut qu'il y ait
+// l'option écrire à l'équipe. » Le formulaire de contact général ne sait pas de
+// quel dossier on parle : l'équipe recevait « j'ai une question sur mon visa »
+// sans rien pour le raccrocher.
+
+export type MessageDossier = {
+  id: string;
+  auteur_role: "client" | "equipe";
+  auteur_nom: string;
+  message: string;
+  created_at: string;
+};
+
+/** Le fil d'un dossier, du plus ancien au plus récent. */
+export async function messagesDuDossier(dossierId: string): Promise<MessageDossier[]> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  if (!claimsData?.claims) return [];
+
+  // Client de session : la policy de lecture décide, et elle borne le client à
+  // ses propres dossiers. Passer en clé de service ici exposerait le fil de
+  // n'importe quel dossier à qui devine un identifiant.
+  const { data } = await supabase
+    .from("messages_dossier")
+    .select("id, auteur_id, auteur_role, message, created_at")
+    .eq("dossier_id", dossierId)
+    .order("created_at");
+
+  if (!data?.length) return [];
+
+  const admin = getAdmin();
+  const { data: auteurs } = await admin
+    .from("users")
+    .select("id, nom")
+    .in("id", [...new Set(data.map((m) => m.auteur_id as string))]);
+  const nom = new Map((auteurs ?? []).map((u) => [u.id, u.nom]));
+
+  return data.map((m) => ({
+    id: m.id as string,
+    auteur_role: m.auteur_role as "client" | "equipe",
+    auteur_nom: nom.get(m.auteur_id as string) ?? "—",
+    message: m.message as string,
+    created_at: String(m.created_at),
+  }));
+}
+
+/**
+ * Écrire sur un dossier — client ou équipe.
+ *
+ * Le rôle est déterminé ici, jamais reçu du formulaire : un client qui poste
+ * `auteur_role=equipe` verrait sinon son message affiché comme une réponse
+ * officielle de GROUP PHOEBE.
+ */
+export async function envoyerMessageDossier(
+  _prev: AssistanceState,
+  formData: FormData
+): Promise<AssistanceState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Vous devez être connecté." };
+
+  const dossierId = ((formData.get("dossier_id") as string) || "").trim();
+  const message = ((formData.get("message") as string) || "").trim();
+
+  if (!dossierId) return { error: "Dossier invalide." };
+  if (!message) return { error: "Écrivez votre message." };
+  if (message.length > 4000) return { error: "Message trop long (4000 caractères maximum)." };
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role, nom")
+    .eq("id", user.sub)
+    .single();
+  if (!profile) return { error: "Profil introuvable." };
+
+  const estEquipe = ["operateur", "proprietaire"].includes(profile.role);
+
+  const admin = getAdmin();
+  const { data: dossier } = await admin
+    .from("dossiers_voyage")
+    .select("id, client_id, pays_cible")
+    .eq("id", dossierId)
+    .single();
+
+  if (!dossier) return { error: "Dossier introuvable." };
+  if (!estEquipe && dossier.client_id !== user.sub) {
+    return { error: "Ce dossier n'est pas le vôtre." };
+  }
+
+  const { error } = await admin.from("messages_dossier").insert({
+    dossier_id: dossierId,
+    auteur_id: user.sub as string,
+    auteur_role: estEquipe ? "equipe" : "client",
+    message,
+  } as never);
+
+  if (error) return { error: "Message non envoyé. Réessayez." };
+
+  // Prévenir l'autre partie : un message que personne ne lit ne vaut pas mieux
+  // que pas de message.
+  if (estEquipe) {
+    await notifierClient(
+      dossier.client_id,
+      "Réponse de GROUP PHOEBE",
+      `Votre dossier ${dossier.pays_cible} : l'équipe vous a répondu.`
+    );
+  } else {
+    await notifierAdminMessageDossier(dossierId, profile.nom, dossier.pays_cible);
+  }
 
   revalidatePath("/compte/reservations");
   revalidatePath("/admin/dossiers-voyage");
