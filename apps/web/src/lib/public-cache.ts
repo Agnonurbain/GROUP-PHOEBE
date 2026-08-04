@@ -1,12 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 import {
-  TARIFS_LIVRAISON,
-  PALIERS_POIDS,
-  isZoneLivraison,
   isModeLivraison,
-  type GrilleTarifs,
-  type PalierPoids,
   type MoyenLivraison,
   type GrilleMoyens,
   type CoefficientsMode,
@@ -338,33 +333,6 @@ export async function revalidatePublicCache() {
 export const getTarifsLivraison = unstable_cache(
   async () => {
     const supabase = createPublicClient();
-    const [{ data: tarifs }, { data: paliers }] = await Promise.all([
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase.from as any)("tarifs_livraison").select("zone, mode, prix"),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (supabase.from as any)("paliers_poids")
-        .select("id, ordre, label, max_kg, multiplicateur")
-        .order("ordre", { ascending: true }),
-    ]);
-
-    const grille = structuredClone(TARIFS_LIVRAISON) as GrilleTarifs;
-    for (const t of (tarifs ?? []) as { zone: string; mode: string; prix: number }[]) {
-      if (isZoneLivraison(t.zone) && isModeLivraison(t.mode)) {
-        grille[t.zone][t.mode] = Number(t.prix);
-      }
-    }
-
-    const rows = (paliers ?? []) as {
-      id: string; ordre: number; label: string; max_kg: number; multiplicateur: number;
-    }[];
-    const paliersPoids: PalierPoids[] =
-      rows.length > 0
-        ? rows.map((p) => ({
-            maxKg: Number(p.max_kg),
-            multiplicateur: Number(p.multiplicateur),
-            label: p.label,
-          }))
-        : PALIERS_POIDS;
 
     // Moyens de livraison, leurs prix par zone, et les coefficients de délai.
     // La liste est ouverte : l'exploitant en ajoute depuis /admin/tarifs, donc
@@ -397,7 +365,7 @@ export const getTarifsLivraison = unstable_cache(
       if (isModeLivraison(c.mode)) coefficientsMode[c.mode] = Number(c.coefficient);
     }
 
-    return { grille, paliers: paliersPoids, moyens, grilleMoyens, coefficientsMode };
+    return { moyens, grilleMoyens, coefficientsMode };
   },
   ["tarifs_livraison"],
   { revalidate: 3600, tags: ["tarifs_livraison"] }

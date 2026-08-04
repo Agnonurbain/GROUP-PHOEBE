@@ -37,7 +37,6 @@ export default async function CommanderLivraisonPage() {
       defaultNom={profile?.nom ?? ""}
       defaultContact={profile?.telephone ?? ""}
       communes={communes}
-      paliers={tarifs.paliers}
       moyens={tarifs.moyens}
       coefficientsMode={tarifs.coefficientsMode}
       grilleMoyens={tarifs.grilleMoyens}

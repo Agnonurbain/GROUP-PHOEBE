@@ -11,7 +11,6 @@ import { CommunesList } from "./communes-list";
 import { AjouterCommuneForm } from "./ajouter-commune-form";
 import { IntervallesList } from "./intervalles-list";
 import { AjouterIntervalleForm } from "./ajouter-intervalle-form";
-import { LivraisonTarifsForm } from "./livraison-form";
 import { AssistanceTarifsForm } from "./assistance-form";
 import { ContactParamsForm } from "./contact-form";
 import { BilletsParamsForm } from "./billets-form";
@@ -22,8 +21,7 @@ import { MoyensLivraisonForm, type MoyenAdmin } from "./moyens-livraison-form";
 import { getHorairesOuverture } from "@/lib/parametres-ouverture";
 import { getParametresTransport } from "@/lib/parametres-transport";
 import { CAT_LABELS } from "@/lib/constants";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { getTarifsLivraison, getTarifsAssistance, getParametresContact, getParametresBillet } from "@/lib/public-cache";
+import { getTarifsAssistance, getParametresContact, getParametresBillet } from "@/lib/public-cache";
 
 export const metadata: Metadata = {
   title: "Tarifs — Administration",
@@ -44,38 +42,15 @@ export default async function TarifsPage() {
     .single();
   if (profile?.role !== "proprietaire") redirect("/admin");
 
-  const [zones, communes, vehicules, intervalles, tarifsLivraison, tarifsAssistance, parametresContact, parametresBillet] = await Promise.all([
+  const [zones, communes, vehicules, intervalles, tarifsAssistance, parametresContact, parametresBillet] = await Promise.all([
       getZonesTarifaires(),
       getCommunes(),
       getVehiculesPrixBase(),
       getIntervallesPrix(),
-      getTarifsLivraison(),
       getTarifsAssistance(),
       getParametresContact(),
       getParametresBillet(),
     ]);
-
-  // Les paliers sont édités par id : on lit les lignes brutes (getTarifsLivraison
-  // ne renvoie que la forme utilisée pour le calcul du prix).
-  const admin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: paliersRaw } = await (admin.from as any)("paliers_poids")
-    .select("id, ordre, label, max_kg, multiplicateur")
-    .order("ordre", { ascending: true });
-
-  const grilleLivraison = tarifsLivraison.grille;
-  const paliersPoidsRows = ((paliersRaw ?? []) as {
-    id: string; ordre: number; label: string; max_kg: number; multiplicateur: number;
-  }[]).map((p) => ({
-    id: p.id,
-    ordre: p.ordre,
-    label: p.label,
-    max_kg: Number(p.max_kg),
-    multiplicateur: Number(p.multiplicateur),
-  }));
 
   const intervallesList = (intervalles ?? []).map((ip: typeof intervalles[0]) => ({
     id: ip.id,
@@ -188,7 +163,6 @@ export default async function TarifsPage() {
           </div>
           <DelaisForm initial={delaisTransport} />
           <HorairesForm initial={horaires} />
-          <MoyensLivraisonForm moyens={moyensLivraison} coefficients={coefficientsMode} />
           <RendezVousForm
             initial={{
               duree_minutes: Number(paramsRdv?.duree_minutes ?? 30),
@@ -398,7 +372,7 @@ export default async function TarifsPage() {
               </div>
             ),
             livraison: (
-              <LivraisonTarifsForm grille={grilleLivraison} paliers={paliersPoidsRows} />
+              <MoyensLivraisonForm moyens={moyensLivraison} coefficients={coefficientsMode} />
             ),
             assistance: <AssistanceTarifsForm tarifs={tarifsAssistance} />,
             billets: <BilletsParamsForm params={parametresBillet} />,

@@ -1683,33 +1683,6 @@ export type Database = {
         }
         Relationships: []
       }
-      paliers_poids: {
-        Row: {
-          id: string
-          label: string
-          max_kg: number
-          multiplicateur: number
-          ordre: number
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          label: string
-          max_kg: number
-          multiplicateur: number
-          ordre: number
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          label?: string
-          max_kg?: number
-          multiplicateur?: number
-          ordre?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
       paniers: {
         Row: {
           client_id: string
@@ -2237,30 +2210,6 @@ export type Database = {
           prestation_key?: string
           prix?: number | null
           updated_at?: string
-        }
-        Relationships: []
-      }
-      tarifs_livraison: {
-        Row: {
-          id: string
-          mode: string
-          prix: number
-          updated_at: string
-          zone: string
-        }
-        Insert: {
-          id?: string
-          mode: string
-          prix: number
-          updated_at?: string
-          zone: string
-        }
-        Update: {
-          id?: string
-          mode?: string
-          prix?: number
-          updated_at?: string
-          zone?: string
         }
         Relationships: []
       }

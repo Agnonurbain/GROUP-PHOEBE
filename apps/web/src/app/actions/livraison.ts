@@ -18,7 +18,7 @@ import {
   transitionAutorisee,
   couvreLaCommune,
   isModeLivraison,
-  poidsMax,
+  chargeMaxFlotte,
   type CommuneMatch,
 } from "@/lib/livraison";
 import { logAudit } from "@/lib/audit";
@@ -150,8 +150,8 @@ export async function creerExpedition(
 
   // Grille et paliers pilotés depuis /admin/tarifs : même source que l'affichage
   // client, donc montant affiché == montant facturé.
-  const { paliers, moyens, grilleMoyens, coefficientsMode } = await getTarifsLivraison();
-  const maxKg = poidsMax(paliers);
+  const { moyens, grilleMoyens, coefficientsMode } = await getTarifsLivraison();
+  const maxKg = chargeMaxFlotte(moyens);
 
   // Le poids détermine le palier tarifaire : il est désormais obligatoire.
   const poidsKg = poidsRaw ? Number(poidsRaw) : null;
