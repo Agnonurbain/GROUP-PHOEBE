@@ -128,7 +128,10 @@ export const PAYS: Record<string, Pays> = {
         key: "bourse_master",
         name: "Bourse d'études — Master",
         type: "etudes",
-        prix: 1_800_000,
+        // Montant communiqué par GROUP PHOEBE le 04/08/2026. Il valait celui de
+        // la licence tant qu'il n'avait pas été donné — une hypothèse, pas un
+        // tarif.
+        prix: 2_000_000,
         description:
           "Même accompagnement que la licence, pour une candidature en master : universités, bourse, admission, JW202 et visa étudiant.",
         pieces: ["diplome_licence", ...PIECES_BOURSE_COMMUNES],

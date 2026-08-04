@@ -225,7 +225,9 @@
       "Bash(cp /tmp/claude-1000/-home-aymeric-GROUP-PHOEBE/bacc1af6-57f6-4c75-9f41-60f8eab61789/scratchpad/poi-medium/v*.txt docs/retours/)",
       "Bash(git restore *)",
       "Bash(file oth/*.ogg)",
-      "WebFetch(domain:yango.com)"
+      "WebFetch(domain:yango.com)",
+      "Bash(cd apps/web/src *)",
+      "Read(//home/aymeric/__tests__/**)"
     ],
     "additionalDirectories": [
       "/home/aymeric/GROUP-PHOEBE/apps/web/src/app/catalogue/[id]",
