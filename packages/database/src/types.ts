@@ -1465,6 +1465,48 @@ export type Database = {
           },
         ]
       }
+      messages_dossier: {
+        Row: {
+          auteur_id: string
+          auteur_role: string
+          created_at: string
+          dossier_id: string
+          id: string
+          message: string
+        }
+        Insert: {
+          auteur_id: string
+          auteur_role: string
+          created_at?: string
+          dossier_id: string
+          id?: string
+          message: string
+        }
+        Update: {
+          auteur_id?: string
+          auteur_role?: string
+          created_at?: string
+          dossier_id?: string
+          id?: string
+          message?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_dossier_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_dossier_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_voyage"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications_log: {
         Row: {
           canal: string

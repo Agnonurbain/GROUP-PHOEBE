@@ -134,6 +134,26 @@ export async function notifierAdminNouveauRendezVous(
   });
 }
 
+/**
+ * Un client a écrit au sujet de son dossier.
+ *
+ * « Au cas où ils veulent avoir plus de renseignements, il faut qu'il y ait
+ * l'option écrire à l'équipe. » Une question que personne ne voit passer ne
+ * vaut pas mieux que pas de question.
+ */
+export async function notifierAdminMessageDossier(
+  _dossierId: string,
+  clientNom: string,
+  pays: string
+) {
+  await notifierStaff({
+    evenement: "message_dossier",
+    titre: "Question sur un dossier",
+    message: `${clientNom} a écrit au sujet de son dossier ${pays}.`,
+    lien: `/admin/dossiers-voyage`,
+  });
+}
+
 export async function notifierAdminNouvelleDemandeImmobilier(
   _demandeId: string,
   clientNom: string,

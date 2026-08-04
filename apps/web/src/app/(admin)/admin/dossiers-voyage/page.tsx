@@ -5,6 +5,8 @@ import { PiecesSection, type PieceAdmin } from "./pieces-section"
 import { DossierActions } from "./dossiers-actions"
 import { EncaisserAuBureau } from "../billets/encaisser-bureau"
 import { libelleCreneau } from "@/lib/rendez-vous"
+import { MessageEquipe } from "@/components/public/message-equipe"
+import { messagesDuDossier } from "@/app/actions/assistance"
 import { STATUTS_DOSSIER, STATUT_DOSSIER_LABELS, prixLabel } from "@/lib/assistance"
 
 export const metadata: Metadata = {
@@ -60,6 +62,13 @@ export default async function DossiersVoyageAdminPage() {
   const rdvParDossier = new Map(
     (rendezVous ?? []).map((r) => [r.dossier_id as string, { debut: String(r.debut), fin: String(r.fin) }])
   )
+
+  // Les questions des clients. Sans elles ici, l'équipe serait notifiée d'un
+  // message qu'elle ne pourrait lire nulle part.
+  const filsParDossier = new Map<string, Awaited<ReturnType<typeof messagesDuDossier>>>()
+  for (const id of dossierIds) {
+    filsParDossier.set(id, await messagesDuDossier(id))
+  }
 
   const { data: paiementsEnAttente } = dossierIds.length
     ? await db
@@ -170,6 +179,14 @@ export default async function DossiersVoyageAdminPage() {
               </div>
 
               <PiecesSection pieces={piecesParDossier.get(d.id) ?? []} />
+
+              <div className="mt-3">
+                <MessageEquipe
+                  dossierId={d.id}
+                  messages={filsParDossier.get(d.id) ?? []}
+                  variante="admin"
+                />
+              </div>
 
               <DossierActions
                 dossierId={d.id}

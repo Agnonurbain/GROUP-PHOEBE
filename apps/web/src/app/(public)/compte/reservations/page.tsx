@@ -16,7 +16,8 @@ import { DeposerAvis } from "@/components/public/deposer-avis"
 import { ReponseCreneauVisite } from "@/components/public/reponse-creneau-visite"
 import { DossierPieces, type PieceClient } from "@/components/public/dossier-pieces"
 import { RendezVousDepot } from "@/components/public/rendez-vous-depot"
-import { creneauxDisponibles } from "@/app/actions/assistance"
+import { MessageEquipe } from "@/components/public/message-equipe"
+import { creneauxDisponibles, messagesDuDossier, type MessageDossier } from "@/app/actions/assistance"
 import { formaterCreneau } from "@/lib/immobilier"
 import { getT } from "@/lib/i18n/server"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
@@ -65,6 +66,8 @@ type ReservationItem = {
     conseiller: string | null
     /** Rendez-vous de depot deja pris, s'il y en a un. */
     rendezVous: { id: string; debut: string; fin: string } | null
+    /** Fil d'echanges avec l'equipe. */
+    messages: MessageDossier[]
   } | null
   /**
    * Documents d'une location : contrat dès qu'elle est engagée, état des lieux
@@ -220,6 +223,14 @@ export default async function CompteReservations({
       { id: r.id as string, debut: String(r.debut), fin: String(r.fin) },
     ])
   )
+
+  // Les fils d'échanges. Un appel par dossier : la lecture passe par le client
+  // de session, dont la policy borne chacun à ses propres dossiers — le faire
+  // en une requête demanderait la clé de service et perdrait cette borne.
+  const messagesParDossier = new Map<string, MessageDossier[]>()
+  for (const id of dossierIds) {
+    messagesParDossier.set(id, await messagesDuDossier(id))
+  }
 
   // Un seul appel pour tous les dossiers : l'agenda ne dépend pas du dossier.
   const agenda = dossierIds.length
@@ -394,6 +405,7 @@ export default async function CompteReservations({
       aRegler: paiementDuParDossier.get(d.id) ?? null,
       conseiller: d.conseiller_id ? (nomConseiller.get(d.conseiller_id) ?? null) : null,
       rendezVous: rendezVousParDossier.get(d.id) ?? null,
+      messages: messagesParDossier.get(d.id) ?? [],
     },
   })) ?? []
 
@@ -608,6 +620,11 @@ export default async function CompteReservations({
                   )}
                   {/* Le parcours s'arrete sur une date convenue, plus sur un
                       paiement : c'est ce qui remplace le reglement en ligne. */}
+                  {/* « Au cas ou ils veulent avoir plus de renseignements, il
+                      faut qu'il y ait l'option ecrire a l'equipe. » */}
+                  {r.dossier && (
+                    <MessageEquipe dossierId={r.id} messages={r.dossier.messages} />
+                  )}
                   {r.dossier && (
                     <RendezVousDepot
                       dossierId={r.id}
