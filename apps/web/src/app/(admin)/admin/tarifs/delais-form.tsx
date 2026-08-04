@@ -10,9 +10,6 @@ const inputClass =
   "w-full rounded-lg border border-phoebe-anthracite/12 bg-white px-3 py-2 text-sm text-phoebe-anthracite focus:border-phoebe-green focus:outline-none focus:ring-2 focus:ring-phoebe-green/15"
 const labelClass = "mb-1 block text-xs font-medium text-phoebe-anthracite"
 
-const JOURS: Record<number, string> = {
-  1: "Lun", 2: "Mar", 3: "Mer", 4: "Jeu", 5: "Ven", 6: "Sam", 7: "Dim",
-}
 
 /**
  * Délais du cycle transport.
@@ -30,7 +27,6 @@ export function DelaisForm({
     delai_negociation_ouvre: boolean
     delai_sans_reponse_ouvre: boolean
     delai_non_presentation_ouvre: boolean
-    horaires: { jours: number[]; ouverture: string; fermeture: string }
   }
 }) {
   const [state, action] = useActionState<TarifState, FormData>(modifierDelaisTransport, {})
@@ -142,53 +138,6 @@ export function DelaisForm({
         </div>
       </div>
 
-      <fieldset className="rounded-lg border border-phoebe-pearl p-3">
-        <legend className="px-1 text-xs font-medium text-phoebe-anthracite">
-          Heures d&apos;ouverture
-        </legend>
-        <p className="mb-2 text-[11px] text-phoebe-anthracite/60">
-          Base du décompte pour les délais cochés ci-dessus. Une demande reçue le
-          vendredi à 17 h expire alors le lundi matin, pas pendant le week-end.
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {[1, 2, 3, 4, 5, 6, 7].map((j) => (
-            <label key={j} className="flex items-center gap-1.5 text-xs text-phoebe-anthracite">
-              <input
-                type="checkbox"
-                name="jours_ouvres"
-                value={j}
-                defaultChecked={initial.horaires.jours.includes(j)}
-                className="h-3.5 w-3.5 accent-phoebe-green"
-              />
-              {JOURS[j]}
-            </label>
-          ))}
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <div>
-            <label htmlFor="heure_ouverture" className={labelClass}>Ouverture<Obligatoire /></label>
-            <input
-              id="heure_ouverture"
-              name="heure_ouverture"
-              type="time"
-              defaultValue={initial.horaires.ouverture.slice(0, 5)}
-              required
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label htmlFor="heure_fermeture" className={labelClass}>Fermeture<Obligatoire /></label>
-            <input
-              id="heure_fermeture"
-              name="heure_fermeture"
-              type="time"
-              defaultValue={initial.horaires.fermeture.slice(0, 5)}
-              required
-              className={inputClass}
-            />
-          </div>
-        </div>
-      </fieldset>
 
       <SubmitButton>Enregistrer les délais</SubmitButton>
     </form>

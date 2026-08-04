@@ -191,3 +191,63 @@ describe("Heures ouvrées — quel délai les respecte", () => {
     expect(action).toMatch(/ouverture >= fermeture/);
   });
 });
+
+/**
+ * Les heures d'ouverture appartiennent à la maison, pas au transport.
+ *
+ * Elles ont été posées en 00075 sur `parametres_transport` : c'était juste tant
+ * que le décompte des délais transport était seul à s'en servir. Les rendez-vous
+ * de dépôt les lisent depuis 00081 — le nom est alors devenu faux, et un nom qui
+ * ment finit par produire un doublon : le prochain qui aura besoin des horaires
+ * ne les cherchera pas là et en créera d'autres. Déplacées en 00083.
+ */
+describe("Heures d'ouverture — une seule source, correctement nommée", () => {
+  const migration = readFileSync(
+    join(process.cwd(), "..", "..", "supabase", "migrations", "00083_horaires_ouverture.sql"),
+    "utf8"
+  );
+
+  it("les colonnes ont quitté la table du transport", () => {
+    expect(migration).toContain("create table if not exists public.parametres_ouverture");
+    // Les laisser en place produirait exactement le doublon qu'on évite.
+    expect(migration).toMatch(/drop column if exists jours_ouvres/);
+    expect(migration).toMatch(/drop column if exists heure_ouverture/);
+    expect(migration).toMatch(/drop column if exists heure_fermeture/);
+  });
+
+  // Reprendre les valeurs par défaut effacerait un réglage fait en admin.
+  it("les valeurs en place sont reprises, pas réinitialisées", () => {
+    expect(migration).toMatch(/insert into public\.parametres_ouverture[\s\S]{0,200}from public\.parametres_transport/);
+  });
+
+  // Une plage inversée rendrait tout délai en heures ouvrées insoluble et
+  // l'agenda de rendez-vous vide.
+  it("la plage reste contrainte", () => {
+    expect(migration).toContain("heure_ouverture < heure_fermeture");
+  });
+
+  it("plus personne ne lit les horaires sur les paramètres transport", () => {
+    const transport = src("lib/parametres-transport.ts");
+    expect(transport).not.toMatch(/jours_ouvres|heure_ouverture|heure_fermeture/);
+    expect(transport).not.toContain("horaires");
+  });
+
+  it("les trois consommateurs passent par la même source", () => {
+    for (const f of [
+      "app/actions/negociation.ts",
+      "lib/payments/expiration-demandes.ts",
+      "lib/parametres-rendez-vous.ts",
+    ]) {
+      expect(src(f), f).toContain("getHorairesOuverture");
+    }
+  });
+
+  // Un réglage sans écran serait le défaut habituel : écrit, jamais appelé.
+  it("le propriétaire les règle depuis un bloc dédié", () => {
+    const action = src("app/actions/tarifs.ts");
+    const debut = action.indexOf("export async function modifierHorairesOuverture");
+    expect(debut).toBeGreaterThan(-1);
+    expect(action.slice(debut, debut + 900)).toContain("requireProprietaireAvecId()");
+    expect(src("app/(admin)/admin/tarifs/page.tsx")).toContain("HorairesForm");
+  });
+});

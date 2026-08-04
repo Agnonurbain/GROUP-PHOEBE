@@ -12,6 +12,7 @@ import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations, expirerNegociationsAbandonnees } from "@/lib/payments/expiration-demandes";
 import { assignerVehiculesGroupe, type AssignedVehicle, type ZoneTarif } from "@/app/actions/vehicle-assignment";
 import { getParametresTransport, heuresEnMs } from "@/lib/parametres-transport";
+import { getHorairesOuverture } from "@/lib/parametres-ouverture";
 import { echeanceOuvree } from "@/lib/heures-ouvrees";
 
 function getAdmin() {
@@ -87,11 +88,12 @@ export async function creerDemandeNegociation(
 
   const periode = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
   const parametres = await getParametresTransport();
+  const horaires = await getHorairesOuverture();
   // L'échéance est ARRÊTÉE ICI, en heures ouvrées si le réglage le demande :
   // une demande du vendredi 17 h expire alors le lundi matin. Le cron n'aura
   // qu'à comparer cette date à l'instant présent.
   const echeance = parametres.delai_negociation_ouvre
-    ? echeanceOuvree(new Date(), parametres.delai_negociation_heures, parametres.horaires)
+    ? echeanceOuvree(new Date(), parametres.delai_negociation_heures, horaires)
     : new Date(Date.now() + heuresEnMs(parametres.delai_negociation_heures));
   const admin = getAdmin();
 

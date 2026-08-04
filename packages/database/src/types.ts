@@ -1853,6 +1853,30 @@ export type Database = {
         }
         Relationships: []
       }
+      parametres_ouverture: {
+        Row: {
+          heure_fermeture: string
+          heure_ouverture: string
+          id: boolean
+          jours_ouvres: number[]
+          updated_at: string
+        }
+        Insert: {
+          heure_fermeture?: string
+          heure_ouverture?: string
+          id?: boolean
+          jours_ouvres?: number[]
+          updated_at?: string
+        }
+        Update: {
+          heure_fermeture?: string
+          heure_ouverture?: string
+          id?: boolean
+          jours_ouvres?: number[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       parametres_rendez_vous: {
         Row: {
           capacite_par_creneau: number
@@ -1888,10 +1912,7 @@ export type Database = {
           delai_non_presentation_ouvre: boolean
           delai_sans_reponse_heures: number
           delai_sans_reponse_ouvre: boolean
-          heure_fermeture: string
-          heure_ouverture: string
           id: boolean
-          jours_ouvres: number[]
           updated_at: string
         }
         Insert: {
@@ -1901,10 +1922,7 @@ export type Database = {
           delai_non_presentation_ouvre?: boolean
           delai_sans_reponse_heures?: number
           delai_sans_reponse_ouvre?: boolean
-          heure_fermeture?: string
-          heure_ouverture?: string
           id?: boolean
-          jours_ouvres?: number[]
           updated_at?: string
         }
         Update: {
@@ -1914,10 +1932,7 @@ export type Database = {
           delai_non_presentation_ouvre?: boolean
           delai_sans_reponse_heures?: number
           delai_sans_reponse_ouvre?: boolean
-          heure_fermeture?: string
-          heure_ouverture?: string
           id?: boolean
-          jours_ouvres?: number[]
           updated_at?: string
         }
         Relationships: []
