@@ -69,7 +69,7 @@ group-phoebe/
 │       └── index.ts             # Exports
 │
 ├── supabase/                    # Projet Supabase — UNIQUE source de vérité
-│   ├── migrations/              # 84 migrations SQL
+│   ├── migrations/              # 85 migrations SQL
 │   ├── tests/                   # SQL de vérification (contrainte d'exclusion)
 │   ├── config.toml              # Ports de la pile locale
 │   └── seed*.sql                # Jeux de données de développement
@@ -211,7 +211,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-84 migrations Supabase (00001 → 00084), toutes dans `supabase/migrations/`.
+85 migrations Supabase (00001 → 00085), toutes dans `supabase/migrations/`.
 
 ### 5.1 Tables
 
@@ -748,6 +748,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-08-04 | **Retrait de l'ancienne tarification de livraison** (00085). `tarifs_livraison` (grille zone × mode) et `paliers_poids` ne pilotaient plus aucun prix depuis 00084 ; elles étaient conservées le temps que le nouveau chemin tourne en production, pour ne pas casser un déploiement en cours. Les laisser plus longtemps aurait produit ce que ce dépôt a passé la journée à corriger — deux endroits décrivant la même chose, dont un seul est vrai, et le périmé porte le meilleur nom. Retirés avec eux : la grille et les paliers de `lib/livraison.ts`, leur lecture dans le cache, les deux actions propriétaire devenues orphelines et leur formulaire. Le plafond de poids vient désormais de la flotte (`chargeMaxFlotte`) et non du dernier palier — un plafond doit dire ce que les véhicules portent, pas où s'arrêtait une grille. L'atelier des moyens prend la place de l'ancien formulaire dans l'onglet Livraison, et la page publique affiche la grille zone × moyen avec les coefficients de délai sous le tableau. |
 | 2026-08-04 | **Livraison : le moyen remplace le poids dans le prix** (00084). Retour de GROUP PHOEBE (`docs/retours/2026-08-04-livraison.md`) : « il y a moto et puis il y a le cargo […] 3 types de cargo : petit, moyen, grand ». Le moyen et le poids disaient la même chose sous deux formes — on prend un cargo PARCE QUE le colis est lourd — et les garder tous deux aurait facturé deux fois la même réalité, tout en laissant choisir « moto » pour 40 kg. Le prix devient `tarif(zone × moyen) × coefficient(mode)` : le mode reste le **délai**, distinct du **véhicule**, mais en coefficient — une grille complète aurait fait 48 prix à saisir. La liste des moyens est **ouverte** : le propriétaire en ajoute avec ses trois prix de zone, sans déploiement ; un moyen se retire du catalogue mais ne se supprime pas, des expéditions le référencent. Le poids reste saisi et écarte les moyens trop justes, vérifié aussi côté serveur. Défaut trouvé en route : `1500 × 2,3` vaut 3449,99… en virgule flottante — diviser avant d'arrondir donnait 100 F de moins que l'arrondi honnête. |
 | 2026-08-04 | **Les heures d'ouverture quittent la table du transport** (00083). Posées en 00075 sur `parametres_transport` pour décompter les délais transport en heures ouvrées — c'était juste tant que le transport était seul à s'en servir. Depuis 00081 les rendez-vous de dépôt lisent les mêmes colonnes : partager était le bon choix, mais **le nom est devenu faux**, et un nom qui ment finit par produire un doublon — le prochain qui aura besoin des horaires ne les cherchera pas là et en créera d'autres. Déplacées vers `parametres_ouverture`, avec reprise des valeurs en place (et non des valeurs par défaut, qui effaceraient un réglage fait en admin). Restent sur `parametres_transport` les trois délais et leur mode de décompte, eux bien spécifiques. Les trois consommateurs — négociation, crons d'expiration, rendez-vous — passent par `getHorairesOuverture`, et le propriétaire les règle depuis un bloc dédié plutôt que noyé dans les délais. |
 | 2026-08-04 | **Écrire à l'équipe au sujet d'un dossier** (00082). « Au cas où ils veulent avoir plus de renseignements, il faut qu'il y ait l'option écrire à l'équipe. » Le formulaire de contact général existait, mais il ne sait pas de quel dossier on parle : l'équipe recevait « j'ai une question sur mon visa » sans rien pour le raccrocher. Le fil va **dans les deux sens** — le retour ne demandait que client → équipe, mais une question sans canal de réponse est un cul-de-sac : la réponse serait donnée par téléphone, hors de toute trace. Le rôle de l'auteur est **déterminé côté serveur et figé à l'écriture** : reçu du formulaire, un client afficherait son message comme une réponse officielle ; déduit du rôle courant, un ancien message serait réétiqueté si la personne changeait de rôle. La lecture passe par le client de session, dont la policy borne chacun à ses dossiers. Aucune policy UPDATE ni DELETE : un message envoyé est une trace, pas un brouillon. **Le retour de GROUP PHOEBE est traité en entier.** |

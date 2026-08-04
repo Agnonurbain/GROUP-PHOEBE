@@ -14,9 +14,8 @@ import {
   computeLivraisonPrixMoyen,
   moyensPossibles,
   deriverZoneLivraison,
-  poidsMax,
+  chargeMaxFlotte,
   type CommuneMatch,
-  type PalierPoids,
   type MoyenLivraison,
   type CoefficientsMode,
   type GrilleMoyens,
@@ -77,7 +76,6 @@ export default function CommanderClient({
   defaultNom,
   defaultContact,
   communes,
-  paliers,
   moyens,
   coefficientsMode,
   grilleMoyens,
@@ -89,7 +87,6 @@ export default function CommanderClient({
   /* Moyens, prix et coefficients viennent de la base (éditables en
      /admin/tarifs) et sont passés en props : le calcul reste pur et synchrone,
      partagée à l'identique avec le serveur. */
-  paliers: PalierPoids[]
   /* Moyens de livraison et coefficients de délai, lus en base : la liste est
      ouverte, l'exploitant en ajoute sans déploiement. */
   moyens: MoyenLivraison[]
@@ -128,9 +125,7 @@ export default function CommanderClient({
 
   // Le poids fait partie du prix : tant qu'il n'est pas saisi (ou hors grille),
   // aucun montant n'est annoncé.
-  const maxKg = moyens.length > 0
-    ? Math.max(...moyens.map((m) => m.chargeMaxKg))
-    : poidsMax(paliers)
+  const maxKg = chargeMaxFlotte(moyens)
   const poidsNum = poids.trim() === "" ? null : Number(poids)
   const poidsValide = poidsNum !== null && Number.isFinite(poidsNum) && poidsNum > 0
   const poidsHorsGrille = poidsValide && poidsNum > maxKg

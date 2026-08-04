@@ -2,6 +2,11 @@
 // Source UNIQUE partagée par l'affichage client et le calcul serveur, pour
 // garantir montant affiché == montant facturé. Module pur (aucun import serveur).
 //
+// Le prix se lit `tarif(zone × moyen) × coefficient(mode)` depuis 00084. La
+// grille zone × mode et les paliers de poids qui la pondéraient ont disparu :
+// le moyen — le véhicule — dit ce que le poids disait, et les garder tous deux
+// facturait deux fois la même réalité.
+//
 // Les valeurs de `zone`, `mode` et `statut` respectent STRICTEMENT les
 // contraintes CHECK de la migration 00001 (table expeditions).
 
@@ -37,58 +42,6 @@ export const MODE_DESCRIPTIONS: Record<ModeLivraison, string> = {
   programmee: "Vous choisissez la date de livraison.",
 };
 
-export type GrilleTarifs = Record<ZoneLivraison, Record<ModeLivraison, number>>;
-
-// Grille de prix (FCFA) par zone × mode.
-// ⚠️ Ces valeurs sont désormais un REPLI : la source de vérité est la table
-// `tarifs_livraison`, éditable par le propriétaire (/admin/tarifs). Elles
-// servent de seed (migration 00042) et de secours si la base est injoignable.
-export const TARIFS_LIVRAISON: GrilleTarifs = {
-  intracommunale: { standard: 1500, express: 2500, meme_jour: 3500, programmee: 2000 },
-  intercommunale: { standard: 2500, express: 4000, meme_jour: 5500, programmee: 3000 },
-  nationale: { standard: 5000, express: 8000, meme_jour: 11000, programmee: 6000 },
-};
-
-// ─── Paliers de poids ────────────────────────────────────────────────────────
-// Le prix de base (zone × mode) couvre le premier palier. Au-delà, un
-// multiplicateur s'applique : porter 40 kg à Bouaké coûte plus cher que porter
-// une enveloppe, et le prix doit le refléter.
-// MULTIPLICATEURS À CONFIRMER avec GROUP PHOEBE, comme la grille ci-dessus.
-
-/** Au-delà, l'envoi sort de la grille et passe sur devis. */
-export const POIDS_MAX_KG = 50;
-
-export type PalierPoids = {
-  /** Borne haute incluse, en kg. */
-  maxKg: number;
-  multiplicateur: number;
-  label: string;
-};
-
-// Repli, même logique que TARIFS_LIVRAISON : la source de vérité est la table
-// `paliers_poids`.
-export const PALIERS_POIDS: PalierPoids[] = [
-  { maxKg: 5, multiplicateur: 1, label: "Jusqu'à 5 kg" },
-  { maxKg: 15, multiplicateur: 1.5, label: "5 à 15 kg" },
-  { maxKg: POIDS_MAX_KG, multiplicateur: 2.5, label: "15 à 50 kg" },
-];
-
-/** Poids maximum accepté en ligne : borne haute du dernier palier. */
-export function poidsMax(paliers: PalierPoids[] = PALIERS_POIDS): number {
-  return paliers.length > 0 ? paliers[paliers.length - 1].maxKg : POIDS_MAX_KG;
-}
-
-/** Palier correspondant au poids, ou null au-delà du maximum accepté. */
-export function palierPoids(
-  poidsKg: number | null | undefined,
-  paliers: PalierPoids[] = PALIERS_POIDS
-): PalierPoids | null {
-  if (paliers.length === 0) return null;
-  if (poidsKg === null || poidsKg === undefined) return paliers[0];
-  if (!Number.isFinite(poidsKg) || poidsKg <= 0) return null;
-  return paliers.find((p) => poidsKg <= p.maxKg) ?? null;
-}
-
 /**
  * Un moyen de livraison : le VÉHICULE, distinct du mode qui est le DÉLAI.
  *
@@ -114,6 +67,17 @@ export type CoefficientsMode = Partial<Record<ModeLivraison, number>>;
 
 /** Prix de base par zone et par moyen : { [zone]: { [moyenCle]: prix } }. */
 export type GrilleMoyens = Record<string, Record<string, number>>;
+
+/**
+ * Le poids maximum accepté en ligne : celui du plus gros moyen actif.
+ *
+ * Il venait du dernier palier de poids, qui ne décrivait rien de physique. Un
+ * plafond doit dire ce que la flotte porte, pas où s'arrêtait une grille.
+ */
+export function chargeMaxFlotte(moyens: MoyenLivraison[]): number {
+  if (moyens.length === 0) return 0;
+  return Math.max(...moyens.map((m) => m.chargeMaxKg));
+}
 
 /**
  * Le moyen le plus léger capable de porter ce colis.
@@ -196,24 +160,6 @@ export function deriverZoneLivraison(
  * (l'envoi passe alors sur devis).
  * Poids omis => premier palier, ce qui donne le tarif « à partir de ».
  */
-export function computeLivraisonPrix(
-  zone: string,
-  mode: string,
-  poidsKg: number | null = null,
-  grille: GrilleTarifs = TARIFS_LIVRAISON,
-  paliers: PalierPoids[] = PALIERS_POIDS
-): number | null {
-  if (!isZoneLivraison(zone) || !isModeLivraison(mode)) return null;
-  const palier = palierPoids(poidsKg, paliers);
-  if (!palier) return null;
-  const base = grille[zone]?.[mode];
-  if (typeof base !== "number") return null;
-  const brut = base * palier.multiplicateur;
-  // Arrondi à la centaine : des prix affichables, sans décimales parasites.
-  return Math.round(brut / 100) * 100;
-}
-
-// ─── Statuts d'une expédition (CHECK de la table expeditions) ─────────────────
 export const STATUT_LIVRAISON = {
   creee: "creee",
   priseEnCharge: "prise_en_charge",

@@ -23,8 +23,8 @@ describe("les prix ne sont modifiables que par le propriétaire", () => {
   });
 
   it.each([
-    "modifierTarifLivraison",
-    "modifierPalierPoids",
+    "creerMoyenLivraison",
+    "modifierMoyenLivraison",
     "modifierTarifAssistance",
     "modifierParametresContact",
   ])("%s exige le propriétaire", (nom) => {

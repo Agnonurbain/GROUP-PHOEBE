@@ -11,8 +11,7 @@ import {
   ZONE_LABELS,
   ZONE_DESCRIPTIONS,
   MODE_LABELS,
-  MODE_DESCRIPTIONS,
-  poidsMax,
+  chargeMaxFlotte,
 } from "@/lib/livraison"
 import { getTarifsLivraison } from "@/lib/public-cache"
 
@@ -50,8 +49,8 @@ export default async function Livraison({
   searchParams: Promise<{ echec?: string }>
 }) {
   const { echec } = await searchParams
-  const { grille, paliers } = await getTarifsLivraison()
-  const maxKg = poidsMax(paliers)
+  const { moyens, grilleMoyens, coefficientsMode } = await getTarifsLivraison()
+  const maxKg = chargeMaxFlotte(moyens)
 
   return (
     <>
@@ -103,6 +102,9 @@ export default async function Livraison({
             title="Nos tarifs"
             lede="Le prix dépend de la distance entre la collecte et la livraison, du mode d'envoi et du poids du colis."
           />
+          {/* La grille est désormais zone × MOYEN : le véhicule a remplacé le
+              poids dans le prix (00084). Le délai s'y applique en coefficient,
+              annoncé sous le tableau plutôt qu'en quatrième dimension. */}
           <div className="mt-8 overflow-x-auto rounded-xl border border-public-border bg-public-bg-card">
             <table className="w-full min-w-[640px] border-collapse text-left">
               <thead>
@@ -110,11 +112,11 @@ export default async function Livraison({
                   <th scope="col" className="py-4 pr-6 pl-4 text-xs font-medium uppercase tracking-[0.15em] text-public-text-muted">
                     Zone
                   </th>
-                  {MODES_LIVRAISON.map((mode) => (
-                    <th key={mode} scope="col" className="py-4 pr-6 text-sm font-semibold text-public-text">
-                      {MODE_LABELS[mode]}
+                  {moyens.map((m) => (
+                    <th key={m.cle} scope="col" className="py-4 pr-6 text-sm font-semibold text-public-text">
+                      {m.label}
                       <span className="mt-1 block text-xs font-normal text-public-text-faint">
-                        {MODE_DESCRIPTIONS[mode]}
+                        jusqu&apos;à {m.chargeMaxKg} kg
                       </span>
                     </th>
                   ))}
@@ -129,10 +131,10 @@ export default async function Livraison({
                         {ZONE_DESCRIPTIONS[zone]}
                       </span>
                     </th>
-                    {MODES_LIVRAISON.map((mode) => (
-                      <td key={mode} className="py-5 pr-6 align-top">
+                    {moyens.map((m) => (
+                      <td key={m.cle} className="py-5 pr-6 align-top">
                         <span className="font-display text-xl font-medium text-accent-orange">
-                          {grille[zone][mode].toLocaleString("fr-FR")}
+                          {(grilleMoyens[zone]?.[m.cle] ?? 0).toLocaleString("fr-FR")}
                         </span>
                         <span className="ml-1 text-xs text-public-text-muted">FCFA</span>
                       </td>
@@ -143,24 +145,27 @@ export default async function Livraison({
             </table>
           </div>
           <div className="mt-6 rounded-xl border border-public-border bg-public-bg-card p-5">
-            <p className="text-sm font-semibold text-public-text">Poids du colis</p>
+            <p className="text-sm font-semibold text-public-text">Délai souhaité</p>
             <p className="mt-1 text-xs text-public-text-muted">
-              Les tarifs ci-dessus valent pour le premier palier. Au-delà, un coefficient s&apos;applique :
+              Les tarifs ci-dessus sont ceux du délai standard. Un délai plus court
+              s&apos;applique en coefficient :
             </p>
             <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-              {paliers.map((p) => (
-                <li key={p.label} className="text-sm text-public-text-muted">
-                  {p.label}
+              {MODES_LIVRAISON.map((mode) => (
+                <li key={mode} className="text-sm text-public-text-muted">
+                  {MODE_LABELS[mode]}
                   <span className="ml-1.5 font-semibold text-accent-orange">
-                    {p.multiplicateur === 1 ? "tarif de base" : `×${p.multiplicateur}`}
+                    {(coefficientsMode[mode] ?? 1) === 1
+                      ? "tarif de base"
+                      : `×${coefficientsMode[mode]}`}
                   </span>
                 </li>
               ))}
-              <li className="text-sm text-public-text-muted">
-                Au-delà de {maxKg} kg
-                <span className="ml-1.5 font-semibold text-accent-orange">sur devis</span>
-              </li>
             </ul>
+            <p className="mt-3 text-xs text-public-text-faint">
+              Le poids ne change pas le prix : il détermine quels moyens peuvent
+              porter votre colis. Au-delà de {maxKg} kg, contactez-nous pour un devis.
+            </p>
           </div>
           <p className="mt-4 text-xs text-public-text-faint">
             La zone est déterminée automatiquement à partir des adresses de collecte et de livraison.
