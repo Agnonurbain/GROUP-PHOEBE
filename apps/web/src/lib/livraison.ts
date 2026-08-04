@@ -89,6 +89,78 @@ export function palierPoids(
   return paliers.find((p) => poidsKg <= p.maxKg) ?? null;
 }
 
+/**
+ * Un moyen de livraison : le VÉHICULE, distinct du mode qui est le DÉLAI.
+ *
+ * Demandé par GROUP PHOEBE : « il y a moto et puis il y a le cargo […] si elle
+ * a cliqué sur un cargo, elle aurait 3 types de cargo : petit, moyen, grand ».
+ */
+export type MoyenLivraison = {
+  cle: string;
+  label: string;
+  /**
+   * Regroupement affiché au client. Volontairement LIBRE : l'exploitant ajoute
+   * d'autres types de moyens — un fourgon, un camion — sans déploiement. Une
+   * union fermée aurait obligé à livrer du code pour vendre un service.
+   */
+  famille: string;
+  /** Charge utile. N'entre pas dans le prix : écarte les moyens trop justes. */
+  chargeMaxKg: number;
+  ordre: number;
+};
+
+/** Coefficient par mode, piloté depuis /admin/tarifs. */
+export type CoefficientsMode = Partial<Record<ModeLivraison, number>>;
+
+/** Prix de base par zone et par moyen : { [zone]: { [moyenCle]: prix } }. */
+export type GrilleMoyens = Record<string, Record<string, number>>;
+
+/**
+ * Le moyen le plus léger capable de porter ce colis.
+ *
+ * Sert à guider le client, pas à décider pour lui : il peut prendre plus gros
+ * s'il veut, jamais plus petit.
+ */
+export function moyensPossibles(
+  poidsKg: number | null,
+  moyens: MoyenLivraison[]
+): MoyenLivraison[] {
+  const tries = [...moyens].sort((a, b) => a.ordre - b.ordre);
+  if (poidsKg === null || !Number.isFinite(poidsKg) || poidsKg <= 0) return tries;
+  return tries.filter((m) => poidsKg <= m.chargeMaxKg);
+}
+
+/**
+ * Prix d'une livraison : `tarif(zone × moyen) × coefficient(mode)`.
+ *
+ * Le poids ne figure plus dans le calcul — décision de l'exploitant, le moyen
+ * l'a remplacé. Les garder tous deux aurait facturé deux fois la même réalité :
+ * on prend un cargo PARCE QUE le colis est lourd.
+ */
+export function computeLivraisonPrixMoyen(
+  zone: string,
+  moyenCle: string,
+  mode: string,
+  grille: GrilleMoyens,
+  coefficients: CoefficientsMode
+): number | null {
+  if (!isZoneLivraison(zone) || !isModeLivraison(mode)) return null;
+  const base = grille[zone]?.[moyenCle];
+  if (typeof base !== "number" || !Number.isFinite(base)) return null;
+
+  // Coefficient absent : on facture le tarif de base plutôt que rien. Un prix
+  // nul afficherait « gratuit » là où il manque seulement un réglage.
+  const coef = coefficients[mode] ?? 1;
+  if (!Number.isFinite(coef) || coef <= 0) return null;
+
+  // Deux arrondis, et l'ordre compte. `1500 × 2.3` vaut 3449,999… en virgule
+  // flottante : diviser d'abord donnerait 34,499… puis 3 400, soit 100 F de
+  // moins que l'arrondi honnête. On referme le produit avant de l'arrondir à
+  // la centaine.
+  const brut = Math.round(base * coef);
+  return Math.round(brut / 100) * 100;
+}
+
 export function isZoneLivraison(v: string): v is ZoneLivraison {
   return (ZONES_LIVRAISON as readonly string[]).includes(v);
 }

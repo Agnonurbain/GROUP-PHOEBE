@@ -18,6 +18,7 @@ import { BilletsParamsForm } from "./billets-form";
 import { DelaisForm } from "./delais-form";
 import { RendezVousForm } from "./rendez-vous-form";
 import { HorairesForm } from "./horaires-form";
+import { MoyensLivraisonForm, type MoyenAdmin } from "./moyens-livraison-form";
 import { getHorairesOuverture } from "@/lib/parametres-ouverture";
 import { getParametresTransport } from "@/lib/parametres-transport";
 import { CAT_LABELS } from "@/lib/constants";
@@ -117,6 +118,35 @@ export default async function TarifsPage() {
   const delaisTransport = await getParametresTransport();
   const horaires = await getHorairesOuverture();
 
+  // Moyens de livraison et leurs prix. La liste est ouverte : l'exploitant en
+  // ajoute sans déploiement, d'où une lecture plutôt qu'une constante.
+  const [{ data: moyensRows }, { data: prixRows }, { data: coefRows }] = await Promise.all([
+    supabase.from("moyens_livraison").select("*").order("ordre"),
+    supabase.from("tarifs_livraison_moyen").select("zone, moyen, prix"),
+    supabase.from("coefficients_mode_livraison").select("mode, coefficient"),
+  ]);
+
+  const prixParMoyen = new Map<string, Record<string, number>>();
+  for (const r of prixRows ?? []) {
+    const m = prixParMoyen.get(r.moyen) ?? {};
+    m[r.zone] = Number(r.prix);
+    prixParMoyen.set(r.moyen, m);
+  }
+
+  const moyensLivraison: MoyenAdmin[] = (moyensRows ?? []).map((m) => ({
+    cle: m.cle,
+    label: m.label,
+    famille: m.famille,
+    charge_max_kg: Number(m.charge_max_kg),
+    ordre: m.ordre,
+    actif: m.actif,
+    prix: prixParMoyen.get(m.cle) ?? {},
+  }));
+
+  const coefficientsMode = Object.fromEntries(
+    (coefRows ?? []).map((c) => [c.mode, Number(c.coefficient)])
+  );
+
   // Rendez-vous de dépôt : réglages et fermetures exceptionnelles. Les jours et
   // heures d'ouverture, eux, sont déjà dans `delaisTransport` — un seul
   // calendrier pour toute la maison.
@@ -158,6 +188,7 @@ export default async function TarifsPage() {
           </div>
           <DelaisForm initial={delaisTransport} />
           <HorairesForm initial={horaires} />
+          <MoyensLivraisonForm moyens={moyensLivraison} coefficients={coefficientsMode} />
           <RendezVousForm
             initial={{
               duree_minutes: Number(paramsRdv?.duree_minutes ?? 30),

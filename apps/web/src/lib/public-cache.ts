@@ -7,6 +7,9 @@ import {
   isModeLivraison,
   type GrilleTarifs,
   type PalierPoids,
+  type MoyenLivraison,
+  type GrilleMoyens,
+  type CoefficientsMode,
 } from "@/lib/livraison";
 import type { TarifsAssistance } from "@/lib/assistance";
 import { CONTACT_VIDE, type ParametresContact } from "@/lib/contact";
@@ -363,7 +366,38 @@ export const getTarifsLivraison = unstable_cache(
           }))
         : PALIERS_POIDS;
 
-    return { grille, paliers: paliersPoids };
+    // Moyens de livraison, leurs prix par zone, et les coefficients de délai.
+    // La liste est ouverte : l'exploitant en ajoute depuis /admin/tarifs, donc
+    // rien n'est codé en dur ici — un repli en dur périmerait au premier ajout.
+    const [{ data: moyensRows }, { data: prixRows }, { data: coefRows }] = await Promise.all([
+      supabase
+        .from("moyens_livraison")
+        .select("cle, label, famille, charge_max_kg, ordre")
+        .eq("actif", true)
+        .order("ordre"),
+      supabase.from("tarifs_livraison_moyen").select("zone, moyen, prix"),
+      supabase.from("coefficients_mode_livraison").select("mode, coefficient"),
+    ]);
+
+    const moyens: MoyenLivraison[] = (moyensRows ?? []).map((m) => ({
+      cle: m.cle,
+      label: m.label,
+      famille: m.famille,
+      chargeMaxKg: Number(m.charge_max_kg),
+      ordre: m.ordre,
+    }));
+
+    const grilleMoyens: GrilleMoyens = {};
+    for (const r of prixRows ?? []) {
+      (grilleMoyens[r.zone] ??= {})[r.moyen] = Number(r.prix);
+    }
+
+    const coefficientsMode: CoefficientsMode = {};
+    for (const c of coefRows ?? []) {
+      if (isModeLivraison(c.mode)) coefficientsMode[c.mode] = Number(c.coefficient);
+    }
+
+    return { grille, paliers: paliersPoids, moyens, grilleMoyens, coefficientsMode };
   },
   ["tarifs_livraison"],
   { revalidate: 3600, tags: ["tarifs_livraison"] }

@@ -11,13 +11,15 @@ import {
   MODE_LABELS,
   MODE_DESCRIPTIONS,
   ZONE_LABELS,
-  computeLivraisonPrix,
+  computeLivraisonPrixMoyen,
+  moyensPossibles,
   deriverZoneLivraison,
-  palierPoids,
   poidsMax,
   type CommuneMatch,
-  type GrilleTarifs,
   type PalierPoids,
+  type MoyenLivraison,
+  type CoefficientsMode,
+  type GrilleMoyens,
 } from "@/lib/livraison"
 import { Obligatoire } from "@/components/ui/obligatoire"
 
@@ -75,18 +77,24 @@ export default function CommanderClient({
   defaultNom,
   defaultContact,
   communes,
-  grille,
   paliers,
+  moyens,
+  coefficientsMode,
+  grilleMoyens,
   texteIndemnisation,
 }: {
   defaultNom: string
   defaultContact: string
   communes: Commune[]
-  /* Grille et paliers viennent de la base (éditables en /admin/tarifs) et sont
-     passés en props : le calcul du prix reste une fonction pure et synchrone,
+  /* Moyens, prix et coefficients viennent de la base (éditables en
+     /admin/tarifs) et sont passés en props : le calcul reste pur et synchrone,
      partagée à l'identique avec le serveur. */
-  grille: GrilleTarifs
   paliers: PalierPoids[]
+  /* Moyens de livraison et coefficients de délai, lus en base : la liste est
+     ouverte, l'exploitant en ajoute sans déploiement. */
+  moyens: MoyenLivraison[]
+  coefficientsMode: CoefficientsMode
+  grilleMoyens: GrilleMoyens
   /* Phrase calculée côté serveur depuis les paramètres pilotés : le client ne
      décide de rien, il affiche ce que le propriétaire a arrêté. */
   texteIndemnisation: string
@@ -99,6 +107,8 @@ export default function CommanderClient({
     new Date(Date.now() + 86400000).toISOString().slice(0, 10)
   );
   const [mode, setMode] = useState<string>(MODES_LIVRAISON[0])
+  // Le moyen est le VÉHICULE, distinct du mode qui est le DÉLAI.
+  const [moyen, setMoyen] = useState<string>("")
   const [communeCollecte, setCommuneCollecte] = useState("")
   const [communeLivraison, setCommuneLivraison] = useState("")
   const [poids, setPoids] = useState("")
@@ -118,14 +128,21 @@ export default function CommanderClient({
 
   // Le poids fait partie du prix : tant qu'il n'est pas saisi (ou hors grille),
   // aucun montant n'est annoncé.
-  const maxKg = poidsMax(paliers)
+  const maxKg = moyens.length > 0
+    ? Math.max(...moyens.map((m) => m.chargeMaxKg))
+    : poidsMax(paliers)
   const poidsNum = poids.trim() === "" ? null : Number(poids)
   const poidsValide = poidsNum !== null && Number.isFinite(poidsNum) && poidsNum > 0
   const poidsHorsGrille = poidsValide && poidsNum > maxKg
-  const palier = poidsValide && !poidsHorsGrille ? palierPoids(poidsNum, paliers) : null
+  // Le poids n'entre plus dans le prix : il écarte les moyens trop justes.
+  // Sans ce filtre, on choisirait « moto » pour 40 kg.
+  const moyensProposables = moyensPossibles(poidsValide ? poidsNum : null, moyens)
+  const familles = [...new Set(moyensProposables.map((m) => m.famille))]
+  const moyenChoisi = moyensProposables.find((m) => m.cle === moyen) ?? null
+
   const prix =
-    adressesRenseignees && poidsValide && !poidsHorsGrille
-      ? computeLivraisonPrix(zone, mode, poidsNum, grille, paliers)
+    adressesRenseignees && moyenChoisi
+      ? computeLivraisonPrixMoyen(zone, moyenChoisi.cle, mode, grilleMoyens, coefficientsMode)
       : null
 
   return (
@@ -247,12 +264,58 @@ export default function CommanderClient({
                   className={inputClass}
                 />
                 <p id="poids-aide" className="mt-1.5 text-xs text-public-text-faint">
-                  {paliers.map((p) => p.label).join(" · ")} — au-delà de {maxKg} kg, sur devis.
+                  Le poids détermine les moyens qui peuvent porter votre colis —
+                  au-delà de {maxKg} kg, contactez-nous pour un devis.
                 </p>
                 {poidsHorsGrille && (
                   <p role="alert" className="mt-1.5 text-xs text-error">
                     Au-delà de {maxKg} kg, contactez-nous pour un devis.
                   </p>
+                )}
+              </div>
+
+              {/* Le moyen de livraison — le véhicule. Il vient après le poids
+                  parce que le poids décide de ce qui peut porter le colis. */}
+              <div className="sm:col-span-2">
+                <span className={labelClass}>Moyen de livraison<Obligatoire /></span>
+                <input type="hidden" name="moyen" value={moyen} />
+
+                {moyensProposables.length === 0 ? (
+                  <p role="alert" className="text-xs text-error">
+                    Aucun de nos véhicules ne porte {poids} kg. Contactez-nous pour un devis.
+                  </p>
+                ) : (
+                  <div className="mt-1 space-y-3">
+                    {familles.map((famille) => (
+                      <div key={famille}>
+                        <p className="text-[11px] uppercase tracking-wider text-public-text-faint">
+                          {famille}
+                        </p>
+                        <div className="mt-1 flex flex-wrap gap-2">
+                          {moyensProposables
+                            .filter((m) => m.famille === famille)
+                            .map((m) => (
+                              <button
+                                key={m.cle}
+                                type="button"
+                                onClick={() => setMoyen(m.cle)}
+                                aria-pressed={moyen === m.cle}
+                                className={`rounded-xl border px-3 py-2 text-left text-xs transition-colors ${
+                                  moyen === m.cle
+                                    ? "border-accent-orange bg-accent-orange/10 text-public-text"
+                                    : "border-public-border text-public-text-muted hover:text-public-text"
+                                }`}
+                              >
+                                <span className="block font-medium">{m.label}</span>
+                                <span className="block text-[11px] text-public-text-faint">
+                                  jusqu&apos;à {m.chargeMaxKg} kg
+                                </span>
+                              </button>
+                            ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
               <div>
@@ -323,12 +386,9 @@ export default function CommanderClient({
                 <span className="font-medium text-public-text">{MODE_LABELS[mode as keyof typeof MODE_LABELS]}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-public-text-muted">{t.livraisonForm.palierPoids}</span>
+                <span className="text-public-text-muted">Moyen</span>
                 <span className="font-medium text-public-text">
-                  {palier ? palier.label : "—"}
-                  {palier && palier.multiplicateur !== 1 && (
-                    <span className="ml-1 text-xs text-public-text-muted">×{palier.multiplicateur}</span>
-                  )}
+                  {moyenChoisi ? moyenChoisi.label : "—"}
                 </span>
               </div>
             </div>
