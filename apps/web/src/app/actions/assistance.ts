@@ -2,6 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { getAgenda } from "@/lib/parametres-rendez-vous";
+import {
+  joursDisponibles,
+  creneauxDuJour,
+  creneauReservable,
+  libelleCreneau,
+} from "@/lib/rendez-vous";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -17,7 +24,10 @@ import {
 } from "@/lib/assistance";
 import { getTarifsAssistance } from "@/lib/public-cache";
 import { notifierClient } from "@/lib/notifications";
-import { notifierAdminNouveauDossierVoyage } from "./notifications-admin";
+import {
+  notifierAdminNouveauDossierVoyage,
+  notifierAdminNouveauRendezVous,
+} from "./notifications-admin";
 
 export type AssistanceState = {
   error?: string;
@@ -404,5 +414,149 @@ export async function verifierPieceDossier(
 
   revalidatePath("/admin/dossiers-voyage");
   revalidatePath("/compte/reservations");
+  return { success: true };
+}
+
+// ─── Rendez-vous de dépôt de dossier ─────────────────────────────────────────
+// « Il choisit la date et puis il prend le rendez-vous de dépôt de dossier. »
+// C'est ce qui remplace le règlement en ligne : le parcours s'arrête sur une
+// date convenue, plus sur un paiement.
+
+/**
+ * Créneaux encore libres, pour l'agenda affiché au client.
+ *
+ * Les places prises sont lues ici et non déduites côté navigateur : entre le
+ * rendu de la page et le clic, d'autres clients réservent.
+ */
+export async function creneauxDisponibles(): Promise<{
+  jours: string[];
+  creneaux: Record<string, { debut: string; fin: string; restant: number }[]>;
+}> {
+  const { params, horaires, fermetures } = await getAgenda();
+  const admin = getAdmin();
+
+  const { data: pris } = await admin
+    .from("rendez_vous_dossier")
+    .select("debut")
+    .eq("statut", "reserve")
+    .gte("debut", new Date().toISOString());
+
+  const reserves: Record<string, number> = {};
+  for (const r of pris ?? []) {
+    const iso = new Date(r.debut as string).toISOString();
+    reserves[iso] = (reserves[iso] ?? 0) + 1;
+  }
+
+  const options = { fermetures, reserves };
+  const jours = joursDisponibles(horaires, params, options);
+  const creneaux: Record<string, { debut: string; fin: string; restant: number }[]> = {};
+  for (const j of jours) {
+    creneaux[j] = creneauxDuJour(j, horaires, params, options).filter((c) => c.restant > 0);
+  }
+  return { jours, creneaux };
+}
+
+/**
+ * Réserver un créneau pour le dépôt d'un dossier.
+ *
+ * Trois remparts, dans cet ordre : le dossier appartient bien au client, le
+ * créneau est encore proposé et libre, et l'index unique refuse un second
+ * rendez-vous vivant sur le même dossier. Aucun ne suffit seul — le premier
+ * couvre l'appartenance, le deuxième la fraîcheur de l'agenda, le troisième la
+ * course entre deux clics.
+ */
+export async function reserverCreneau(
+  _prev: AssistanceState,
+  formData: FormData
+): Promise<AssistanceState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Vous devez être connecté." };
+
+  const dossierId = ((formData.get("dossier_id") as string) || "").trim();
+  const debutIso = ((formData.get("debut") as string) || "").trim();
+  if (!dossierId || !debutIso) return { error: "Créneau ou dossier manquant." };
+
+  const admin = getAdmin();
+  const { data: dossier } = await admin
+    .from("dossiers_voyage")
+    .select("id, client_id")
+    .eq("id", dossierId)
+    .single();
+
+  if (!dossier) return { error: "Dossier introuvable." };
+  if (dossier.client_id !== user.sub) return { error: "Ce dossier n'est pas le vôtre." };
+
+  const { params, horaires, fermetures } = await getAgenda();
+
+  const { data: pris } = await admin
+    .from("rendez_vous_dossier")
+    .select("debut")
+    .eq("statut", "reserve")
+    .gte("debut", new Date().toISOString());
+
+  const reserves: Record<string, number> = {};
+  for (const r of pris ?? []) {
+    const iso = new Date(r.debut as string).toISOString();
+    reserves[iso] = (reserves[iso] ?? 0) + 1;
+  }
+
+  const verdict = creneauReservable(debutIso, horaires, params, { fermetures, reserves });
+  if ("error" in verdict) return { error: verdict.error };
+
+  const debut = new Date(debutIso);
+  const fin = new Date(debut.getTime() + params.duree_minutes * 60_000);
+
+  const { error } = await admin.from("rendez_vous_dossier").insert({
+    dossier_id: dossierId,
+    client_id: user.sub as string,
+    debut: debut.toISOString(),
+    fin: fin.toISOString(),
+  } as never);
+
+  if (error) {
+    // 23505 : l'index unique a parlé — ce dossier a déjà un rendez-vous vivant.
+    if ((error as { code?: string }).code === "23505") {
+      return { error: "Ce dossier a déjà un rendez-vous. Annulez-le avant d'en prendre un autre." };
+    }
+    return { error: "Impossible de réserver ce créneau. Réessayez." };
+  }
+
+  await notifierAdminNouveauRendezVous(dossierId, libelleCreneau(debut.toISOString(), fin.toISOString()));
+
+  revalidatePath("/compte/reservations");
+  revalidatePath("/admin/dossiers-voyage");
+  return { success: true };
+}
+
+/** Annuler son rendez-vous. Le créneau redevient disponible pour tous. */
+export async function annulerRendezVous(
+  _prev: AssistanceState,
+  formData: FormData
+): Promise<AssistanceState> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims;
+  if (!user) return { error: "Vous devez être connecté." };
+
+  const rendezVousId = ((formData.get("rendez_vous_id") as string) || "").trim();
+  if (!rendezVousId) return { error: "Rendez-vous manquant." };
+
+  const admin = getAdmin();
+  // Le filtre porte sur le statut ATTENDU : annuler un rendez-vous déjà honoré
+  // effacerait une visite qui a eu lieu.
+  const { error, count } = await admin
+    .from("rendez_vous_dossier")
+    .update({ statut: "annule", updated_at: new Date().toISOString() } as never, { count: "exact" })
+    .eq("id", rendezVousId)
+    .eq("client_id", user.sub as string)
+    .eq("statut", "reserve");
+
+  if (error) return { error: error.message };
+  if (count === 0) return { error: "Ce rendez-vous n'est plus annulable." };
+
+  revalidatePath("/compte/reservations");
+  revalidatePath("/admin/dossiers-voyage");
   return { success: true };
 }

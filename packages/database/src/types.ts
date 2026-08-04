@@ -1289,6 +1289,24 @@ export type Database = {
           },
         ]
       }
+      fermetures_agence: {
+        Row: {
+          created_at: string
+          jour: string
+          motif: string | null
+        }
+        Insert: {
+          created_at?: string
+          jour: string
+          motif?: string | null
+        }
+        Update: {
+          created_at?: string
+          jour?: string
+          motif?: string | null
+        }
+        Relationships: []
+      }
       intervalles_prix: {
         Row: {
           categorie_vehicule: string
@@ -1793,6 +1811,33 @@ export type Database = {
         }
         Relationships: []
       }
+      parametres_rendez_vous: {
+        Row: {
+          capacite_par_creneau: number
+          delai_min_heures: number
+          duree_minutes: number
+          horizon_jours: number
+          id: boolean
+          updated_at: string
+        }
+        Insert: {
+          capacite_par_creneau?: number
+          delai_min_heures?: number
+          duree_minutes?: number
+          horizon_jours?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Update: {
+          capacite_par_creneau?: number
+          delai_min_heures?: number
+          duree_minutes?: number
+          horizon_jours?: number
+          id?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       parametres_transport: {
         Row: {
           delai_negociation_heures: number
@@ -2007,6 +2052,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      rendez_vous_dossier: {
+        Row: {
+          client_id: string
+          created_at: string
+          debut: string
+          dossier_id: string
+          fin: string
+          id: string
+          statut: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          debut: string
+          dossier_id: string
+          fin: string
+          id?: string
+          statut?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          debut?: string
+          dossier_id?: string
+          fin?: string
+          id?: string
+          statut?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rendez_vous_dossier_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rendez_vous_dossier_dossier_id_fkey"
+            columns: ["dossier_id"]
+            isOneToOne: false
+            referencedRelation: "dossiers_voyage"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tarifs_assistance: {
         Row: {

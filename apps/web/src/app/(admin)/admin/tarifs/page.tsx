@@ -16,6 +16,7 @@ import { AssistanceTarifsForm } from "./assistance-form";
 import { ContactParamsForm } from "./contact-form";
 import { BilletsParamsForm } from "./billets-form";
 import { DelaisForm } from "./delais-form";
+import { RendezVousForm } from "./rendez-vous-form";
 import { getParametresTransport } from "@/lib/parametres-transport";
 import { CAT_LABELS } from "@/lib/constants";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -113,6 +114,21 @@ export default async function TarifsPage() {
 
   const delaisTransport = await getParametresTransport();
 
+  // Rendez-vous de dépôt : réglages et fermetures exceptionnelles. Les jours et
+  // heures d'ouverture, eux, sont déjà dans `delaisTransport` — un seul
+  // calendrier pour toute la maison.
+  const { data: paramsRdv } = await supabase
+    .from("parametres_rendez_vous")
+    .select("duree_minutes, capacite_par_creneau, delai_min_heures, horizon_jours")
+    .eq("id", true)
+    .maybeSingle();
+
+  const { data: fermetures } = await supabase
+    .from("fermetures_agence")
+    .select("jour, motif")
+    .gte("jour", new Date().toISOString().slice(0, 10))
+    .order("jour");
+
   return (
     <div className="mx-auto max-w-4xl space-y-8">
       <ScrollReveal variant="fade-up">
@@ -138,6 +154,18 @@ export default async function TarifsPage() {
             </p>
           </div>
           <DelaisForm initial={delaisTransport} />
+          <RendezVousForm
+            initial={{
+              duree_minutes: Number(paramsRdv?.duree_minutes ?? 30),
+              capacite_par_creneau: Number(paramsRdv?.capacite_par_creneau ?? 1),
+              delai_min_heures: Number(paramsRdv?.delai_min_heures ?? 24),
+              horizon_jours: Number(paramsRdv?.horizon_jours ?? 60),
+            }}
+            fermetures={(fermetures ?? []).map((f: { jour: string; motif: string | null }) => ({
+              jour: String(f.jour),
+              motif: f.motif ?? null,
+            }))}
+          />
         </section>
       </ScrollReveal>
 

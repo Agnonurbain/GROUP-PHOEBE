@@ -116,6 +116,24 @@ export async function notifierAdminNouveauDossierVoyage(
   });
 }
 
+/**
+ * Un rendez-vous de dépôt vient d'être pris.
+ *
+ * « On va recevoir une notification pour dire qu'il y a quelqu'un qui a
+ * postulé. » Sans elle, l'équipe découvrirait le client devant le comptoir.
+ */
+export async function notifierAdminNouveauRendezVous(
+  _dossierId: string,
+  creneau: string
+) {
+  await notifierStaff({
+    evenement: "nouveau_rendez_vous",
+    titre: "Rendez-vous de dépôt pris",
+    message: `Un client a réservé un créneau : ${creneau}.`,
+    lien: `/admin/dossiers-voyage`,
+  });
+}
+
 export async function notifierAdminNouvelleDemandeImmobilier(
   _demandeId: string,
   clientNom: string,

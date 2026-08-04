@@ -15,6 +15,8 @@ import { PreuveLivraison } from "@/components/public/preuve-livraison"
 import { DeposerAvis } from "@/components/public/deposer-avis"
 import { ReponseCreneauVisite } from "@/components/public/reponse-creneau-visite"
 import { DossierPieces, type PieceClient } from "@/components/public/dossier-pieces"
+import { RendezVousDepot } from "@/components/public/rendez-vous-depot"
+import { creneauxDisponibles } from "@/app/actions/assistance"
 import { formaterCreneau } from "@/lib/immobilier"
 import { getT } from "@/lib/i18n/server"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
@@ -57,7 +59,13 @@ type ReservationItem = {
   /** Créneau de visite en attente de la réponse du client. */
   creneauAConfirmer: { id: string; creneau: string } | null
   /** Dossier d'assistance : pièces à déposer et montant à régler. */
-  dossier: { pieces: PieceClient[]; aRegler: number | null; conseiller: string | null } | null
+  dossier: {
+    pieces: PieceClient[]
+    aRegler: number | null
+    conseiller: string | null
+    /** Rendez-vous de depot deja pris, s'il y en a un. */
+    rendezVous: { id: string; debut: string; fin: string } | null
+  } | null
   /**
    * Documents d'une location : contrat dès qu'elle est engagée, état des lieux
    * dès qu'il a été fait. Le second justifie ce qui est retenu sur la caution —
@@ -195,6 +203,28 @@ export default async function CompteReservations({
         .select("id, dossier_id, type_document, statut, commentaire")
         .in("dossier_id", dossierIds)
     : { data: [] }
+
+  // Rendez-vous de dépôt déjà pris, et agenda encore libre. Les deux sont lus
+  // côté serveur : entre le rendu et le clic, d'autres clients réservent.
+  const { data: rendezVous } = dossierIds.length
+    ? await supabase
+        .from("rendez_vous_dossier")
+        .select("id, dossier_id, debut, fin")
+        .eq("statut", "reserve")
+        .in("dossier_id", dossierIds)
+    : { data: [] }
+
+  const rendezVousParDossier = new Map(
+    (rendezVous ?? []).map((r) => [
+      r.dossier_id as string,
+      { id: r.id as string, debut: String(r.debut), fin: String(r.fin) },
+    ])
+  )
+
+  // Un seul appel pour tous les dossiers : l'agenda ne dépend pas du dossier.
+  const agenda = dossierIds.length
+    ? await creneauxDisponibles()
+    : { jours: [], creneaux: {} }
 
   const piecesParDossier = new Map<string, PieceClient[]>()
   for (const p of piecesClient ?? []) {
@@ -363,6 +393,7 @@ export default async function CompteReservations({
       pieces: piecesParDossier.get(d.id) ?? [],
       aRegler: paiementDuParDossier.get(d.id) ?? null,
       conseiller: d.conseiller_id ? (nomConseiller.get(d.conseiller_id) ?? null) : null,
+      rendezVous: rendezVousParDossier.get(d.id) ?? null,
     },
   })) ?? []
 
@@ -574,6 +605,16 @@ export default async function CompteReservations({
                   )}
                   {r.dossier && (
                     <DossierPieces dossierId={r.id} pieces={r.dossier.pieces} />
+                  )}
+                  {/* Le parcours s'arrete sur une date convenue, plus sur un
+                      paiement : c'est ce qui remplace le reglement en ligne. */}
+                  {r.dossier && (
+                    <RendezVousDepot
+                      dossierId={r.id}
+                      jours={agenda.jours}
+                      creneaux={agenda.creneaux}
+                      existant={r.dossier.rendezVous}
+                    />
                   )}
                   {r.creneauAConfirmer && (
                     <ReponseCreneauVisite

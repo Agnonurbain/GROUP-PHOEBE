@@ -562,3 +562,102 @@ export async function modifierDelaisTransport(
   revalidatePath("/admin/demandes");
   return { success: true };
 }
+
+/**
+ * Réglages des rendez-vous de dépôt.
+ *
+ * Les JOURS ET HEURES d'ouverture ne sont pas ici : ils vivent sur
+ * `parametres_transport` et se règlent au-dessus, dans le même écran. Un second
+ * jeu produirait deux calendriers qui finiraient par diverger.
+ */
+export async function modifierParametresRendezVous(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  let userId: string
+  try {
+    userId = await requireProprietaireAvecId()
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." }
+  }
+
+  const entier = (cle: string, defaut: number) => {
+    const n = Number(formData.get(cle))
+    return Number.isFinite(n) ? Math.trunc(n) : defaut
+  }
+
+  const duree = entier("duree_minutes", 30)
+  const capacite = entier("capacite_par_creneau", 1)
+  const delaiMin = entier("delai_min_heures", 24)
+  const horizon = entier("horizon_jours", 60)
+
+  // Les bornes disent la même chose que les CHECK de 00081 : ici pour donner
+  // une phrase au propriétaire, là-bas pour que rien ne passe à côté.
+  if (duree < 5 || duree > 240) return { error: "La durée d'un créneau va de 5 à 240 minutes." }
+  if (capacite < 1 || capacite > 20) return { error: "La capacité va de 1 à 20 personnes par créneau." }
+  if (delaiMin < 0 || delaiMin > 720) return { error: "Le délai de prévenance va de 0 à 720 heures." }
+  if (horizon < 1 || horizon > 400) return { error: "L'agenda s'ouvre de 1 à 400 jours à l'avance." }
+
+  const admin = getAdmin()
+  const { error } = await admin
+    .from("parametres_rendez_vous")
+    .update({
+      duree_minutes: duree,
+      capacite_par_creneau: capacite,
+      delai_min_heures: delaiMin,
+      horizon_jours: horizon,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", true)
+
+  if (error) return { error: error.message }
+
+  await logAudit({
+    userId,
+    action: "modifier_parametres_rendez_vous",
+    tableName: "parametres_rendez_vous",
+    newValues: { duree, capacite, delaiMin, horizon },
+  })
+
+  ;(revalidateTag as (tag: string) => void)("parametres-rendez-vous")
+  revalidatePath("/admin/tarifs")
+  revalidatePath("/compte/reservations")
+  return { success: true }
+}
+
+/** Fermer ou rouvrir une journée. Un jour fermé ne propose aucun créneau. */
+export async function basculerFermetureAgence(
+  _prev: TarifState,
+  formData: FormData
+): Promise<TarifState> {
+  let userId: string
+  try {
+    userId = await requireProprietaireAvecId()
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." }
+  }
+
+  const jour = ((formData.get("jour") as string) || "").trim()
+  const motif = ((formData.get("motif") as string) || "").trim() || null
+  const retirer = formData.get("retirer") === "1"
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(jour)) return { error: "Date invalide." }
+
+  const admin = getAdmin()
+  const { error } = retirer
+    ? await admin.from("fermetures_agence").delete().eq("jour", jour)
+    : await admin.from("fermetures_agence").upsert({ jour, motif }, { onConflict: "jour" })
+
+  if (error) return { error: error.message }
+
+  await logAudit({
+    userId,
+    action: retirer ? "rouvrir_journee" : "fermer_journee",
+    tableName: "fermetures_agence",
+    newValues: { jour, motif },
+  })
+
+  ;(revalidateTag as (tag: string) => void)("parametres-rendez-vous")
+  revalidatePath("/admin/tarifs")
+  return { success: true }
+}
