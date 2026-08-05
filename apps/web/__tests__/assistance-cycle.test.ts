@@ -194,7 +194,7 @@ describe("Assistance — les pièces justificatives existent", () => {
   it("un rejet exige un motif", () => {
     const corps = corpsDeFonction(source, "verifierPieceDossier");
     expect(corps).toMatch(/decision === "rejete" && !commentaire/);
-    expect(corps).toContain("le client doit savoir quoi corriger");
+    expect(corps).toContain('err("indiquezCeQuiNeVaPas")');
   });
 
   it("une pièce déjà tranchée n'est pas rejouée", () => {
@@ -227,7 +227,7 @@ describe("Assistance — les vérifications de billet sont enfin écrivables", (
   });
 
   it("une pièce inconnue est refusée", () => {
-    expect(corpsDeFonction(source, "verifierPieceBillet")).toContain("Pièce inconnue.");
+    expect(corpsDeFonction(source, "verifierPieceBillet")).toContain('err("pieceInconnue")');
   });
 
   it("les colonnes de dépôt existent", () => {
@@ -296,7 +296,7 @@ describe("Assistance — écrire à l'équipe", () => {
   });
 
   it("un message vide ou démesuré est refusé", () => {
-    expect(corps).toContain("Écrivez votre message.");
+    expect(corps).toContain('err("ecrivezVotreMessage")');
     expect(corps).toContain("message.length > 4000");
   });
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { err } from "@/lib/i18n/erreurs";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -42,20 +43,20 @@ export async function creerDemandeAchat(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
+  if (!user) return { error: await err("vousDevezEtreConnecte") };
 
   const vehiculeId = formData.get("vehicule_id") as string;
   const marque = formData.get("marque") as string;
   const modele = formData.get("modele") as string;
 
   if (!vehiculeId || !marque || !modele) {
-    return { error: "Véhicule invalide." };
+    return { error: await err("vehiculeInvalide") };
   }
 
   // Une case cochée dans le DOM n'est pas une preuve : le consentement est exigé
   // côté serveur, et c'est lui qui est enregistré.
   if (formData.get("accepte_cgv") !== "on") {
-    return { error: "Vous devez accepter les conditions générales de vente." };
+    return { error: await err("vousDevezAccepterLesConditionsGenerales") };
   }
 
   const admin = getAdmin();
@@ -66,9 +67,9 @@ export async function creerDemandeAchat(
     .eq("id", vehiculeId)
     .single();
 
-  if (!vehicule) return { error: "Véhicule introuvable." };
+  if (!vehicule) return { error: await err("vehiculeIntrouvable") };
   if (vehicule.statut !== "disponible") {
-    return { error: `${marque} ${modele} n'est plus disponible.` };
+    return { error: await err("vehiculePlusDisponible", { vehicule: `${marque} ${modele}` }) };
   }
 
   const montant = vehicule.prix_vente ? Number(vehicule.prix_vente) : null;
@@ -114,9 +115,9 @@ export async function envoyerPrixAchat(
   const acompteStr = formData.get("acompte") as string;
   const acompteCustom = acompteStr ? Number(acompteStr) : 0;
 
-  if (!demandeId) return { error: "Demande invalide." };
+  if (!demandeId) return { error: await err("demandeInvalide") };
   if (!prixFinal || prixFinal <= 0) {
-    return { error: "Le prix final doit être un montant positif." };
+    return { error: await err("lePrixFinalDoitEtreUn") };
   }
 
   const { data: demande } = await admin
@@ -125,10 +126,10 @@ export async function envoyerPrixAchat(
     .eq("id", demandeId)
     .single();
 
-  if (!demande) return { error: "Demande introuvable." };
-  if (demande.type !== "achat") return { error: "Cette demande n'est pas un achat." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
+  if (demande.type !== "achat") return { error: await err("cetteDemandeNEstPasUn") };
   if (demande.statut !== "en_attente_validation") {
-    return { error: "Cette demande n'est plus en attente de validation." };
+    return { error: await err("cetteDemandeNEstPlusEn") };
   }
 
   const montantAcompte = acompteCustom > 0
@@ -136,7 +137,7 @@ export async function envoyerPrixAchat(
     : Math.round(prixFinal * TAUX_ACOMPTE_DEFAUT);
 
   if (montantAcompte <= 0) {
-    return { error: "Le montant de l'acompte doit être supérieur à 0." };
+    return { error: await err("leMontantDeLAcompteDoit") };
   }
 
   const { error } = await admin

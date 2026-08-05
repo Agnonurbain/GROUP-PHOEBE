@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { err } from "@/lib/i18n/erreurs";
 import type { Database } from "@group-phoebe/database/types";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -31,21 +32,21 @@ export async function envoyerMessageContact(
   const message = ((formData.get("message") as string) || "").trim();
 
   if (!prenom && !nom) {
-    return { error: "Veuillez indiquer votre nom." };
+    return { error: await err("veuillezIndiquerVotreNom") };
   }
   if (!email && !telephone) {
-    return { error: "Indiquez un email ou un téléphone pour vous recontacter." };
+    return { error: await err("indiquezUnEmailOuUnTelephone") };
   }
   if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return { error: "L'adresse email n'est pas valide." };
+    return { error: await err("lAdresseEmailNEstPas") };
   }
   if (message.length < 10) {
-    return { error: "Votre message doit contenir au moins 10 caractères." };
+    return { error: await err("votreMessageDoitContenirAuMoins") };
   }
 
   const cle = email || telephone || "anonyme";
   if (!checkRateLimit(`contact:${cle}`)) {
-    return { error: "Trop de messages envoyés. Réessayez dans une minute." };
+    return { error: await err("tropDeMessagesEnvoyesReessayezDans") };
   }
 
   const admin = getAdmin();

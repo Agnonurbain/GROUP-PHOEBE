@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { err } from "@/lib/i18n/erreurs";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { compressImage } from "@/lib/compress-image";
@@ -74,7 +75,7 @@ export async function creerVehicule(
   const modele = formData.get("modele") as string;
 
   if (!categorie || !marque || !modele) {
-    return { error: "Catégorie, marque et modèle sont obligatoires." };
+    return { error: await err("categorieMarqueEtModeleSontObligatoires") };
   }
 
   const prixVente = num(formData.get("prix_vente"));
@@ -154,7 +155,7 @@ export async function modifierVehicule(
   const statut = formData.get("statut") as string;
 
   if (!id || !categorie || !marque || !modele) {
-    return { error: "Catégorie, marque et modèle sont obligatoires." };
+    return { error: await err("categorieMarqueEtModeleSontObligatoires") };
   }
 
   let assurancePath: string | undefined;
@@ -309,7 +310,7 @@ export async function ajouterPhotos(
   const files = formData.getAll("photos") as File[];
 
   if (!vehiculeId || files.length === 0 || !files[0].size) {
-    return { error: "Sélectionnez au moins une photo." };
+    return { error: await err("selectionnezAuMoinsUnePhoto") };
   }
 
   const { data: existing } = await supabase
@@ -364,7 +365,7 @@ export async function supprimerPhoto(photoId: string): Promise<VehiculeState> {
     .select("*")
     .eq("id", photoId)
     .single();
-  if (!photo) return { error: "Photo introuvable." };
+  if (!photo) return { error: await err("photoIntrouvable") };
 
   try {
     const url = new URL(photo.url);
@@ -395,7 +396,7 @@ export async function reordonnerPhoto(
     .select("*")
     .eq("id", photoId)
     .single();
-  if (!photo) return { error: "Photo introuvable." };
+  if (!photo) return { error: await err("photoIntrouvable") };
 
   let query = supabase
     .from("vehicule_photos")

@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { err } from "@/lib/i18n/erreurs";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -119,14 +120,14 @@ export async function creerDemandeBillet(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté pour demander un billet." };
+  if (!user) return { error: await err("vousDevezEtreConnectePourDemander") };
 
   const { data: profile } = await supabase
     .from("users")
     .select("nom")
     .eq("id", user.sub)
     .single();
-  if (!profile) return { error: "Profil introuvable." };
+  if (!profile) return { error: await err("profilIntrouvable") };
 
   const typeTrajet = ((formData.get("type_trajet") as string) || "").trim();
   const saisie = {
@@ -192,7 +193,7 @@ export async function creerDemandeBillet(
     .single();
 
   if (error || !demande) {
-    return { error: "Impossible d'enregistrer la demande. Veuillez réessayer." };
+    return { error: await err("impossibleDEnregistrerLaDemandeVeuillez") };
   }
 
   // Les accompagnants sont écrits ici, pas au paiement. En un seul appel : neuf
@@ -213,7 +214,7 @@ export async function creerDemandeBillet(
       // Sans les accompagnants, le billet ne peut pas être émis : mieux vaut
       // refuser la demande que la laisser incomplète et paraître acceptée.
       await admin.from("demandes_billet").delete().eq("id", demande.id);
-      return { error: "Impossible d'enregistrer les voyageurs. Veuillez réessayer." };
+      return { error: await err("impossibleDEnregistrerLesVoyageursVeuillez") };
     }
   }
 
@@ -236,17 +237,17 @@ export async function changerStatutBillet(
   try {
     await requireStaff();
   } catch {
-    return { error: "Session expirée ou accès refusé." };
+    return { error: await err("sessionExpireeOuAccesRefuse") };
   }
 
   const demandeId = formData.get("demande_id") as string;
   const statut = formData.get("statut") as string;
-  if (!demandeId || !isStatutBillet(statut)) return { error: "Statut invalide." };
+  if (!demandeId || !isStatutBillet(statut)) return { error: await err("statutInvalide") };
 
   // « devis_envoye » suppose un montant : il ne s'obtient que par le devis,
   // sinon le client verrait un devis sans prix.
   if (statut === "devis_envoye") {
-    return { error: "Passez par le formulaire de devis pour ce statut." };
+    return { error: await err("passezParLeFormulaireDeDevis") };
   }
 
   const admin = getAdmin();
@@ -255,7 +256,7 @@ export async function changerStatutBillet(
     .select("client_id, depart, destination, statut")
     .eq("id", demandeId)
     .single();
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
 
   if (demande.statut === statut) return { success: true };
 
@@ -263,7 +264,10 @@ export async function changerStatutBillet(
   // pas par un retour en arrière dans notre outil.
   if (!transitionBilletAutorisee(demande.statut, statut)) {
     return {
-      error: `Passage impossible de « ${STATUT_BILLET_LABELS[demande.statut] ?? demande.statut} » à « ${STATUT_BILLET_LABELS[statut] ?? statut} ».`,
+      error: await err("passageImpossible", {
+        de: STATUT_BILLET_LABELS[demande.statut] ?? demande.statut,
+        vers: STATUT_BILLET_LABELS[statut] ?? statut,
+      }),
     };
   }
 
@@ -273,7 +277,7 @@ export async function changerStatutBillet(
     .eq("id", demandeId)
     .eq("statut", demande.statut);
   if (error) return { error: error.message };
-  if (!count) return { error: "La demande a changé d'état entre-temps. Rechargez la page." };
+  if (!count) return { error: await err("laDemandeAChangeDEtat") };
 
   {
     await notifierClient(
@@ -297,14 +301,14 @@ export async function proposerDevisBillet(
   try {
     proprietaireId = await requireProprietaireAvecId();
   } catch {
-    return { error: "Seul le propriétaire peut chiffrer un billet." };
+    return { error: await err("seulLeProprietairePeutChiffrerUn") };
   }
 
   const demandeId = formData.get("demande_id") as string;
   const montant = Number(formData.get("montant"));
-  if (!demandeId) return { error: "Demande invalide." };
+  if (!demandeId) return { error: await err("demandeInvalide") };
   if (!Number.isFinite(montant) || montant <= 0) {
-    return { error: "Le montant doit être un montant positif." };
+    return { error: await err("leMontantDoitEtreUnMontant") };
   }
 
   const admin = getAdmin();
@@ -313,10 +317,14 @@ export async function proposerDevisBillet(
     .select("client_id, statut, depart, destination, montant_propose, frais_service")
     .eq("id", demandeId)
     .single();
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
 
   if (!(STATUTS_BILLET_OUVERTS as readonly string[]).includes(demande.statut)) {
-    return { error: `Demande ${STATUT_BILLET_LABELS[demande.statut] ?? demande.statut} : elle est close.` };
+    return {
+      error: await err("demandeClose", {
+        statut: STATUT_BILLET_LABELS[demande.statut] ?? demande.statut,
+      }),
+    };
   }
 
   const paramsBillet = await getParametresBillet();
@@ -370,7 +378,7 @@ export async function payerDevisBillet(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
+  if (!user) return { error: await err("vousDevezEtreConnecte") };
 
   const demandeId = formData.get("demande_id") as string;
   const methode = formData.get("methode_paiement") as string;
@@ -379,7 +387,7 @@ export async function payerDevisBillet(
   // « on laisse la possibilité aux gens de venir payer le billet au bureau ou
   // en ligne. C'est pas une obligation de payer en ligne. »
   if (!["cinetpay", "stripe", "agence"].includes(methode)) {
-    return { error: "Méthode de paiement invalide." };
+    return { error: await err("methodeDePaiementInvalide") };
   }
 
   const admin = getAdmin();
@@ -390,17 +398,17 @@ export async function payerDevisBillet(
     .eq("client_id", user.sub)
     .single();
 
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
   if (demande.statut !== "devis_envoye") {
-    return { error: "Cette demande n'a pas de devis en attente." };
+    return { error: await err("cetteDemandeNAPasDe") };
   }
   if (demande.montant_propose == null) {
-    return { error: "Le devis n'a pas de montant." };
+    return { error: await err("leDevisNAPasDe") };
   }
 
   // Vérifier la validité du devis
   if (demande.devis_valable_jusqu_a && new Date(demande.devis_valable_jusqu_a) < new Date()) {
-    return { error: "Ce devis a expiré. Contactez-nous pour un nouveau devis." };
+    return { error: await err("ceDevisAExpireContactezNous") };
   }
 
   // Les accompagnants ne sont plus demandés ici : ils sont saisis avec la
@@ -479,9 +487,11 @@ export async function payerDevisBillet(
         notifyUrl: `${baseUrl}/api/webhooks/cinetpay`,
       })
     }
-  } catch (err) {
+  } catch (erreurAttrapee) {
     return {
-      error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
+      error: await err("erreurInitialisationPaiement", {
+          detail: erreurAttrapee instanceof Error ? erreurAttrapee.message : "",
+        }),
     }
   }
 
@@ -495,12 +505,12 @@ export async function affecterConseillerBillet(
   try {
     await requireStaff();
   } catch {
-    return { error: "Session expirée ou accès refusé." };
+    return { error: await err("sessionExpireeOuAccesRefuse") };
   }
 
   const demandeId = formData.get("demande_id") as string;
   const conseillerId = (formData.get("conseiller_id") as string) || null;
-  if (!demandeId) return { error: "Demande invalide." };
+  if (!demandeId) return { error: await err("demandeInvalide") };
 
   const admin = getAdmin();
   const { error } = await admin
@@ -523,7 +533,7 @@ export async function modifierParametresBillet(
   try {
     await requireProprietaireAvecId();
   } catch {
-    return { error: "Seul le propriétaire peut modifier ces paramètres." };
+    return { error: await err("seulLeProprietairePeutModifierCes") };
   }
 
   const nb = (cle: string) => Number(formData.get(cle));
@@ -536,19 +546,19 @@ export async function modifierParametresBillet(
   // 0 est légitime pour les frais comme pour la validité exigée : on teste la
   // finitude et les bornes, jamais la vérité de la valeur.
   if (!Number.isFinite(frais_service) || frais_service < 0) {
-    return { error: "Les frais de service doivent être positifs ou nuls." };
+    return { error: await err("lesFraisDeServiceDoiventEtre") };
   }
   if (!Number.isInteger(mois_validite_passeport) || mois_validite_passeport < 0 || mois_validite_passeport > 24) {
-    return { error: "La validité de passeport exigée doit être entre 0 et 24 mois." };
+    return { error: await err("laValiditeDePasseportExigeeDoit") };
   }
   if (!Number.isInteger(max_voyageurs) || max_voyageurs < 1 || max_voyageurs > 50) {
-    return { error: "Le nombre maximum de voyageurs doit être entre 1 et 50." };
+    return { error: await err("leNombreMaximumDeVoyageursDoit") };
   }
   if (!Number.isInteger(delai_reponse_heures) || delai_reponse_heures < 1 || delai_reponse_heures > 720) {
-    return { error: "Le délai de réponse doit être entre 1 et 720 heures." };
+    return { error: await err("leDelaiDeReponseDoitEtre") };
   }
   if (!Number.isInteger(validite_devis_heures) || validite_devis_heures < 1 || validite_devis_heures > 720) {
-    return { error: "La validité du devis doit être entre 1 et 720 heures." };
+    return { error: await err("laValiditeDuDevisDoitEtre") };
   }
 
   const admin = getAdmin();
@@ -584,7 +594,7 @@ export async function verifierPieceBillet(
   try {
     await requireStaff()
   } catch {
-    return { error: "Session expirée ou accès refusé." }
+    return { error: await err("sessionExpireeOuAccesRefuse") }
   }
 
   const demandeId = formData.get("demande_id") as string
@@ -596,7 +606,7 @@ export async function verifierPieceBillet(
     autorisation_mineur: "mineur_autorisation_verifie",
   }
   const colonne = colonnes[piece]
-  if (!demandeId || !colonne) return { error: "Pièce inconnue." }
+  if (!demandeId || !colonne) return { error: await err("pieceInconnue") }
 
   const admin = getAdmin()
   const { error } = await admin
@@ -618,7 +628,7 @@ export async function lienPieceBillet(
   try {
     await requireStaff()
   } catch {
-    return { error: "Accès refusé." }
+    return { error: await err("accesRefuse") }
   }
 
   const admin = getAdmin()
@@ -642,7 +652,7 @@ export async function lienPieceBillet(
       passeport: "passeport_fichier",
     }
     const colonne = colonnes[piece]
-    if (!colonne) return { error: "Pièce inconnue." }
+    if (!colonne) return { error: await err("pieceInconnue") }
 
     const { data } = await admin
       .from("demandes_billet")
@@ -653,13 +663,13 @@ export async function lienPieceBillet(
     chemin = (data as Record<string, string | null> | null)?.[colonne]
   }
 
-  if (!chemin) return { error: "Aucun document déposé." }
+  if (!chemin) return { error: await err("aucunDocumentDepose") }
 
   const { data: signee, error } = await admin.storage
     .from("dossiers-documents")
     .createSignedUrl(chemin, 60)
 
-  if (error || !signee?.signedUrl) return { error: "Lien indisponible." }
+  if (error || !signee?.signedUrl) return { error: await err("lienIndisponible") }
   return { url: signee.signedUrl }
 }
 
@@ -683,13 +693,13 @@ export async function encaisserAuBureau(
   try {
     ({ userId } = await requireStaff())
   } catch {
-    return { error: "Session expirée ou accès refusé." }
+    return { error: await err("sessionExpireeOuAccesRefuse") }
   }
 
   const referenceTable = texte(formData.get("reference_table"))
   const referenceId = texte(formData.get("reference_id"))
   if (!["demandes_billet", "dossiers_voyage"].includes(referenceTable) || !referenceId) {
-    return { error: "Référence inconnue." }
+    return { error: await err("referenceInconnue") }
   }
 
   const admin = getAdmin()
@@ -701,7 +711,7 @@ export async function encaisserAuBureau(
     .eq("statut", "en_attente")
     .maybeSingle()
 
-  if (!paiement) return { error: "Aucun montant en attente sur cette référence." }
+  if (!paiement) return { error: await err("aucunMontantEnAttenteSurCette") }
 
   // La méthode dit d'où vient l'argent : elle valait peut-être `stripe` si le
   // client avait ouvert un tunnel qu'il n'a pas terminé.

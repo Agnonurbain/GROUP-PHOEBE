@@ -192,7 +192,7 @@ describe("Facture — le téléchargement passe par la session du demandeur", ()
 
   it("vérifie l'authentification avant toute lecture", () => {
     expect(corps.indexOf("getUser()")).toBeLessThan(corps.indexOf('.from("factures")'));
-    expect(corps).toContain("Non authentifié");
+    expect(corps).toContain('err("nonAuthentifie")');
   });
 });
 

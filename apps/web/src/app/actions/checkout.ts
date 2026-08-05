@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { err } from "@/lib/i18n/erreurs";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -41,7 +42,7 @@ export async function checkoutCart(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
+  if (!user) return { error: await err("vousDevezEtreConnecte") };
 
   const { data: profile } = await supabase
     .from("users")
@@ -49,15 +50,15 @@ export async function checkoutCart(
     .eq("id", user.sub)
     .single();
 
-  if (!profile) return { error: "Profil introuvable." };
+  if (!profile) return { error: await err("profilIntrouvable") };
 
   // Une case cochée dans le DOM n'est pas une preuve : le consentement est exigé
   // côté serveur, et c'est lui qui est enregistré sur chaque demande.
   if (formData.get("accepte_cgv") !== "on") {
-    return { error: "Vous devez accepter les conditions générales de vente." };
+    return { error: await err("vousDevezAccepterLesConditionsGenerales") };
   }
   if (profile.statut_verification !== "verifie") {
-    return { error: "Votre identité doit être vérifiée avant de réserver. Rendez-vous sur votre profil pour soumettre vos documents." };
+    return { error: await err("votreIdentiteDoitEtreVerifieeAvant") };
   }
 
   const rawItems = formData.get("items") as string;
@@ -69,32 +70,32 @@ export async function checkoutCart(
   const methode = formData.get("methode_paiement") as string;
 
   if (!rawItems || !debut || !fin) {
-    return { error: "Articles, date de début et date de fin sont obligatoires." };
+    return { error: await err("articlesDateDeDebutEtDate") };
   }
 
   if (new Date(fin) <= new Date(debut)) {
-    return { error: "La date de fin doit être postérieure à la date de début." };
+    return { error: await err("laDateDeFinDoitEtre") };
   }
 
   if (!["cinetpay", "stripe"].includes(methode)) {
-    return { error: "Méthode de paiement invalide." };
+    return { error: await err("methodeDePaiementInvalide") };
   }
 
   let items: CartInput[];
   try {
     items = JSON.parse(rawItems);
   } catch {
-    return { error: "Format des articles invalide." };
+    return { error: await err("formatDesArticlesInvalide") };
   }
 
   if (items.length === 0) {
-    return { error: "Votre panier est vide." };
+    return { error: await err("votrePanierEstVide") };
   }
 
   const nbJours = Math.ceil(
     (new Date(fin).getTime() - new Date(debut).getTime()) / (1000 * 60 * 60 * 24)
   );
-  if (nbJours < 1) return { error: "La durée minimale est d'un jour." };
+  if (nbJours < 1) return { error: await err("laDureeMinimaleEstDUn") };
 
   const admin = getAdmin();
   const adminSupabase = await createClient();
@@ -219,7 +220,7 @@ export async function checkoutCart(
   }
 
   if (createdDemandes.length === 0) {
-    return { error: "Aucun véhicule disponible parmi les articles sélectionnés." };
+    return { error: await err("aucunVehiculeDisponibleParmiLesArticles") };
   }
 
   // Second conducteur, s'il est déclaré. Il était collecté par `creerReservation`
@@ -305,7 +306,7 @@ export async function checkoutCart(
   }
 
   if (paiements.length === 0) {
-    return { error: "Erreur lors de la création du paiement." };
+    return { error: await err("erreurLorsDeLaCreationDu") };
   }
 
   const firstDemandeId = createdDemandes[0].id;
@@ -332,9 +333,11 @@ export async function checkoutCart(
         notifyUrl: `${baseUrl}/api/webhooks/cinetpay`,
       });
     }
-  } catch (err) {
+  } catch (erreurAttrapee) {
     return {
-      error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
+      error: await err("erreurInitialisationPaiement", {
+          detail: erreurAttrapee instanceof Error ? erreurAttrapee.message : "",
+        }),
     };
   }
 

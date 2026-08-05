@@ -138,7 +138,7 @@ describe("Transport — conducteurs secondaires", () => {
   it("la décision porte sur l'état attendu", () => {
     const corps = corpsDeFonction(source, "verifierConducteurSecondaire");
     expect(corps).toMatch(/\.eq\("statut_verification", "documents_soumis"\)/);
-    expect(corps).toContain("déjà été traité");
+    expect(corps).toContain('err("ceConducteurADejaEteTraite")');
   });
 
   // Le bucket identity-documents est privé et c'est le chemin qui est stocké.

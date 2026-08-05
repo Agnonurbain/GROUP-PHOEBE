@@ -160,7 +160,7 @@ describe("Moyens de livraison — ce que fait le serveur", () => {
   });
 
   it("un moyen retiré du catalogue n'est plus acceptable", () => {
-    expect(action).toContain("n'est plus proposé");
+    expect(action).toContain('err("ceMoyenDeLivraisonNEst")');
   });
 
   it("le moyen est enregistré sur l'expédition", () => {

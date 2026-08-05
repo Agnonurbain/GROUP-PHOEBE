@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { err } from "@/lib/i18n/erreurs";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -83,9 +84,10 @@ async function appliquerStatut(
 ): Promise<LivreurState> {
   if (!transitionAutorisee(depuis, vers)) {
     return {
-      error: `Passage impossible de « ${STATUT_LIVRAISON_LABELS[depuis] ?? depuis} » à « ${
-        STATUT_LIVRAISON_LABELS[vers] ?? vers
-      } ».`,
+      error: await err("passageImpossible", {
+        de: STATUT_LIVRAISON_LABELS[depuis] ?? depuis,
+        vers: STATUT_LIVRAISON_LABELS[vers] ?? vers,
+      }),
     };
   }
 
@@ -102,7 +104,7 @@ async function appliquerStatut(
     .eq("statut", depuis);
 
   if (error) return { error: error.message };
-  if (!count) return { error: "Le colis a changé d'état entre-temps. Rechargez la page." };
+  if (!count) return { error: await err("leColisAChangeDEtat") };
 
   if (paiementACapturer) {
     // Le filtre sur `en_attente` fait office de verrou : deux validations
@@ -152,11 +154,11 @@ export async function avancerStatutLivraison(
 
   const expeditionId = formData.get("expedition_id") as string;
   const vers = formData.get("statut") as string;
-  if (!expeditionId || !isStatutLivraison(vers)) return { error: "Demande invalide." };
+  if (!expeditionId || !isStatutLivraison(vers)) return { error: await err("demandeInvalide") };
 
   // La livraison et l'échec ont leurs propres actions : elles exigent une pièce.
   if (vers === STATUT_LIVRAISON.livree || vers === STATUT_LIVRAISON.echecLivraison) {
-    return { error: "Ce statut demande une preuve ou un motif." };
+    return { error: await err("ceStatutDemandeUnePreuveOu") };
   }
 
   const { exp, erreur } = await chargerExpeditionDuLivreur(expeditionId, livreurId);
@@ -190,10 +192,10 @@ export async function confirmerLivraison(
   const lngRaw = formData.get("longitude") as string | null;
   const photo = formData.get("preuve_photo") as File | null;
 
-  if (!expeditionId) return { error: "Expédition invalide." };
-  if (!recuPar) return { error: "Indiquez qui a réceptionné le colis." };
+  if (!expeditionId) return { error: await err("expeditionInvalide") };
+  if (!recuPar) return { error: await err("indiquezQuiAReceptionneLeColis") };
   if (!photo || typeof photo === "string" || !photo.size) {
-    return { error: "Une photo de la remise est obligatoire." };
+    return { error: await err("unePhotoDeLaRemiseEst") };
   }
 
   const { exp, erreur } = await chargerExpeditionDuLivreur(expeditionId, livreurId);
@@ -203,7 +205,7 @@ export async function confirmerLivraison(
   try {
     ({ ext } = validateImageUpload(photo));
   } catch {
-    return { error: "Photo invalide : formats acceptés JPEG, PNG ou WebP." };
+    return { error: await err("photoInvalideFormatsAcceptesJpegPng") };
   }
 
   const admin = getAdmin();
@@ -216,7 +218,7 @@ export async function confirmerLivraison(
     .from("livraison-preuves")
     .upload(chemin, await compressed.arrayBuffer(), { contentType: compressed.type });
 
-  if (upErr) return { error: "Échec de l'envoi de la photo. Réessayez." };
+  if (upErr) return { error: await err("echecDeLEnvoiDeLa") };
 
   // La position est déclarative et facultative : un GPS refusé ou indisponible
   // ne doit pas empêcher un livreur de clôturer une course déjà faite.
@@ -237,7 +239,7 @@ export async function confirmerLivraison(
   const aEncaisser = paiement?.statut === "en_attente";
   if (aEncaisser && formData.get("encaissement_confirme") !== "on") {
     return {
-      error: `Confirmez avoir encaissé ${Number(exp.prix ?? 0).toLocaleString("fr-FR")} FCFA avant de valider la remise.`,
+      error: await err("confirmezEncaissement", { montant: Number(exp.prix ?? 0).toLocaleString("fr-FR") }),
     };
   }
 
@@ -283,8 +285,8 @@ export async function signalerEchecLivraison(
   const expeditionId = formData.get("expedition_id") as string;
   const motif = ((formData.get("echec_motif") as string) || "").trim();
 
-  if (!expeditionId) return { error: "Expédition invalide." };
-  if (!motif) return { error: "Indiquez le motif de l'échec." };
+  if (!expeditionId) return { error: await err("expeditionInvalide") };
+  if (!motif) return { error: await err("indiquezLeMotifDeLEchec") };
 
   const { exp, erreur } = await chargerExpeditionDuLivreur(expeditionId, livreurId);
   if (erreur) return { error: erreur };
@@ -324,7 +326,7 @@ export async function preuveDeLivraison(
 ): Promise<{ error?: string; url?: string }> {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Non authentifié." };
+  if (!user) return { error: await err("nonAuthentifie") };
 
   const { data: exp } = await supabase
     .from("expeditions")
@@ -332,13 +334,13 @@ export async function preuveDeLivraison(
     .eq("id", expeditionId)
     .single();
 
-  if (!exp?.preuve_chemin) return { error: "Aucune preuve disponible." };
+  if (!exp?.preuve_chemin) return { error: await err("aucunePreuveDisponible") };
 
   const admin = getAdmin();
   const { data: signee, error } = await admin.storage
     .from("livraison-preuves")
     .createSignedUrl(exp.preuve_chemin, 60);
 
-  if (error || !signee?.signedUrl) return { error: "Lien indisponible." };
+  if (error || !signee?.signedUrl) return { error: await err("lienIndisponible") };
   return { url: signee.signedUrl };
 }

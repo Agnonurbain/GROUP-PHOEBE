@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { err } from "@/lib/i18n/erreurs";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -93,14 +94,14 @@ export async function creerDemandeImmobilier(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté pour envoyer une demande." };
+  if (!user) return { error: await err("vousDevezEtreConnectePourEnvoyer") };
 
   const { data: profile } = await supabase
     .from("users")
     .select("id, nom, telephone, email")
     .eq("id", user.sub)
     .single();
-  if (!profile) return { error: "Profil introuvable." };
+  if (!profile) return { error: await err("profilIntrouvable") };
 
   const bienId = formData.get("bien_id") as string;
   const type = formData.get("type") as string;
@@ -111,8 +112,8 @@ export async function creerDemandeImmobilier(
   const locationDebut = ((formData.get("location_debut") as string) || "").trim();
   const locationDureeRaw = ((formData.get("location_duree_mois") as string) || "").trim();
 
-  if (!bienId) return { error: "Bien invalide." };
-  if (!isTypeDemande(type)) return { error: "Type de demande invalide." };
+  if (!bienId) return { error: await err("bienInvalide") };
+  if (!isTypeDemande(type)) return { error: await err("typeDeDemandeInvalide") };
 
   const admin = getAdmin();
 
@@ -121,11 +122,11 @@ export async function creerDemandeImmobilier(
     .select("type, localisation, statut, agent_id, transaction")
     .eq("id", bienId)
     .single();
-  if (!bien) return { error: "Bien introuvable." };
-  if (bien.statut !== "disponible") return { error: "Ce bien n'est plus disponible." };
+  if (!bien) return { error: await err("bienIntrouvable") };
+  if (bien.statut !== "disponible") return { error: await err("ceBienNEstPlusDisponible") };
 
   if (!["stripe", "cinetpay"].includes(methode)) {
-    return { error: "Moyen de paiement invalide." };
+    return { error: await err("moyenDePaiementInvalide") };
   }
 
   // Une seule demande de visite active par client et par bien : sans cette
@@ -141,7 +142,7 @@ export async function creerDemandeImmobilier(
 
     if ((visitesEnCours ?? 0) > 0) {
       return {
-        error: "Vous avez déjà une demande de visite en cours sur ce bien. Retrouvez-la dans « Mes réservations ».",
+        error: await err("vousAvezDejaUneDemandeDe"),
       };
     }
   }
@@ -152,10 +153,10 @@ export async function creerDemandeImmobilier(
   if (type === "offre" && estLocation(bien.transaction)) {
     locationDureeMois = Number(locationDureeRaw);
     if (!Number.isFinite(locationDureeMois) || locationDureeMois < 1) {
-      return { error: "Indiquez la durée de location souhaitée, en mois." };
+      return { error: await err("indiquezLaDureeDeLocationSouhaitee") };
     }
     if (!locationDebut) {
-      return { error: "Indiquez la date de début de location souhaitée." };
+      return { error: await err("indiquezLaDateDeDebutDe") };
     }
   }
 
@@ -163,7 +164,7 @@ export async function creerDemandeImmobilier(
   if (type === "offre") {
     montantOffre = Number(montantRaw);
     if (!montantOffre || montantOffre <= 0) {
-      return { error: "Le montant de l'offre doit être un montant positif." };
+      return { error: await err("leMontantDeLOffreDoit") };
     }
 
     // Limite d'offres par client
@@ -176,7 +177,7 @@ export async function creerDemandeImmobilier(
       .in("statut", STATUTS_DEMANDE_OFFRE_ACTIFS as unknown as string[]);
 
     if ((offresExistantes ?? 0) >= params.max_offres_client) {
-      return { error: `Vous avez atteint la limite de ${params.max_offres_client} offre(s) en cours.` };
+      return { error: await err("limiteOffresAtteinte", { max: params.max_offres_client }) };
     }
   }
 
@@ -204,7 +205,7 @@ export async function creerDemandeImmobilier(
     })
     .select("id")
     .single();
-  if (demandeErr) return { error: "Impossible d'enregistrer la demande. Veuillez réessayer." };
+  if (demandeErr) return { error: await err("impossibleDEnregistrerLaDemandeVeuillez") };
 
   const detail =
     type === "offre"
@@ -241,7 +242,7 @@ export async function creerDemandeImmobilier(
       })
       .select("id")
       .single();
-    if (paiementErr) return { error: "Impossible de créer le paiement." };
+    if (paiementErr) return { error: await err("impossibleDeCreerLePaiement") };
 
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
     const description = `Frais de visite — ${typeBienLabel(bien.type)} à ${bien.localisation}`;
@@ -269,9 +270,11 @@ export async function creerDemandeImmobilier(
           cancelUrl: `${baseUrl}/immobilier/${bienId}`,
         });
       }
-    } catch (err) {
+    } catch (erreurAttrapee) {
       return {
-        error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
+        error: await err("erreurInitialisationPaiement", {
+          detail: erreurAttrapee instanceof Error ? erreurAttrapee.message : "",
+        }),
       };
     }
 
@@ -290,19 +293,19 @@ export async function changerStatutDemandeImmobilier(
   try {
     await requireStaff();
   } catch {
-    return { error: "Session expirée ou accès refusé." };
+    return { error: await err("sessionExpireeOuAccesRefuse") };
   }
   const admin = getAdmin();
   const demandeId = formData.get("demande_id") as string;
   const statut = formData.get("statut") as string;
 
   if (!demandeId || !isStatutDemande(statut)) {
-    return { error: "Statut invalide." };
+    return { error: await err("statutInvalide") };
   }
   // « contre_offre » implique un montant : il ne s'obtient que via
   // proposerContreOffre, sinon le client verrait une contre-offre sans prix.
   if (statut === "contre_offre") {
-    return { error: "Passez par le formulaire de contre-offre pour ce statut." };
+    return { error: await err("passezParLeFormulaireDeContre") };
   }
 
   const { data: demande } = await admin
@@ -310,7 +313,7 @@ export async function changerStatutDemandeImmobilier(
     .select("client_id, bien_id, statut, montant_offre, montant_contre_offre, montant_convenu")
     .eq("id", demandeId)
     .single();
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
 
   if (demande.statut === statut) return { success: true };
 
@@ -320,7 +323,10 @@ export async function changerStatutDemandeImmobilier(
   // deux commissions dues.
   if (!transitionDemandeAutorisee(demande.statut, statut)) {
     return {
-      error: `Passage impossible de « ${STATUT_DEMANDE_LABELS[demande.statut] ?? demande.statut} » à « ${STATUT_DEMANDE_LABELS[statut] ?? statut} ».`,
+      error: await err("passageImpossible", {
+        de: STATUT_DEMANDE_LABELS[demande.statut] ?? demande.statut,
+        vers: STATUT_DEMANDE_LABELS[statut] ?? statut,
+      }),
     };
   }
 
@@ -344,7 +350,7 @@ export async function changerStatutDemandeImmobilier(
       .single();
 
     if (bienActuel && !["disponible", "reserve"].includes(bienActuel.statut)) {
-      return { error: `Bien ${bienActuel.statut} : impossible d'accepter une offre dessus.` };
+      return { error: await err("bienNonAcceptable", { statut: bienActuel.statut }) };
     }
   }
 
@@ -403,13 +409,13 @@ export async function affecterAgentImmobilier(
   try {
     await requireStaff();
   } catch {
-    return { error: "Session expirée ou accès refusé." };
+    return { error: await err("sessionExpireeOuAccesRefuse") };
   }
   const admin = getAdmin();
   const demandeId = formData.get("demande_id") as string;
   const agentId = (formData.get("agent_id") as string) || null;
 
-  if (!demandeId) return { error: "Demande invalide." };
+  if (!demandeId) return { error: await err("demandeInvalide") };
 
   const { error } = await admin
     .from("demandes_immobilier")
@@ -488,12 +494,12 @@ export async function proposerContreOffre(
   try {
     proprietaireId = await requireProprietaireAvecId();
   } catch {
-    return { error: "Seul le propriétaire peut proposer une contre-offre." };
+    return { error: await err("seulLeProprietairePeutProposerUne") };
   }
 
   const demandeId = formData.get("demande_id") as string;
   const montant = Number(formData.get("montant"));
-  if (!demandeId) return { error: "Demande invalide." };
+  if (!demandeId) return { error: await err("demandeInvalide") };
 
   const admin = getAdmin();
 
@@ -502,16 +508,20 @@ export async function proposerContreOffre(
     .select("id, type, statut, montant_offre, montant_contre_offre, client_id, bien_id")
     .eq("id", demandeId)
     .single();
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
 
   if (demande.type !== "offre") {
-    return { error: "Une contre-offre ne s'applique qu'à une demande de type offre." };
+    return { error: await err("uneContreOffreNeSApplique") };
   }
   if (!(STATUTS_CONTRE_OFFRE_POSSIBLE as readonly string[]).includes(demande.statut)) {
-    return { error: `Demande ${STATUT_DEMANDE_LABELS[demande.statut] ?? demande.statut} : la négociation est close.` };
+    return {
+      error: await err("negociationClose", {
+        statut: STATUT_DEMANDE_LABELS[demande.statut] ?? demande.statut,
+      }),
+    };
   }
   if (demande.montant_offre == null) {
-    return { error: "Cette demande ne porte aucune offre chiffrée." };
+    return { error: await err("cetteDemandeNePorteAucuneOffre") };
   }
 
   const { data: bien } = await admin
@@ -519,9 +529,9 @@ export async function proposerContreOffre(
     .select("prix, statut, type, localisation")
     .eq("id", demande.bien_id)
     .single();
-  if (!bien) return { error: "Bien introuvable." };
+  if (!bien) return { error: await err("bienIntrouvable") };
   if (!["disponible", "reserve"].includes(bien.statut)) {
-    return { error: "Ce bien n'est plus négociable." };
+    return { error: await err("ceBienNEstPlusNegociable") };
   }
 
   const params = await getParametresImmobilier();
@@ -570,9 +580,9 @@ export async function repondreContreOffre(
   try {
     clientId = await requireClient();
   } catch {
-    return { error: "Vous devez être connecté." };
+    return { error: await err("vousDevezEtreConnecte") };
   }
-  if (!demandeId) return { error: "Demande invalide." };
+  if (!demandeId) return { error: await err("demandeInvalide") };
 
   const admin = getAdmin();
 
@@ -581,11 +591,11 @@ export async function repondreContreOffre(
     .select("id, statut, client_id, bien_id, montant_contre_offre")
     .eq("id", demandeId)
     .single();
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
   // La demande est lue avec la clé de service : l'appartenance se vérifie ici.
-  if (demande.client_id !== clientId) return { error: "Cette demande n'est pas la vôtre." };
+  if (demande.client_id !== clientId) return { error: await err("cetteDemandeNEstPasLa") };
   if (demande.statut !== "contre_offre") {
-    return { error: "Aucune contre-offre en attente sur cette demande." };
+    return { error: await err("aucuneContreOffreEnAttenteSur") };
   }
 
   const accepte = reponse === "accepter";
@@ -601,7 +611,7 @@ export async function repondreContreOffre(
 
     if (bienActuel?.statut !== "disponible") {
       return {
-        error: "Ce bien n'est plus disponible : un accord a été conclu entre-temps. Votre offre est close.",
+        error: await err("ceBienNEstPlusDisponible2"),
       };
     }
   }
@@ -679,7 +689,7 @@ export async function creerVisite(
   try {
     await requireStaff();
   } catch {
-    return { error: "Session expirée ou accès refusé." };
+    return { error: await err("sessionExpireeOuAccesRefuse") };
   }
   const admin = getAdmin();
   const demandeId = formData.get("demande_id") as string;
@@ -689,14 +699,14 @@ export async function creerVisite(
   const creneau = formData.get("creneau") as string;
 
   if (!bienId || !clientId || !agentId || !creneau) {
-    return { error: "Champs obligatoires manquants (agent requis)." };
+    return { error: await err("champsObligatoiresManquantsAgentRequis") };
   }
 
   const dateCreneau = new Date(creneau);
-  if (Number.isNaN(dateCreneau.getTime())) return { error: "Créneau invalide." };
+  if (Number.isNaN(dateCreneau.getTime())) return { error: await err("creneauInvalide") };
   // Un créneau passé ne veut rien dire pour le client qu'on va prévenir.
   if (dateCreneau.getTime() < Date.now()) {
-    return { error: "Le créneau doit être dans le futur." };
+    return { error: await err("leCreneauDoitEtreDansLe") };
   }
 
   const { error } = await admin.from("visites").insert({
@@ -739,20 +749,20 @@ export async function changerStatutVisite(
   try {
     await requireStaff();
   } catch {
-    return { error: "Session expirée ou accès refusé." };
+    return { error: await err("sessionExpireeOuAccesRefuse") };
   }
   const admin = getAdmin();
   const visiteId = formData.get("visite_id") as string;
   const statut = formData.get("statut") as string;
 
-  if (!visiteId || !isStatutVisite(statut)) return { error: "Visite ou statut invalide." };
+  if (!visiteId || !isStatutVisite(statut)) return { error: await err("visiteOuStatutInvalide") };
 
   const { data: visite } = await admin
     .from("visites")
     .select("bien_id, client_id, creneau, statut")
     .eq("id", visiteId)
     .single();
-  if (!visite) return { error: "Visite introuvable." };
+  if (!visite) return { error: await err("visiteIntrouvable") };
 
   if (visite.statut === statut) return { success: true };
 
@@ -760,7 +770,10 @@ export async function changerStatutVisite(
   // demande qu'elle avait refermée serait rouverte à la visite suivante.
   if (!transitionVisiteAutorisee(visite.statut, statut)) {
     return {
-      error: `Passage impossible de « ${STATUT_VISITE_LABELS[visite.statut] ?? visite.statut} » à « ${STATUT_VISITE_LABELS[statut] ?? statut} ».`,
+      error: await err("passageImpossible", {
+        de: STATUT_VISITE_LABELS[visite.statut] ?? visite.statut,
+        vers: STATUT_VISITE_LABELS[statut] ?? statut,
+      }),
     };
   }
 
@@ -770,7 +783,7 @@ export async function changerStatutVisite(
     .eq("id", visiteId)
     .eq("statut", visite.statut);
   if (error) return { error: error.message };
-  if (!count) return { error: "La visite a changé d'état entre-temps. Rechargez la page." };
+  if (!count) return { error: await err("laVisiteAChangeDEtat") };
 
   // Le créneau devient ferme : le client doit le savoir.
   if (statut === "confirmee") {
@@ -843,7 +856,7 @@ export async function modifierParametresImmobilier(
   try {
     await requireProprietaireAvecId();
   } catch {
-    return { error: "Seul le propriétaire peut modifier ces paramètres." };
+    return { error: await err("seulLeProprietairePeutModifierCes") };
   }
   const admin = getAdmin();
 
@@ -851,13 +864,13 @@ export async function modifierParametresImmobilier(
   const taux_max_reduction = Number(formData.get("taux_max_reduction"));
   const max_offres_client = Number(formData.get("max_offres_client"));
 
-  if (!frais_visite || frais_visite <= 0) return { error: "Les frais de visite doivent être un montant positif." };
+  if (!frais_visite || frais_visite <= 0) return { error: await err("lesFraisDeVisiteDoiventEtre") };
   // 0 est une valeur légitime : aucune remise autorisée. Ne pas tester la
   // vérité de la valeur, sinon 0 est rejeté comme absent.
   if (!Number.isFinite(taux_max_reduction) || taux_max_reduction < 0 || taux_max_reduction > 100) {
-    return { error: "Le taux de réduction doit être entre 0 et 100." };
+    return { error: await err("leTauxDeReductionDoitEtre") };
   }
-  if (!max_offres_client || max_offres_client < 1) return { error: "Le nombre max d'offres doit être au moins 1." };
+  if (!max_offres_client || max_offres_client < 1) return { error: await err("leNombreMaxDOffresDoit") };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { error } = await (admin.from as any)("parametres_immobilier")
@@ -894,12 +907,12 @@ export async function repondreCreneauVisite(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non authentifié." };
+  if (!user) return { error: await err("nonAuthentifie") };
 
   const visiteId = formData.get("visite_id") as string;
   const reponse = formData.get("reponse") as string;
   if (!visiteId || !["accepte", "decline"].includes(reponse)) {
-    return { error: "Réponse invalide." };
+    return { error: await err("reponseInvalide") };
   }
 
   const admin = getAdmin();
@@ -909,10 +922,10 @@ export async function repondreCreneauVisite(
     .eq("id", visiteId)
     .single();
 
-  if (!visite) return { error: "Visite introuvable." };
-  if (visite.client_id !== user.sub) return { error: "Cette visite n'est pas la vôtre." };
+  if (!visite) return { error: await err("visiteIntrouvable") };
+  if (visite.client_id !== user.sub) return { error: await err("cetteVisiteNEstPasLa") };
   if (visite.statut !== "proposee") {
-    return { error: "Ce créneau n'attend plus de réponse." };
+    return { error: await err("ceCreneauNAttendPlusDe") };
   }
 
   const cible = reponse === "accepte" ? "confirmee" : "annulee";
@@ -924,7 +937,7 @@ export async function repondreCreneauVisite(
     .eq("statut", "proposee");
 
   if (error) return { error: error.message };
-  if (!count) return { error: "Ce créneau a changé entre-temps. Rechargez la page." };
+  if (!count) return { error: await err("ceCreneauAChangeEntreTemps") };
 
   // Décliner ne relibère pas le bien : la demande reste vivante, l'équipe doit
   // reproposer. Le relâcher ici remettrait le bien au catalogue alors que le

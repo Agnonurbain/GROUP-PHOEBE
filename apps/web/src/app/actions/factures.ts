@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { err } from "@/lib/i18n/erreurs";
 import { createClient } from "@/lib/supabase/server"
 import { createAdminClient } from "@/lib/supabase/admin"
 import { logAudit } from "@/lib/audit"
@@ -19,7 +20,7 @@ const VALIDITE_LIEN_FACTURE_S = 60
 export async function telechargerFacture(factureId: string): Promise<FactureState> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: "Non authentifié." }
+  if (!user) return { error: await err("nonAuthentifie") }
 
   // La lecture passe par la session du client : `factures_select_own` et
   // `factures_staff_select` décident qui voit quoi. Interroger en clé de service
@@ -31,7 +32,7 @@ export async function telechargerFacture(factureId: string): Promise<FactureStat
     .eq("id", factureId)
     .single()
 
-  if (!facture?.pdf_chemin) return { error: "Facture non disponible." }
+  if (!facture?.pdf_chemin) return { error: await err("factureNonDisponible") }
 
   // Le bucket est privé : la signature se fait en clé de service, l'accès ayant
   // déjà été tranché par la requête ci-dessus.
@@ -41,7 +42,7 @@ export async function telechargerFacture(factureId: string): Promise<FactureStat
     .createSignedUrl(facture.pdf_chemin, VALIDITE_LIEN_FACTURE_S)
 
   if (error || !signee?.signedUrl) {
-    return { error: "Lien de téléchargement indisponible." }
+    return { error: await err("lienDeTelechargementIndisponible") }
   }
 
   return { success: true, pdf_url: signee.signedUrl }
@@ -64,7 +65,7 @@ export async function modifierParametresFacturation(
 ): Promise<ParametresFacturationState> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: "Non authentifié." }
+  if (!user) return { error: await err("nonAuthentifie") }
 
   const { data: profile } = await supabase
     .from("users")
@@ -72,7 +73,7 @@ export async function modifierParametresFacturation(
     .eq("id", user.id)
     .single()
   if (profile?.role !== "proprietaire") {
-    return { error: "Accès refusé : propriétaire requis." }
+    return { error: await err("accesRefuseProprietaireRequis") }
   }
 
   const tauxTva = Number(formData.get("taux_tva"))
@@ -82,11 +83,11 @@ export async function modifierParametresFacturation(
   // 0 est une valeur légitime (exonération) : la borne porte sur la plage, pas
   // sur la véracité — `!tauxTva` rejetterait une TVA à 0.
   if (!Number.isFinite(tauxTva) || tauxTva < 0 || tauxTva > 100) {
-    return { error: "La TVA doit être comprise entre 0 et 100 %." }
+    return { error: await err("laTvaDoitEtreCompriseEntre") }
   }
-  if (!prefixe) return { error: "Le préfixe de facture est obligatoire." }
+  if (!prefixe) return { error: await err("lePrefixeDeFactureEstObligatoire") }
   if (!/^[A-Z0-9-]{1,10}$/.test(prefixe)) {
-    return { error: "Le préfixe doit être en majuscules, 10 caractères au plus." }
+    return { error: await err("lePrefixeDoitEtreEnMajuscules") }
   }
 
   const admin = createAdminClient()

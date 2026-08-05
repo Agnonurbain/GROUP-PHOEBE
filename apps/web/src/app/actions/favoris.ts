@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { err } from "@/lib/i18n/erreurs";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -12,7 +13,7 @@ async function toggle(cible: "vehicule" | "bien", id: string) {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non authentifié" };
+  if (!user) return { error: await err("nonAuthentifie2") };
 
   const colonne = cible === "vehicule" ? "vehicule_id" : "bien_id";
 

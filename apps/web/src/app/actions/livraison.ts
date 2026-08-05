@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { err } from "@/lib/i18n/erreurs";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -88,7 +89,7 @@ export async function creerExpedition(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté pour commander une livraison." };
+  if (!user) return { error: await err("vousDevezEtreConnectePourCommander") };
 
   const expediteurNom = (formData.get("expediteur_nom") as string)?.trim();
   const expediteurContact = (formData.get("expediteur_contact") as string)?.trim();
@@ -112,25 +113,25 @@ export async function creerExpedition(
     !detailCollecte || !detailLivraison ||
     !communeCollecte || !communeLivraison
   ) {
-    return { error: "Tous les champs expéditeur, destinataire et adresses sont obligatoires." };
+    return { error: await err("tousLesChampsExpediteurDestinataireEt") };
   }
   if (!isModeLivraison(mode)) {
-    return { error: "Mode de livraison invalide." };
+    return { error: await err("modeDeLivraisonInvalide") };
   }
 
   // Le mode « programmée » n'a de sens qu'avec une date, et une date n'en a pas
   // sur les autres modes — elle y laisserait croire à un engagement de créneau.
   if (mode === "programmee") {
-    if (!dateSouhaitee) return { error: "Indiquez la date de livraison souhaitée." };
+    if (!dateSouhaitee) return { error: await err("indiquezLaDateDeLivraisonSouhaitee") };
     const demain = new Date();
     demain.setHours(0, 0, 0, 0);
     demain.setDate(demain.getDate() + 1);
     if (Number.isNaN(Date.parse(dateSouhaitee)) || new Date(dateSouhaitee) < demain) {
-      return { error: "La date programmée doit être au plus tôt demain." };
+      return { error: await err("laDateProgrammeeDoitEtreAu") };
     }
   }
   if (!["cinetpay", "stripe", "a_la_livraison"].includes(methode)) {
-    return { error: "Méthode de paiement invalide." };
+    return { error: await err("methodeDePaiementInvalide") };
   }
 
   // Zone déduite (autoritaire) des communes saisies : même source de matching
@@ -156,39 +157,39 @@ export async function creerExpedition(
   // Le poids détermine le palier tarifaire : il est désormais obligatoire.
   const poidsKg = poidsRaw ? Number(poidsRaw) : null;
   if (poidsKg === null || Number.isNaN(poidsKg) || poidsKg <= 0) {
-    return { error: "Indiquez le poids du colis (en kg)." };
+    return { error: await err("indiquezLePoidsDuColisEn") };
   }
   if (poidsKg > maxKg) {
     return {
-      error: `Au-delà de ${maxKg} kg, la livraison se fait sur devis. Contactez-nous pour organiser l'envoi.`,
+      error: await err("auDelaDevisLivraison", { max: maxKg }),
     };
   }
   const valeurDeclaree = valeurRaw ? Number(valeurRaw) : null;
   if (valeurDeclaree !== null && (Number.isNaN(valeurDeclaree) || valeurDeclaree < 0)) {
-    return { error: "La valeur déclarée est invalide." };
+    return { error: await err("laValeurDeclareeEstInvalide") };
   }
 
   // Le moyen — le véhicule — a remplacé le poids dans le prix (00084). Le poids
   // reste exigé : le livreur doit le connaître, et il écarte les moyens trop
   // justes pour le colis.
   const moyenCle = ((formData.get("moyen") as string) || "").trim();
-  if (!moyenCle) return { error: "Choisissez un moyen de livraison." };
+  if (!moyenCle) return { error: await err("choisissezUnMoyenDeLivraison") };
 
   const moyen = moyens.find((m) => m.cle === moyenCle);
-  if (!moyen) return { error: "Ce moyen de livraison n'est plus proposé." };
+  if (!moyen) return { error: await err("ceMoyenDeLivraisonNEst") };
 
   // Le navigateur filtre déjà la liste, mais rien n'oblige un formulaire à
   // passer par le navigateur : sans ce contrôle, on accepterait une moto pour
   // 40 kg et le livreur découvrirait le colis sur place.
   if (poidsKg > moyen.chargeMaxKg) {
     return {
-      error: `${moyen.label} porte jusqu'à ${moyen.chargeMaxKg} kg. Choisissez un moyen adapté à ${poidsKg} kg.`,
+      error: await err("moyenInadapte", { moyen: moyen.label, max: moyen.chargeMaxKg, poids: poidsKg }),
     };
   }
 
   // Prix recalculé côté serveur, autoritaire : tarif(zone × moyen) × coefficient(mode).
   const prix = computeLivraisonPrixMoyen(zone, moyen.cle, mode, grilleMoyens, coefficientsMode);
-  if (prix === null) return { error: "Tarif indisponible pour cette combinaison." };
+  if (prix === null) return { error: await err("tarifIndisponiblePourCetteCombinaison") };
 
   const admin = getAdmin();
   const numeroSuivi = genererNumeroSuivi();
@@ -225,7 +226,7 @@ export async function creerExpedition(
     .single();
 
   if (expErr || !expedition) {
-    return { error: "Impossible de créer l'expédition. Veuillez réessayer." };
+    return { error: await err("impossibleDeCreerLExpeditionVeuillez") };
   }
 
   // Photos du colis (optionnelles) : upload en service-role vers le bucket
@@ -269,7 +270,7 @@ export async function creerExpedition(
 
   if (paiementErr || !paiement) {
     await admin.from("expeditions").delete().eq("id", expedition.id);
-    return { error: "Erreur lors de la création du paiement." };
+    return { error: await err("erreurLorsDeLaCreationDu") };
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -303,9 +304,11 @@ export async function creerExpedition(
         notifyUrl: `${baseUrl}/api/webhooks/cinetpay`,
       });
     }
-  } catch (err) {
+  } catch (erreurAttrapee) {
     return {
-      error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
+      error: await err("erreurInitialisationPaiement", {
+          detail: erreurAttrapee instanceof Error ? erreurAttrapee.message : "",
+        }),
     };
   }
 
@@ -397,18 +400,18 @@ export async function affecterLivreurAuto(
   await requireStaff();
   const admin = getAdmin();
   const expeditionId = formData.get("expedition_id") as string;
-  if (!expeditionId) return { error: "Expédition invalide." };
+  if (!expeditionId) return { error: await err("expeditionInvalide") };
 
   const { data: exp } = await admin
     .from("expeditions")
     .select("commune_collecte")
     .eq("id", expeditionId)
     .single();
-  if (!exp) return { error: "Expédition introuvable." };
+  if (!exp) return { error: await err("expeditionIntrouvable") };
 
   const livreurId = await choisirLivreurAuto(admin, exp.commune_collecte);
   if (!livreurId) {
-    return { error: "Aucun livreur disponible : tous ont atteint leur capacité du jour." };
+    return { error: await err("aucunLivreurDisponibleTousOntAtteint") };
   }
 
   return assignerEtNotifier(admin, expeditionId, livreurId);
@@ -422,7 +425,7 @@ export async function affecterLivreurManuel(
   const admin = getAdmin();
   const expeditionId = formData.get("expedition_id") as string;
   const livreurId = formData.get("livreur_id") as string;
-  if (!expeditionId || !livreurId) return { error: "Expédition ou livreur manquant." };
+  if (!expeditionId || !livreurId) return { error: await err("expeditionOuLivreurManquant") };
 
   return assignerEtNotifier(admin, expeditionId, livreurId);
 }
@@ -443,20 +446,20 @@ export async function desaffecterLivreur(
   const admin = getAdmin();
 
   const expeditionId = formData.get("expedition_id") as string;
-  if (!expeditionId) return { error: "Expédition invalide." };
+  if (!expeditionId) return { error: await err("expeditionInvalide") };
 
   const { data: exp } = await admin
     .from("expeditions")
     .select("livreur_id, statut")
     .eq("id", expeditionId)
     .single();
-  if (!exp) return { error: "Expédition introuvable." };
+  if (!exp) return { error: await err("expeditionIntrouvable") };
   if (!exp.livreur_id) return { success: true };
 
   // Un colis remis n'est plus à personne : lui retirer son livreur effacerait
   // qui l'a livré, alors que la preuve de remise y renvoie.
   if (exp.statut === STATUT_LIVRAISON.livree) {
-    return { error: "Un colis déjà livré ne peut pas être désaffecté." };
+    return { error: await err("unColisDejaLivreNePeut") };
   }
 
   const { error } = await admin
@@ -490,7 +493,7 @@ export async function changerStatutExpedition(
 
   const valides = Object.values(STATUT_LIVRAISON) as string[];
   if (!expeditionId || !valides.includes(statut)) {
-    return { error: "Statut invalide." };
+    return { error: await err("statutInvalide") };
   }
 
   const { data: exp } = await admin
@@ -498,7 +501,7 @@ export async function changerStatutExpedition(
     .select("client_id, numero_suivi, statut")
     .eq("id", expeditionId)
     .single();
-  if (!exp) return { error: "Expédition introuvable." };
+  if (!exp) return { error: await err("expeditionIntrouvable") };
 
   // Le cycle était libre : un colis livré pouvait repasser en « enregistrée »,
   // ou sauter le transit. Chaque changement écrivant une ligne d'historique,
@@ -507,9 +510,10 @@ export async function changerStatutExpedition(
   if (exp.statut === statut) return { success: true };
   if (!transitionAutorisee(exp.statut, statut)) {
     return {
-      error: `Passage impossible de « ${
-        STATUT_LIVRAISON_LABELS[exp.statut] ?? exp.statut
-      } » à « ${STATUT_LIVRAISON_LABELS[statut] ?? statut} ».`,
+      error: await err("passageImpossible", {
+        de: STATUT_LIVRAISON_LABELS[exp.statut] ?? exp.statut,
+        vers: STATUT_LIVRAISON_LABELS[statut] ?? statut,
+      }),
     };
   }
 
@@ -552,22 +556,22 @@ export async function ajusterPrixExpedition(
   const nouveauPrix = Number(formData.get("prix") as string);
   const motif = ((formData.get("motif") as string) || "").trim();
 
-  if (!expeditionId) return { error: "Expédition invalide." };
+  if (!expeditionId) return { error: await err("expeditionInvalide") };
   if (!Number.isFinite(nouveauPrix) || nouveauPrix <= 0) {
-    return { error: "Le prix doit être un montant positif." };
+    return { error: await err("lePrixDoitEtreUnMontant") };
   }
-  if (!motif) return { error: "Indiquez le motif de l'ajustement." };
+  if (!motif) return { error: await err("indiquezLeMotifDeLAjustement") };
 
   const { data: exp } = await admin
     .from("expeditions")
     .select("client_id, numero_suivi, prix, statut")
     .eq("id", expeditionId)
     .single();
-  if (!exp) return { error: "Expédition introuvable." };
+  if (!exp) return { error: await err("expeditionIntrouvable") };
 
   const ajustable: string[] = [STATUT_LIVRAISON.creee, STATUT_LIVRAISON.priseEnCharge];
   if (!ajustable.includes(exp.statut)) {
-    return { error: "Le prix ne peut plus être ajusté une fois le colis en transit." };
+    return { error: await err("lePrixNePeutPlusEtre") };
   }
 
   const ancienPrix = Number(exp.prix);
@@ -622,18 +626,18 @@ export async function cloturerEchecLivraison(
 
   const expeditionId = formData.get("expedition_id") as string;
   const motif = ((formData.get("motif") as string) || "").trim();
-  if (!expeditionId) return { error: "Expédition invalide." };
-  if (!motif) return { error: "Indiquez le motif de la clôture." };
+  if (!expeditionId) return { error: await err("expeditionInvalide") };
+  if (!motif) return { error: await err("indiquezLeMotifDeLaCloture") };
 
   const { data: exp } = await admin
     .from("expeditions")
     .select("statut, client_id, numero_suivi, valeur_declaree, indemnisation_montant")
     .eq("id", expeditionId)
     .single();
-  if (!exp) return { error: "Expédition introuvable." };
+  if (!exp) return { error: await err("expeditionIntrouvable") };
 
   if (exp.statut !== STATUT_LIVRAISON.echecLivraison) {
-    return { error: "Seule une expédition en échec peut être clôturée ainsi." };
+    return { error: await err("seuleUneExpeditionEnEchecPeut") };
   }
 
   const { data: paiement } = await admin
@@ -697,7 +701,7 @@ export async function cloturerEchecLivraison(
     } else {
       // Remboursé, remboursement déjà requis, ou déjà clos : le sort du
       // paiement est arrêté, le redire l'abîmerait.
-      return { error: "Le paiement de cet envoi est déjà instruit." };
+      return { error: await err("lePaiementDeCetEnvoiEst") };
     }
   }
 
@@ -734,7 +738,7 @@ export async function annulerExpeditionParClient(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non authentifié." };
+  if (!user) return { error: await err("nonAuthentifie") };
 
   const admin = getAdmin();
   const { data: exp } = await admin
@@ -743,12 +747,12 @@ export async function annulerExpeditionParClient(
     .eq("id", expeditionId)
     .single();
 
-  if (!exp) return { error: "Expédition introuvable." };
-  if (exp.client_id !== user.sub) return { error: "Cet envoi n'est pas le vôtre." };
+  if (!exp) return { error: await err("expeditionIntrouvable") };
+  if (exp.client_id !== user.sub) return { error: await err("cetEnvoiNEstPasLe") };
 
   if (exp.statut !== STATUT_LIVRAISON.creee) {
     return {
-      error: "Le colis est déjà pris en charge. Contactez-nous pour l'annuler.",
+      error: await err("leColisEstDejaPrisEn"),
     };
   }
 
@@ -774,7 +778,7 @@ export async function annulerExpeditionParClient(
     .eq("statut", STATUT_LIVRAISON.creee);
 
   if (error) return { error: error.message };
-  if (!count) return { error: "Le colis a changé d'état entre-temps. Rechargez la page." };
+  if (!count) return { error: await err("leColisAChangeDEtat") };
 
   const { data: paiement } = await admin
     .from("paiements")
