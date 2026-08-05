@@ -111,6 +111,54 @@ export const fr = {
     autreDate: "Autre date",
   },
 
+  /** L'espace client : profil, vérification d'identité, favoris. */
+  espaceClient: {
+    aucunFavori: "Vous n'avez pas encore de favoris.",
+    soumettreDocuments: "Vous devez soumettre une pièce d'identité et un permis de conduire pour pouvoir effectuer une réservation.",
+    documentsEnVerificationLong: "Vos documents sont en cours de vérification par notre équipe. Vous recevrez une notification dès qu'ils seront traités.",
+    connexionProfil: "Connectez-vous pour accéder à votre profil.",
+    motDePasseModifie: "Votre mot de passe a été modifié avec succès.",
+    voirMesReservations: "Voir mes réservations →",
+    seDeconnecter: "Se déconnecter",
+    pieceIdentite: "Pièce d'identité",
+    permisConduire: "Permis de conduire",
+    apercuPieceIdentite: "Aperçu pièce d'identité",
+    apercuPermis: "Aperçu permis de conduire",
+
+    pieceSoumise: "Pièce d'identité soumise",
+    permisSoumis: "Permis de conduire soumis",
+    motif: "Motif :",
+    documentsEnVerification: "Vos documents sont en cours de vérification par notre équipe.",
+    documentsRejetes: "Vos documents ont été rejetés. Veuillez les soumettre à nouveau.",
+    soumettreANouveau: "Soumettre à nouveau",
+    identiteVerifiee: "Votre identité est vérifiée. Vous pouvez effectuer des réservations.",
+    documentsEnvoyes:
+      "Vos documents ont été envoyés avec succès. Notre équipe les vérifiera dans les plus brefs délais.",
+    motifRejet: "Motif du rejet :",
+    soumettreCorriges: "Veuillez soumettre à nouveau vos documents corrigés.",
+    // La suppression de compte : dire ce qu'elle détruit, et sous quel régime.
+    supprimerCompte: "Supprimer mon compte",
+    suppressionIrreversible:
+      "Cette action est irréversible. Toutes vos données personnelles seront définitivement effacées conformément au RGPD.",
+
+    verificationIdentite: "Vérification d'identité",
+    // Une phrase entière, pas un morceau autour d'un <strong> : l'anglais ne
+    // met pas l'accent au même endroit, et une phrase en trois bouts ne se
+    // traduit pas — c'est le même principe qu'au tunnel de paiement.
+    renseignerNaissance:
+      "Vous devez renseigner votre date de naissance avant de soumettre vos documents. L'âge minimum requis est de {age} ans.",
+    completerProfil: "Compléter mon profil",
+    ageMinimum:
+      "Vous devez avoir au moins {age} ans pour soumettre vos documents et effectuer une réservation.",
+
+    pasDePhoto: "Pas de photo",
+    vehicules: "Véhicules",
+    parcourirVehicules: "Parcourir les véhicules",
+    lesBiensImmobiliers: "les biens immobiliers",
+    montantEstime:
+      "Montant estimé : {montant} FCFA — à régler au bureau lors de votre rendez-vous.",
+  },
+
   paiement: {
     carte: "Carte",
     mobileMoney: "Mobile Money",
@@ -170,6 +218,17 @@ export const fr = {
 
   /** Le catalogue de véhicules, ses filtres et la fiche d'un véhicule. */
   transport: {
+    flottePremium: "Flotte de véhicules premium",
+    assure: "Assuré",
+    annee: "Année",
+    boite: "Boîte",
+    kilometrage: "Kilométrage",
+    pasEncoreDisponible: "Ce véhicule n'est pas encore disponible à la location ou à la vente.",
+    preferezAcheter: "Vous préférez l'acheter ? →",
+    demandeAchatSansEngagement: "Vous envoyez une demande d'achat (sans engagement).",
+    equipeConfirmePrix: "Notre équipe confirme le prix final et le montant de l'acompte.",
+    reglerAcompte: "Vous réglez l'acompte pour réserver le véhicule.",
+    faireDemandeAchat: "Faire une demande d'achat",
     heroLede: "Découvrez nos véhicules d'exception pour vos déplacements.",
     grilleLede: "Cliquez sur un véhicule pour le réserver ou faire une demande d'achat.",
     rechercher: "Rechercher marque, modèle…",
@@ -252,6 +311,23 @@ export const fr = {
 
   /** La livraison : la page de présentation et le formulaire de commande. */
   livraison: {
+    etapeCommandez: "Commandez",
+    etapePayezTitre: "Payez",
+    etapeCollecte: "Nous collectons",
+    etapeLivraison: "Livraison",
+    petitsColis: "Petits colis",
+    colisMoyens: "Colis moyens",
+    grosColis: "Gros colis",
+    coursesCommissions: "Courses & commissions",
+    etapeChoisissezDesc: "Choisissez votre mode et remplissez les détails de livraison en ligne.",
+    etapePayezDesc: "Réglez en ligne par carte ou Mobile Money, en toute sécurité.",
+    etapeCollecteDesc: "Un coursier récupère votre colis à l'adresse indiquée.",
+    etapeLivraisonDesc: "Votre colis est livré au destinataire, rapidement et en sécurité.",
+    categorieDocuments: "Documents, vêtements, accessoires — jusqu'à 5 kg",
+    categorieElectronique: "Équipements électroniques, livres, cadeaux — jusqu'à 20 kg",
+    categorieVolumineux: "Cartons, meubles, équipements — jusqu'à 100 kg",
+    categorieCourses: "Achats en magasin, retrait de documents, courses diverses",
+    delaiStandardCoefficient: "Les tarifs ci-dessus sont ceux du délai standard. Un délai plus court s'applique en coefficient :",
     heroTitre: "Livraison de colis & Coursier",
     heroLede: "Envois rapides et sécurisés à Abidjan et partout en Côte d'Ivoire, livrés porte-à-porte.",
     heroAlt: "Livraison de colis",
@@ -303,6 +379,9 @@ export const fr = {
 
   /** Le textile : le catalogue de pagnes et la demande de devis. */
   textile: {
+    devisSuite: "Nous consultons nos fournisseurs et revenons vers vous avec un prix ferme. Vous le retrouverez dans « Mes réservations », et vous serez prévenu dès qu'il est prêt.",
+    devisSansEngagement: "Un devis n'engage à rien : vous décidez après l'avoir vu.",
+    aucunTypeProposé: "Aucun type de pagne n'est proposé pour le moment. Contactez-nous directement.",
     heroLede: "Uniwax et wax hollandais. Dites-nous ce que vous cherchez — nous consultons nos fournisseurs et vous répondons avec un prix ferme.",
     lePagneQuIlVousFaut: "Le pagne qu'il vous faut",
     notreCatalogue: "Notre catalogue",
@@ -483,6 +562,23 @@ export const fr = {
 
   /** L'assistance voyages : visas, dossiers d'études, billets d'avion. */
   assistance: {
+    etapeSoumettez: "Soumettez votre demande",
+    etapeContact: "Notre équipe vous contacte",
+    etapeSuivi: "Suivi du dossier",
+    voyagesEtudes: "Voyages et études",
+    etapeSoumettezDesc: "Choisissez une prestation et envoyez votre demande en ligne, sans engagement.",
+    etapeContactDesc: "Nous étudions votre dossier et convenons des modalités et du règlement.",
+    etapeSuiviDesc: "Nous assurons le suivi de votre dossier jusqu'à l'obtention du visa.",
+    douPartezVous: "D'où partez-vous ?",
+    bebeSurGenoux: "Un bébé voyage sur les genoux d'un adulte. Au-delà de {max} voyageurs, contactez-nous pour un tarif groupe.",
+    passeportExigeCedeao: "Même vers la CEDEAO, le passeport est exigé par les compagnies desservant Abidjan, dont Air Côte d'Ivoire. La carte d'identité CEDEAO ne suffit pas à l'embarquement.",
+    dateExpiration: "Date d'expiration",
+    joindrePagePasseport: "Joindre la page du passeport nous évite une faute de saisie sur un nom translittéré. Ce n'est pas obligatoire : les champs ci-dessus suffisent.",
+    certificatFievreJaune: "Je dispose d'un certificat de vaccination fièvre jaune valide",
+    fievreJauneObligatoire: "Le vaccin contre la fièvre jaune est obligatoire pour tout voyageur de 9 mois et plus entrant en Côte d'Ivoire. Sans certificat à l'arrivée, la vaccination est faite à l'aéroport (7 000 FCFA). De nombreuses destinations l'exigent aussi depuis Abidjan.",
+    autorisationParentaleCase: "Je dispose de l'autorisation parentale pour les mineurs",
+    mineurAutorisation: "Tout mineur voyageant sans ses deux parents doit présenter une autorisation parentale légalisée à la mairie, et ce jusqu'à sa majorité.",
+    aucunCreneauDepot: "Aucun créneau de dépôt n'est ouvert pour le moment. Contactez-nous pour convenir d'une date.",
     heroLede: "Études en Chine, voyages en Europe — nous montons et suivons votre dossier de bout en bout.",
     billetLede: "Dites-nous où et quand vous voulez partir : nous cherchons le vol et vous envoyons un devis. Le règlement se fait en ligne ou à notre bureau, comme vous préférez.",
     paysLede: "Les pays que nous couvrons, avec le tarif de départ de notre accompagnement — donné à titre indicatif.",
@@ -535,6 +631,7 @@ export const fr = {
   },
 
   immobilier: {
+    fraisVisiteNonRemboursables: "À régler maintenant pour réserver votre visite. Ces frais couvrent l'organisation de la visite et ne sont pas remboursables.",
     heroLede: "Vente, location, estimation — nous vous accompagnons à chaque étape.",
     offresLede: "Nos offres du moment, mises à jour en continu.",
     trouvezBien: "Trouvez le bien de vos rêves",
@@ -674,6 +771,140 @@ export const fr = {
       "Votre réservation pour le {vehicule} est en attente de validation par notre équipe. Vous recevrez une notification dès qu'elle sera confirmée.",
     voirMesReservations: "Voir mes réservations",
     retourCatalogue: "Retour au catalogue",
+  },
+
+  /** Ce qui reste du site public : accueil, contact, avis, blog, favoris. */
+  divers: {
+    modeles: "Modèles",
+    metiers: "Métiers",
+    adresse: "Adresse",
+    nonVerifie: "Non vérifié",
+    enAttenteVerification: "En attente de vérification",
+    verifie: "Vérifié",
+    rejete: "Rejeté",
+    slideLocationPremium: "Location de véhicules premium",
+    slideTransportChauffeur: "Transport avec chauffeur",
+    slideLivraisonExpress: "Livraison de colis express",
+    slideImmobilier: "Immobilier — achat, vente, location",
+    slideVisasEtudes: "Visas, études & voyages",
+    slideVehiculesLuxe: "Véhicules de luxe",
+    altFlottePremium: "Flotte premium — Porsche Panamera",
+    altTransportChauffeur: "Transport avec chauffeur — Rolls Royce",
+    altLivraison: "Service de livraison de colis",
+    altImmobilier: "Projets immobiliers premium",
+    altVoyages: "Assistance migration, visa et étude",
+    altLuxe: "Véhicules de luxe",
+    propositionSoumiseProprietaire:
+      "La proposition est soumise au propriétaire, qui seul l'applique. Un coefficient de zone multiplie un prix facturé : aucune valeur ne change tant qu'il n'a pas tranché.",
+    groupPhoebeCoteIvoire: "GROUP PHOEBE — Côte d'Ivoire",
+    excellenceChaqueEtape: "L'excellence à chaque étape de votre vie",
+    cinqMetiersExigence: "Transport, immobilier, assistance voyages, livraison et textile — cinq métiers, une même exigence, partout en Côte d'Ivoire.",
+    reserverSimple: "Réserver n'a jamais été aussi simple — en quatre étapes.",
+    accepteCgv: "J'ai lu et j'accepte les {cgv} et la {confidentialite}.",
+    valeurActuelle: "Valeur actuelle de {champ} pour {zone} :",
+    passagesACompleter:
+      "Les passages marqués [À COMPLÉTER] attendent des informations que seule l'entreprise détient.",
+    texteNonValide:
+      "Ce texte n'engage pas encore GROUP PHOEBE et doit être validé avant publication.",
+    mesPieces: "Mes pièces ({n})",
+    ajouterPiece: "Ajouter une pièce",
+    typePiece: "Type de pièce…",
+    rendezVousDepot: "Rendez-vous de dépôt",
+    rendezVousEnregistre: "Rendez-vous enregistré. Vous le retrouverez ici.",
+    prendreRendezVous: "Prendre rendez-vous pour déposer mon dossier",
+    choisirDateHoraire: "Choisissez une date, puis un horaire",
+    plusDeCreneau: "Plus de créneau ce jour-là. Choisissez une autre date.",
+    envoye: "Envoyé.",
+    reponseEnregistree: "Réponse enregistrée.",
+    creneauConvient: "Ce créneau vous convient ?",
+    confirmerRefus: "Confirmer le refus",
+    verifierDisponibilite: "Vérifier la disponibilité",
+    aucunePosition: "Aucune position enregistrée",
+    positionMiseAJour: "Position mise à jour",
+    proposerCoefficientZone: "Proposer une modification de coefficient zone",
+    propositionEnvoyee: "Proposition envoyée.",
+    envoyerProposition: "Envoyer la proposition",
+    raisonModification: "Raison de la modification",
+    derniereMiseAJour: "Dernière mise à jour : {date}",
+    passagesMarques: "Les passages marqués",
+    // ─── Composants transverses ────────────────────────────────────────────
+    motDePasse: "Mot de passe",
+    changerMotDePasseIntro: "Changez le mot de passe de votre compte.",
+    changerMonMotDePasse: "Changer mon mot de passe",
+    motDePasseActuel: "Mot de passe actuel",
+    nouveauMotDePasse: "Nouveau mot de passe",
+    confirmerNouveauMotDePasse: "Confirmer le nouveau mot de passe",
+    enregistrerNouveauMotDePasse: "Enregistrer le nouveau mot de passe",
+    exempleMotDePasseActuel: "Votre mot de passe actuel",
+    exempleHuitCaracteres: "8 caractères minimum",
+    exempleRepetez: "Répétez le nouveau mot de passe",
+    role: "Rôle",
+    supprimerCompteConfirmation: "Supprimer votre compte ?",
+    seDeconnecterConfirmation: "Se déconnecter ?",
+    changerTheme: "Changer de thème",
+    discuterWhatsApp: "Discuter sur WhatsApp",
+    ouvrirOnglet: "Ouvrir dans un onglet",
+    toutMarquerLu: "Tout marquer lu",
+    // Les engagements et les étapes de l'accueil : le tableau vivait au niveau
+    // du module, donc figé au chargement du fichier. Il se construit
+    // maintenant dans le composant, à partir de la langue affichée.
+    paiementSecuriseTitre: "Paiement sécurisé",
+    paiementSecuriseDesc: "Carte bancaire et Mobile Money (Orange, MTN, Wave) — transactions chiffrées.",
+    etapeChoisissez: "Choisissez",
+    etapeChoisissezDesc: "Parcourez nos services et trouvez ce qu'il vous faut.",
+    etapeReservez: "Réservez",
+    etapeReservezDesc: "Indiquez vos dates, votre destination et vos préférences.",
+    etapePayez: "Payez en sécurité",
+    etapePayezDesc: "Réglez par carte ou Mobile Money en toute confiance.",
+    etapeProfitez: "Profitez",
+    etapeProfitezDesc: "Nous nous occupons du reste. Bonne route !",
+    // ─── Accueil ───────────────────────────────────────────────────────────
+    cinqMetiers: "Cinq métiers complémentaires, une même signature de qualité.",
+    pourquoiNous: "Pourquoi nous choisir",
+    pourquoiNousLede: "Un service pensé pour votre tranquillité, du premier clic à la prestation.",
+    couvertureNationale: "Couverture nationale",
+    couvertureNationaleDesc: "Abidjan et tout l'intérieur de la Côte d'Ivoire.",
+    chauffeursPro: "Chauffeurs professionnels",
+    chauffeursProDesc: "Option chauffeur expérimenté pour des trajets sereins.",
+    assistanceDediee: "Assistance dédiée",
+    assistanceDedieeDesc: "Une équipe à votre écoute pour chaque réservation.",
+    contactezNous: "Contactez-nous",
+    choisirService: "Choisir un service",
+
+    // ─── Contact ───────────────────────────────────────────────────────────
+    parlonsProjet: "Parlons de votre projet",
+    parlonsProjetLede: "Une question, un devis, une collaboration ? Nous sommes à votre écoute.",
+    nosCoordonnees: "Nos coordonnées",
+    suivezNous: "Suivez-nous",
+    messageEnvoye: "Message envoyé",
+    messageRecu:
+      "Merci ! Notre équipe a bien reçu votre message et vous recontactera au plus vite.",
+    prenom: "Prénom",
+    exemplePrenom: "Kouamé",
+    exempleEmail: "vous@exemple.com",
+    exempleMessage: "Décrivez votre demande…",
+
+    // ─── Avis, blog, favoris ───────────────────────────────────────────────
+    cequeClientsDisent: "Ce que nos clients disent",
+    avisLede:
+      "Des retours authentiques de nos clients sur nos services de transport, immobilier, assistance et livraison.",
+    aucunAvis: "Aucun avis pour le moment.",
+    reponseDeGroupPhoebe: "Réponse de GROUP PHOEBE",
+    avisPublieApresRelecture: "Merci — votre avis sera publié après relecture.",
+    votreExperience: "Votre expérience…",
+    blogLede:
+      "Conseils pratiques, guides et actualités pour vous accompagner dans vos projets de transport, immobilier, assistance et livraison.",
+    aucunArticle: "Aucun article pour le moment.",
+    pasDePhoto: "Pas de photo",
+    parcourirVehicules: "Parcourir les véhicules",
+    lesBiensImmobiliers: "les biens immobiliers",
+    numeroSuiviObligatoire: "Numéro de suivi (obligatoire)",
+    horsLigneBanniere: "Vous êtes hors ligne — les pages consultées restent accessibles",
+
+    // ─── CGV ───────────────────────────────────────────────────────────────
+    conditionsVente: "conditions générales de vente",
+    etLa: "et la",
+    politiqueConfidentialite: "politique de confidentialité",
   },
 
   langue: {

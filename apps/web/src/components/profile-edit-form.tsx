@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import { updateProfile, type AuthState } from "@/app/actions/auth";
 import { SubmitButton } from "./submit-button";
 import { Obligatoire } from "@/components/ui/obligatoire"
+import { useT } from "@/lib/langue-context"
 
 export function ProfileEditForm({
   nom,
@@ -18,6 +19,7 @@ export function ProfileEditForm({
   email: string | null;
   role: string;
 }) {
+  const t = useT()
   const [editing, setEditing] = useState(false);
   const [state, action] = useActionState(updateProfile, {} as AuthState);
 
@@ -47,14 +49,14 @@ export function ProfileEditForm({
             </div>
           )}
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wider text-public-text-muted">Téléphone</dt>
+            <dt className="text-xs font-medium uppercase tracking-wider text-public-text-muted">{t.auth.telephone}</dt>
             <dd className="mt-1 font-medium text-public-text">
               {telephone || "—"}
             </dd>
           </div>
           <div>
             <dt className="text-xs font-medium uppercase tracking-wider text-public-text-muted">
-              Date de naissance
+              {t.auth.dateNaissance}
             </dt>
             <dd className="mt-1 font-medium text-public-text">
               {dateNaissance
@@ -63,7 +65,7 @@ export function ProfileEditForm({
             </dd>
           </div>
           <div>
-            <dt className="text-xs font-medium uppercase tracking-wider text-public-text-muted">Rôle</dt>
+            <dt className="text-xs font-medium uppercase tracking-wider text-public-text-muted">{t.divers.role}</dt>
             <dd className="font-medium capitalize text-public-text">
               {role}
             </dd>
@@ -129,7 +131,7 @@ export function ProfileEditForm({
             htmlFor="telephone"
             className="mb-1.5 block text-sm font-medium text-public-text"
           >
-            Téléphone
+            {t.auth.telephone}
           </label>
           <input
             id="telephone"
@@ -147,7 +149,7 @@ export function ProfileEditForm({
             htmlFor="date_naissance"
             className="mb-1.5 block text-sm font-medium text-public-text"
           >
-            Date de naissance
+            {t.auth.dateNaissance}
           </label>
           <input
             id="date_naissance"

@@ -25,12 +25,10 @@ export default async function ConfirmationTextile() {
             {t.textile.demandePartie}
           </h1>
           <p className="mt-4 text-sm text-public-text-muted">
-            Nous consultons nos fournisseurs et revenons vers vous avec un prix
-            ferme. Vous le retrouverez dans « Mes réservations », et vous serez
-            prévenu dès qu&apos;il est prêt.
+            {t.textile.devisSuite}
           </p>
           <p className="mt-3 text-xs text-public-text-faint">
-            Un devis n&apos;engage à rien : vous décidez après l&apos;avoir vu.
+            {t.textile.devisSansEngagement}
           </p>
           <Link
             href="/compte/reservations"

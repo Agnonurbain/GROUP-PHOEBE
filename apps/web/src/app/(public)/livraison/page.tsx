@@ -31,19 +31,6 @@ export const metadata: Metadata = {
   },
 }
 
-const ETAPES = [
-  { title: "Commandez", desc: "Choisissez votre mode et remplissez les détails de livraison en ligne." },
-  { title: "Payez", desc: "Réglez en ligne par carte ou Mobile Money, en toute sécurité." },
-  { title: "Nous collectons", desc: "Un coursier récupère votre colis à l'adresse de collecte." },
-  { title: "Livraison", desc: "Votre colis est livré au destinataire, rapidement et en sécurité." },
-]
-
-const TYPES_COLIS = [
-  { title: "Petits colis", desc: "Documents, vêtements, accessoires — jusqu'à 5 kg" },
-  { title: "Colis moyens", desc: "Équipements électroniques, livres, cadeaux — jusqu'à 15 kg" },
-  { title: "Gros colis", desc: "Cartons, meubles, équipements — jusqu'à 50 kg" },
-  { title: "Courses & commissions", desc: "Achats en magasin, retrait de documents, courses diverses" },
-]
 
 export default async function Livraison({
   searchParams,
@@ -51,6 +38,22 @@ export default async function Livraison({
   searchParams: Promise<{ echec?: string }>
 }) {
   const t = await getT()
+
+  // Construits dans le composant : un tableau de constantes au niveau du
+  // module est figé au chargement du fichier, donc dans une seule langue.
+  const ETAPES = [
+    { title: t.livraison.etapeCommandez, desc: t.livraison.etapeChoisissezDesc },
+    { title: t.livraison.etapePayezTitre, desc: t.livraison.etapePayezDesc },
+    { title: t.livraison.etapeCollecte, desc: t.livraison.etapeCollecteDesc },
+    { title: t.livraison.etapeLivraison, desc: t.livraison.etapeLivraisonDesc },
+  ]
+
+  const TYPES_COLIS = [
+    { title: t.livraison.petitsColis, desc: t.livraison.categorieDocuments },
+    { title: t.livraison.colisMoyens, desc: t.livraison.categorieElectronique },
+    { title: t.livraison.grosColis, desc: t.livraison.categorieVolumineux },
+    { title: t.livraison.coursesCommissions, desc: t.livraison.categorieCourses },
+  ]
   const { echec } = await searchParams
   const { moyens, grilleMoyens, coefficientsMode } = await getTarifsLivraison()
   const maxKg = chargeMaxFlotte(moyens)
@@ -119,7 +122,7 @@ export default async function Livraison({
                     <th key={m.cle} scope="col" className="py-4 pr-6 text-sm font-semibold text-public-text">
                       {m.label}
                       <span className="mt-1 block text-xs font-normal text-public-text-faint">
-                        jusqu&apos;à {m.chargeMaxKg} kg
+                        {remplir(t.livraison.jusquA, { n: m.chargeMaxKg })}
                       </span>
                     </th>
                   ))}
@@ -150,8 +153,7 @@ export default async function Livraison({
           <div className="mt-6 rounded-xl border border-public-border bg-public-bg-card p-5">
             <p className="text-sm font-semibold text-public-text">{t.livraison.delaiSouhaite}</p>
             <p className="mt-1 text-xs text-public-text-muted">
-              Les tarifs ci-dessus sont ceux du délai standard. Un délai plus court
-              s&apos;applique en coefficient :
+              {t.livraison.delaiStandardCoefficient}
             </p>
             <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
               {MODES_LIVRAISON.map((mode) => (

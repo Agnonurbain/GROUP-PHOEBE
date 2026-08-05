@@ -11,6 +11,7 @@ import { DeleteAccountButton } from "@/components/delete-account-button"
 import { LogoutButton } from "@/components/logout-button"
 import { Button, Card } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
+import { getT } from "@/lib/i18n/server"
 
 export const metadata: Metadata = {
   title: "Mon Profil",
@@ -26,6 +27,7 @@ export default async function CompteProfilPage({
 }: {
   searchParams: Promise<{ mdp?: string }>
 }) {
+  const t = await getT()
   const { mdp } = await searchParams
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
@@ -35,7 +37,7 @@ export default async function CompteProfilPage({
     return (
       <div className="px-6 py-20 text-center">
         <h1 className="text-4xl font-bold text-public-text">Mon Profil</h1>
-        <p className="mt-4 text-sm text-public-text-muted">Connectez-vous pour accéder à votre profil.</p>
+        <p className="mt-4 text-sm text-public-text-muted">{t.espaceClient.connexionProfil}</p>
         <Link href="/connexion">
           <Button variant="default" className="mt-6">Se connecter</Button>
         </Link>
@@ -77,7 +79,7 @@ export default async function CompteProfilPage({
   return (
     <div className="px-6 py-10">
       <div className="mb-6">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t.commun.retourAccueil} />
       </div>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
@@ -85,7 +87,7 @@ export default async function CompteProfilPage({
           <p className="mt-1 text-sm text-public-text-muted">{profile.nom}</p>
         </div>
         <LogoutButton
-          label="Se déconnecter"
+          label={t.espaceClient.seDeconnecter}
           className="inline-flex items-center gap-2 rounded-lg border border-error/40 px-4 py-2 text-sm font-medium text-error transition-all hover:bg-error hover:text-white hover:shadow-md active:scale-[0.98] max-sm:min-h-11"
         />
       </div>
@@ -101,7 +103,7 @@ export default async function CompteProfilPage({
 
         {mdp === "ok" && (
           <p role="status" className="rounded-2xl border border-accent-green/20 bg-accent-green/5 px-5 py-3.5 text-sm font-medium text-accent-green">
-            Votre mot de passe a été modifié avec succès.
+            {t.espaceClient.motDePasseModifie}
           </p>
         )}
 
@@ -110,9 +112,9 @@ export default async function CompteProfilPage({
         {isClient && (
           <Card>
             <div className="flex items-center justify-between">
-              <h2 className="text-3xl font-semibold text-public-text">Mes réservations</h2>
+              <h2 className="text-3xl font-semibold text-public-text">{t.compte.titre}</h2>
               <a href="/compte/reservations" className="text-sm font-medium text-accent-gold hover:text-accent-gold-hover transition-colors">
-                Voir mes réservations →
+                {t.espaceClient.voirMesReservations}
               </a>
             </div>
           </Card>
@@ -122,7 +124,7 @@ export default async function CompteProfilPage({
           <Card>
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="text-3xl font-semibold text-public-text">Vérification d&apos;identité</h2>
+                <h2 className="text-3xl font-semibold text-public-text">{t.espaceClient.verificationIdentite}</h2>
                 <div className="mt-1.5">
                   <VerificationBadge statut={statut} />
                 </div>
@@ -132,8 +134,7 @@ export default async function CompteProfilPage({
             {statut === "non_verifie" && (
               <div className="mt-4 space-y-4">
                 <p className="text-sm text-public-text-muted">
-                  Vous devez soumettre une pièce d&apos;identité et un permis de conduire
-                  pour pouvoir effectuer une réservation.
+                  {t.espaceClient.soumettreDocuments}
                 </p>
                 <a href="/compte/verification">
                   <Button variant="default">Soumettre mes documents</Button>
@@ -143,16 +144,16 @@ export default async function CompteProfilPage({
             {statut === "documents_soumis" && (
               <div className="mt-4 space-y-2">
                 <p className="text-sm text-public-text-muted">
-                  Vos documents sont en cours de vérification par notre équipe.
+                  {t.espaceClient.documentsEnVerification}
                 </p>
                 {(pieceUrl || permisUrl) && (
                   <div className="flex gap-4 text-sm">
                     {pieceUrl && (
-                      <DocumentPreview url={pieceUrl} label="Pièce d'identité" isPdf={pieceIsPdf}
+                      <DocumentPreview url={pieceUrl} label={t.espaceClient.pieceIdentite} isPdf={pieceIsPdf}
                         className="inline-flex items-center gap-1.5 font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover" />
                     )}
                     {permisUrl && (
-                      <DocumentPreview url={permisUrl} label="Permis de conduire" isPdf={permisIsPdf}
+                      <DocumentPreview url={permisUrl} label={t.espaceClient.permisConduire} isPdf={permisIsPdf}
                         className="inline-flex items-center gap-1.5 font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover" />
                     )}
                   </div>
@@ -162,20 +163,20 @@ export default async function CompteProfilPage({
             {statut === "rejete" && (
               <div className="mt-4 space-y-2">
                 <p className="text-sm text-[#EF4444]">
-                  Vos documents ont été rejetés. Veuillez les soumettre à nouveau.
+                  {t.espaceClient.documentsRejetes}
                 </p>
                 <a href="/compte/verification">
-                  <Button variant="default" className="bg-accent-orange text-[#0A0A0A] hover:bg-accent-orange-hover">Soumettre à nouveau</Button>
+                  <Button variant="default" className="bg-accent-orange text-[#0A0A0A] hover:bg-accent-orange-hover">{t.espaceClient.soumettreANouveau}</Button>
                 </a>
                 {profile.motif_rejet && (
                   <p className="text-sm text-public-text-muted">
-                    <strong>Motif :</strong> {profile.motif_rejet}
+                    <strong>{t.espaceClient.motif}</strong> {profile.motif_rejet}
                   </p>
                 )}
                 {(pieceUrl || permisUrl) && (
                   <div className="flex gap-4 text-sm">
                     {pieceUrl && (
-                      <DocumentPreview url={pieceUrl} label="Pièce d'identité soumise" isPdf={pieceIsPdf}
+                      <DocumentPreview url={pieceUrl} label={t.espaceClient.pieceSoumise} isPdf={pieceIsPdf}
                         className="inline-flex items-center gap-1.5 font-medium text-public-text-muted underline underline-offset-2 hover:text-public-text" />
                     )}
                     {permisUrl && (
@@ -189,16 +190,16 @@ export default async function CompteProfilPage({
             {statut === "verifie" && (
               <div className="mt-4 space-y-2">
                 <p className="text-sm font-medium text-accent-green">
-                  Votre identité est vérifiée. Vous pouvez effectuer des réservations.
+                  {t.espaceClient.identiteVerifiee}
                 </p>
                 {(pieceUrl || permisUrl) && (
                   <div className="flex gap-4 text-sm">
                     {pieceUrl && (
-                      <DocumentPreview url={pieceUrl} label="Pièce d'identité" isPdf={pieceIsPdf}
+                      <DocumentPreview url={pieceUrl} label={t.espaceClient.pieceIdentite} isPdf={pieceIsPdf}
                         className="inline-flex items-center gap-1.5 font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover" />
                     )}
                     {permisUrl && (
-                      <DocumentPreview url={permisUrl} label="Permis de conduire" isPdf={permisIsPdf}
+                      <DocumentPreview url={permisUrl} label={t.espaceClient.permisConduire} isPdf={permisIsPdf}
                         className="inline-flex items-center gap-1.5 font-medium text-accent-gold underline underline-offset-2 hover:text-accent-gold-hover" />
                     )}
                   </div>
@@ -220,10 +221,9 @@ export default async function CompteProfilPage({
         )}
 
         <div className="rounded-2xl border border-[rgba(239,68,68,0.15)] bg-[rgba(239,68,68,0.05)] p-6">
-          <h2 className="text-3xl font-semibold text-[#EF4444]">Supprimer mon compte</h2>
+          <h2 className="text-3xl font-semibold text-[#EF4444]">{t.espaceClient.supprimerCompte}</h2>
           <p className="mt-2 text-sm text-public-text-muted">
-            Cette action est irréversible. Toutes vos données personnelles seront définitivement effacées
-            conformément au RGPD.
+            {t.espaceClient.suppressionIrreversible}
           </p>
           <div className="mt-4">
             <DeleteAccountButton />

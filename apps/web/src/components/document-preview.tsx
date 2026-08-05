@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useT } from "@/lib/langue-context"
 
 // Aperçu inline d'un document (pièce d'identité, permis…) : image affichée dans
 // une modale, PDF rendu via une iframe (visionneuse native du navigateur).
@@ -16,6 +17,7 @@ export function DocumentPreview({
   /** Style du déclencheur (couleur adaptée au contexte clair/sombre). */
   className?: string
 }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -66,7 +68,7 @@ export function DocumentPreview({
               <span className="text-sm font-semibold text-phoebe-anthracite">{label}</span>
               <div className="flex items-center gap-3">
                 <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs font-medium text-phoebe-green underline hover:text-phoebe-green-deep">
-                  Ouvrir dans un onglet
+                  {t.divers.ouvrirOnglet}
                 </a>
                 <button
                   type="button"

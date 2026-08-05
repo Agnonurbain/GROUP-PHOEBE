@@ -1,17 +1,31 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
+import { useT } from "@/lib/langue-context";
 
-const slides = [
-  { src: "/images/hero-car.webp", alt: "Flotte premium — Porsche Panamera", label: "Location de véhicules premium" },
-  { src: "/images/hero-chauffeur.webp", alt: "Transport avec chauffeur — Rolls Royce", label: "Transport avec chauffeur" },
-  { src: "/images/hero-livraison.webp", alt: "Service de livraison de colis", label: "Livraison de colis express" },
-  { src: "/images/hero-immobilier.webp", alt: "Projets immobiliers premium", label: "Immobilier — achat, vente, location" },
-  { src: "/images/hero-voyages.webp", alt: "Assistance migration, visa et étude", label: "Visas, études & voyages" },
-  { src: "/images/hero-luxe.webp", alt: "Véhicules de luxe", label: "Véhicules de luxe" },
-];
+/** Les images et les CLÉS de leurs libellés — invariantes, donc hors composant. */
+const SOURCES = [
+  { src: "/images/hero-car.webp", alt: "altFlottePremium", label: "slideLocationPremium" },
+  { src: "/images/hero-chauffeur.webp", alt: "altTransportChauffeur", label: "slideTransportChauffeur" },
+  { src: "/images/hero-livraison.webp", alt: "altLivraison", label: "slideLivraisonExpress" },
+  { src: "/images/hero-immobilier.webp", alt: "altImmobilier", label: "slideImmobilier" },
+  { src: "/images/hero-voyages.webp", alt: "altVoyages", label: "slideVisasEtudes" },
+  { src: "/images/hero-luxe.webp", alt: "altLuxe", label: "slideVehiculesLuxe" },
+] as const;
+
 
 export function HeroSlideshow() {
+  const t = useT();
+
+  // Seuls les LIBELLÉS viennent du dictionnaire ; les sources restent au
+  // niveau du module. Tout mettre dans le composant rendait `SOURCES.length`
+  // instable d'un rendu à l'autre, donc dépendance des `useCallback`.
+  const slides = SOURCES.map((s) => ({
+    src: s.src,
+    alt: t.divers[s.alt],
+    label: t.divers[s.label],
+  }));
+
   const [current, setCurrent] = useState(0);
 
   /**
@@ -29,13 +43,13 @@ export function HeroSlideshow() {
   const [chargees, setChargees] = useState(2);
 
   const advance = useCallback(() => {
-    setCurrent((c) => (c + 1) % slides.length);
-    setChargees((n) => Math.min(slides.length, n + 1));
+    setCurrent((c) => (c + 1) % SOURCES.length);
+    setChargees((n) => Math.min(SOURCES.length, n + 1));
   }, []);
 
   const aller = useCallback((i: number) => {
     setCurrent(i);
-    setChargees((n) => Math.max(n, Math.min(slides.length, i + 2)));
+    setChargees((n) => Math.max(n, Math.min(SOURCES.length, i + 2)));
   }, []);
 
   // Redémarre le minuteur après une sélection manuelle (dépendance sur current)

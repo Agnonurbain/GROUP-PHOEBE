@@ -1,10 +1,12 @@
 "use client";
 
 import { whatsappHref } from "@/lib/contact";
+import { useT } from "@/lib/langue-context"
 
 /** Numéro piloté depuis /admin/tarifs. Sans numéro configuré, le bouton ne
  *  s'affiche pas : inutile d'envoyer un client vers un contact inexistant. */
 export function WhatsAppFloat({ whatsapp }: { whatsapp: string | null }) {
+  const t = useT()
   const href = whatsappHref(whatsapp, "Bonjour GROUP PHOEBE !");
   if (!href) return null;
 
@@ -14,7 +16,7 @@ export function WhatsAppFloat({ whatsapp }: { whatsapp: string | null }) {
       target="_blank"
       rel="noopener noreferrer"
       className="group fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-lg shadow-[#25D366]/30 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-[#25D366]/40 active:scale-95"
-      aria-label="Discuter sur WhatsApp"
+      aria-label={t.divers.discuterWhatsApp}
     >
       <svg
         width="28"

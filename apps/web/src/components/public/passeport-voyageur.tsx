@@ -88,7 +88,7 @@ function DeposerPasseport({
         }}
         className="w-full text-xs text-public-text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-accent-blue/10 file:px-3 file:py-2 file:text-xs file:font-medium file:text-accent-blue-on-dark"
       />
-      {etat === "envoi" && <p className="mt-1 text-[11px] text-public-text-muted">Envoi…</p>}
+      {etat === "envoi" && <p className="mt-1 text-[11px] text-public-text-muted">{t.commun.envoi}</p>}
       {etat === "ok" && (
         <p role="status" className="mt-1 text-[11px] text-accent-green">
           Document joint.
@@ -151,7 +151,7 @@ export function PasseportAccompagnant({
           />
         </div>
         <div>
-          <label htmlFor={`passager_passeport_expiration_${index}`} className={label}>Date d&apos;expiration<Obligatoire /></label>
+          <label htmlFor={`passager_passeport_expiration_${index}`} className={label}>{t.assistance.dateExpiration}<Obligatoire /></label>
           <input
             id={`passager_passeport_expiration_${index}`}
             name={`passager_passeport_expiration_${index}`}

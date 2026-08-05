@@ -63,35 +63,6 @@ const services = [
   },
 ]
 
-const engagements = [
-  {
-    title: "Paiement sécurisé",
-    desc: "Carte bancaire et Mobile Money (Orange, MTN, Wave) — transactions chiffrées.",
-    icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
-  },
-  {
-    title: "Couverture nationale",
-    desc: "Abidjan et tout l'intérieur de la Côte d'Ivoire.",
-    icon: <><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" /><circle cx="12" cy="10" r="3" /></>,
-  },
-  {
-    title: "Chauffeurs professionnels",
-    desc: "Option chauffeur expérimenté pour des trajets sereins.",
-    icon: <><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" /></>,
-  },
-  {
-    title: "Assistance dédiée",
-    desc: "Une équipe à votre écoute pour chaque réservation.",
-    icon: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
-  },
-]
-
-const etapes = [
-  { title: "Choisissez", desc: "Parcourez nos services et trouvez ce qu'il vous faut." },
-  { title: "Réservez", desc: "Indiquez vos dates, votre destination et vos préférences." },
-  { title: "Payez en sécurité", desc: "Réglez par carte ou Mobile Money en toute confiance." },
-  { title: "Profitez", desc: "Nous nous occupons du reste. Bonne route !" },
-]
 
 export default function HomePage({
   role = null,
@@ -103,13 +74,46 @@ export default function HomePage({
   modeleCount?: number
 }) {
   const t = useT()
+
+  // Construits ici et non au niveau du module : un tableau de constantes est
+  // figé au chargement du fichier, donc dans une seule langue.
+  const engagements = [
+    {
+      title: t.divers.paiementSecuriseTitre,
+      desc: t.divers.paiementSecuriseDesc,
+      icon: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />,
+    },
+    {
+      title: t.divers.couvertureNationale,
+      desc: t.divers.couvertureNationaleDesc,
+      icon: <><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 7 8 11.7z" /><circle cx="12" cy="10" r="3" /></>,
+    },
+    {
+      title: t.divers.chauffeursPro,
+      desc: t.divers.chauffeursProDesc,
+      icon: <><circle cx="12" cy="8" r="4" /><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1" /></>,
+    },
+    {
+      title: t.divers.assistanceDediee,
+      desc: t.divers.assistanceDedieeDesc,
+      icon: <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />,
+    },
+  ]
+
+  const etapes = [
+    { title: t.divers.etapeChoisissez, desc: t.divers.etapeChoisissezDesc },
+    { title: t.divers.etapeReservez, desc: t.divers.etapeReservezDesc },
+    { title: t.divers.etapePayez, desc: t.divers.etapePayezDesc },
+    { title: t.divers.etapeProfitez, desc: t.divers.etapeProfitezDesc },
+  ]
+
   const isGuest = role === null
   const isStaff = role === "operateur" || role === "proprietaire"
 
   const stats = [
-    { target: vehiculeCount, suffix: "", label: "Véhicules" },
-    { target: modeleCount, suffix: "", label: "Modèles" },
-    { target: 5, suffix: "", label: "Métiers" },
+    { target: vehiculeCount, suffix: "", label: t.espaceClient.vehicules },
+    { target: modeleCount, suffix: "", label: t.divers.modeles },
+    { target: 5, suffix: "", label: t.divers.metiers },
   ]
 
   return (
@@ -122,31 +126,31 @@ export default function HomePage({
             <ScrollReveal variant="fade-up">
               <p className="flex items-center justify-center gap-3 text-xs font-medium uppercase tracking-[0.25em] text-accent-gold">
                 <span aria-hidden="true" className="h-px w-8 bg-accent-gold" />
-                GROUP PHOEBE — Côte d&apos;Ivoire
+                {t.divers.groupPhoebeCoteIvoire}
                 <span aria-hidden="true" className="h-px w-8 bg-accent-gold" />
               </p>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={0.1}>
               <h1 className="font-display mt-6 text-balance text-5xl font-medium leading-[1.03] tracking-tight text-white sm:text-6xl md:text-7xl [text-shadow:0_2px_24px_rgba(0,0,0,0.85)]">
-                L&apos;excellence à chaque étape de votre vie
+                {t.divers.excellenceChaqueEtape}
               </h1>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={0.2}>
               <p className="mx-auto mt-6 max-w-xl text-lg text-white/85 [text-shadow:0_1px_12px_rgba(0,0,0,0.85)]">
-                Transport, immobilier, assistance voyages, livraison et textile — cinq métiers, une même exigence, partout en Côte d&apos;Ivoire.
+                {t.divers.cinqMetiersExigence}
               </p>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={0.3}>
               <div className="mt-9 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Link href="#services">
                   <Button size="lg" className="px-8 py-4 text-base">
-                    Découvrir nos services
+                    {t.accueil.decouvrir}
                     <ArrowRight className="size-4" />
                   </Button>
                 </Link>
                 <Link href="/contact">
                   <Button variant="outline-white" size="lg" className="px-8 py-4 text-base">
-                    Contactez-nous
+                    {t.divers.contactezNous}
                   </Button>
                 </Link>
               </div>
@@ -176,7 +180,7 @@ export default function HomePage({
             <div className="flex flex-col gap-4 border-b border-public-border pb-8 sm:flex-row sm:items-end sm:justify-between">
               <h2 className="font-display text-4xl font-medium tracking-tight text-public-text md:text-5xl">{t.verticales.nosServices}</h2>
               <p className="max-w-xs text-sm text-public-text-muted sm:text-right">
-                Cinq métiers complémentaires, une même signature de qualité.
+                {t.divers.cinqMetiers}
               </p>
             </div>
           </ScrollReveal>
@@ -239,10 +243,10 @@ export default function HomePage({
             <div className="lg:sticky lg:top-28">
               <p className="text-xs font-medium uppercase tracking-[0.25em] text-accent-gold">{t.verticales.notreEngagement}</p>
               <h2 className="font-display mt-4 text-4xl font-medium tracking-tight text-public-text md:text-5xl">
-                Pourquoi nous choisir
+                {t.divers.pourquoiNous}
               </h2>
               <p className="mt-5 max-w-sm text-base text-public-text-muted">
-                Un service pensé pour votre tranquillité, du premier clic à la prestation.
+                {t.divers.pourquoiNousLede}
               </p>
             </div>
           </ScrollReveal>
@@ -272,7 +276,7 @@ export default function HomePage({
           <ScrollReveal variant="fade-up">
             <h2 className="font-display text-4xl font-medium tracking-tight text-public-text md:text-5xl">{t.verticales.commentCaMarche}</h2>
             <p className="mt-4 max-w-xl text-base text-public-text-muted">
-              Réserver n&apos;a jamais été aussi simple — en quatre étapes.
+              {t.divers.reserverSimple}
             </p>
           </ScrollReveal>
 
@@ -308,7 +312,7 @@ export default function HomePage({
               <div className="flex flex-col gap-4 sm:flex-row lg:shrink-0">
                 <Link href="#services">
                   <Button size="lg" className="px-8 py-4 text-base">
-                    Découvrir nos services
+                    {t.accueil.decouvrir}
                     <ArrowRight className="size-4" />
                   </Button>
                 </Link>

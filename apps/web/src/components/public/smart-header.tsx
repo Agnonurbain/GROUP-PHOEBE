@@ -11,6 +11,7 @@ import { LocaleSwitcher } from "@/components/public/locale-switcher"
 import type { Langue } from "@/lib/langues"
 import { verticaleDeChemin } from "@/lib/verticales"
 import { useT } from "@/lib/langue-context"
+import {  } from "@/lib/i18n/format"
 
 type Vertical = "transport" | "livraison" | "immobilier" | "assistance" | "textile" | "default"
 
@@ -32,7 +33,7 @@ const logos: Record<Vertical, { src: string; alt: string; w: number; h: number }
   transport: { src: "/logos/transport.png", alt: "Transport", w: 374, h: 395 },
   livraison: { src: "/logos/livraison.png", alt: "Livraison", w: 411, h: 424 },
   immobilier: { src: "/logos/immobilier.png", alt: "Immobilier", w: 407, h: 424 },
-  assistance: { src: "/logos/assistance.png", alt: "Assistance Voyages & Études", w: 423, h: 429 },
+  assistance: { src: "/logos/assistance.png", alt: "Assistance", w: 423, h: 429 },
   textile: { src: "/logos/textile.png", alt: "Textile", w: 478, h: 473 },
 }
 
@@ -146,7 +147,7 @@ export function SmartHeader({ vertical: forcedVertical, session, langues, langue
                   href="/#services"
                   className="rounded-lg bg-accent-gold px-4 py-2 text-sm font-semibold text-[#0A0A0A] shadow-sm transition-colors hover:bg-accent-gold-hover"
                 >
-                  Choisir un service
+                  {t.divers.choisirService}
                 </Link>
               )}
               <Link
@@ -157,7 +158,7 @@ export function SmartHeader({ vertical: forcedVertical, session, langues, langue
                 {(session.nom ?? "U")[0].toUpperCase()}
               </Link>
               <LogoutButton
-                label="Déconnexion"
+                label={t.nav.deconnexion}
                 className="rounded-lg border border-error/30 px-3 py-1.5 text-sm font-medium text-error transition-all hover:bg-error hover:text-white"
               />
             </span>
@@ -216,7 +217,7 @@ export function SmartHeader({ vertical: forcedVertical, session, langues, langue
                 onClick={() => setMenuOpen(false)}
                 className="flex min-h-11 items-center justify-center rounded-lg bg-accent-gold px-3 py-2.5 text-center text-sm font-semibold text-[#0A0A0A] transition-colors hover:bg-accent-gold-hover"
               >
-                Choisir un service
+                {t.divers.choisirService}
               </Link>
             )}
             {navLinks.map((link) =>
@@ -245,7 +246,7 @@ export function SmartHeader({ vertical: forcedVertical, session, langues, langue
             </Link>
             {session && (
               <LogoutButton
-                label="Déconnexion"
+                label={t.nav.deconnexion}
                 className="flex min-h-11 w-full items-center rounded-lg border border-error/30 px-3 py-2.5 text-left text-sm font-medium text-error transition-all hover:bg-error hover:text-white"
               />
             )}

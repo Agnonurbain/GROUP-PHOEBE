@@ -3,6 +3,8 @@ import { notFound } from "next/navigation"
 import { ContenuFrancais } from "@/components/public/contenu-francais"
 import { BackLink } from "@/components/public/back-link"
 import { getPageLegale, pageIncomplete, SLUGS_LEGAUX } from "@/lib/legal"
+import { getT, langueCourante } from "@/lib/i18n/server"
+import { remplir } from "@/lib/i18n/format"
 
 export function generateStaticParams() {
   return SLUGS_LEGAUX.map((slug) => ({ slug }))
@@ -35,12 +37,13 @@ export default async function PageLegaleRoute({
   const page = await getPageLegale(slug)
   if (!page) notFound()
 
+  const [t, langue] = await Promise.all([getT(), langueCourante()])
   const incomplete = pageIncomplete(page)
 
   return (
     <div className="mx-auto max-w-3xl px-6 py-12">
       <div className="mb-6">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t.commun.retourAccueil} />
       </div>
 
       <h1 className="text-4xl font-bold text-public-text">{page.titre}</h1>
@@ -48,11 +51,12 @@ export default async function PageLegaleRoute({
         <p className="mt-2 text-sm text-public-text-muted">{page.chapeau}</p>
       )}
       <p className="mt-1 text-xs text-public-text-faint">
-        Dernière mise à jour :{" "}
-        {new Date(page.updated_at).toLocaleDateString("fr-FR", {
-          day: "2-digit",
-          month: "long",
-          year: "numeric",
+        {remplir(t.divers.derniereMiseAJour, {
+          date: new Date(page.updated_at).toLocaleDateString(langue === "en" ? "en-GB" : "fr-FR", {
+            day: "2-digit",
+            month: "long",
+            year: "numeric",
+          }),
         })}
       </p>
 
@@ -65,12 +69,10 @@ export default async function PageLegaleRoute({
           <p className="mt-1 text-xs text-public-text-muted">
             {incomplete ? (
               <>
-                Les passages marqués <span className="font-mono">[À COMPLÉTER]</span>{" "}
-                attendent des informations que seule l&apos;entreprise détient.{" "}
+                {t.divers.passagesACompleter}{" "}
               </>
             ) : null}
-            Ce texte n&apos;engage pas encore GROUP PHOEBE et doit être validé avant
-            publication.
+            {t.divers.texteNonValide}
           </p>
         </div>
       )}

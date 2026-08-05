@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react"
 import { soumettreAvis, type AvisState } from "@/app/actions/avis"
+import { useT } from "@/lib/langue-context"
 
 /**
  * Dépôt d'un avis.
@@ -20,6 +21,7 @@ export function DeposerAvis({
   referenceTable: string
   referenceId: string
 }) {
+  const t = useT()
   const [ouvert, setOuvert] = useState(false)
   const [note, setNote] = useState(0)
   const [state, action, enCours] = useActionState<AvisState, FormData>(soumettreAvis, {})
@@ -27,7 +29,7 @@ export function DeposerAvis({
   if (state.success) {
     return (
       <p role="status" className="text-[11px] text-accent-green">
-        Merci — votre avis sera publié après relecture.
+        {t.divers.avisPublieApresRelecture}
       </p>
     )
   }
@@ -75,7 +77,7 @@ export function DeposerAvis({
       <textarea
         name="commentaire"
         rows={3}
-        placeholder="Votre expérience…"
+        placeholder={t.divers.votreExperience}
         className="w-full rounded-lg border border-public-border bg-public-bg px-3 py-1.5 text-sm"
       />
 

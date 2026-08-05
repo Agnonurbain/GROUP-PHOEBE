@@ -126,8 +126,7 @@ export function BienInteractionForm({
                 {remplir(t.immobilier.fraisVisite, { montant: fraisVisite.toLocaleString("fr-FR") })}
               </p>
               <p className="mt-1 text-xs text-public-text-muted">
-                À régler maintenant pour réserver votre visite. Ces frais couvrent
-                l&apos;organisation de la visite et ne sont pas remboursables.
+                {t.immobilier.fraisVisiteNonRemboursables}
               </p>
             </div>
           </>

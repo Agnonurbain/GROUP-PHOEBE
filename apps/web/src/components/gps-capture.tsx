@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { mettreAJourPositionGps } from "@/app/actions/vehicules";
+import { useT } from "@/lib/langue-context"
 
 type Props = {
   vehiculeId: string;
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export function GpsCapture({ vehiculeId, latitude, longitude }: Props) {
+  const t = useT()
   const [capturing, setCapturing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -69,7 +71,7 @@ export function GpsCapture({ vehiculeId, latitude, longitude }: Props) {
             </p>
           ) : (
             <p className="mt-0.5 text-xs text-phoebe-anthracite/70">
-              Aucune position enregistrée
+              {t.divers.aucunePosition}
             </p>
           )}
         </div>
@@ -87,7 +89,7 @@ export function GpsCapture({ vehiculeId, latitude, longitude }: Props) {
         <p className="text-xs text-error">{error}</p>
       )}
       {success && (
-        <p className="text-xs text-phoebe-green">Position mise à jour</p>
+        <p className="text-xs text-phoebe-green">{t.divers.positionMiseAJour}</p>
       )}
     </div>
   );

@@ -136,7 +136,7 @@ export function BilletForm({
       {/* Ligne principale : trajet, dates, voyageurs */}
       <div className="grid gap-4 rounded-2xl border border-public-border bg-public-bg-card p-5 md:grid-cols-2 lg:grid-cols-5">
         <div>
-          <label htmlFor="depart" className={label}>D&apos;où partez-vous ?<Obligatoire /></label>
+          <label htmlFor="depart" className={label}>{t.assistance.douPartezVous}<Obligatoire /></label>
           <input id="depart" name="depart" list="aeroports" required placeholder="Abidjan (ABJ)" className={champ} />
         </div>
         <div>
@@ -221,8 +221,7 @@ export function BilletForm({
                 </div>
               ))}
               <p className="mt-2 border-t border-public-border pt-2 text-xs text-public-text-faint">
-                Un bébé voyage sur les genoux d&apos;un adulte. Au-delà de{" "}
-                {params.max_voyageurs} voyageurs, contactez-nous pour un tarif groupe.
+                {remplir(t.assistance.bebeSurGenoux, { max: params.max_voyageurs })}
               </p>
             </div>
           )}
@@ -241,8 +240,7 @@ export function BilletForm({
           )}
         </p>
         <p className="mt-1.5 text-xs text-accent-blue/80">
-          Même vers la CEDEAO, le passeport est exigé par les compagnies desservant Abidjan,
-          dont Air Côte d&apos;Ivoire. La carte d&apos;identité CEDEAO ne suffit pas à l&apos;embarquement.
+          {t.assistance.passeportExigeCedeao}
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div>
@@ -254,7 +252,7 @@ export function BilletForm({
             <input id="passeport_numero" name="passeport_numero" required placeholder="Ex. 21AB45678" className={champ} />
           </div>
           <div>
-            <label htmlFor="passeport_expiration" className={label}>Date d&apos;expiration<Obligatoire /></label>
+            <label htmlFor="passeport_expiration" className={label}>{t.assistance.dateExpiration}<Obligatoire /></label>
             <input
               id="passeport_expiration"
               name="passeport_expiration"
@@ -268,8 +266,7 @@ export function BilletForm({
         <div className="mt-4">
           <DeposerPasseport name="passeport_fichier" userId={userId} id="passeport_fichier_input" />
           <p className="mt-1 text-[11px] text-public-text-faint">
-            Joindre la page du passeport nous évite une faute de saisie sur un nom
-            translittéré. Ce n&apos;est pas obligatoire : les champs ci-dessus suffisent.
+            {t.assistance.joindrePagePasseport}
           </p>
         </div>
       </fieldset>
@@ -322,13 +319,10 @@ export function BilletForm({
           />
           <div>
             <p className="text-sm font-medium text-public-text">
-              Je dispose d&apos;un certificat de vaccination fièvre jaune valide
+              {t.assistance.certificatFievreJaune}
             </p>
             <p className="mt-0.5 text-xs text-public-text-muted">
-              Le vaccin contre la fièvre jaune est obligatoire pour tout voyageur de 9 mois et
-              plus entrant en Côte d&apos;Ivoire. Sans certificat à l&apos;arrivée, la vaccination
-              est faite à l&apos;aéroport (7 000 FCFA). De nombreuses destinations l&apos;exigent
-              aussi depuis Abidjan.
+              {t.assistance.fievreJauneObligatoire}
             </p>
           </div>
         </label>
@@ -343,11 +337,10 @@ export function BilletForm({
             />
             <div>
               <p className="text-sm font-medium text-public-text">
-                Je dispose de l&apos;autorisation parentale pour les mineurs
+                {t.assistance.autorisationParentaleCase}
               </p>
               <p className="mt-0.5 text-xs text-public-text-muted">
-                Tout mineur voyageant sans ses deux parents doit présenter une autorisation
-                parentale légalisée à la mairie, et ce jusqu&apos;à sa majorité.
+                {t.assistance.mineurAutorisation}
               </p>
             </div>
           </label>

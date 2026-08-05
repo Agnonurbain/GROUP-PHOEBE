@@ -13,6 +13,8 @@ import {
   type TypeDocument,
 } from "@/lib/assistance"
 import { Obligatoire } from "@/components/ui/obligatoire"
+import { useT } from "@/lib/langue-context"
+import { remplir } from "@/lib/i18n/format"
 
 export type PieceClient = {
   id: string
@@ -42,6 +44,7 @@ export function DossierPieces({
   dossierId: string
   pieces: PieceClient[]
 }) {
+  const t = useT()
   const [ouvert, setOuvert] = useState(false)
   const [state, action, enCours] = useActionState<AssistanceState, FormData>(
     deposerPieceDossier,
@@ -55,7 +58,7 @@ export function DossierPieces({
       onToggle={(e) => setOuvert((e.currentTarget as HTMLDetailsElement).open)}
     >
       <summary className="cursor-pointer text-xs font-medium text-public-text">
-        Mes pièces ({pieces.length})
+        {remplir(t.divers.mesPieces, { n: pieces.length })}
       </summary>
 
       {pieces.length > 0 && (
@@ -72,7 +75,7 @@ export function DossierPieces({
         <input type="hidden" name="dossier_id" value={dossierId} />
 
         <label htmlFor={`type-${dossierId}`} className="block text-[11px] font-medium">
-          Ajouter une pièce<Obligatoire />
+          {t.divers.ajouterPiece}<Obligatoire />
         </label>
         <select
           id={`type-${dossierId}`}
@@ -81,7 +84,7 @@ export function DossierPieces({
           defaultValue=""
           className="w-full rounded-lg border border-public-border bg-public-bg px-2 py-1.5 text-xs"
         >
-          <option value="" disabled>Type de pièce…</option>
+          <option value="" disabled>{t.divers.typePiece}</option>
           {TYPES_DOCUMENT.map((t) => (
             <option key={t} value={t}>{TYPE_DOCUMENT_LABELS[t as TypeDocument]}</option>
           ))}

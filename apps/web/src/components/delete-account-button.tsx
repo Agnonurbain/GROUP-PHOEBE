@@ -3,8 +3,10 @@
 import { useActionState, useRef, useState } from "react";
 import { supprimerCompte, type AuthState } from "@/app/actions/auth";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useT } from "@/lib/langue-context"
 
 export function DeleteAccountButton() {
+  const t = useT()
   const [state, action, isPending] = useActionState<AuthState>(supprimerCompte, {});
   const [open, setOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -23,7 +25,7 @@ export function DeleteAccountButton() {
 
       <ConfirmDialog
         open={open}
-        title="Supprimer votre compte ?"
+        title={t.divers.supprimerCompteConfirmation}
         message="Cette action est irréversible. Toutes vos données personnelles seront définitivement effacées, conformément au RGPD."
         confirmLabel="Supprimer définitivement"
         cancelLabel="Annuler"

@@ -3,8 +3,10 @@
 import { useRef, useState } from "react"
 import { deconnexion } from "@/app/actions/auth"
 import { ConfirmDialog } from "@/components/confirm-dialog"
+import { useT } from "@/lib/langue-context"
 
 export function LogoutButton({ className, label = "Déconnexion" }: { className?: string; label?: string }) {
+  const t = useT()
   const [open, setOpen] = useState(false)
   const [busy, setBusy] = useState(false)
   const formRef = useRef<HTMLFormElement>(null)
@@ -21,7 +23,7 @@ export function LogoutButton({ className, label = "Déconnexion" }: { className?
 
       <ConfirmDialog
         open={open}
-        title="Se déconnecter ?"
+        title={t.divers.seDeconnecterConfirmation}
         message="Vous devrez vous reconnecter pour accéder à votre compte."
         confirmLabel="Se déconnecter"
         cancelLabel="Annuler"

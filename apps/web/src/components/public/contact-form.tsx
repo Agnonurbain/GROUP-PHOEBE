@@ -4,6 +4,7 @@ import { useActionState } from "react"
 import { Button, Input } from "@/components/ui"
 import { envoyerMessageContact, type ContactState } from "@/app/actions/contact"
 import { CheckIcon } from "@/components/icons"
+import { useT } from "@/lib/langue-context"
 
 const SUJETS = [
   "Transport & Livraison",
@@ -20,15 +21,16 @@ export function ContactForm({
   defaultCategory?: string
   defaultMessage?: string
 }) {
+  const t = useT()
   const [state, action, pending] = useActionState<ContactState, FormData>(envoyerMessageContact, {})
 
   if (state.success) {
     return (
       <div className="flex flex-col items-center gap-4 rounded-2xl border border-accent-green/20 bg-public-bg-card p-10 text-center">
         <CheckIcon size={48} className="text-accent-green" />
-        <h2 className="text-2xl font-bold text-public-text">Message envoyé</h2>
+        <h2 className="text-2xl font-bold text-public-text">{t.divers.messageEnvoye}</h2>
         <p className="max-w-sm text-sm text-public-text-muted">
-          Merci ! Notre équipe a bien reçu votre message et vous recontactera au plus vite.
+          {t.divers.messageRecu}
         </p>
       </div>
     )
@@ -43,20 +45,20 @@ export function ContactForm({
       )}
       <div className="grid grid-cols-2 gap-6">
         <div>
-          <label htmlFor="c-prenom" className="text-sm font-medium text-public-text-muted">Prénom</label>
+          <label htmlFor="c-prenom" className="text-sm font-medium text-public-text-muted">{t.divers.prenom}</label>
           <Input id="c-prenom" name="prenom" type="text" variant="default" className="mt-1" placeholder="Jean" />
         </div>
         <div>
           <label htmlFor="c-nom" className="text-sm font-medium text-public-text-muted">Nom</label>
-          <Input id="c-nom" name="nom" type="text" variant="default" className="mt-1" placeholder="Kouamé" />
+          <Input id="c-nom" name="nom" type="text" variant="default" className="mt-1" placeholder={t.divers.exemplePrenom} />
         </div>
       </div>
       <div>
         <label htmlFor="c-email" className="text-sm font-medium text-public-text-muted">Email</label>
-        <Input id="c-email" name="email" type="email" variant="default" className="mt-1" placeholder="vous@exemple.com" />
+        <Input id="c-email" name="email" type="email" variant="default" className="mt-1" placeholder={t.divers.exempleEmail} />
       </div>
       <div>
-        <label htmlFor="c-tel" className="text-sm font-medium text-public-text-muted">Téléphone</label>
+        <label htmlFor="c-tel" className="text-sm font-medium text-public-text-muted">{t.auth.telephone}</label>
         <Input id="c-tel" name="telephone" type="tel" inputMode="tel" variant="default" className="mt-1" placeholder="+225 01 02 03 04" />
       </div>
       <div>
@@ -80,7 +82,7 @@ export function ContactForm({
           rows={5}
           defaultValue={defaultMessage}
           className="mt-1 w-full rounded-lg border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder-public-text-faint"
-          placeholder="Décrivez votre demande..."
+          placeholder={t.divers.exempleMessage}
         />
       </div>
       <Button type="submit" variant="default" disabled={pending} className="w-full">

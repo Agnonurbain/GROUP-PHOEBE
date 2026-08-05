@@ -84,8 +84,7 @@ export function DemandeTextileForm({
   if (types.length === 0) {
     return (
       <p className="rounded-2xl border border-public-border bg-public-bg-card p-6 text-sm text-public-text-muted">
-        Aucun type de pagne n&apos;est proposé pour le moment. Contactez-nous
-        directement.
+        {t.textile.aucunTypeProposé}
       </p>
     )
   }

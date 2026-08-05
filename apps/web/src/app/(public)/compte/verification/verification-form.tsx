@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition, useRef, type FormEvent } from "react"
+import { useT } from "@/lib/langue-context"
 import Compressor from "compressorjs"
 import { Card } from "@/components/ui"
 import { soumettreDocuments, type VerificationState } from "@/app/actions/verification"
@@ -29,6 +30,7 @@ function compressFile(file: File): Promise<File> {
 }
 
 export function VerificationForm({ statut, motifRejet }: { statut?: string; motifRejet?: string | null }) {
+  const t = useT()
   const [state, setState] = useState<VerificationState>({})
   const [isPending, startTransition] = useTransition()
   const [previewPiece, setPreviewPiece] = useState<string | null>(null)
@@ -43,7 +45,7 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
         <h1 className="text-4xl font-bold text-public-text">Documents soumis</h1>
         <div className="mt-4 rounded-xl border border-accent-green/30 bg-accent-green/10 p-6">
           <p className="text-sm text-accent-green">
-            Vos documents ont été envoyés avec succès. Notre équipe les vérifiera dans les plus brefs délais.
+            {t.espaceClient.documentsEnvoyes}
           </p>
         </div>
         <a href="/compte/profil" className="mt-4 inline-block rounded-lg bg-accent-gold px-5 py-2.5 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover transition-colors">
@@ -56,10 +58,10 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
   if (statut === "documents_soumis") {
     return (
       <div className="px-6 py-16">
-        <h1 className="text-4xl font-bold text-public-text">Vérification d&apos;identité</h1>
+        <h1 className="text-4xl font-bold text-public-text">{t.espaceClient.verificationIdentite}</h1>
         <div className="mt-4 rounded-xl border border-accent-gold/30 bg-accent-gold/10 p-6">
           <p className="text-sm text-accent-gold">
-            Vos documents sont en cours de vérification par notre équipe. Vous recevrez une notification dès qu&apos;ils seront traités.
+            {t.espaceClient.documentsEnVerificationLong}
           </p>
         </div>
         <a href="/compte/profil" className="mt-4 inline-block rounded-lg bg-accent-gold px-5 py-2.5 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover transition-colors">
@@ -72,10 +74,10 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
   if (statut === "verifie") {
     return (
       <div className="px-6 py-16">
-        <h1 className="text-4xl font-bold text-public-text">Vérification d&apos;identité</h1>
+        <h1 className="text-4xl font-bold text-public-text">{t.espaceClient.verificationIdentite}</h1>
         <div className="mt-4 rounded-xl border border-accent-green/30 bg-accent-green/10 p-6">
           <p className="text-sm font-medium text-accent-green">
-            Votre identité est vérifiée. Vous pouvez effectuer des réservations.
+            {t.espaceClient.identiteVerifiee}
           </p>
         </div>
         <a href="/compte/profil" className="mt-4 inline-block rounded-lg bg-accent-gold px-5 py-2.5 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-gold-hover transition-colors">
@@ -129,15 +131,15 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
 
   return (
     <div className="px-6 py-16">
-      <h1 className="text-4xl font-bold text-public-text">Vérification d&apos;identité</h1>
+      <h1 className="text-4xl font-bold text-public-text">{t.espaceClient.verificationIdentite}</h1>
 
       {statut === "rejete" && motifRejet && (
         <div className="mt-4 rounded-xl border border-[rgba(239,68,68,0.2)] bg-[rgba(239,68,68,0.05)] p-4">
           <p className="text-sm text-[#EF4444]">
-            <strong>Motif du rejet :</strong> {motifRejet}
+            <strong>{t.espaceClient.motifRejet}</strong> {motifRejet}
           </p>
           <p className="mt-2 text-sm text-public-text-muted">
-            Veuillez soumettre à nouveau vos documents corrigés.
+            {t.espaceClient.soumettreCorriges}
           </p>
         </div>
       )}
@@ -178,7 +180,7 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
                 <>
                   {/* Aperçu local (blob URL) : next/image ne peut pas optimiser ces URLs */}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={previewPiece} alt="Aperçu pièce d'identité" className="max-h-48 w-full object-contain" />
+                  <img src={previewPiece} alt={t.espaceClient.apercuPieceIdentite} className="max-h-48 w-full object-contain" />
                 </>
               )}
             </div>
@@ -187,7 +189,7 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
 
         <Card>
           <label htmlFor="v-permis" className="mb-2 block text-sm font-medium text-public-text">
-            Permis de conduire<Obligatoire />
+            {t.espaceClient.permisConduire}<Obligatoire />
           </label>
           <input
             id="v-permis"
@@ -208,7 +210,7 @@ export function VerificationForm({ statut, motifRejet }: { statut?: string; moti
               ) : (
                 <>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={previewPermis} alt="Aperçu permis de conduire" className="max-h-48 w-full object-contain" />
+                  <img src={previewPermis} alt={t.espaceClient.apercuPermis} className="max-h-48 w-full object-contain" />
                 </>
               )}
             </div>

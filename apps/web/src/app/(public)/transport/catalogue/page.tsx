@@ -301,7 +301,7 @@ export default async function TransportCatalogue({
         eyebrow={t.nav.transport}
         title={t.transport.notreFlotte}
         lede={t.transport.heroLede}
-        bgImage={{ src: "/images/hero-car.webp", alt: "Flotte de véhicules premium" }}
+        bgImage={{ src: "/images/hero-car.webp", alt: t.transport.flottePremium }}
         aside={
           <Image
             src="/logos/transport.png"

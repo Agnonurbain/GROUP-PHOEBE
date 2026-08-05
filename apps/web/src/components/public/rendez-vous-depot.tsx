@@ -3,6 +3,7 @@
 import { useActionState, useState } from "react"
 import { reserverCreneau, annulerRendezVous, type AssistanceState } from "@/app/actions/assistance"
 import { libelleCreneau } from "@/lib/rendez-vous"
+import { useT } from "@/lib/langue-context"
 
 export type CreneauClient = { debut: string; fin: string; restant: number }
 
@@ -38,6 +39,7 @@ export function RendezVousDepot({
   /** Rendez-vous déjà pris pour ce dossier, s'il y en a un. */
   existant: { id: string; debut: string; fin: string } | null
 }) {
+  const t = useT()
   const [ouvert, setOuvert] = useState(false)
   const [jour, setJour] = useState(jours[0] ?? "")
   const [reserver, actionReserver, enCoursReserver] = useActionState<AssistanceState, FormData>(
@@ -52,7 +54,7 @@ export function RendezVousDepot({
   if (existant && !annuler.success) {
     return (
       <div className="w-full max-w-sm rounded-xl border border-accent-green/30 bg-accent-green/5 p-3">
-        <p className="text-[11px] font-semibold text-public-text">Rendez-vous de dépôt</p>
+        <p className="text-[11px] font-semibold text-public-text">{t.divers.rendezVousDepot}</p>
         <p className="mt-0.5 text-xs text-public-text-muted">
           {libelleCreneau(existant.debut, existant.fin)}
         </p>
@@ -76,7 +78,7 @@ export function RendezVousDepot({
   if (reserver.success) {
     return (
       <p role="status" className="text-[11px] text-accent-green">
-        Rendez-vous enregistré. Vous le retrouverez ici.
+        {t.divers.rendezVousEnregistre}
       </p>
     )
   }
@@ -86,8 +88,7 @@ export function RendezVousDepot({
   if (jours.length === 0) {
     return (
       <p className="text-[11px] text-public-text-muted">
-        Aucun créneau de dépôt n&apos;est ouvert pour le moment. Contactez-nous pour
-        convenir d&apos;une date.
+        {t.assistance.aucunCreneauDepot}
       </p>
     )
   }
@@ -99,7 +100,7 @@ export function RendezVousDepot({
         onClick={() => setOuvert(true)}
         className="text-xs font-medium text-accent-blue-on-dark underline decoration-dotted transition-colors hover:text-accent-blue"
       >
-        Prendre rendez-vous pour déposer mon dossier
+        {t.divers.prendreRendezVous}
       </button>
     )
   }
@@ -107,7 +108,7 @@ export function RendezVousDepot({
   return (
     <div className="w-full max-w-lg rounded-xl border border-public-border bg-public-bg p-3">
       <p className="text-[11px] font-semibold text-public-text">
-        Choisissez une date, puis un horaire
+        {t.divers.choisirDateHoraire}
       </p>
 
       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -146,7 +147,7 @@ export function RendezVousDepot({
         </div>
         {(creneaux[jour] ?? []).length === 0 && (
           <p className="text-[11px] text-public-text-muted">
-            Plus de créneau ce jour-là. Choisissez une autre date.
+            {t.divers.plusDeCreneau}
           </p>
         )}
       </form>
