@@ -13,6 +13,13 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
+    // Next 16 refuse par défaut d'optimiser une image servie par une IP privée
+    // — une protection contre le SSRF, et elle a raison de l'être. En
+    // développement, la Supabase locale EST sur 127.0.0.1 : sans cette
+    // dérogation, aucune photo de storage n'est vérifiable au navigateur.
+    // Jamais en production, où l'optimiseur ne doit pas pouvoir être dirigé
+    // vers le réseau interne du serveur.
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
     // Next 16 exige de déclarer les qualités autorisées (75 par défaut + celles
     // utilisées explicitement dans l'app).
     qualities: [75, 80, 85],
@@ -26,6 +33,22 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      // La Supabase locale sert sur 127.0.0.1 : sans cette entrée, `next/image`
+      // rejette toute photo de storage en développement — et la page qui
+      // l'affiche casse entièrement, ce qui rend la vérification au navigateur
+      // impossible pour le catalogue comme pour les véhicules.
+      //
+      // Bornée au développement : en production, l'optimiseur d'images ne doit
+      // pas pouvoir être dirigé vers la boucle locale du serveur.
+      ...(process.env.NODE_ENV === "production"
+        ? []
+        : [
+            {
+              protocol: "http" as const,
+              hostname: "127.0.0.1",
+              pathname: "/storage/v1/object/public/**",
+            },
+          ]),
     ],
   },
   async headers() {

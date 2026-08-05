@@ -23,6 +23,7 @@ export async function Footer() {
     { href: "/transport/catalogue", label: t.nav.transport },
     { href: "/immobilier", label: t.nav.immobilier },
     { href: "/assistance", label: t.nav.assistance },
+    { href: "/textile", label: t.nav.textile },
   ]
 
   const legalLinks = [
@@ -62,7 +63,8 @@ export async function Footer() {
               Leader Excellence Efficacité.
             </p>
             <p className="mt-3 max-w-xs text-sm text-public-text-muted">
-              Transport, immobilier, assistance voyages et livraison en Côte d&apos;Ivoire.
+              Transport, immobilier, assistance voyages, livraison et textile en
+              Côte d&apos;Ivoire.
             </p>
             {contact.adresse && (
               <p className="mt-3 text-sm text-public-text-muted">{contact.adresse}</p>

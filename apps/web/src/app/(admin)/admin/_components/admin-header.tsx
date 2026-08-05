@@ -1,5 +1,6 @@
 "use client"
 
+import { Fragment } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LogOut, ChevronsUpDown } from "lucide-react"
@@ -50,19 +51,23 @@ export function AdminHeader({
 
       <Breadcrumb>
         <BreadcrumbList>
+          {/* Le séparateur est LUI AUSSI un <li> : le placer dans
+              BreadcrumbItem imbriquait deux <li>, ce que le HTML interdit —
+              React le signalait par une erreur d'hydratation sur chaque page
+              de l'administration. Il est donc frère de l'élément, pas fils. */}
           {fil.map((segment) => (
-            <BreadcrumbItem key={segment.href}>
-              {segment.last ? (
-                <BreadcrumbPage>{segment.label}</BreadcrumbPage>
-              ) : (
-                <>
+            <Fragment key={segment.href}>
+              <BreadcrumbItem>
+                {segment.last ? (
+                  <BreadcrumbPage>{segment.label}</BreadcrumbPage>
+                ) : (
                   <BreadcrumbLink render={<Link href={segment.href} />}>
                     {segment.label}
                   </BreadcrumbLink>
-                  <BreadcrumbSeparator />
-                </>
-              )}
-            </BreadcrumbItem>
+                )}
+              </BreadcrumbItem>
+              {!segment.last && <BreadcrumbSeparator />}
+            </Fragment>
           ))}
         </BreadcrumbList>
       </Breadcrumb>

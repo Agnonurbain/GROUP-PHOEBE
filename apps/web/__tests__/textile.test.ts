@@ -374,3 +374,91 @@ describe("Recherche dans le catalogue", () => {
     expect(filtrerArticles(a, "introuvable", "hollandais")).toHaveLength(0);
   });
 });
+
+/**
+ * Ce qui est écrit doit être lu quelque part.
+ *
+ * `article_id` était renseigné à la demande et n'apparaissait nulle part : ni
+ * sur la carte de l'équipe, qui devait deviner quel modèle commander, ni chez
+ * le client. Une écriture sans lecture est une donnée morte — et ici, elle
+ * portait la commande elle-même.
+ */
+describe("Textile — le modèle choisi ne se perd pas", () => {
+  it("l'équipe voit le modèle désigné sur la demande", () => {
+    const page = src("app/(admin)/admin/textile/page.tsx");
+    expect(page).toContain("articles_pagne(nom, reference, couleurs, photos)");
+    expect(page).toContain("Modèle du catalogue");
+  });
+
+  it("le client retrouve sa demande dans son espace", () => {
+    const page = src("app/(public)/compte/reservations/page.tsx");
+    expect(page).toContain('.from("demandes_textile")');
+    expect(page).toContain('referenceTable: "demandes_textile"');
+    // Le nom du modèle prime sur la gamme : c'est ainsi qu'il reconnaît sa
+    // demande.
+    expect(page).toContain("d.articles_pagne?.nom");
+  });
+
+  /**
+   * « Sur devis » plutôt qu'un tiret : l'absence de prix est le principe du
+   * service, pas une donnée manquante.
+   */
+  it("une demande sans devis se lit « Sur devis », pas « — »", () => {
+    const page = src("app/(public)/compte/reservations/page.tsx");
+    const d = page.indexOf("const textileReservations");
+    const corps = page.slice(d, page.indexOf("const allReservations", d));
+    expect(corps).toContain('"Sur devis"');
+  });
+});
+
+/**
+ * 00087 annonçait les gammes « pilotables ». Elles l'étaient en base, et
+ * nulle part ailleurs : les ajouter demandait du SQL. Une pilotabilité sans
+ * écran n'existe pas pour celui qui exploite.
+ */
+describe("Textile — les gammes se pilotent depuis l'admin", () => {
+  const action = src("app/actions/textile.ts");
+
+  it("l'écran propriétaire porte la création et le retrait", () => {
+    const form = src("app/(admin)/admin/textile/gammes-form.tsx");
+    expect(form).toContain("creerTypePagne");
+    expect(form).toContain("basculerTypePagne");
+    expect(src("app/(admin)/admin/textile/page.tsx")).toContain("<GammesForm");
+  });
+
+  // Propriétaire seul : une gamme engage ce que la maison déclare vendre.
+  it.each(["creerTypePagne", "basculerTypePagne"])("%s exige le propriétaire", (nom) => {
+    const d = action.indexOf(`export async function ${nom}`);
+    const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
+    expect(corps).toContain("requireProprietaireAvecId");
+  });
+
+  // La clé doit respecter `^[a-z0-9_]+$` : la faire saisir transformerait une
+  // contrainte technique en message d'erreur pour l'exploitant.
+  it("la clé se dérive du libellé au lieu de se saisir", () => {
+    const d = action.indexOf("export async function creerTypePagne");
+    const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
+    expect(corps).toContain("normalize(\"NFD\")");
+    expect(corps).toContain("/[^a-z0-9]+/g");
+    expect(corps).not.toContain('formData.get("cle")');
+  });
+
+  /**
+   * Retirer la dernière gamme active fermerait le formulaire public : plus
+   * rien à choisir, donc plus de demande possible.
+   */
+  it("la dernière gamme active ne se retire pas", () => {
+    const d = action.indexOf("export async function basculerTypePagne");
+    const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
+    expect(corps).toContain('.eq("actif", true)');
+    expect(corps).toContain("dernière gamme active");
+  });
+
+  // Une gamme retirée reste référencée par les demandes passées.
+  it("une gamme se retire, elle ne se supprime pas", () => {
+    const d = action.indexOf("export async function basculerTypePagne");
+    const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
+    expect(corps).toContain("update({ actif");
+    expect(corps).not.toContain(".delete()");
+  });
+});

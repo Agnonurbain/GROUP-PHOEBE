@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { verticaleDeChemin, attributVerticale } from "@/lib/verticales";
+import { verticaleDeChemin, attributVerticale, VERTICALES } from "@/lib/verticales";
 
 /**
  * Le logo de l'en-tête suit le service de la page.
@@ -95,8 +95,29 @@ describe("Verticale — une seule source", () => {
     parcourir(base, "");
 
     const manquantes = routes
-      .filter((r) => ["transport", "livraison", "immobilier", "assistance"].includes(r.split("/")[1]))
+      // La liste vient du module : recopiée ici, elle aurait oublié le
+      // cinquième service — c'est ce qui est arrivé au textile.
+      .filter((r) => (VERTICALES as string[]).includes(r.split("/")[1]))
       .filter((r) => verticaleDeChemin(r.replace(/\[[^\]]+\]/g, "x")) === null);
     expect(manquantes).toEqual([]);
+  });
+});
+
+/**
+ * Un service qui existe doit être atteignable.
+ *
+ * Le textile était en ligne, dans l'en-tête, avec sa page et son catalogue —
+ * et absent du pied de page. Rien ne cassait : le visiteur qui cherchait la
+ * liste des services n'en voyait que quatre sur cinq.
+ */
+describe("Verticale — tout service est listé dans le pied de page", () => {
+  it.each(VERTICALES)("« %s » a son lien", (v) => {
+    const footer = src("components/public/footer.tsx");
+    const debut = footer.indexOf("const servicesLinks");
+    expect(debut).toBeGreaterThan(-1);
+    const liste = footer.slice(debut, footer.indexOf("]", debut));
+    // Le transport pointe vers son catalogue, pas vers /transport : on vérifie
+    // le préfixe, qui est ce qui rattache la page au service.
+    expect(liste, `${v} manque au pied de page`).toContain(`href: "/${v}`);
   });
 });
