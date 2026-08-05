@@ -146,7 +146,7 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
 
             {!hasLocation && !hasVente && (
               <p className="col-span-2 text-center text-sm text-public-text-muted">
-                Ce véhicule n&apos;est pas encore disponible à la location ou à la vente.
+                {t.transport.pasEncoreDisponible}
               </p>
             )}
           </div>

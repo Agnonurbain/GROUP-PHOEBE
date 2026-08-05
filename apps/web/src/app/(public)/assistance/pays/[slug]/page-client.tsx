@@ -135,7 +135,7 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
         <h1 className="text-3xl font-bold text-public-text">{t.assistancePays.destinationIndisponible}</h1>
         <p className="mt-3 text-sm text-public-text-muted">{t.assistancePays.pasEncoreProposee}</p>
         <Link href="/assistance" className="mt-6 inline-block text-sm font-semibold text-accent-blue-on-dark hover:underline">
-          Retour à l&apos;assistance
+          {t.assistance.retourAssistance}
         </Link>
       </div>
     )
@@ -215,9 +215,9 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
             <h2 className="text-3xl font-semibold text-public-text">{t.assistancePays.commentCaSePasse}</h2>
             <div className="mt-6 space-y-6">
               {[
-                { title: "Soumettez votre demande", desc: "Choisissez une prestation et envoyez votre demande en ligne, sans engagement." },
-                { title: "Notre équipe vous contacte", desc: "Nous étudions votre dossier et convenons des modalités et du règlement." },
-                { title: "Suivi du dossier", desc: "Nous assurons le suivi de votre dossier jusqu'à l'obtention du visa." },
+                { title: t.assistance.etapeSoumettez, desc: t.assistance.etapeSoumettezDesc },
+                { title: t.assistance.etapeContact, desc: t.assistance.etapeContactDesc },
+                { title: t.assistance.etapeSuivi, desc: t.assistance.etapeSuiviDesc },
               ].map((s, i) => (
                 <StepCard key={s.title} num={String(i + 1)} title={s.title} desc={s.desc} index={i} />
               ))}

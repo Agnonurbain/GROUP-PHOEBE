@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { repondreContreOffre } from "@/app/actions/immobilier"
 import { Button } from "@/components/ui"
+import { useT } from "@/lib/langue-context"
 
 /**
  * Réponse du client à une contre-offre du propriétaire. Deux issues seulement :
@@ -16,6 +17,7 @@ export function ContreOffreReponse({
   demandeId: string
   montant: number
 }) {
+  const t = useT()
   const [pending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [confirmeRefus, setConfirmeRefus] = useState(false)
@@ -60,7 +62,7 @@ export function ContreOffreReponse({
             disabled={pending}
             onClick={() => repondre("refuser")}
           >
-            Confirmer le refus
+            {t.divers.confirmerRefus}
           </Button>
         ) : (
           <button

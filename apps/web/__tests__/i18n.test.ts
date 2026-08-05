@@ -57,6 +57,10 @@ describe("i18n — les deux dictionnaires restent alignés", () => {
       // Exemples de saisie : un numéro ivoirien et des noms de communes ne se
       // traduisent pas.
       "+225 07 00 00 00 00", "Abidjan, Cocody…",
+      // Un prénom ivoirien donné en exemple de saisie ne se traduit pas.
+      "Kouamé",
+      // Le nom du pays s'écrit pareil : c'est un nom propre.
+      "GROUP PHOEBE — Côte d'Ivoire",
     ]);
     const identiques = chemins(fr).filter((chemin) => {
       const lire = (o: unknown) =>
@@ -206,6 +210,22 @@ function textesEnDur(chemin: string): string[] {
   let s = readFileSync(chemin, "utf8");
   s = s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
 
+  /**
+   * Les entités HTML sont remises en caractères AVANT tout le reste.
+   *
+   * `&apos;` finit par un point-virgule, et le filtre anti-code ci-dessous
+   * rejette tout ce qui en contient. Résultat : chaque phrase française portant
+   * une apostrophe — c'est-à-dire la moitié d'entre elles — passait sous le
+   * radar. « L'excellence à chaque étape de votre vie » trônait sur la page
+   * d'accueil en anglais, et la garde disait que tout allait bien.
+   */
+  s = s
+    .replace(/&apos;/g, "'")
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&laquo;|&raquo;/g, '"');
+
   const trouves = new Set<string>();
 
   // Texte entre deux balises, éventuellement réparti sur plusieurs lignes.
@@ -234,6 +254,22 @@ function textesEnDur(chemin: string): string[] {
     if (FRANCAIS.test(m[1])) trouves.add(m[1].slice(0, 80));
   }
 
+  /**
+   * Propriétés d'objet : `{ label: "…", alt: "…" }`.
+   *
+   * Les libellés du carrousel d'accueil vivaient dans un tableau de constantes,
+   * pas dans du JSX : « Location de véhicules premium » s'affichait en gros sur
+   * la page d'accueil anglaise sans que rien ne le signale.
+   */
+  // `title:` et `description:` sont exclus : ils sont dominés par les blocs
+  // `metadata` des pages, dont la traduction est un chantier à part — ils
+  // passent par `generateMetadata`, pas par le JSX.
+  for (const m of s.matchAll(
+    /\b(?:label|alt|desc|texte|lede)\s*:\s*["']([^"'\n]{4,})["']/g
+  )) {
+    if (FRANCAIS.test(m[1])) trouves.add(m[1].slice(0, 80));
+  }
+
   return [...trouves];
 }
 
@@ -245,42 +281,14 @@ function textesEnDur(chemin: string): string[] {
  * elle, il aurait fallu tout traduire d'un coup ou n'avoir aucun garde-fou —
  * la liste permet de verrouiller ce qui est fait pendant que le reste avance.
  */
-const RESTE_A_TRADUIRE = new Set([
-  "app/(public)/avis/page-client.tsx",
-  "app/(public)/blog/page-client.tsx",
-  "app/(public)/compte/favoris/page.tsx",
-  "app/(public)/compte/profil/page.tsx",
-  "app/(public)/compte/reservations/page.tsx",
-  "app/(public)/compte/verification/page.tsx",
-  "app/(public)/compte/verification/verification-form.tsx",
-  "app/(public)/contact/page.tsx",
-  "app/(public)/legal/[slug]/page.tsx",
-  "app/(public)/page-client.tsx",
-  "app/(public)/suivi/page.tsx",
-  "components/change-password-form.tsx",
-  "components/delete-account-button.tsx",
-  "components/disponibilite-checker.tsx",
-  "components/document-preview.tsx",
-  "components/gps-capture.tsx",
-  "components/logout-button.tsx",
-  "components/notifications-dropdown.tsx",
-  "components/offline-banner.tsx",
-  "components/photo-lightbox.tsx",
-  "components/profile-edit-form.tsx",
-  "components/proposer-modification-zone-form.tsx",
-  "components/public/accepter-cgv.tsx",
-  "components/public/contact-form.tsx",
-  "components/public/contre-offre-reponse.tsx",
-  "components/public/deposer-avis.tsx",
-  "components/public/dossier-pieces.tsx",
-  "components/public/message-equipe.tsx",
-  "components/public/passeport-voyageur.tsx",
-  "components/public/rendez-vous-depot.tsx",
-  "components/public/reponse-creneau-visite.tsx",
-  "components/public/smart-header.tsx",
-  "components/theme-toggle.tsx",
-  "components/whatsapp-float.tsx",
-]);
+/**
+ * Ce qui reste à traduire, nommément.
+ *
+ * La liste est VIDE : les trois tranches ont couvert tout le site public. Elle
+ * reste ici, et la seconde assertion l'oblige à rester exacte — y ajouter un
+ * fichier serait un aveu explicite, pas un oubli silencieux.
+ */
+const RESTE_A_TRADUIRE = new Set<string>([]);
 
 describe("Traduction — le site public passe par le dictionnaire", () => {
   /**

@@ -7,6 +7,7 @@ import { FavoriButton } from "@/components/favori-button"
 import { Card } from "@/components/ui"
 import { makeGroupKey } from "@/lib/vehicle-group"
 import { typeBienLabel, statutBienLabel } from "@/lib/immobilier"
+import { getT } from "@/lib/i18n/server"
 
 export const metadata: Metadata = {
   title: "Mes Favoris",
@@ -23,6 +24,7 @@ function formatPrice(val: number | null): string | null {
 }
 
 export default async function FavorisPage() {
+  const t = await getT()
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
   const user = claimsData?.claims
@@ -103,7 +105,7 @@ export default async function FavorisPage() {
                       </div>
                     ) : (
                       <div className="flex h-28 w-36 items-center justify-center rounded-xl bg-public-border text-sm text-public-text-faint">
-                        Pas de photo
+                        {t.divers.pasDePhoto}
                       </div>
                     )}
                     {b.statut !== "disponible" && (
@@ -137,7 +139,7 @@ export default async function FavorisPage() {
 
       {vehicules && vehicules.length > 0 && (
         <h2 className="mt-10 text-sm font-semibold uppercase tracking-widest text-public-text-muted">
-          Véhicules
+          {t.espaceClient.vehicules}
         </h2>
       )}
 
@@ -161,7 +163,7 @@ export default async function FavorisPage() {
                     </div>
                   ) : (
                     <div className="flex h-28 w-36 items-center justify-center rounded-xl bg-public-border text-sm text-public-text-faint">
-                      Pas de photo
+                      {t.divers.pasDePhoto}
                     </div>
                   )}
                   {v.statut !== "disponible" && (
@@ -199,13 +201,13 @@ export default async function FavorisPage() {
       {(!vehicules || vehicules.length === 0) && (!biens || biens.length === 0) && (
         <Card className="mt-8 p-10 text-center">
           <p className="text-sm text-public-text-muted">
-            Vous n&apos;avez pas encore de favoris.{" "}
+            {t.espaceClient.aucunFavori}{" "}
             <a href="/transport/catalogue" className="font-medium text-accent-gold hover:text-accent-gold-hover">
-              Parcourir les véhicules
+              {t.divers.parcourirVehicules}
             </a>
             {" ou "}
             <Link href="/immobilier" className="font-medium text-accent-green hover:text-accent-green-hover">
-              les biens immobiliers
+              {t.divers.lesBiensImmobiliers}
             </Link>
           </p>
         </Card>

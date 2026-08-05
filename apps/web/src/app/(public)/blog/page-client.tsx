@@ -5,6 +5,7 @@ import Image from "next/image"
 import { ScrollReveal, StaggerContainer } from "@/components/effects"
 import { Badge } from "@/components/ui"
 import type { ArticleListItem } from "./page"
+import { useT } from "@/lib/langue-context"
 
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return ""
@@ -65,6 +66,7 @@ function ArticleCard({ article, index }: { article: ArticleListItem; index: numb
 }
 
 export function BlogPageClient({ articles }: { articles: ArticleListItem[] }) {
+  const t = useT()
   return (
     <>
       <section className="border-b border-public-border px-6 py-16 sm:px-10 md:py-20">
@@ -78,7 +80,7 @@ export function BlogPageClient({ articles }: { articles: ArticleListItem[] }) {
               Blog & Guides
             </h1>
             <p className="mt-5 max-w-xl text-lg text-public-text-muted">
-              Conseils pratiques, guides et actualités pour vous accompagner dans vos projets de transport, immobilier, assistance et livraison.
+              {t.divers.blogLede}
             </p>
           </ScrollReveal>
         </div>
@@ -88,7 +90,7 @@ export function BlogPageClient({ articles }: { articles: ArticleListItem[] }) {
         <div className="mx-auto max-w-6xl">
           {articles.length === 0 ? (
             <p className="text-center text-sm text-public-text-muted">
-              Aucun article pour le moment.
+              {t.divers.aucunArticle}
             </p>
           ) : (
             <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

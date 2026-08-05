@@ -73,7 +73,7 @@ export default async function SuiviPage({
 
       <form method="get" className="mt-6 flex gap-2">
         <label htmlFor="numero-suivi" className="sr-only">
-          Numéro de suivi (obligatoire)
+          {t.divers.numeroSuiviObligatoire}
         </label>
         <input
           id="numero-suivi"

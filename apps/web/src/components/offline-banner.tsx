@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useT } from "@/lib/langue-context"
 
 export function OfflineBanner() {
+  const t = useT()
   // Toujours false au rendu serveur : sur Node 24, `navigator` est defini
   // globalement mais `navigator.onLine` vaut undefined, donc `!navigator.onLine`
   // etait `true` et la banniere s'affichait cote serveur (barre parasite en haut
@@ -34,7 +36,7 @@ export function OfflineBanner() {
           <path d="M8.53 16.11a6 6 0 0 1 6.95 0" />
           <line x1="12" y1="20" x2="12.01" y2="20" />
         </svg>
-        Vous êtes hors ligne — les pages consultées restent accessibles
+        {t.divers.horsLigneBanniere}
       </span>
     </div>
   );

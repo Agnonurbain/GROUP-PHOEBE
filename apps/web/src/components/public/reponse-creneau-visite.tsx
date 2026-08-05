@@ -2,6 +2,7 @@
 
 import { useActionState } from "react"
 import { repondreCreneauVisite, type VisiteState } from "@/app/actions/immobilier"
+import { useT } from "@/lib/langue-context"
 
 /**
  * Le créneau était en lecture seule côté client : un opérateur « confirmait »
@@ -17,6 +18,7 @@ export function ReponseCreneauVisite({
   visiteId: string
   creneau: string
 }) {
+  const t = useT()
   const [state, action, enCours] = useActionState<VisiteState, FormData>(
     repondreCreneauVisite,
     {}
@@ -25,14 +27,14 @@ export function ReponseCreneauVisite({
   if (state.success) {
     return (
       <p role="status" className="text-[11px] text-accent-green">
-        Réponse enregistrée.
+        {t.divers.reponseEnregistree}
       </p>
     )
   }
 
   return (
     <div className="flex flex-col items-end gap-1">
-      <span className="text-[11px] text-public-text-muted">Ce créneau vous convient ?</span>
+      <span className="text-[11px] text-public-text-muted">{t.divers.creneauConvient}</span>
       <div className="flex gap-1.5">
         <form action={action}>
           <input type="hidden" name="visite_id" value={visiteId} />

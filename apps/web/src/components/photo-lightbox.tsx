@@ -1,6 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
+import { useT } from "@/lib/langue-context"
 
 // Grille de vignettes + visionneuse (lightbox) au clic. Réutilisable en thème
 // clair (admin) comme sombre (public) : l'overlay est toujours sombre.
@@ -11,6 +12,7 @@ export function PhotoLightbox({
   photos: string[]
   thumbClassName?: string
 }) {
+  const t = useT()
   const [index, setIndex] = useState<number | null>(null)
 
   const close = useCallback(() => setIndex(null), [])
@@ -76,7 +78,7 @@ export function PhotoLightbox({
           {photos.length > 1 && (
             <button
               type="button"
-              aria-label="Précédent"
+              aria-label={t.commun.precedent}
               onClick={(e) => { e.stopPropagation(); prev() }}
               className="absolute left-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
             >

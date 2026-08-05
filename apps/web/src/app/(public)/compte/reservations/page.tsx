@@ -20,6 +20,7 @@ import { MessageEquipe } from "@/components/public/message-equipe"
 import { creneauxDisponibles, messagesDuDossier, type MessageDossier } from "@/app/actions/assistance"
 import { formaterCreneau } from "@/lib/immobilier"
 import { getT } from "@/lib/i18n/server"
+import { remplir } from "@/lib/i18n/format"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
 import {
   libelleTypePagne,
@@ -532,13 +533,13 @@ export default async function CompteReservations({
   // « Recherche en cours » pour un billet et « En cours de traitement » pour du
   // pagne. Sans elle, le premier libellé rencontré s'appliquait aux deux.
   const statusStyle = (status: string, category?: string) => {
-    if (STATUTS_TERMINES.includes(status)) return { color: "text-public-text-muted", label: "Terminé" }
-    if (["annulee", "annule", "refusee", "refuse"].includes(status)) return { color: "text-[#EF4444]", label: "Annulé" }
+    if (STATUTS_TERMINES.includes(status)) return { color: "text-public-text-muted", label: t.compte.statut.termine }
+    if (["annulee", "annule", "refusee", "refuse"].includes(status)) return { color: "text-[#EF4444]", label: t.compte.statut.annule }
     // Le client doit agir : le libellé le dit plutôt que « En attente ».
-    if (status === "contre_offre") return { color: "text-accent-gold", label: "Réponse attendue" }
-    if (status === "devis_envoye") return { color: "text-accent-gold", label: "Devis reçu" }
-    if (status === "payee") return { color: "text-accent-green", label: "Payé" }
-    if (status === "emise") return { color: "text-accent-green", label: "Billet émis" }
+    if (status === "contre_offre") return { color: "text-accent-gold", label: t.compte.statut.reponseAttendue }
+    if (status === "devis_envoye") return { color: "text-accent-gold", label: t.compte.statut.devisRecu }
+    if (status === "payee") return { color: "text-accent-green", label: t.compte.statut.paye }
+    if (status === "emise") return { color: "text-accent-green", label: t.compte.statut.billetEmis }
     if (category === "Textile" && STATUT_TEXTILE_LABELS[status as StatutTextile]) {
       return {
         color: status === "confirmee" ? "text-accent-green" : "text-accent-orange",
@@ -546,7 +547,7 @@ export default async function CompteReservations({
       }
     }
     if (STATUT_BILLET_LABELS[status]) return { color: "text-accent-orange", label: STATUT_BILLET_LABELS[status] }
-    return { color: "text-accent-orange", label: "En attente" }
+    return { color: "text-accent-orange", label: t.compte.statut.enAttente }
   }
 
   return (
@@ -675,8 +676,9 @@ export default async function CompteReservations({
                       client attendre un bouton qui ne viendra pas. */}
                   {r.dossier && r.dossier.aRegler != null && (
                     <span className="text-[11px] text-public-text-muted">
-                      Montant estimé : {r.dossier.aRegler.toLocaleString("fr-FR")} FCFA —
-                      à régler au bureau lors de votre rendez-vous.
+                      {remplir(t.espaceClient.montantEstime, {
+                        montant: r.dossier.aRegler.toLocaleString("fr-FR"),
+                      })}
                     </span>
                   )}
                   {r.dossier && (

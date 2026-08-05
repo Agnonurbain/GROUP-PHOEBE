@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { useT } from "@/lib/langue-context"
 
 type Props = {
   initialNonLues: number;
@@ -22,6 +23,7 @@ type Props = {
 // gratuitement : ouverture/fermeture, clic exterieur, touche Echap, navigation
 // aux fleches, gestion et restauration du focus.
 export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props) {
+  const t = useT()
   const [nonLues, setNonLues] = useState(initialNonLues);
   const [recentes, setRecentes] = useState(initialRecentes);
 
@@ -63,7 +65,7 @@ export function NotificationsDropdown({ initialNonLues, initialRecentes }: Props
           <span className="text-sm font-semibold text-phoebe-anthracite">Notifications</span>
           {nonLues > 0 && (
             <button onClick={handleToutLire} className="text-xs text-phoebe-green hover:underline">
-              Tout marquer lu
+              {t.divers.toutMarquerLu}
             </button>
           )}
         </div>

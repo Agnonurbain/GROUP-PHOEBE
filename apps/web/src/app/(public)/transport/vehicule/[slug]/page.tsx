@@ -116,21 +116,21 @@ export default async function VehicleDetail({
   }
 
   const serviceBadges: { label: string; active: boolean; variant: "green" | "orange" | "blue" | "gold" }[] = [
-    { label: "Assuré", active: !!rep.assurance_url, variant: "green" },
+    { label: t.transport.assure, active: !!rep.assurance_url, variant: "green" },
     { label: "GPS", active: !!rep.gps, variant: "blue" },
     { label: "Climatisation", active: !!rep.climatisation, variant: "orange" },
     { label: "Chauffeur", active: !!rep.chauffeur_disponible, variant: "gold" },
   ]
 
   const specs: { label: string; value: string }[] = [
-    { label: "Catégorie", value: rep.categorie ?? "—" },
-    { label: "Année", value: rep.annee ? String(rep.annee) : "—" },
+    { label: t.transport.categorie, value: rep.categorie ?? "—" },
+    { label: t.transport.annee, value: rep.annee ? String(rep.annee) : "—" },
     { label: "Places", value: rep.nb_places ? String(rep.nb_places) : "—" },
-    { label: "Boîte", value: rep.boite ? `Boîte ${rep.boite}` : "—" },
+    { label: t.transport.boite, value: rep.boite ? `Boîte ${rep.boite}` : "—" },
     { label: "Carburant", value: rep.carburant ?? "—" },
-    { label: "Kilométrage", value: rep.kilometrage ? `${Number(rep.kilometrage).toLocaleString("fr-FR")} km` : "—" },
+    { label: t.transport.kilometrage, value: rep.kilometrage ? `${Number(rep.kilometrage).toLocaleString("fr-FR")} km` : "—" },
     { label: "Localisation", value: rep.localisation ?? "—" },
-    { label: "État", value: rep.etat ?? "—" },
+    { label: t.transport.etat, value: rep.etat ?? "—" },
   ]
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
@@ -304,7 +304,7 @@ export default async function VehicleDetail({
                   href={`/transport/vehicule/${slug}?mode=achat`}
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-gold transition-colors hover:text-accent-gold-hover"
                 >
-                  Vous préférez l&apos;acheter ? →
+                  {t.transport.preferezAcheter}
                 </Link>
               )}
             </div>

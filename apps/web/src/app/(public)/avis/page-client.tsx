@@ -5,6 +5,7 @@ import { libelleReference } from "@/lib/avis"
 import { Card, CardContent } from "@/components/ui"
 import { Badge } from "@/components/ui"
 import { ScrollReveal, StaggerContainer } from "@/components/effects"
+import { useT } from "@/lib/langue-context"
 
 function Stars({ note }: { note: number }) {
   return (
@@ -36,6 +37,7 @@ function formatDate(dateStr: string): string {
 }
 
 export function AvisPageClient({ avis }: { avis: AvisPublic[] }) {
+  const t = useT()
   return (
     <>
       <section className="border-b border-public-border px-6 py-16 sm:px-10 md:py-20">
@@ -46,10 +48,10 @@ export function AvisPageClient({ avis }: { avis: AvisPublic[] }) {
               GROUP PHOEBE
             </p>
             <h1 className="font-display mt-6 text-balance text-4xl font-medium leading-[1.05] tracking-tight text-public-text sm:text-5xl md:text-6xl">
-              Ce que nos clients disent
+              {t.divers.cequeClientsDisent}
             </h1>
             <p className="mt-5 max-w-xl text-lg text-public-text-muted">
-              Des retours authentiques de nos clients sur nos services de transport, immobilier, assistance et livraison.
+              {t.divers.avisLede}
             </p>
           </ScrollReveal>
         </div>
@@ -59,7 +61,7 @@ export function AvisPageClient({ avis }: { avis: AvisPublic[] }) {
         <div className="mx-auto max-w-6xl">
           {avis.length === 0 ? (
             <p className="text-center text-sm text-public-text-muted">
-              Aucun avis pour le moment.
+              {t.divers.aucunAvis}
             </p>
           ) : (
             <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -86,7 +88,7 @@ export function AvisPageClient({ avis }: { avis: AvisPublic[] }) {
                       {a.reponse_admin && (
                         <div className="rounded-lg border border-accent-gold/15 bg-accent-gold/5 p-3">
                           <p className="text-xs font-medium text-accent-gold">
-                            Réponse de GROUP PHOEBE
+                            {t.divers.reponseDeGroupPhoebe}
                           </p>
                           <p className="mt-1 text-xs leading-relaxed text-public-text-muted">
                             {a.reponse_admin}

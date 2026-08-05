@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { fr } from "@/lib/i18n/fr";
+import { en } from "@/lib/i18n/en";
 import {
   TRANSITIONS_DOSSIER,
   transitionDossierAutorisee,
@@ -253,10 +255,17 @@ describe("Assistance — ce que le client voit enfin", () => {
    * paiements en ligne. » Le bouton est retiré, mais le montant reste annoncé :
    * le taire laisserait le client attendre un règlement qui ne vient jamais.
    */
+  /**
+   * La phrase est passée au dictionnaire lors de la traduction : on la suit là
+   * où elle vit. Ce qui compte est qu'elle s'affiche et qu'elle dise la même
+   * chose dans les deux langues — pas qu'elle soit écrite dans ce fichier.
+   */
   it("le dossier ne se règle plus en ligne, et le dit", () => {
     expect(page).not.toContain("PayerDossier");
-    expect(page).toContain("à régler au bureau");
-    expect(page).toContain("Montant estimé");
+    expect(page).toContain("t.espaceClient.montantEstime");
+    expect(fr.espaceClient.montantEstime).toContain("à régler au bureau");
+    expect(fr.espaceClient.montantEstime).toContain("Montant estimé");
+    expect(en.espaceClient.montantEstime).toContain("payable at our office");
   });
 });
 

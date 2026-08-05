@@ -52,15 +52,15 @@ export function VehiclePurchase({
         <ol className="mt-6 space-y-3 text-sm text-public-text-muted">
           <li className="flex gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-gold/15 text-xs font-bold text-accent-gold">1</span>
-            Vous envoyez une demande d&apos;achat (sans engagement).
+            {t.transport.demandeAchatSansEngagement}
           </li>
           <li className="flex gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-gold/15 text-xs font-bold text-accent-gold">2</span>
-            Notre équipe confirme le prix final et le montant de l&apos;acompte.
+            {t.transport.equipeConfirmePrix}
           </li>
           <li className="flex gap-3">
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent-gold/15 text-xs font-bold text-accent-gold">3</span>
-            Vous réglez l&apos;acompte pour réserver le véhicule.
+            {t.transport.reglerAcompte}
           </li>
         </ol>
 
@@ -76,7 +76,7 @@ export function VehiclePurchase({
           variant="default"
           className="mt-8 w-full rounded-xl bg-accent-gold px-4 py-3.5 text-sm font-semibold text-[#0A0A0A] shadow-md transition-all hover:bg-accent-gold-hover active:scale-[0.98] disabled:opacity-50"
         >
-          Faire une demande d&apos;achat
+          {t.transport.faireDemandeAchat}
         </SubmitButton>
 
         <p className="mt-3 text-center text-xs text-public-text-faint">

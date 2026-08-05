@@ -74,7 +74,7 @@ export default function Assistance({
         eyebrow={t.assistance.assistanceVoyagesEtudes}
         title={t.assistance.visaExpertise}
         lede={t.assistance.heroLede}
-        bgImage={{ src: "/images/hero-voyages.webp", alt: "Voyages et études" }}
+        bgImage={{ src: "/images/hero-voyages.webp", alt: t.assistance.voyagesEtudes }}
         aside={
           <Image
             src="/logos/assistance.png"

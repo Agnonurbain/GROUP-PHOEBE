@@ -4,6 +4,8 @@ import { useState, useActionState } from "react";
 import { proposerModificationZone, type PropositionZoneState } from "@/app/actions/propositions-zones";
 import { SubmitButton } from "@/components/submit-button";
 import { Obligatoire } from "@/components/ui/obligatoire"
+import { useT } from "@/lib/langue-context"
+import { avecElements } from "@/lib/i18n/format-jsx"
 
 const inputClass =
   "w-full rounded-xl border border-phoebe-anthracite/12 bg-phoebe-pearl/20 px-4 py-2.5 text-sm text-phoebe-anthracite transition-all duration-200 focus:border-phoebe-green focus:bg-phoebe-pearl focus:outline-none focus:ring-2 focus:ring-phoebe-green/15";
@@ -27,6 +29,7 @@ const CHAMP_LABELS: Record<string, string> = {
 };
 
 export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
+  const t = useT()
   const [state, action] = useActionState<PropositionZoneState, FormData>(proposerModificationZone, {});
   const [selectedZoneId, setSelectedZoneId] = useState(zones[0]?.id ?? "");
   const [selectedChamp, setSelectedChamp] = useState("coefficient_majoration");
@@ -36,12 +39,10 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
   return (
     <div className="rounded-xl border border-phoebe-gold/30 bg-phoebe-gold/5 p-4">
       <h2 className="mb-3 text-sm font-semibold text-phoebe-anthracite">
-        Proposer une modification de coefficient zone
+        {t.divers.proposerCoefficientZone}
       </h2>
       <p className="mb-3 text-xs text-phoebe-anthracite/70">
-        La proposition est soumise au propriétaire, qui seul l&apos;applique.
-        Un coefficient de zone multiplie un prix facturé : aucune valeur ne
-        change tant qu&apos;il n&apos;a pas tranché.
+        {t.divers.propositionSoumiseProprietaire}
       </p>
 
       {state.error && (
@@ -51,7 +52,7 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
       )}
       {state.success && (
         <div className="mb-3 rounded-lg bg-phoebe-green/10 px-3 py-2 text-xs text-phoebe-green-deep">
-          Proposition envoyée.
+          {t.divers.propositionEnvoyee}
         </div>
       )}
 
@@ -89,7 +90,10 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
 
         {zone && (
           <div className="text-xs text-phoebe-anthracite/70 bg-phoebe-pearl/30 rounded-lg px-3 py-2">
-            Valeur actuelle de <strong>{CHAMP_LABELS[selectedChamp]}</strong> pour <strong>{zone.nom}</strong> :{" "}
+            {avecElements(t.divers.valeurActuelle, {
+              champ: <strong>{CHAMP_LABELS[selectedChamp]}</strong>,
+              zone: <strong>{zone.nom}</strong>,
+            })}{" "}
             {String((zone as Record<string, unknown>)[selectedChamp] ?? "—")}
           </div>
         )}
@@ -107,11 +111,11 @@ export function ProposerModificationZoneForm({ zones }: { zones: Zone[] }) {
 
         <div>
           <label className="mb-1 block text-xs font-medium text-phoebe-anthracite">Commentaire (optionnel)</label>
-          <input name="commentaire" className={inputClass} placeholder="Raison de la modification" />
+          <input name="commentaire" className={inputClass} placeholder={t.divers.raisonModification} />
         </div>
 
         <SubmitButton className="rounded-lg bg-phoebe-gold px-3 py-1.5 text-xs font-medium text-white shadow-sm hover:bg-phoebe-gold/80 hover:shadow-md">
-          Envoyer la proposition
+          {t.divers.envoyerProposition}
         </SubmitButton>
       </form>
     </div>

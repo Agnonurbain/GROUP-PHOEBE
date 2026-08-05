@@ -5,6 +5,7 @@ import { MailIcon, PhoneIcon } from "@/components/icons"
 import { ContactForm } from "@/components/public/contact-form"
 import { getParametresContact } from "@/lib/public-cache"
 import { telHref, reseauxActifs } from "@/lib/contact"
+import { getT } from "@/lib/i18n/server"
 
 function mapSujet(raw: string): { category: string; message: string } {
   if (/estimation|bien|immobil/i.test(raw)) {
@@ -38,6 +39,7 @@ export default async function Contact({
 }: {
   searchParams: Promise<{ sujet?: string }>
 }) {
+  const t = await getT()
   const { sujet } = await searchParams
   const { category, message } = mapSujet(sujet ?? "")
 
@@ -51,10 +53,10 @@ export default async function Contact({
       ? { icon: MailIcon, label: "Email", value: contact.email, href: `mailto:${contact.email}` }
       : null,
     tel && contact.telephone
-      ? { icon: PhoneIcon, label: "Téléphone", value: contact.telephone, href: tel }
+      ? { icon: PhoneIcon, label: t.auth.telephone, value: contact.telephone, href: tel }
       : null,
     contact.adresse
-      ? { icon: null, label: "Adresse", value: contact.adresse, href: "#" }
+      ? { icon: null, label: t.divers.adresse, value: contact.adresse, href: "#" }
       : null,
   ].filter((c): c is { icon: typeof MailIcon | null; label: string; value: string; href: string } => c !== null)
 
@@ -62,11 +64,11 @@ export default async function Contact({
     <>
       <section className="px-6 py-16">
         <div className="mb-6">
-          <BackLink href="/" label="Retour à l'accueil" />
+          <BackLink href="/" label={t.commun.retourAccueil} />
         </div>
         <Badge variant="gold">Contact</Badge>
-        <h1 className="mt-4 text-4xl font-bold text-public-text md:text-5xl">Parlons de votre projet</h1>
-        <p className="mt-3 text-base text-public-text-muted md:text-lg">Une question, un devis, une collaboration ? Nous sommes à votre écoute.</p>
+        <h1 className="mt-4 text-4xl font-bold text-public-text md:text-5xl">{t.divers.parlonsProjet}</h1>
+        <p className="mt-3 text-base text-public-text-muted md:text-lg">{t.divers.parlonsProjetLede}</p>
       </section>
 
       <div className="grid gap-12 px-6 pb-20 lg:grid-cols-5">
@@ -76,7 +78,7 @@ export default async function Contact({
 
         <div className="lg:col-span-2 space-y-8">
           <Card>
-            <h2 className="font-display text-2xl font-medium text-public-text">Nos coordonnées</h2>
+            <h2 className="font-display text-2xl font-medium text-public-text">{t.divers.nosCoordonnees}</h2>
             <div className="mt-6 space-y-5">
               {coordonnees.map((c) => (
                 <a key={c.label} href={c.href} className="flex items-start gap-3 group">
@@ -107,7 +109,7 @@ export default async function Contact({
 
           {reseaux.length > 0 && (
             <Card>
-              <h2 className="font-display text-2xl font-medium text-public-text">Suivez-nous</h2>
+              <h2 className="font-display text-2xl font-medium text-public-text">{t.divers.suivezNous}</h2>
               <div className="mt-4 flex flex-wrap gap-2">
                 {reseaux.map((r) => (
                   <a

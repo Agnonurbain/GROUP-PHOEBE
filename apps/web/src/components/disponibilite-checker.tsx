@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { verifierDisponibilite } from "@/app/actions/disponibilites";
 import { Obligatoire } from "@/components/ui/obligatoire"
+import { useT } from "@/lib/langue-context"
 
 export function DisponibiliteChecker({
   vehiculeId,
@@ -11,6 +12,7 @@ export function DisponibiliteChecker({
   vehiculeId: string;
   chauffeurDisponible: boolean;
 }) {
+  const t = useT()
   const [isPending, startTransition] = useTransition();
   const [resultat, setResultat] = useState<{
     disponible: boolean;
@@ -38,7 +40,7 @@ export function DisponibiliteChecker({
   return (
     <div className="rounded-xl bg-phoebe-pearl p-4">
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-phoebe-anthracite/70">
-        Vérifier la disponibilité
+        {t.divers.verifierDisponibilite}
       </h2>
 
       <form action={handleSubmit} className="space-y-3">
@@ -78,7 +80,7 @@ export function DisponibiliteChecker({
               name="avec_chauffeur"
               className="rounded border-phoebe-anthracite/30 text-phoebe-green focus:ring-phoebe-green"
             />
-            Avec chauffeur
+            {t.transport.avecChauffeur}
           </label>
         )}
 

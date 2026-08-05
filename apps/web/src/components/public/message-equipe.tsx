@@ -7,6 +7,7 @@ import {
   type MessageDossier,
 } from "@/app/actions/assistance"
 import { Obligatoire } from "@/components/ui/obligatoire"
+import { useT } from "@/lib/langue-context"
 
 const dateHeure = (iso: string) =>
   new Date(iso).toLocaleString("fr-FR", {
@@ -40,6 +41,7 @@ export function MessageEquipe({
   messages: MessageDossier[]
   variante?: "client" | "admin"
 }) {
+  const t = useT()
   const [ouvert, setOuvert] = useState(messages.length > 0)
   const [state, action, enCours] = useActionState<AssistanceState, FormData>(
     envoyerMessageDossier,
@@ -118,7 +120,7 @@ export function MessageEquipe({
             {enCours ? "…" : "Envoyer"}
           </button>
           {state.success && (
-            <span role="status" className="text-[11px] text-accent-green">Envoyé.</span>
+            <span role="status" className="text-[11px] text-accent-green">{t.divers.envoye}</span>
           )}
           {state.error && (
             <span role="alert" className="text-[11px] text-error">{state.error}</span>

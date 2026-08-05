@@ -1,5 +1,7 @@
 import Link from "next/link"
 import { Obligatoire } from "@/components/ui/obligatoire"
+import { useT } from "@/lib/langue-context"
+import { avecElements } from "@/lib/i18n/format-jsx"
 
 /**
  * Consentement aux conditions générales.
@@ -13,6 +15,7 @@ import { Obligatoire } from "@/components/ui/obligatoire"
  * DOM n'est pas une preuve.
  */
 export function AccepterCgv({ id = "accepte_cgv" }: { id?: string }) {
+  const t = useT()
   return (
     <label
       htmlFor={id}
@@ -26,15 +29,19 @@ export function AccepterCgv({ id = "accepte_cgv" }: { id?: string }) {
         className="mt-0.5 h-4 w-4 shrink-0 accent-accent-orange"
       />
       <span>
-        J&apos;ai lu et j&apos;accepte les{" "}
-        <Link href="/legal/cgv" target="_blank" className="font-medium text-accent-orange underline">
-          conditions générales de vente
-        </Link>{" "}
-        et la{" "}
-        <Link href="/legal/confidentialite" target="_blank" className="font-medium text-accent-orange underline">
-          politique de confidentialité
-        </Link>
-        .<Obligatoire />
+        {avecElements(t.divers.accepteCgv, {
+          cgv: (
+            <Link href="/legal/cgv" target="_blank" className="font-medium text-accent-orange underline">
+              {t.divers.conditionsVente}
+            </Link>
+          ),
+          confidentialite: (
+            <Link href="/legal/confidentialite" target="_blank" className="font-medium text-accent-orange underline">
+              {t.divers.politiqueConfidentialite}
+            </Link>
+          ),
+        })}
+        <Obligatoire />
       </span>
     </label>
   )
