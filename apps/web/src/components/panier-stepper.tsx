@@ -1,14 +1,18 @@
-import { CheckIcon } from "@/components/icons"
+"use client"
 
-const STEPS = [
-  { label: "Récapitulatif", href: "/panier" },
-  { label: "Paiement", href: "/panier/paiement" },
-  { label: "Confirmation", href: "" },
-]
+import { CheckIcon } from "@/components/icons"
+import { useT } from "@/lib/langue-context"
 
 export function PanierStepper({ current }: { current: number }) {
+  const t = useT()
+  const STEPS = [
+    { label: t.paiement.etapeRecapitulatif, href: "/panier" },
+    { label: t.paiement.etapePaiement, href: "/panier/paiement" },
+    { label: t.paiement.etapeConfirmation, href: "" },
+  ]
+
   return (
-    <nav aria-label="Progression de la commande" className="border-b border-public-border px-6 py-5 sm:px-10">
+    <nav aria-label={t.paiement.progression} className="border-b border-public-border px-6 py-5 sm:px-10">
       <ol className="mx-auto flex max-w-xl items-center justify-between">
         {STEPS.map((step, i) => {
           const done = i < current
@@ -36,7 +40,7 @@ export function PanierStepper({ current }: { current: number }) {
                 }`}
               >
                 {step.label}
-                {done && <span className="sr-only"> (terminé)</span>}
+                {done && <span className="sr-only">{t.paiement.etapeTerminee}</span>}
               </span>
               {i < STEPS.length - 1 && (
                 <span

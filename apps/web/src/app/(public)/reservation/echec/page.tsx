@@ -2,22 +2,23 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui"
 import { CloseIcon } from "@/components/icons"
+import { getT } from "@/lib/i18n/server"
 
-export const metadata: Metadata = {
-  title: "Paiement non abouti",
-  description: "Le paiement de votre réservation GROUP PHOEBE a été annulé ou a échoué.",
-  openGraph: {
-    title: "Paiement non abouti",
-    description: "Le paiement de votre réservation GROUP PHOEBE a été annulé ou a échoué.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Paiement non abouti",
-    description: "Le paiement de votre réservation GROUP PHOEBE a été annulé ou a échoué.",
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT()
+  const titre = t.etats.paiementEchoueTitre
+  const description = t.etats.paiementEchoueMeta
+  return {
+    title: titre,
+    description,
+    openGraph: { title: titre, description },
+    twitter: { card: "summary_large_image", title: titre, description },
+  }
 }
 
-export default function EchecPage() {
+export default async function EchecPage() {
+  const t = await getT()
+
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-4 text-center">
       <div className="mb-6 flex items-center justify-center">
@@ -26,13 +27,12 @@ export default function EchecPage() {
           <CloseIcon size={64} className="relative text-[#EF4444]" />
         </div>
       </div>
-      <h1 className="mb-3 text-4xl font-bold text-public-text">Paiement non abouti</h1>
+      <h1 className="mb-3 text-4xl font-bold text-public-text">{t.etats.paiementEchoueTitre}</h1>
       <p className="mb-8 max-w-sm text-public-text-muted leading-relaxed">
-        Le paiement a été annulé ou a échoué. Les disponibilités ont été
-        libérées — vous pouvez réessayer à tout moment.
+        {t.etats.paiementEchoueTexte}
       </p>
       <Link href="/panier/paiement">
-        <Button variant="default">Réessayer</Button>
+        <Button variant="default">{t.etats.reessayer}</Button>
       </Link>
     </main>
   )

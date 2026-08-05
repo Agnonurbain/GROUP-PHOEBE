@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { fr } from "@/lib/i18n/fr";
 
 /**
  * Les dimensions déclarées à `next/image` doivent être celles du FICHIER.
@@ -135,9 +136,16 @@ describe("Signature de marque", () => {
     expect(fautifs).toEqual([]);
   });
 
+  /**
+   * La signature est passée dans le dictionnaire quand le pied de page a été
+   * traduit. Le test suit : ce qui compte est qu'elle s'AFFICHE, pas qu'elle
+   * soit écrite dans tel fichier — la viser dans le JSX aurait interdit de la
+   * déplacer sans raison.
+   */
   it("le pied de page porte la signature", () => {
+    expect(fr.footer.slogan).toContain("Leader Excellence Efficacité");
     expect(readFileSync(join(RACINE, "components", "public", "footer.tsx"), "utf8"))
-      .toContain("Leader Excellence Efficacité");
+      .toContain("t.footer.slogan");
   });
 });
 

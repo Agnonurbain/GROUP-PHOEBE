@@ -130,6 +130,30 @@ export const en: Dictionnaire = {
     zoneAppliquee: "Zone applied",
     zoneDetectee: "Zone detected",
     zoneTarifaire: "Pricing zone",
+    sousTitre: "Choose your dates, your destination and your payment method to complete the booking.",
+    villeLivraison: "Delivery city",
+    villeIntrouvable: "City not listed? Select your zone manually",
+    chauffeurObligatoire: "A driver is required and included for this zone.",
+    secondConducteur: "Add a second driver (optional)",
+    nomSecondConducteur: "Second driver's name",
+    permisSecondConducteur: "Their driving licence",
+    permisVerifie: "It will be checked by our team. Without an approved licence, only the person who made the booking may drive.",
+    confirmerEtPayer: "Confirm and pay {montant}",
+    negocierWhatsApp: "Negotiate on WhatsApp",
+    paiementSecurise: "Secure payment",
+    voirCatalogue: "View the catalogue",
+    // Le fil d'étapes du tunnel, et le lien d'évitement du gabarit.
+    etapeRecapitulatif: "Summary",
+    etapePaiement: "Payment",
+    etapeConfirmation: "Confirmation",
+    progression: "Order progress",
+    etapeTerminee: " (done)",
+    allerContenu: "Skip to main content",
+    joursLocation_un: "{n} rental day",
+    traitementEnCours: "Processing…",
+    support247: "24/7 support",
+    annulationGratuite: "Free cancellation",
+    joursLocation_pluriel: "{n} rental days",
   },
 
   suivi: {
@@ -162,6 +186,11 @@ export const en: Dictionnaire = {
     contact: "Contact",
     legal: "Legal",
     droits: "All rights reserved.",
+    // La devise de la maison ne se traduit pas : c'est un élément de marque,
+    // au même titre que le logo. Elle passe tout de même par le dictionnaire,
+    // pour que la garde de traduction n'ait pas à faire d'exception.
+    slogan: "Leader Excellence Efficacité.",
+    presentation: "Vehicles, property, travel assistance, delivery and fabrics across Côte d'Ivoire.",
   },
 
   legal: {
@@ -182,6 +211,20 @@ export const en: Dictionnaire = {
     vide: "Your cart is empty.",
     continuer: "Continue browsing",
     passerCommande: "Checkout",
+    voirCatalogue: "View the catalogue",
+    retourCatalogue: "Back to the catalogue",
+    vider: "Empty the cart",
+    viderConfirmation: "Empty the cart? This removes every vehicle.",
+    diminuerQuantite: "Decrease quantity",
+    augmenterQuantite: "Increase quantity",
+    avecChauffeur: "With a driver",
+    totalProvisoire: "Final total (duration, destination and deposit) is calculated at the next step.",
+    paiementSecurise: "Secure payment",
+    titre_un: "Cart ({n} vehicle)",
+    titre_pluriel: "Cart ({n} vehicles)",
+    location_un: "Rental ({n} vehicle)",
+    location_pluriel: "Rental ({n} vehicles)",
+    annulationGratuite: "Free cancellation",
   },
 
   livraisonForm: {
@@ -302,6 +345,35 @@ export const en: Dictionnaire = {
     exempleNote: "Budget in mind, intended use, particular constraints…",
     delai: "The vehicle is held for you for {delai} while we reply.",
     envoyer: "Send my request",
+  },
+
+  etats: {
+    erreurTitre: "Something went wrong",
+    erreurTexte: "A technical problem occurred. Please try again.",
+    reessayer: "Try again",
+
+    introuvableTitre: "Page not found",
+    introuvableTexte:
+      "The page you are looking for does not exist or is no longer available.",
+
+    horsLigneTitre: "You are offline",
+    horsLigneTexte:
+      "Check your internet connection. Pages you have already visited remain available.",
+    horsLigneMeta: "You are currently offline.",
+
+    paiementEchoueTitre: "Payment not completed",
+    paiementEchoueTexte:
+      "The payment was cancelled or failed. The dates have been released — you can try again at any time.",
+    paiementEchoueMeta: "Your GROUP PHOEBE booking payment was cancelled or failed.",
+
+    paiementEnregistreTitre: "Payment recorded",
+    paiementEnregistreMeta: "Your GROUP PHOEBE booking has been recorded successfully.",
+    reservationEnAttente:
+      "Your booking is awaiting validation by our team. You will be notified as soon as it is confirmed.",
+    reservationEnAttenteVehicule:
+      "Your booking for the {vehicule} is awaiting validation by our team. You will be notified as soon as it is confirmed.",
+    voirMesReservations: "View my bookings",
+    retourCatalogue: "Back to the catalogue",
   },
 
   langue: {

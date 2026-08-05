@@ -5,19 +5,18 @@ import { PanierStepper } from "@/components/panier-stepper"
 import { Button } from "@/components/ui"
 import { CheckIcon } from "@/components/icons"
 import ConfirmationClient from "./confirmation-client"
+import { getT } from "@/lib/i18n/server"
 
-export const metadata: Metadata = {
-  title: "Paiement enregistré — Confirmation",
-  description: "Votre réservation GROUP PHOEBE a été enregistrée avec succès.",
-  openGraph: {
-    title: "Paiement enregistré — Confirmation",
-    description: "Votre réservation GROUP PHOEBE a été enregistrée avec succès.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Paiement enregistré — Confirmation",
-    description: "Votre réservation GROUP PHOEBE a été enregistrée avec succès.",
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT()
+  const titre = `${t.etats.paiementEnregistreTitre} — Confirmation`
+  const description = t.etats.paiementEnregistreMeta
+  return {
+    title: titre,
+    description,
+    openGraph: { title: titre, description },
+    twitter: { card: "summary_large_image", title: titre, description },
+  }
 }
 
 export default async function ConfirmationPage({
@@ -26,6 +25,7 @@ export default async function ConfirmationPage({
   searchParams: Promise<{ demande?: string }>;
 }) {
   const { demande: demandeId } = await searchParams
+  const t = await getT()
 
   let vehiculeLabel = ""
 
@@ -54,18 +54,18 @@ export default async function ConfirmationPage({
             <CheckIcon size={64} className="relative text-accent-green" />
           </div>
         </div>
-        <h1 className="mb-3 text-4xl font-bold text-public-text">Paiement enregistré</h1>
+        <h1 className="mb-3 text-4xl font-bold text-public-text">{t.etats.paiementEnregistreTitre}</h1>
         <p className="mb-8 max-w-sm text-public-text-muted leading-relaxed">
-          Votre réservation{vehiculeLabel ? ` pour le ${vehiculeLabel}` : ""}{" "}
-          est en attente de validation par notre équipe. Vous recevrez une
-          notification dès qu&apos;elle sera confirmée.
+          {vehiculeLabel
+            ? t.etats.reservationEnAttenteVehicule.replace("{vehicule}", vehiculeLabel)
+            : t.etats.reservationEnAttente}
         </p>
         <div className="flex gap-4">
           <Link href="/transport/catalogue">
-            <Button variant="ghost">Retour au catalogue</Button>
+            <Button variant="ghost">{t.etats.retourCatalogue}</Button>
           </Link>
           <Link href="/compte/reservations">
-            <Button variant="default">Voir mes réservations</Button>
+            <Button variant="default">{t.etats.voirMesReservations}</Button>
           </Link>
         </div>
       </main>

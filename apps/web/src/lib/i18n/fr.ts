@@ -134,6 +134,38 @@ export const fr = {
     zoneAppliquee: "Zone appliquée",
     zoneDetectee: "Zone détectée",
     zoneTarifaire: "Zone tarifaire",
+    sousTitre:
+      "Choisissez vos dates, votre destination et votre moyen de paiement pour finaliser la réservation.",
+    villeLivraison: "Ville de livraison",
+    villeIntrouvable: "Ville introuvable ? Sélectionnez manuellement votre zone",
+    chauffeurObligatoire: "Chauffeur obligatoire inclus pour cette zone.",
+    secondConducteur: "Ajouter un second conducteur (facultatif)",
+    nomSecondConducteur: "Nom du second conducteur",
+    permisSecondConducteur: "Son permis de conduire",
+    // Sans cette phrase, le client croit que le second conducteur peut prendre
+    // le volant dès la remise des clés.
+    permisVerifie:
+      "Il sera vérifié par notre équipe. Sans permis validé, seul le titulaire de la réservation peut conduire.",
+    // {montant} est inséré à l'affichage : figer « FCFA » dans la phrase
+    // empêcherait de placer la devise autrement en anglais.
+    confirmerEtPayer: "Confirmer et payer {montant}",
+    negocierWhatsApp: "Négocier sur WhatsApp",
+    paiementSecurise: "Paiement sécurisé",
+    voirCatalogue: "Voir le catalogue",
+    // {n} jours : le pluriel se décide dans la langue, pas par un « s » ajouté
+    // à la volée — l'anglais et le français ne coupent pas au même endroit.
+    // Le fil d'étapes du tunnel, et le lien d'évitement du gabarit.
+    etapeRecapitulatif: "Récapitulatif",
+    etapePaiement: "Paiement",
+    etapeConfirmation: "Confirmation",
+    progression: "Progression de la commande",
+    etapeTerminee: " (terminé)",
+    allerContenu: "Aller au contenu principal",
+    joursLocation_un: "{n} jour de location",
+    traitementEnCours: "Traitement en cours…",
+    support247: "Support 24/7",
+    annulationGratuite: "Annulation gratuite",
+    joursLocation_pluriel: "{n} jours de location",
   },
 
   suivi: {
@@ -166,6 +198,11 @@ export const fr = {
     contact: "Contact",
     legal: "Légal",
     droits: "Tous droits réservés.",
+    // La devise de la maison ne se traduit pas : c'est un élément de marque,
+    // au même titre que le logo. Elle passe tout de même par le dictionnaire,
+    // pour que la garde de traduction n'ait pas à faire d'exception.
+    slogan: "Leader Excellence Efficacité.",
+    presentation: "Transport, immobilier, assistance voyages, livraison et textile en Côte d'Ivoire.",
   },
 
   legal: {
@@ -186,6 +223,25 @@ export const fr = {
     vide: "Votre panier est vide.",
     continuer: "Continuer mes achats",
     passerCommande: "Passer commande",
+    voirCatalogue: "Voir le catalogue",
+    retourCatalogue: "Retour au catalogue",
+    vider: "Vider le panier",
+    // « Panier (3 véhicules) » : le nombre entre dans le titre, et la forme
+    // se choisit dans la langue affichée.
+    titre_un: "Panier ({n} véhicule)",
+    titre_pluriel: "Panier ({n} véhicules)",
+    location_un: "Location ({n} véhicule)",
+    location_pluriel: "Location ({n} véhicules)",
+    annulationGratuite: "Annulation gratuite",
+    // Une action irréversible se confirme, et la confirmation dit ce qu'elle
+    // détruit : « Vider ? » seul laisse deviner.
+    viderConfirmation: "Vider le panier ? Cette action retire tous les véhicules.",
+    diminuerQuantite: "Diminuer la quantité",
+    augmenterQuantite: "Augmenter la quantité",
+    avecChauffeur: "Avec chauffeur",
+    totalProvisoire:
+      "Total final (durée, destination et caution) calculé à l'étape suivante.",
+    paiementSecurise: "Paiement sécurisé",
   },
 
   livraisonForm: {
@@ -315,6 +371,52 @@ export const fr = {
     // la phrase — les deux divergeraient au premier changement.
     delai: "Le véhicule vous est réservé {delai}, le temps que nous répondions.",
     envoyer: "Envoyer ma demande",
+  },
+
+  /**
+   * Les pages d'état : erreur, page absente, hors ligne, paiement non abouti.
+   *
+   * Ce sont les écrans qu'un visiteur voit au pire moment. Les laisser en
+   * français quand il a choisi l'anglais, c'est le perdre là où il a déjà un
+   * problème.
+   */
+  etats: {
+    erreurTitre: "Une erreur est survenue",
+    erreurTexte: "Un problème technique est survenu. Veuillez réessayer.",
+    reessayer: "Réessayer",
+
+    introuvableTitre: "Page introuvable",
+    introuvableTexte:
+      "La page que vous cherchez n'existe pas ou n'est plus accessible.",
+
+    horsLigneTitre: "Vous êtes hors ligne",
+    horsLigneTexte:
+      "Vérifiez votre connexion internet. Les pages déjà consultées restent accessibles.",
+    horsLigneMeta: "Vous êtes actuellement hors ligne.",
+
+    paiementEchoueTitre: "Paiement non abouti",
+    // Dire que les disponibilités sont libérées évite au client de croire
+    // qu'il a bloqué un véhicule en payant mal.
+    paiementEchoueTexte:
+      "Le paiement a été annulé ou a échoué. Les disponibilités ont été libérées — vous pouvez réessayer à tout moment.",
+    paiementEchoueMeta:
+      "Le paiement de votre réservation GROUP PHOEBE a été annulé ou a échoué.",
+
+    paiementEnregistreTitre: "Paiement enregistré",
+    paiementEnregistreMeta: "Votre réservation GROUP PHOEBE a été enregistrée avec succès.",
+    /**
+     * Deux phrases entières plutôt qu'un morceau inséré au milieu.
+     *
+     * Le code composait « Votre réservation » + « pour le {véhicule} » + la
+     * suite : l'anglais ne coupe pas là, et le français lui-même a un genre à
+     * accorder. Une phrase à trous se traduit, une phrase en morceaux non.
+     */
+    reservationEnAttente:
+      "Votre réservation est en attente de validation par notre équipe. Vous recevrez une notification dès qu'elle sera confirmée.",
+    reservationEnAttenteVehicule:
+      "Votre réservation pour le {vehicule} est en attente de validation par notre équipe. Vous recevrez une notification dès qu'elle sera confirmée.",
+    voirMesReservations: "Voir mes réservations",
+    retourCatalogue: "Retour au catalogue",
   },
 
   langue: {

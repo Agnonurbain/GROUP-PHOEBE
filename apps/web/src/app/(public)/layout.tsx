@@ -3,23 +3,16 @@ import { Footer } from "@/components/public/footer"
 import { SmartHeader } from "@/components/public/smart-header"
 import { VerticalLayout } from "./vertical-layout"
 import { ThemeProvider } from "@/components/theme-provider"
-import { getLangues, detecterLangue, LANGUE_COOKIE } from "@/lib/langues"
+import { getLangues } from "@/lib/langues"
 import { LangueProvider } from "@/lib/langue-context"
-import { cookies, headers } from "next/headers"
+import { dictionnaire } from "@/lib/i18n"
+import { langueCourante } from "@/lib/i18n/server"
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
-  const [langues, acceptLanguage, langueCookie] = await Promise.all([
-    getLangues(),
-    headers().then((h) => h.get("accept-language") ?? undefined),
-    cookies().then((c) => c.get(LANGUE_COOKIE)?.value),
-  ])
-
-  const langue = (() => {
-    const detected = detecterLangue(acceptLanguage, langueCookie)
-    if (langues.some((l) => l.code === detected)) return detected
-    const defaut = langues.find((l) => l.defaut)
-    return defaut?.code ?? "fr"
-  })()
+  // La résolution vit dans `langueCourante` : elle était écrite ici ET là, avec
+  // une condition de plus d'un côté. Les composants serveur et le contexte
+  // client répondent désormais à la même fonction.
+  const [langues, langue] = await Promise.all([getLangues(), langueCourante()])
 
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
@@ -40,7 +33,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <LangueProvider langue={langue}>
       <VerticalLayout>
       <a href="#contenu" className="skip-link">
-        Aller au contenu principal
+        {dictionnaire(langue).paiement.allerContenu}
       </a>
       <SmartHeader session={session} langues={langues} langue={langue} />
       <main id="contenu" tabIndex={-1} className="flex-1">
