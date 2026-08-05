@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui"
 import { CheckIcon } from "@/components/icons"
 import { TYPE_DEMANDE_LABELS } from "@/lib/immobilier"
+import { remplir } from "@/lib/i18n/format"
 
 export const metadata: Metadata = {
   title: "Demande envoyée — Immobilier",
@@ -29,7 +30,7 @@ export default async function ConfirmationImmobilier({
       </div>
       <h1 className="mb-3 text-4xl font-bold text-public-text">{t.immobilier.demandeEnvoyee}</h1>
       <p className="mb-8 max-w-sm leading-relaxed text-public-text-muted">
-        Votre {label} a bien été enregistrée. Notre équipe vous recontacte au plus vite pour la suite.
+        {remplir(t.immobilier.demandeEnregistree, { type: label })}
       </p>
       <div className="flex gap-4">
         <Link href="/immobilier">

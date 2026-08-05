@@ -8,8 +8,9 @@ import { CheckIcon } from "@/components/icons"
 import { PhotoLightbox } from "@/components/photo-lightbox"
 import { ZONE_LABELS, MODE_LABELS, STATUT_LIVRAISON_LABELS } from "@/lib/livraison"
 
+import { getT } from "@/lib/i18n/server"
 export const metadata: Metadata = {
-  title: "Livraison enregistrée — Confirmation",
+  title: "{t.livraison.enregistree} — Confirmation",
   description: "Votre commande de livraison GROUP PHOEBE a été enregistrée.",
 }
 
@@ -18,6 +19,7 @@ export default async function ConfirmationLivraison({
 }: {
   searchParams: Promise<{ exp?: string }>
 }) {
+  const t = await getT()
   const { exp } = await searchParams
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
@@ -54,16 +56,16 @@ export default async function ConfirmationLivraison({
           <CheckIcon size={64} className="relative text-accent-green" />
         </div>
       </div>
-      <h1 className="mb-3 text-4xl font-bold text-public-text">Livraison enregistrée</h1>
+      <h1 className="mb-3 text-4xl font-bold text-public-text">{t.livraison.enregistree}</h1>
       <p className="mb-8 max-w-sm text-public-text-muted leading-relaxed">
-        Votre commande de livraison a bien été enregistrée. Notre équipe organise la collecte de votre colis.
+        {t.livraison.enregistreeTexte}
       </p>
 
       {expedition && (
         <div className="mb-8 w-full rounded-2xl border border-public-border bg-public-bg-card p-6 text-left">
-          <p className="text-xs uppercase tracking-wider text-public-text-muted">Numéro de suivi</p>
+          <p className="text-xs uppercase tracking-wider text-public-text-muted">{t.livraison.numeroSuivi}</p>
           <p className="mt-1 text-2xl font-bold text-accent-orange">{expedition.numero_suivi}</p>
-          <p className="mt-1 text-xs text-public-text-muted">Conservez ce numéro pour suivre votre colis.</p>
+          <p className="mt-1 text-xs text-public-text-muted">{t.livraison.conservezNumero}</p>
 
           <dl className="mt-5 space-y-2 text-sm">
             <div className="flex justify-between">
@@ -90,7 +92,7 @@ export default async function ConfirmationLivraison({
 
           {photos.length > 0 && (
             <div className="mt-5">
-              <p className="text-xs uppercase tracking-wider text-public-text-muted">Photos du colis</p>
+              <p className="text-xs uppercase tracking-wider text-public-text-muted">{t.livraison.photosColis}</p>
               <div className="mt-2">
                 <PhotoLightbox photos={photos} />
               </div>
@@ -101,7 +103,7 @@ export default async function ConfirmationLivraison({
 
       <div className="flex gap-4">
         <Link href="/livraison">
-          <Button variant="ghost">Retour à la livraison</Button>
+          <Button variant="ghost">{t.livraison.retourLivraison}</Button>
         </Link>
         <Link href="/compte/reservations">
           <Button variant="default">Mes commandes</Button>

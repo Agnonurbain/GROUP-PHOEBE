@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useT } from "@/lib/langue-context";
 
 type CommuneOption = { id: string; nom: string; zoneNom: string };
 
@@ -21,6 +22,7 @@ export function CommuneSearch({
   placeholder?: string;
   className?: string;
 }) {
+  const t = useT()
   const [localQuery, setLocalQuery] = useState(value);
   const [open, setOpen] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
@@ -115,7 +117,7 @@ export function CommuneSearch({
 
       {open && filtered.length === 0 && localQuery.length > 0 && (
         <div className="absolute z-20 mt-1 w-full rounded-xl border border-phoebe-pearl bg-white p-3 shadow-lg">
-          <p className="text-xs text-phoebe-anthracite/70">Aucune commune trouvée.</p>
+          <p className="text-xs text-phoebe-anthracite/70">{t.livraison.aucuneCommune}</p>
           <button
             type="button"
             onClick={() => handleSelect("autre")}

@@ -15,6 +15,7 @@ import {
   type Pays,
   type TarifsAssistance,
 } from "@/lib/assistance"
+import { useT } from "@/lib/langue-context"
 
 const categorieLabel = (c: Pays["categorie"]) => (c === "etudes" ? "Études" : "Voyage")
 
@@ -58,6 +59,7 @@ export default function Assistance({
   userId: string
   paramsBillet: ParametresBillet
 }) {
+  const t = useT()
   const pays = appliquerTarifsListe(PAYS_LIST, tarifs)
   const etudesCountries = pays.filter((d) => d.categorie === "etudes")
   const voyageCountries = pays.filter((d) => d.categorie === "voyage")
@@ -65,18 +67,18 @@ export default function Assistance({
   return (
     <>
       <div className="px-6 pt-6 sm:px-10">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t.commun.retourAccueil} />
       </div>
 
       <PageHero
-        eyebrow="Assistance Voyages & Études"
-        title="Votre visa, notre expertise"
-        lede="Études en Chine, voyages en Europe — nous montons et suivons votre dossier de bout en bout."
+        eyebrow={t.assistance.assistanceVoyagesEtudes}
+        title={t.assistance.visaExpertise}
+        lede={t.assistance.heroLede}
         bgImage={{ src: "/images/hero-voyages.webp", alt: "Voyages et études" }}
         aside={
           <Image
             src="/logos/assistance.png"
-            alt="Assistance Voyages & Études"
+            alt={t.assistance.assistanceVoyagesEtudes}
             width={423}
             height={429}
             sizes="(min-width: 640px) 208px, 160px"
@@ -104,8 +106,8 @@ export default function Assistance({
       <section id="billet" className="border-t border-public-border px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
-            title="Assistance réservation et achat de billets d'avion"
-            lede="Dites-nous où et quand vous voulez partir : nous cherchons le vol et vous envoyons un devis. Le règlement se fait en ligne ou à notre bureau, comme vous préférez."
+            title={t.assistance.assistanceBillets}
+            lede={t.assistance.billetLede}
             className="border-b-0 pb-0"
           />
           <div className="mt-10">
@@ -117,8 +119,8 @@ export default function Assistance({
       <section className="border-t border-public-border bg-public-bg-card px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
-            title="Assistance demande de visa et de bourses d'études"
-            lede="Les pays que nous couvrons, avec le tarif de départ de notre accompagnement — donné à titre indicatif."
+            title={t.assistance.assistanceVisas}
+            lede={t.assistance.paysLede}
             className="border-b-0 pb-0"
           />
           <div className="mt-10">

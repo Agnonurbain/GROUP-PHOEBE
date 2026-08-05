@@ -138,7 +138,7 @@ export default function ImmobilierFiltres() {
               onClick={() => router.push("/immobilier")}
               className="w-full rounded-lg border border-red-500/30 px-3 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/10"
             >
-              Réinitialiser
+              {t.commun.reinitialiser}
             </button>
           )}
         </div>

@@ -4,6 +4,8 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button, Badge, Card } from "@/components/ui"
 
+import { useT } from "@/lib/langue-context"
+import { remplir } from "@/lib/i18n/format"
 interface ZonePrice {
   nom: string
   prixMin: number
@@ -31,6 +33,7 @@ export function VehicleBooking({
   zonePrices,
   defaultPrice,
 }: VehicleBookingProps) {
+  const t = useT()
   const router = useRouter()
   const [startDate, setStartDate] = useState("")
   const [endDate, setEndDate] = useState("")
@@ -54,7 +57,7 @@ export function VehicleBooking({
       {/* Desktop sidebar */}
       <div className="hidden lg:block">
         <Card className="sticky top-24">
-          <h3 className="text-base font-semibold text-public-text">Tarifs par zone</h3>
+          <h3 className="text-base font-semibold text-public-text">{t.transport.tarifsParZone}</h3>
           <div className="mt-6 space-y-4">
             {zonePrices.length > 0 ? zonePrices.map((z) => {
               const isInterieur = z.nom.toLowerCase() === "intérieur" || z.nom.toLowerCase() === "interieur"
@@ -86,7 +89,7 @@ export function VehicleBooking({
                   </div>
                   {isInterieur && (
                     <p className="mt-2 text-xs text-accent-orange/80">
-                      Supplément chauffeur obligatoire inclus dans le tarif
+                      {t.transport.supplementChauffeur}
                     </p>
                   )}
                 </div>
@@ -94,9 +97,11 @@ export function VehicleBooking({
             }) : (
               <div className="rounded-xl border border-public-border bg-public-bg-elevated p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-public-text">Prix standard</span>
+                  <span className="text-sm font-semibold text-public-text">{t.transport.prixStandard}</span>
                   <span className="text-3xl font-bold text-accent-orange">
-                    {defaultPrice > 0 ? `${defaultPrice.toLocaleString("fr-FR")} FCFA/jour` : "Sur demande"}
+                    {defaultPrice > 0
+                ? remplir(t.transport.parJour, { montant: defaultPrice.toLocaleString("fr-FR") })
+                : t.transport.surDemande}
                   </span>
                 </div>
               </div>
@@ -104,10 +109,10 @@ export function VehicleBooking({
           </div>
 
           <div className="mt-8">
-            <h3 className="text-sm font-semibold text-public-text">Sélectionnez vos dates</h3>
+            <h3 className="text-sm font-semibold text-public-text">{t.transport.selectionnezDates}</h3>
             <div className="mt-4 grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="booking-start" className="text-xs text-public-text-muted">Début</label>
+                <label htmlFor="booking-start" className="text-xs text-public-text-muted">{t.paiement.debut}</label>
                 <input
                   id="booking-start"
                   type="date"
@@ -132,11 +137,13 @@ export function VehicleBooking({
           </div>
 
           <Button variant="orange" size="lg" className="mt-8 w-full" onClick={handleSubmit}>
-            Je réserve ce véhicule
+            {t.transport.jeReserveCeVehicule}
           </Button>
 
           <p className="mt-3 text-center text-3xl font-bold text-public-text-muted">
-            {defaultPrice > 0 ? `À partir de ${defaultPrice.toLocaleString("fr-FR")} FCFA/jour` : "Contactez-nous pour un devis"}
+            {defaultPrice > 0
+              ? remplir(t.transport.aPartirDeParJour, { montant: defaultPrice.toLocaleString("fr-FR") })
+              : t.transport.contactezNousDevis}
           </p>
         </Card>
       </div>
@@ -145,13 +152,15 @@ export function VehicleBooking({
       <div className="fixed bottom-0 left-0 right-0 z-40 border-t border-public-border bg-public-bg/95 px-4 py-3 backdrop-blur-md lg:hidden">
         <div className="flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs text-public-text-muted">À partir de</p>
+            <p className="text-xs text-public-text-muted">{t.transport.aPartirDe}</p>
             <p className="text-lg font-bold text-accent-orange">
-              {defaultPrice > 0 ? `${defaultPrice.toLocaleString("fr-FR")} FCFA/jour` : "Sur demande"}
+              {defaultPrice > 0
+                ? remplir(t.transport.parJour, { montant: defaultPrice.toLocaleString("fr-FR") })
+                : t.transport.surDemande}
             </p>
           </div>
           <Button variant="orange" size="lg" className="shrink-0" onClick={handleSubmit}>
-            Je réserve
+            {t.transport.jeReserve}
           </Button>
         </div>
       </div>

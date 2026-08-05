@@ -1,4 +1,3 @@
-import { getT } from "@/lib/i18n/server"
 import type { Metadata } from "next"
 import Link from "next/link"
 import { MapPin } from "lucide-react"
@@ -20,6 +19,8 @@ import {
   typeBienLabel,
   TRANSACTION_LABELS,
 } from "@/lib/immobilier"
+import { getT, langueCourante } from "@/lib/i18n/server"
+import { remplir, pluriel } from "@/lib/i18n/format"
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
@@ -39,6 +40,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
 export default async function BienDetail({ params }: { params: Promise<{ id: string }> }) {
   const t = await getT()
+  const langue = await langueCourante()
   const { id } = await params
   const result = await getBienById(id)
   if (!result) notFound()
@@ -87,7 +89,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeJsonLd(productSchema) }} />
 
       <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-3 px-6 pt-6 text-sm text-public-text-faint">
-        <BackLink href="/immobilier" label="Retour à l'immobilier" />
+        <BackLink href="/immobilier" label={t.immobilier.retourImmobilier} />
         <span aria-hidden="true">·</span>
         <ol className="flex flex-wrap items-center gap-1.5">
           <li><Link href="/" className="transition-colors hover:text-accent-green">{t.nav.accueil}</Link></li>
@@ -136,7 +138,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
               className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-accent-green transition-colors hover:text-accent-green-hover"
             >
               <MapPin size={16} aria-hidden="true" />
-              Situer le bien sur une carte
+              {t.immobilier.situerCarte}
             </a>
           )}
 
@@ -160,7 +162,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
               <p className="mt-1 text-2xl font-bold text-accent-green">{Number(bien.prix).toLocaleString("fr-FR")} FCFA</p>
               {offreCount > 0 && (
                 <p className="mt-2 text-xs text-public-text-muted">
-                  {offreCount} personne{offreCount > 1 ? "s" : ""} a/ont fait une offre sur ce bien
+                  {pluriel(langue, { un: t.immobilier.offreEnCours_un, autre: t.immobilier.offreEnCours_pluriel }, offreCount)}
                 </p>
               )}
             </div>
@@ -176,17 +178,18 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
                  disponible : autant le dire avant que le client ne le remplisse. */
               <div className="rounded-2xl border border-public-border bg-public-bg-card p-6">
                 <p className="text-sm font-semibold text-public-text">
-                  Ce bien n&apos;est plus disponible
+                  {t.immobilier.bienPlusDisponible}
                 </p>
                 <p className="mt-2 text-xs text-public-text-muted">
-                  Il est actuellement {statutBienLabel(bien.statut).toLowerCase()}. Parcourez
-                  les biens disponibles pour trouver une alternative.
+                  {remplir(t.immobilier.bienIndisponible, {
+                    statut: statutBienLabel(bien.statut).toLowerCase(),
+                  })}
                 </p>
                 <Link
                   href="/immobilier"
                   className="mt-4 inline-block text-xs font-semibold text-accent-green hover:text-accent-green-hover"
                 >
-                  Voir les biens disponibles
+                  {t.immobilier.voirBiensDisponibles}
                 </Link>
               </div>
             )}

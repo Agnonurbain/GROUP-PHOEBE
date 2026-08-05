@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react"
 import { preuveDeLivraison } from "@/app/actions/livreur"
+import { remplir } from "@/lib/i18n/format"
+import { useT } from "@/lib/langue-context"
 
 /**
  * Comme pour les factures : l'URL signée est demandée au clic, pas au rendu.
@@ -16,6 +18,7 @@ export function PreuveLivraison({
   recuPar: string | null
   livreeAt: string | null
 }) {
+  const t = useT()
   const [pending, startTransition] = useTransition()
   const [erreur, setErreur] = useState<string | null>(null)
 
@@ -44,7 +47,7 @@ export function PreuveLivraison({
   return (
     <div className="flex flex-col items-end">
       <span className="text-[11px] text-public-text-muted">
-        {recuPar ? `Reçu par ${recuPar}` : "Colis remis"}
+        {recuPar ? remplir(t.livraison.recuPar, { nom: recuPar }) : t.livraison.colisRemis}
         {quand ? ` · ${quand}` : ""}
       </span>
       <button

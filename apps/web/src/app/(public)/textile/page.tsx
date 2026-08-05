@@ -5,6 +5,7 @@ import { BackLink } from "@/components/public/back-link"
 import { PageHero, SectionHead } from "@/components/public/section-head"
 import { typesPagneActifs, catalogueArticles } from "@/app/actions/textile"
 import { TextileClient } from "./textile-client"
+import { getT } from "@/lib/i18n/server"
 
 export const metadata: Metadata = {
   title: "Textile — Pagnes Uniwax et Hollandais",
@@ -13,6 +14,7 @@ export const metadata: Metadata = {
 }
 
 export default async function TextilePage() {
+  const t = await getT()
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
   const isLoggedIn = !!claimsData?.claims
@@ -25,13 +27,13 @@ export default async function TextilePage() {
   return (
     <>
       <div className="px-6 pt-6 sm:px-10">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t.commun.retourAccueil} />
       </div>
 
       <PageHero
-        eyebrow="Textile"
-        title="Le pagne qu'il vous faut"
-        lede="Uniwax et wax hollandais. Dites-nous ce que vous cherchez — nous consultons nos fournisseurs et vous répondons avec un prix ferme."
+        eyebrow={t.nav.textile}
+        title={t.textile.lePagneQuIlVousFaut}
+        lede={t.textile.heroLede}
         aside={
           <Image
             src="/logos/textile.png"
@@ -48,8 +50,8 @@ export default async function TextilePage() {
       <section id="catalogue" className="scroll-mt-24 px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
-            title="Notre catalogue"
-            lede="Choisissez un modèle, ou décrivez ce que vous cherchez — les deux mènent au même devis."
+            title={t.textile.notreCatalogue}
+            lede={t.textile.catalogueLede}
             className="border-b-0 pb-0"
           />
           <div className="mt-10">

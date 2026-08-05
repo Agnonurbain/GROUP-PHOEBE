@@ -9,6 +9,8 @@ import {
   type ArticlePagne,
   type TypePagne,
 } from "@/lib/textile"
+import { useT, useLangue } from "@/lib/langue-context"
+import { remplir, pluriel } from "@/lib/i18n/format"
 
 /**
  * Une vignette du catalogue.
@@ -26,6 +28,7 @@ function Vignette({
   choisi: boolean
   onChoisir: () => void
 }) {
+  const t = useT()
   const [photo, setPhoto] = useState(0)
   const src = article.photos[photo]
 
@@ -52,7 +55,7 @@ function Vignette({
         ) : (
           // Un article sans photo reste montrable : son nom vaut mieux que rien.
           <span className="absolute inset-0 flex items-center justify-center text-xs text-public-text-faint">
-            Photo à venir
+            {t.textile.photoAVenir}
           </span>
         )}
 
@@ -64,7 +67,7 @@ function Vignette({
 
         {article.vedette && !choisi && (
           <span className="absolute left-3 top-3 rounded-full bg-accent-gold/90 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#0A0A0A]">
-            Coup de cœur
+            {t.textile.coupDeCoeur}
           </span>
         )}
 
@@ -86,7 +89,7 @@ function Vignette({
       <div className="p-3">
         <p className="text-sm font-medium text-public-text">{article.nom}</p>
         <p className="mt-0.5 text-[11px] text-public-text-faint">
-          {article.reference ? `Réf. ${article.reference}` : "Sur devis"}
+          {article.reference ? remplir(t.textile.reference, { reference: article.reference }) : t.textile.surDevis}
           {article.couleurs ? ` · ${article.couleurs}` : ""}
         </p>
       </div>
@@ -112,6 +115,8 @@ export function CatalogueClient({
   onChoisir: (a: ArticlePagne | null) => void
   articleChoisi: string | null
 }) {
+  const t = useT()
+  const { langue } = useLangue()
   const [recherche, setRecherche] = useState("")
   const [type, setType] = useState<string | null>(null)
 
@@ -125,8 +130,7 @@ export function CatalogueClient({
   if (articles.length === 0) {
     return (
       <p className="rounded-2xl border border-public-border bg-public-bg-card p-6 text-sm text-public-text-muted">
-        Le catalogue se remplit. En attendant, décrivez ce que vous cherchez
-        dans le formulaire ci-dessous — nous consultons nos fournisseurs.
+        {t.textile.catalogueVide}
       </p>
     )
   }
@@ -141,20 +145,20 @@ export function CatalogueClient({
             className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-public-text-faint"
           />
           <label htmlFor="recherche-pagne" className="sr-only">
-            Rechercher dans le catalogue
+            {t.textile.rechercherCatalogue}
           </label>
           <input
             id="recherche-pagne"
             value={recherche}
             onChange={(e) => setRecherche(e.target.value)}
-            placeholder="Un nom, une couleur, une référence…"
+            placeholder={t.textile.exempleRecherche}
             className="w-full rounded-xl border border-public-border bg-public-bg py-2.5 pl-9 pr-9 text-sm text-public-text placeholder:text-public-text-faint focus:border-accent-gold focus:outline-none focus:ring-2 focus:ring-accent-gold/20"
           />
           {recherche && (
             <button
               type="button"
               onClick={() => setRecherche("")}
-              aria-label="Effacer la recherche"
+              aria-label={t.textile.effacerRecherche}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-public-text-faint hover:text-public-text"
             >
               <X size={15} aria-hidden="true" />
@@ -173,7 +177,7 @@ export function CatalogueClient({
                 : "border-public-border text-public-text-muted hover:text-public-text"
             }`}
           >
-            Tout
+            {t.textile.tout}
           </button>
           {types.map((t) => (
             <button
@@ -197,19 +201,18 @@ export function CatalogueClient({
           que le catalogue a rétréci sans qu'on sache de combien. */}
       <p className="text-xs text-public-text-faint">
         {visibles.length === articles.length
-          ? `${articles.length} modèle${articles.length > 1 ? "s" : ""}`
-          : `${visibles.length} sur ${articles.length}`}
-        {articleChoisi && " · un modèle sélectionné"}
+          ? pluriel(langue, { un: t.textile.modele_un, autre: t.textile.modele_pluriel }, articles.length)
+          : remplir(t.textile.surTotal, { n: visibles.length, total: articles.length })}
+        {articleChoisi && t.textile.modeleSelectionne}
       </p>
 
       {visibles.length === 0 ? (
         <div className="rounded-2xl border border-public-border bg-public-bg-card p-6 text-center">
           <p className="text-sm text-public-text-muted">
-            Rien ne correspond à « {recherche} ».
+            {remplir(t.textile.rienNeCorrespond, { recherche })}
           </p>
           <p className="mt-1 text-xs text-public-text-faint">
-            Décrivez ce que vous cherchez dans le formulaire : nous le trouvons
-            même s&apos;il n&apos;est pas au catalogue.
+            {t.textile.decrivezQuandMeme}
           </p>
         </div>
       ) : (

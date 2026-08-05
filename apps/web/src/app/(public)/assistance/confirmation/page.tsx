@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Button } from "@/components/ui"
 import { CheckIcon } from "@/components/icons"
+import { remplir } from "@/lib/i18n/format"
 
 export const metadata: Metadata = {
   title: "Dossier soumis — Assistance",
@@ -32,14 +33,13 @@ export default async function ConfirmationAssistance({
       <p className="mb-8 max-w-sm leading-relaxed text-public-text-muted">
         {estBillet ? (
           <>
-            Votre demande de billet a bien été enregistrée. Nous recherchons le meilleur
-            vol pour votre trajet et vous envoyons un devis. Aucun paiement n&apos;a été
-            prélevé à cette étape.
+            {t.assistance.demandeBilletEnregistree}
           </>
         ) : (
           <>
-            Votre demande{pays ? ` pour un visa ${pays}` : ""} a bien été enregistrée. Notre équipe
-            étudie votre dossier et vous contactera prochainement pour convenir des modalités et du paiement.
+            {pays
+              ? remplir(t.assistance.demandeEnregistreePays, { pays })
+              : t.assistance.demandeEnregistree}
           </>
         )}
       </p>

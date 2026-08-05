@@ -5,6 +5,7 @@ import Link from "next/link"
 import { BackLink } from "@/components/public/back-link"
 import { Card } from "@/components/ui"
 import { useT } from "@/lib/langue-context"
+import { remplir } from "@/lib/i18n/format"
 import { creerExpedition, type LivraisonState } from "@/app/actions/livraison"
 import {
   MODES_LIVRAISON,
@@ -143,11 +144,11 @@ export default function CommanderClient({
   return (
     <div className="mx-auto max-w-6xl px-6 py-10 sm:px-10">
       <div className="mb-6">
-        <BackLink href="/livraison" label="Retour à la livraison" />
+        <BackLink href="/livraison" label={t.livraison.retourLivraison} />
       </div>
       <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">{t.livraisonForm.commanderLivraison}</h1>
       <p className="mt-2 text-sm text-public-text-muted">
-        Choisissez les communes et indiquez le poids : la zone et le prix sont calculés automatiquement.
+        {t.livraison.consigneCommande}
       </p>
 
       {state.error && (
@@ -186,8 +187,8 @@ export default function CommanderClient({
             <h2 className="text-base font-semibold text-public-text">{t.livraisonForm.adresses}</h2>
             <p className="mt-1 text-xs text-public-text-muted">{t.livraisonForm.zoneDeduite}</p>
             <div className="mt-5 grid gap-5 sm:grid-cols-2">
-              <CommuneField id="commune_collecte" name="commune_collecte" label="Commune de collecte *" communes={communes} text={communeCollecte} setText={setCommuneCollecte} />
-              <CommuneField id="commune_livraison" name="commune_livraison" label="Commune de livraison *" communes={communes} text={communeLivraison} setText={setCommuneLivraison} />
+              <CommuneField id="commune_collecte" name="commune_collecte" label={t.livraison.communeCollecte} communes={communes} text={communeCollecte} setText={setCommuneCollecte} />
+              <CommuneField id="commune_livraison" name="commune_livraison" label={t.livraison.communeLivraison} communes={communes} text={communeLivraison} setText={setCommuneLivraison} />
               <div>
                 <label htmlFor="adresse_collecte" className={labelClass}>{t.livraisonForm.adresseCollecte}<Obligatoire /></label>
                 <input id="adresse_collecte" name="adresse_collecte" required placeholder={t.livraisonForm.exQuartier} className={inputClass} />
@@ -227,7 +228,7 @@ export default function CommanderClient({
                   className={inputClass}
                 />
                 <p className="mt-1 text-xs text-public-text-faint">
-                  À partir de demain. La collecte est organisée pour livrer ce jour-là.
+                  {t.livraison.collecteDemain}
                 </p>
               </div>
             )}
@@ -259,12 +260,11 @@ export default function CommanderClient({
                   className={inputClass}
                 />
                 <p id="poids-aide" className="mt-1.5 text-xs text-public-text-faint">
-                  Le poids détermine les moyens qui peuvent porter votre colis —
-                  au-delà de {maxKg} kg, contactez-nous pour un devis.
+                  {remplir(t.livraison.poidsDetermineMoyens, { max: maxKg })}
                 </p>
                 {poidsHorsGrille && (
                   <p role="alert" className="mt-1.5 text-xs text-error">
-                    Au-delà de {maxKg} kg, contactez-nous pour un devis.
+                    {remplir(t.livraison.auDelaDevis, { max: maxKg })}
                   </p>
                 )}
               </div>
@@ -272,12 +272,12 @@ export default function CommanderClient({
               {/* Le moyen de livraison — le véhicule. Il vient après le poids
                   parce que le poids décide de ce qui peut porter le colis. */}
               <div className="sm:col-span-2">
-                <span className={labelClass}>Moyen de livraison<Obligatoire /></span>
+                <span className={labelClass}>{t.livraison.moyenLivraison}<Obligatoire /></span>
                 <input type="hidden" name="moyen" value={moyen} />
 
                 {moyensProposables.length === 0 ? (
                   <p role="alert" className="text-xs text-error">
-                    Aucun de nos véhicules ne porte {poids} kg. Contactez-nous pour un devis.
+                    {remplir(t.livraison.aucunVehiculePorte, { poids })}
                   </p>
                 ) : (
                   <div className="mt-1 space-y-3">
@@ -303,7 +303,7 @@ export default function CommanderClient({
                               >
                                 <span className="block font-medium">{m.label}</span>
                                 <span className="block text-[11px] text-public-text-faint">
-                                  jusqu&apos;à {m.chargeMaxKg} kg
+                                  {remplir(t.livraison.jusquA, { n: m.chargeMaxKg })}
                                 </span>
                               </button>
                             ))}
@@ -397,8 +397,8 @@ export default function CommanderClient({
             {prix === null && (
               <p className="mt-2 text-xs text-public-text-faint">
                 {poidsHorsGrille
-                  ? `Au-delà de ${maxKg} kg : contactez-nous pour un devis.`
-                  : "Choisissez les communes et indiquez le poids pour calculer le prix."}
+                  ? remplir(t.livraison.horsGrille, { max: maxKg })
+                  : t.livraison.prixApresSaisie}
               </p>
             )}
 

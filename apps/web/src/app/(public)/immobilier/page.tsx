@@ -17,6 +17,7 @@ import { statutBienLabel, statutBienBadgeVariant, typeBienLabel } from "@/lib/im
 import { GarantieDocuments } from "@/components/public/garantie-documents"
 import { FavoriButton } from "@/components/favori-button"
 import { getFavorisBienIds } from "@/app/actions/favoris"
+import { remplir } from "@/lib/i18n/format"
 
 export const metadata: Metadata = {
   title: "Immobilier — Achat, Vente & Location",
@@ -116,13 +117,13 @@ export default async function Immobilier({
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(listingSchema) }}
       />
       <div className="px-6 pt-6 sm:px-10">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t.commun.retourAccueil} />
       </div>
 
       <PageHero
-        eyebrow="Immobilier"
-        title="Trouvez le bien de vos rêves"
-        lede="Vente, location, estimation — nous vous accompagnons à chaque étape."
+        eyebrow={t.nav.immobilier}
+        title={t.immobilier.trouvezBien}
+        lede={t.immobilier.heroLede}
         bgImage={{ src: "/images/hero-immobilier.webp", alt: "Bien immobilier" }}
         aside={
           <Image
@@ -144,12 +145,12 @@ export default async function Immobilier({
       <section className="mx-auto max-w-6xl px-6 pb-20 sm:px-10">
         <SectionHead
           title="Biens disponibles"
-          lede="Nos offres du moment, mises à jour en continu."
+          lede={t.immobilier.offresLede}
           aside={
             total > 0 ? (
               <span className="text-sm text-public-text-muted">
                 {total} bien{total > 1 ? "s" : ""}
-                {nbPages > 1 ? ` · page ${page} sur ${nbPages}` : ""}
+                {nbPages > 1 ? remplir(t.immobilier.pageSur, { n: page, total: nbPages }) : ""}
               </span>
             ) : null
           }

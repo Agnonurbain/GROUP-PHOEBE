@@ -6,6 +6,7 @@ import { Card } from "@/components/ui"
 import { SubmitButton } from "@/components/submit-button"
 import { AccepterCgv } from "@/components/public/accepter-cgv"
 
+import { useT } from "@/lib/langue-context"
 interface VehiclePurchaseProps {
   vehiculeId: string
   marque: string
@@ -19,6 +20,7 @@ export function VehiclePurchase({
   modele,
   prixVente,
 }: VehiclePurchaseProps) {
+  const t = useT()
   const [state, action] = useActionState<AchatState, FormData>(
     creerDemandeAchat,
     {}
@@ -31,17 +33,19 @@ export function VehiclePurchase({
       <input type="hidden" name="modele" value={modele} />
 
       <Card>
-        <h3 className="text-base font-semibold text-public-text">Acheter ce véhicule</h3>
+        <h3 className="text-base font-semibold text-public-text">{t.transport.acheterCeVehicule}</h3>
 
         <div className="mt-6 rounded-xl border border-accent-gold/40 bg-[rgba(201,168,76,0.08)] p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-public-text">Prix affiché</span>
+            <span className="text-sm font-semibold text-public-text">{t.transport.prixAffiche}</span>
             <span className="text-3xl font-bold text-accent-gold">
-              {prixVente > 0 ? `${prixVente.toLocaleString("fr-FR")} FCFA` : "Sur demande"}
+              {prixVente > 0
+                ? `${prixVente.toLocaleString("fr-FR")} ${t.commun.devise}`
+                : t.transport.surDemande}
             </span>
           </div>
           <p className="mt-2 text-xs text-public-text-muted">
-            Prix indicatif, négociable avec notre équipe.
+            {t.transport.prixIndicatif}
           </p>
         </div>
 
@@ -76,7 +80,7 @@ export function VehiclePurchase({
         </SubmitButton>
 
         <p className="mt-3 text-center text-xs text-public-text-faint">
-          Vous devez être connecté pour envoyer une demande.
+          {t.transport.connexionRequise}
         </p>
       </Card>
     </form>

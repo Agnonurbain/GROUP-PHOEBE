@@ -2,6 +2,8 @@
 
 import { useActionState } from "react"
 import { payerDevisBillet, type BilletState } from "@/app/actions/billets"
+import { useT } from "@/lib/langue-context"
+import { remplir } from "@/lib/i18n/format"
 
 export function PayerBillet({
   demandeId,
@@ -10,6 +12,7 @@ export function PayerBillet({
   demandeId: string
   total: number
 }) {
+  const t = useT()
   const [state, action, isPending] = useActionState<BilletState, FormData>(
     payerDevisBillet,
     {}
@@ -19,11 +22,11 @@ export function PayerBillet({
     <form action={action} className="flex flex-col items-end gap-1.5">
       <input type="hidden" name="demande_id" value={demandeId} />
       <span className="text-xs font-semibold text-accent-gold">
-        À payer : {total.toLocaleString("fr-FR")} FCFA
+        {remplir(t.assistance.aPayer, { montant: total.toLocaleString("fr-FR") })}
       </span>
       {state.success && (
         <p role="status" className="max-w-[14rem] text-right text-[11px] text-accent-green">
-          Noté. Présentez-vous à notre bureau pour régler et retirer votre billet.
+          {t.assistance.presentezVousBureau}
         </p>
       )}
       <div className="flex flex-wrap justify-end gap-1.5">

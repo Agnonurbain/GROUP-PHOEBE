@@ -3,6 +3,8 @@
 import { useState } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Obligatoire } from "@/components/ui/obligatoire"
+import { useT } from "@/lib/langue-context"
+import { remplir } from "@/lib/i18n/format"
 
 const champ =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-blue focus:outline-none focus:ring-2 focus:ring-accent-blue/20"
@@ -34,6 +36,7 @@ function DeposerPasseport({
   userId: string
   id: string
 }) {
+  const t = useT()
   const [chemin, setChemin] = useState("")
   const [etat, setEtat] = useState<"vide" | "envoi" | "ok" | "erreur">("vide")
   const [message, setMessage] = useState("")
@@ -73,7 +76,7 @@ function DeposerPasseport({
       {/* Ce que lit le serveur : le chemin, jamais le fichier. */}
       <input type="hidden" name={name} value={chemin} />
       <label htmlFor={id} className={label}>
-        Page du passeport <span className="text-public-text-faint">(facultatif)</span>
+        {t.assistance.pagePasseport} <span className="text-public-text-faint">(facultatif)</span>
       </label>
       <input
         id={id}
@@ -118,6 +121,7 @@ export function PasseportAccompagnant({
   userId: string
   moisValidite: number
 }) {
+  const t = useT()
   const n = index + 2 // le voyageur 1 est le titulaire de la demande
   return (
     <div className="rounded-xl border border-public-border bg-public-bg p-4">
@@ -127,7 +131,7 @@ export function PasseportAccompagnant({
       </p>
       <div className="mt-3 grid gap-4 md:grid-cols-3">
         <div>
-          <label htmlFor={`passager_nom_${index}`} className={label}>Nom et prénoms<Obligatoire /></label>
+          <label htmlFor={`passager_nom_${index}`} className={label}>{t.assistance.nomPrenoms}<Obligatoire /></label>
           <input
             id={`passager_nom_${index}`}
             name={`passager_nom_${index}`}
@@ -137,7 +141,7 @@ export function PasseportAccompagnant({
           />
         </div>
         <div>
-          <label htmlFor={`passager_passeport_numero_${index}`} className={label}>Numéro de passeport<Obligatoire /></label>
+          <label htmlFor={`passager_passeport_numero_${index}`} className={label}>{t.assistance.numeroPasseport}<Obligatoire /></label>
           <input
             id={`passager_passeport_numero_${index}`}
             name={`passager_passeport_numero_${index}`}
@@ -167,7 +171,7 @@ export function PasseportAccompagnant({
       </div>
       {moisValidite > 0 && (
         <p className="mt-2 text-[11px] text-public-text-faint">
-          Ce passeport doit rester valable au moins {moisValidite} mois après le départ.
+          {remplir(t.assistance.validiteCePasseport, { mois: moisValidite })}
         </p>
       )}
     </div>

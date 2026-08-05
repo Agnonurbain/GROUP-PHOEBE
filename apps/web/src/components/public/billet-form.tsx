@@ -15,6 +15,8 @@ import {
 } from "@/lib/billets"
 import { DeposerPasseport, PasseportAccompagnant } from "@/components/public/passeport-voyageur"
 import { Obligatoire } from "@/components/ui/obligatoire"
+import { useT } from "@/lib/langue-context"
+import { remplir } from "@/lib/i18n/format"
 
 const champ =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-blue focus:outline-none focus:ring-2 focus:ring-accent-blue/20"
@@ -42,6 +44,7 @@ export function BilletForm({
   /** Frais et règles pilotés par le propriétaire depuis /admin/tarifs. */
   params: ParametresBillet
 }) {
+  const t = useT()
   const [state, action, pending] = useActionState<BilletState, FormData>(creerDemandeBillet, {})
   const [typeTrajet, setTypeTrajet] = useState<string>("aller_retour")
   const [voyageurs, setVoyageurs] = useState({ adultes: 1, enfants: 0, bebes: 0 })
@@ -67,8 +70,7 @@ export function BilletForm({
       <div className="rounded-2xl border border-public-border bg-public-bg-card p-8 text-center">
         <Plane size={28} className="mx-auto text-accent-blue-on-dark" aria-hidden="true" />
         <p className="mt-3 text-sm text-public-text-muted">
-          Connectez-vous pour demander un billet : nous avons besoin de vos informations
-          de passeport pour préparer la réservation.
+          {t.assistance.connexionBillet}
         </p>
         <Link
           href="/connexion?redirect=/assistance"
@@ -97,7 +99,7 @@ export function BilletForm({
 
       {/* Barre supérieure : type de trajet et classe */}
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-4" role="radiogroup" aria-label="Type de trajet">
+        <div className="flex flex-wrap gap-4" role="radiogroup" aria-label={t.assistance.typeTrajet}>
           {TYPES_TRAJET.map((t) => (
             <button
               key={t}
@@ -138,7 +140,7 @@ export function BilletForm({
           <input id="depart" name="depart" list="aeroports" required placeholder="Abidjan (ABJ)" className={champ} />
         </div>
         <div>
-          <label htmlFor="destination" className={label}>Où allez-vous ?<Obligatoire /></label>
+          <label htmlFor="destination" className={label}>{t.assistance.ouAllezVous}<Obligatoire /></label>
           <input id="destination" name="destination" list="aeroports" required placeholder="Paris (CDG)" className={champ} />
         </div>
         <datalist id="aeroports">
@@ -146,7 +148,7 @@ export function BilletForm({
         </datalist>
 
         <div>
-          <label htmlFor="date_depart" className={label}>Date de départ<Obligatoire /></label>
+          <label htmlFor="date_depart" className={label}>{t.assistance.dateDepart}<Obligatoire /></label>
           <input
             id="date_depart"
             name="date_depart"
@@ -230,13 +232,12 @@ export function BilletForm({
       {/* Passeport : indispensable pour émettre un billet */}
       <fieldset className="rounded-2xl border border-public-border bg-public-bg-card p-5">
         <legend className="px-1 text-sm font-semibold text-public-text">
-          Passeport du voyageur principal
+          {t.assistance.passeportPrincipal}
         </legend>
         <p className="mt-1 text-xs text-public-text-muted">
-          Le nom doit être exactement celui du passeport : une différence rend le billet
-          inutilisable à l&apos;embarquement.
+          {t.assistance.nomExactPasseport}
           {params.mois_validite_passeport > 0 && (
-            <> Il doit rester valable au moins {params.mois_validite_passeport} mois après le départ.</>
+            <> {remplir(t.assistance.validiteApresDepart, { mois: params.mois_validite_passeport })}</>
           )}
         </p>
         <p className="mt-1.5 text-xs text-accent-blue/80">
@@ -245,11 +246,11 @@ export function BilletForm({
         </p>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
           <div>
-            <label htmlFor="passeport_nom" className={label}>Nom et prénoms<Obligatoire /></label>
+            <label htmlFor="passeport_nom" className={label}>{t.assistance.nomPrenoms}<Obligatoire /></label>
             <input id="passeport_nom" name="passeport_nom" required placeholder="Tels qu'inscrits" className={champ} />
           </div>
           <div>
-            <label htmlFor="passeport_numero" className={label}>Numéro de passeport<Obligatoire /></label>
+            <label htmlFor="passeport_numero" className={label}>{t.assistance.numeroPasseport}<Obligatoire /></label>
             <input id="passeport_numero" name="passeport_numero" required placeholder="Ex. 21AB45678" className={champ} />
           </div>
           <div>
@@ -280,11 +281,10 @@ export function BilletForm({
       {accompagnants.length > 0 && (
         <fieldset className="rounded-2xl border border-public-border bg-public-bg-card p-5">
           <legend className="px-1 text-sm font-semibold text-public-text">
-            Passeports des autres voyageurs ({accompagnants.length})
+            {remplir(t.assistance.passeportsAutres, { n: accompagnants.length })}
           </legend>
           <p className="mt-1 text-xs text-public-text-muted">
-            Les mêmes informations que ci-dessus, pour chaque personne qui voyage.
-            Sans elles, la compagnie ne peut pas émettre son billet.
+            {t.assistance.memesInformations}
           </p>
           {voyageurs.bebes > 0 && (
             <p className="mt-1.5 text-xs text-accent-blue/80">
@@ -355,19 +355,18 @@ export function BilletForm({
 
         {voyageurs.enfants > 0 && !mineurAutorisation && (
           <p className="mt-3 text-xs text-error/80">
-            Cette autorisation est obligatoire pour les enfants voyageant sans leurs deux parents.
-            La démarche prend plusieurs jours : anticipez.
+            {t.assistance.autorisationParentale}
           </p>
         )}
       </fieldset>
 
       <div>
-        <label htmlFor="message" className={label}>Précisions (optionnel)</label>
+        <label htmlFor="message" className={label}>{t.assistance.precisionsOptionnel}</label>
         <textarea
           id="message"
           name="message"
           rows={2}
-          placeholder="Compagnie souhaitée, horaires, bagages, escale…"
+          placeholder={t.assistance.exemplePrecisions}
           className={champ}
         />
       </div>
@@ -386,18 +385,18 @@ export function BilletForm({
       {params.frais_service > 0 && (
         <div className="rounded-xl border border-accent-blue/25 bg-accent-blue/5 p-4">
           <p className="text-sm font-semibold text-public-text">
-            Frais de service : {params.frais_service.toLocaleString("fr-FR")} FCFA par billet
+            {remplir(t.assistance.fraisService, { montant: params.frais_service.toLocaleString("fr-FR") })}
           </p>
           <p className="mt-1 text-xs text-public-text-muted">
-            Ils s&apos;ajoutent au prix du vol et couvrent la recherche, la réservation et
-            l&apos;émission. Le devis vous donnera le total.
+            {t.assistance.fraisServiceDetail}
           </p>
         </div>
       )}
 
       <p className="text-xs text-public-text-faint">
-        Nous recherchons le meilleur vol pour votre trajet et vous répondons{" "}
-        {libelleDelai(params.delai_reponse_heures)} avec un devis. Aucun paiement à cette étape.
+        {remplir(t.assistance.aucunPaiementDelai, {
+          delai: libelleDelai(params.delai_reponse_heures),
+        })}
       </p>
     </form>
   )
