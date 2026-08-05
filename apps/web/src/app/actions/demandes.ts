@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { err } from "@/lib/i18n/erreurs";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -48,9 +49,9 @@ export async function accepterDemande(
     .eq("id", demandeId)
     .single();
 
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
   if (demande.statut !== "en_attente_validation") {
-    return { error: "Cette demande n'est plus en attente de validation." };
+    return { error: await err("cetteDemandeNEstPlusEn") };
   }
 
   const { error } = await admin
@@ -100,7 +101,7 @@ export async function refuserDemande(
   const motifRefus = (formData.get("motif_refus") as string)?.trim();
 
   if (!motifRefus) {
-    return { error: "Le motif de refus est obligatoire." };
+    return { error: await err("leMotifDeRefusEstObligatoire") };
   }
 
   const { data: demande } = await admin
@@ -109,9 +110,9 @@ export async function refuserDemande(
     .eq("id", demandeId)
     .single();
 
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
   if (demande.statut !== "en_attente_validation") {
-    return { error: "Cette demande n'est plus en attente de validation." };
+    return { error: await err("cetteDemandeNEstPlusEn") };
   }
 
   const { error } = await admin
@@ -168,7 +169,7 @@ export async function annulerParClient(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non connecté." };
+  if (!user) return { error: await err("nonConnecte") };
 
   const admin = getAdmin();
   const { data: demande } = await admin
@@ -178,9 +179,9 @@ export async function annulerParClient(
     .eq("client_id", user.sub)
     .single();
 
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
   if (!["en_attente_validation", "acceptee", "en_negociation"].includes(demande.statut)) {
-    return { error: "Cette demande ne peut plus être annulée." };
+    return { error: await err("cetteDemandeNePeutPlusEtre") };
   }
 
   let montantCautionRetenu = 0;
@@ -266,7 +267,7 @@ export async function verifierConducteurSecondaire(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non authentifié." };
+  if (!user) return { error: await err("nonAuthentifie") };
 
   const { data: profile } = await supabase
     .from("users")
@@ -274,13 +275,13 @@ export async function verifierConducteurSecondaire(
     .eq("id", user.sub)
     .single();
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
-    return { error: "Accès refusé." };
+    return { error: await err("accesRefuse") };
   }
 
   const conducteurId = formData.get("conducteur_id") as string;
   const decision = formData.get("decision") as string;
   if (!conducteurId || !["verifie", "rejete"].includes(decision)) {
-    return { error: "Demande invalide." };
+    return { error: await err("demandeInvalide") };
   }
 
   const admin = getAdmin();
@@ -294,7 +295,7 @@ export async function verifierConducteurSecondaire(
     .eq("statut_verification", "documents_soumis");
 
   if (error) return { error: error.message };
-  if (!count) return { error: "Ce conducteur a déjà été traité." };
+  if (!count) return { error: await err("ceConducteurADejaEteTraite") };
 
   await logAudit({
     userId: user.sub as string,
@@ -320,7 +321,7 @@ export async function permisConducteurSecondaire(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non authentifié." };
+  if (!user) return { error: await err("nonAuthentifie") };
 
   const { data: profile } = await supabase
     .from("users")
@@ -328,7 +329,7 @@ export async function permisConducteurSecondaire(
     .eq("id", user.sub)
     .single();
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
-    return { error: "Accès refusé." };
+    return { error: await err("accesRefuse") };
   }
 
   const admin = getAdmin();
@@ -338,12 +339,12 @@ export async function permisConducteurSecondaire(
     .eq("id", conducteurId)
     .single();
 
-  if (!conducteur?.permis_conduire_url) return { error: "Aucun permis déposé." };
+  if (!conducteur?.permis_conduire_url) return { error: await err("aucunPermisDepose") };
 
   const { data: signee, error } = await admin.storage
     .from("identity-documents")
     .createSignedUrl(conducteur.permis_conduire_url, 60);
 
-  if (error || !signee?.signedUrl) return { error: "Lien indisponible." };
+  if (error || !signee?.signedUrl) return { error: await err("lienIndisponible") };
   return { url: signee.signedUrl };
 }

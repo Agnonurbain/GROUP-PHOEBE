@@ -230,7 +230,7 @@ describe("gardes du chiffrage", () => {
   it("le statut devis_envoye n'est pas atteignable par le sélecteur générique", () => {
     const source = src("app/actions/billets.ts");
     expect(source).toContain('statut === "devis_envoye"');
-    expect(source).toContain("Passez par le formulaire de devis");
+    expect(source).toContain('err("passezParLeFormulaireDeDevis")');
   });
 
   it("la garde base sur le montant existe et reste en security invoker", () => {
@@ -304,7 +304,7 @@ describe("les règles sont pilotées, pas figées", () => {
   it("payer un devis vérifie l'expiration", () => {
     const source = src("app/actions/billets.ts");
     expect(source).toContain("devis_valable_jusqu_a");
-    expect(source).toContain("Ce devis a expiré");
+    expect(source).toContain('err("ceDevisAExpireContactezNous")');
   });
 });
 

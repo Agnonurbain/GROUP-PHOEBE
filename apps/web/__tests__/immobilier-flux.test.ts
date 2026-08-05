@@ -137,7 +137,7 @@ describe("le client est informé de sa visite", () => {
   });
 
   it("un créneau passé est refusé", () => {
-    expect(source).toContain("Le créneau doit être dans le futur.");
+    expect(source).toContain('err("leCreneauDoitEtreDansLe")');
   });
 });
 
@@ -181,8 +181,8 @@ describe("location", () => {
 
   it("exige début et durée sur une offre de location", () => {
     const source = src("app/actions/immobilier.ts");
-    expect(source).toContain("Indiquez la durée de location souhaitée");
-    expect(source).toContain("Indiquez la date de début de location souhaitée");
+    expect(source).toContain('err("indiquezLaDureeDeLocationSouhaitee")');
+    expect(source).toContain('err("indiquezLaDateDeDebutDe")');
   });
 });
 
@@ -195,11 +195,11 @@ describe("gardes de l'acceptation", () => {
   });
 
   it("un bien déjà pris ne peut pas faire l'objet d'un second accord", () => {
-    expect(source).toContain("un accord a été conclu entre-temps");
+    expect(source).toContain('err("ceBienNEstPlusDisponible2")');
   });
 
   it("une seule demande de visite active par client et par bien", () => {
-    expect(source).toContain("Vous avez déjà une demande de visite en cours sur ce bien");
+    expect(source).toContain('err("vousAvezDejaUneDemandeDe")');
   });
 });
 
@@ -214,7 +214,7 @@ describe("paiement des frais de visite", () => {
   });
 
   it("refuse un moyen de paiement inconnu", () => {
-    expect(source).toContain("Moyen de paiement invalide.");
+    expect(source).toContain('err("moyenDePaiementInvalide")');
   });
 });
 

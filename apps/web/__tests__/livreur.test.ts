@@ -100,13 +100,13 @@ describe("Livraison — le livreur n'agit que sur ses colis", () => {
   // Un colis était « livré » parce que quelqu'un l'avait tapé.
   it("la livraison exige une photo et le nom du réceptionnaire", () => {
     const corps = corpsDeFonction(source, "confirmerLivraison");
-    expect(corps).toContain("Une photo de la remise est obligatoire.");
-    expect(corps).toContain("Indiquez qui a réceptionné le colis.");
+    expect(corps).toContain('err("unePhotoDeLaRemiseEst")');
+    expect(corps).toContain('err("indiquezQuiAReceptionneLeColis")');
   });
 
   it("un échec exige un motif", () => {
     const corps = corpsDeFonction(source, "signalerEchecLivraison");
-    expect(corps).toContain("Indiquez le motif de l'échec.");
+    expect(corps).toContain('err("indiquezLeMotifDeLEchec")');
   });
 
   // Deux validations parties du même écran ne doivent produire qu'une
@@ -283,7 +283,7 @@ describe("Livraison — paiement à la livraison", () => {
   it("la remise exige la confirmation d'encaissement", () => {
     const corps = corpsDeFonction(livreur, "confirmerLivraison");
     expect(corps).toContain('formData.get("encaissement_confirme")');
-    expect(corps).toContain("Confirmez avoir encaissé");
+    expect(corps).toContain('err("confirmezEncaissement"');
   });
 
   it("la capture n'a lieu qu'une fois la transition acquise", () => {
@@ -307,7 +307,7 @@ describe("Livraison — fins de parcours", () => {
 
   it("on ne clôture que ce qui est en échec", () => {
     const corps = corpsDeFonction(livraison, "cloturerEchecLivraison");
-    expect(corps).toContain("Seule une expédition en échec peut être clôturée");
+    expect(corps).toContain('err("seuleUneExpeditionEnEchecPeut")');
   });
 
   // Une fois le colis pris en charge, le livreur s'est déplacé.
@@ -375,7 +375,7 @@ describe("Livraison — une annulation n'est pas un échec", () => {
   // statuts-paiement.test.ts, qui étend la règle à tout le dépôt.
   it("un paiement déjà instruit n'est pas retouché par une seconde clôture", () => {
     const corps = corpsDeFonction(livraison, "cloturerEchecLivraison");
-    expect(corps).toContain("Le paiement de cet envoi est déjà instruit.");
+    expect(corps).toContain('err("lePaiementDeCetEnvoiEst")');
   });
 
   // L'inverse touchait l'argent avant d'avoir acquis le droit d'annuler.

@@ -407,3 +407,53 @@ describe("i18n — les métadonnées suivent la langue", () => {
     expect(en.meta.ogLocale).toBe("en_US");
   });
 });
+
+/**
+ * Les messages d'erreur des actions atteignables depuis le site public.
+ *
+ * Un visiteur anglophone remplissait un formulaire et recevait « Vous devez
+ * être connecté » — au moment précis où il a besoin de comprendre ce qui
+ * bloque. Les messages passent maintenant par `err()`.
+ *
+ * L'administration reste en français, comme le reste de l'outil interne : les
+ * actions qui ne servent qu'à elle ne sont pas visées.
+ */
+describe("i18n — les erreurs des actions publiques", () => {
+  /** Les actions importées par une page ou un composant du site public. */
+  const ACTIONS_PUBLIQUES = [
+    "achat", "assistance", "auth", "avis", "billets", "checkout", "contact",
+    "demandes", "disponibilites", "factures", "favoris", "immobilier",
+    "livraison", "livreur", "negociation", "propositions-zones", "textile",
+    "vehicules", "verification",
+  ];
+
+  it.each(ACTIONS_PUBLIQUES)("%s.ts ne renvoie plus de message en dur", (nom) => {
+    const code = src(`app/actions/${nom}.ts`);
+    const litteraux = [
+      // Chaîne simple : `error: "Vous devez être connecté."`
+      ...[...code.matchAll(/error:\s*"([^"]{4,})"/g)].map((m) => m[1]),
+      // Gabarit : `error: \`Passage impossible de …\``
+      ...[...code.matchAll(/error:\s*`([^`]{4,})`/g)].map((m) => m[1]),
+    ].filter((v) => FRANCAIS.test(v));
+    expect(litteraux).toEqual([]);
+  });
+
+  /**
+   * `err()` est asynchrone parce que la langue vient de la requête. Une
+   * version synchrone ne pourrait que retomber sur le français.
+   */
+  it("l'accesseur lit la langue de la requête", () => {
+    const acc = src("lib/i18n/erreurs.ts");
+    expect(acc).toContain("await getT()");
+    expect(acc).toContain('import "server-only"');
+    // Et il sait remplir un gabarit : « Passage impossible de {de} à {vers} ».
+    expect(acc).toContain("remplir(modele, valeurs)");
+  });
+
+  // Les clés du catalogue doivent exister des deux côtés — le type l'impose
+  // déjà, ce test le dit en clair et couvre le cas d'un catalogue vidé.
+  it("le catalogue d'erreurs est fourni dans les deux langues", () => {
+    expect(Object.keys(fr.err).length).toBeGreaterThan(200);
+    expect(Object.keys(en.err).sort()).toEqual(Object.keys(fr.err).sort());
+  });
+});

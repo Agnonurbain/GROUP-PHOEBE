@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { err } from "@/lib/i18n/erreurs";
 import { revalidatePath } from "next/cache";
 import { getAgenda } from "@/lib/parametres-rendez-vous";
 import {
@@ -75,14 +76,14 @@ export async function creerDossierVoyage(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté pour soumettre un dossier." };
+  if (!user) return { error: await err("vousDevezEtreConnectePourSoumettre") };
 
   const { data: profile } = await supabase
     .from("users")
     .select("id, nom")
     .eq("id", user.sub)
     .single();
-  if (!profile) return { error: "Profil introuvable." };
+  if (!profile) return { error: await err("profilIntrouvable") };
 
   const slug = formData.get("pays_slug") as string;
   const prestationKey = formData.get("prestation") as string;
@@ -91,9 +92,9 @@ export async function creerDossierVoyage(
   // donc le montant notifié à l'équipe correspond au prix annoncé.
   const tarifs = await getTarifsAssistance();
   const pays = getPays(slug, tarifs);
-  if (!pays) return { error: "Destination invalide." };
+  if (!pays) return { error: await err("destinationInvalide") };
   const prestation = prestationKey ? getPrestation(pays, prestationKey) : null;
-  if (!prestation) return { error: "Prestation invalide." };
+  if (!prestation) return { error: await err("prestationInvalide") };
 
   const admin = getAdmin();
 
@@ -112,7 +113,7 @@ export async function creerDossierVoyage(
     .single();
 
   if (dossierErr || !dossier) {
-    return { error: "Impossible de créer le dossier. Veuillez réessayer." };
+    return { error: await err("impossibleDeCreerLeDossierVeuillez") };
   }
 
   // Le dossier n'était jamais facturé : `montant_estime` était écrit depuis le
@@ -171,7 +172,7 @@ export async function changerStatutDossier(
   const statut = formData.get("statut") as string;
 
   if (!dossierId || !isStatutDossier(statut)) {
-    return { error: "Statut invalide." };
+    return { error: await err("statutInvalide") };
   }
 
   const { data: dossier } = await admin
@@ -179,14 +180,17 @@ export async function changerStatutDossier(
     .select("client_id, pays_cible, statut")
     .eq("id", dossierId)
     .single();
-  if (!dossier) return { error: "Dossier introuvable." };
+  if (!dossier) return { error: await err("dossierIntrouvable") };
 
   if (dossier.statut === statut) return { success: true };
 
   // Le cycle était libre : un dossier finalisé pouvait repasser à « soumis ».
   if (!transitionDossierAutorisee(dossier.statut, statut)) {
     return {
-      error: `Passage impossible de « ${STATUT_DOSSIER_LABELS[dossier.statut] ?? dossier.statut} » à « ${STATUT_DOSSIER_LABELS[statut] ?? statut} ».`,
+      error: await err("passageImpossible", {
+        de: STATUT_DOSSIER_LABELS[dossier.statut] ?? dossier.statut,
+        vers: STATUT_DOSSIER_LABELS[statut] ?? statut,
+      }),
     };
   }
 
@@ -196,7 +200,7 @@ export async function changerStatutDossier(
     .eq("id", dossierId)
     .eq("statut", dossier.statut);
   if (error) return { error: error.message };
-  if (!count) return { error: "Le dossier a changé d'état entre-temps. Rechargez la page." };
+  if (!count) return { error: await err("leDossierAChangeDEtat") };
 
   {
     await notifierClient(
@@ -218,7 +222,7 @@ export async function affecterConseiller(
   const dossierId = formData.get("dossier_id") as string;
   const conseillerId = (formData.get("conseiller_id") as string) || null;
 
-  if (!dossierId) return { error: "Dossier invalide." };
+  if (!dossierId) return { error: await err("dossierInvalide") };
 
   const { error } = await admin
     .from("dossiers_voyage")
@@ -258,16 +262,16 @@ export async function deposerPieceDossier(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
+  if (!user) return { error: await err("vousDevezEtreConnecte") };
 
   const dossierId = formData.get("dossier_id") as string;
   const typeDocument = formData.get("type_document") as string;
   const fichier = formData.get("fichier") as File | null;
 
-  if (!dossierId) return { error: "Dossier invalide." };
-  if (!isTypeDocument(typeDocument)) return { error: "Type de pièce invalide." };
+  if (!dossierId) return { error: await err("dossierInvalide") };
+  if (!isTypeDocument(typeDocument)) return { error: await err("typeDePieceInvalide") };
   if (!fichier || typeof fichier === "string" || !fichier.size) {
-    return { error: "Choisissez un fichier." };
+    return { error: await err("choisissezUnFichier") };
   }
 
   const admin = getAdmin();
@@ -277,14 +281,14 @@ export async function deposerPieceDossier(
     .eq("id", dossierId)
     .single();
 
-  if (!dossier) return { error: "Dossier introuvable." };
-  if (dossier.client_id !== user.sub) return { error: "Ce dossier n'est pas le vôtre." };
+  if (!dossier) return { error: await err("dossierIntrouvable") };
+  if (dossier.client_id !== user.sub) return { error: await err("ceDossierNEstPasLe") };
 
   let ext: string;
   try {
     ({ ext } = validateDocumentUpload(fichier));
   } catch {
-    return { error: "Fichier invalide : PDF ou image, 5 Mo maximum." };
+    return { error: await err("fichierInvalidePdfOuImage5") };
   }
 
   // Bucket privé : passeports, diplômes, actes de naissance. C'est le chemin
@@ -294,7 +298,7 @@ export async function deposerPieceDossier(
     .from("dossiers-documents")
     .upload(chemin, await fichier.arrayBuffer(), { contentType: fichier.type });
 
-  if (upErr) return { error: "Échec de l'envoi. Réessayez." };
+  if (upErr) return { error: await err("echecDeLEnvoiReessayez") };
 
   // Redéposer une pièce rejetée doit la remplacer, pas en ajouter une seconde :
   // l'équipe verrait deux lignes à vérifier pour un seul document. L'unicité
@@ -327,7 +331,7 @@ export async function lienPieceDossier(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non authentifié." };
+  if (!user) return { error: await err("nonAuthentifie") };
 
   const admin = getAdmin();
   const { data: doc } = await admin
@@ -335,7 +339,7 @@ export async function lienPieceDossier(
     .select("url, dossier_id")
     .eq("id", documentId)
     .single();
-  if (!doc) return { error: "Pièce introuvable." };
+  if (!doc) return { error: await err("pieceIntrouvable") };
 
   const { data: dossier } = await admin
     .from("dossiers_voyage")
@@ -350,7 +354,7 @@ export async function lienPieceDossier(
       .eq("id", user.sub)
       .single();
     if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
-      return { error: "Accès refusé." };
+      return { error: await err("accesRefuse") };
     }
   }
 
@@ -358,7 +362,7 @@ export async function lienPieceDossier(
     .from("dossiers-documents")
     .createSignedUrl(doc.url, 60);
 
-  if (error || !signee?.signedUrl) return { error: "Lien indisponible." };
+  if (error || !signee?.signedUrl) return { error: await err("lienIndisponible") };
   return { url: signee.signedUrl };
 }
 
@@ -379,10 +383,10 @@ export async function verifierPieceDossier(
   const commentaire = ((formData.get("commentaire") as string) || "").trim();
 
   if (!documentId || !["valide", "rejete"].includes(decision)) {
-    return { error: "Demande invalide." };
+    return { error: await err("demandeInvalide") };
   }
   if (decision === "rejete" && !commentaire) {
-    return { error: "Indiquez ce qui ne va pas : le client doit savoir quoi corriger." };
+    return { error: await err("indiquezCeQuiNeVaPas") };
   }
 
   const admin = getAdmin();
@@ -403,7 +407,7 @@ export async function verifierPieceDossier(
     .eq("statut", "soumis");
 
   if (error) return { error: error.message };
-  if (!count) return { error: "Cette pièce a déjà été traitée." };
+  if (!count) return { error: await err("cettePieceADejaEteTraitee") };
 
   await logAudit({
     userId: user.sub as string,
@@ -473,11 +477,11 @@ export async function reserverCreneau(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
+  if (!user) return { error: await err("vousDevezEtreConnecte") };
 
   const dossierId = ((formData.get("dossier_id") as string) || "").trim();
   const debutIso = ((formData.get("debut") as string) || "").trim();
-  if (!dossierId || !debutIso) return { error: "Créneau ou dossier manquant." };
+  if (!dossierId || !debutIso) return { error: await err("creneauOuDossierManquant") };
 
   const admin = getAdmin();
   const { data: dossier } = await admin
@@ -486,8 +490,8 @@ export async function reserverCreneau(
     .eq("id", dossierId)
     .single();
 
-  if (!dossier) return { error: "Dossier introuvable." };
-  if (dossier.client_id !== user.sub) return { error: "Ce dossier n'est pas le vôtre." };
+  if (!dossier) return { error: await err("dossierIntrouvable") };
+  if (dossier.client_id !== user.sub) return { error: await err("ceDossierNEstPasLe") };
 
   const { params, horaires, fermetures } = await getAgenda();
 
@@ -519,9 +523,9 @@ export async function reserverCreneau(
   if (error) {
     // 23505 : l'index unique a parlé — ce dossier a déjà un rendez-vous vivant.
     if ((error as { code?: string }).code === "23505") {
-      return { error: "Ce dossier a déjà un rendez-vous. Annulez-le avant d'en prendre un autre." };
+      return { error: await err("ceDossierADejaUnRendez") };
     }
-    return { error: "Impossible de réserver ce créneau. Réessayez." };
+    return { error: await err("impossibleDeReserverCeCreneauReessayez") };
   }
 
   await notifierAdminNouveauRendezVous(dossierId, libelleCreneau(debut.toISOString(), fin.toISOString()));
@@ -539,10 +543,10 @@ export async function annulerRendezVous(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
+  if (!user) return { error: await err("vousDevezEtreConnecte") };
 
   const rendezVousId = ((formData.get("rendez_vous_id") as string) || "").trim();
-  if (!rendezVousId) return { error: "Rendez-vous manquant." };
+  if (!rendezVousId) return { error: await err("rendezVousManquant") };
 
   const admin = getAdmin();
   // Le filtre porte sur le statut ATTENDU : annuler un rendez-vous déjà honoré
@@ -555,7 +559,7 @@ export async function annulerRendezVous(
     .eq("statut", "reserve");
 
   if (error) return { error: error.message };
-  if (count === 0) return { error: "Ce rendez-vous n'est plus annulable." };
+  if (count === 0) return { error: await err("ceRendezVousNEstPlus") };
 
   revalidatePath("/compte/reservations");
   revalidatePath("/admin/dossiers-voyage");
@@ -623,21 +627,21 @@ export async function envoyerMessageDossier(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
+  if (!user) return { error: await err("vousDevezEtreConnecte") };
 
   const dossierId = ((formData.get("dossier_id") as string) || "").trim();
   const message = ((formData.get("message") as string) || "").trim();
 
-  if (!dossierId) return { error: "Dossier invalide." };
-  if (!message) return { error: "Écrivez votre message." };
-  if (message.length > 4000) return { error: "Message trop long (4000 caractères maximum)." };
+  if (!dossierId) return { error: await err("dossierInvalide") };
+  if (!message) return { error: await err("ecrivezVotreMessage") };
+  if (message.length > 4000) return { error: await err("messageTropLong4000CaracteresMaximum") };
 
   const { data: profile } = await supabase
     .from("users")
     .select("role, nom")
     .eq("id", user.sub)
     .single();
-  if (!profile) return { error: "Profil introuvable." };
+  if (!profile) return { error: await err("profilIntrouvable") };
 
   const estEquipe = ["operateur", "proprietaire"].includes(profile.role);
 
@@ -648,9 +652,9 @@ export async function envoyerMessageDossier(
     .eq("id", dossierId)
     .single();
 
-  if (!dossier) return { error: "Dossier introuvable." };
+  if (!dossier) return { error: await err("dossierIntrouvable") };
   if (!estEquipe && dossier.client_id !== user.sub) {
-    return { error: "Ce dossier n'est pas le vôtre." };
+    return { error: await err("ceDossierNEstPasLe") };
   }
 
   const { error } = await admin.from("messages_dossier").insert({
@@ -660,7 +664,7 @@ export async function envoyerMessageDossier(
     message,
   } as never);
 
-  if (error) return { error: "Message non envoyé. Réessayez." };
+  if (error) return { error: await err("messageNonEnvoyeReessayez") };
 
   // Prévenir l'autre partie : un message que personne ne lit ne vaut pas mieux
   // que pas de message.

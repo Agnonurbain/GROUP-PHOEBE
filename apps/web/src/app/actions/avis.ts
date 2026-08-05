@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { err } from "@/lib/i18n/erreurs";
 import { revalidateAvisCache } from "@/lib/avis"
 
 export type AvisState = {
@@ -29,14 +30,14 @@ export async function soumettreAvis(
 ): Promise<AvisState> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: "Vous devez être connecté." }
+  if (!user) return { error: await err("vousDevezEtreConnecte") }
 
   const { data: profile } = await supabase
     .from("users")
     .select("role")
     .eq("id", user.id)
     .single()
-  if (profile?.role !== "client") return { error: "Seuls les clients peuvent laisser un avis." }
+  if (profile?.role !== "client") return { error: await err("seulsLesClientsPeuventLaisserUn") }
 
   const reference_table = formData.get("reference_table") as string
   const reference_id = formData.get("reference_id") as string
@@ -44,8 +45,8 @@ export async function soumettreAvis(
   const titre = formData.get("titre") as string | null
   const commentaire = formData.get("commentaire") as string | null
 
-  if (!reference_table || !reference_id) return { error: "Réservation requise." }
-  if (isNaN(note) || note < 1 || note > 5) return { error: "Note invalide (1-5)." }
+  if (!reference_table || !reference_id) return { error: await err("reservationRequise") }
+  if (isNaN(note) || note < 1 || note > 5) return { error: await err("noteInvalide15") }
 
   // La règle vit en base (`avis_refus_motif`, 00077) et la policy d'insertion
   // s'en sert : cet appel ne garde rien, il sert à dire POURQUOI plutôt que de
@@ -66,7 +67,7 @@ export async function soumettreAvis(
   })
 
   if (error) {
-    if (error.code === "23505") return { error: "Vous avez déjà laissé un avis pour cette réservation." }
+    if (error.code === "23505") return { error: await err("vousAvezDejaLaisseUnAvis") }
     return { error: error.message }
   }
 
@@ -81,7 +82,7 @@ export async function modererAvis(
 ): Promise<AvisState> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: "Non authentifié." }
+  if (!user) return { error: await err("nonAuthentifie") }
 
   const { data: profile } = await supabase
     .from("users")
@@ -89,7 +90,7 @@ export async function modererAvis(
     .eq("id", user.id)
     .single()
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
-    return { error: "Accès refusé." }
+    return { error: await err("accesRefuse") }
   }
 
   const { error } = await supabase

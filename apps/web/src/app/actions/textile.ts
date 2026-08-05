@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { err } from "@/lib/i18n/erreurs";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -114,14 +115,14 @@ export async function creerDemandeTextile(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté pour demander un devis." };
+  if (!user) return { error: await err("vousDevezEtreConnectePourDemander2") };
 
   const { data: profile } = await supabase
     .from("users")
     .select("nom")
     .eq("id", user.sub)
     .single();
-  if (!profile) return { error: "Profil introuvable." };
+  if (!profile) return { error: await err("profilIntrouvable") };
 
   const saisie = {
     typePagne: ((formData.get("type_pagne") as string) || "").trim(),
@@ -174,7 +175,7 @@ export async function creerDemandeTextile(
     .single();
 
   if (error || !demande) {
-    return { error: "Impossible d'enregistrer la demande. Veuillez réessayer." };
+    return { error: await err("impossibleDEnregistrerLaDemandeVeuillez") };
   }
 
   const type = types.find((t) => t.cle === saisie.typePagne);
@@ -199,17 +200,17 @@ export async function changerStatutTextile(
   try {
     ({ userId } = await requireStaff());
   } catch {
-    return { error: "Session expirée ou accès refusé." };
+    return { error: await err("sessionExpireeOuAccesRefuse") };
   }
 
   const demandeId = ((formData.get("demande_id") as string) || "").trim();
   const statut = ((formData.get("statut") as string) || "").trim();
-  if (!demandeId || !isStatutTextile(statut)) return { error: "Statut invalide." };
+  if (!demandeId || !isStatutTextile(statut)) return { error: await err("statutInvalide") };
 
   // « devis_envoye » suppose un montant : il ne s'obtient que par le devis,
   // sinon le client verrait un devis sans prix.
   if (statut === "devis_envoye") {
-    return { error: "Passez par le formulaire de devis pour ce statut." };
+    return { error: await err("passezParLeFormulaireDeDevis") };
   }
 
   const admin = getAdmin();
@@ -219,10 +220,13 @@ export async function changerStatutTextile(
     .eq("id", demandeId)
     .single();
 
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
   if (!transitionTextileAutorisee(demande.statut, statut)) {
     return {
-      error: `Passage impossible de « ${STATUT_TEXTILE_LABELS[demande.statut as keyof typeof STATUT_TEXTILE_LABELS] ?? demande.statut} » à « ${STATUT_TEXTILE_LABELS[statut]} ».`,
+      error: await err("passageImpossible", {
+        de: STATUT_TEXTILE_LABELS[demande.statut as keyof typeof STATUT_TEXTILE_LABELS] ?? demande.statut,
+        vers: STATUT_TEXTILE_LABELS[statut],
+      }),
     };
   }
 
@@ -234,7 +238,7 @@ export async function changerStatutTextile(
     .eq("id", demandeId)
     .eq("statut", demande.statut);
 
-  if (!count) return { error: "La demande a changé d'état entre-temps. Rechargez la page." };
+  if (!count) return { error: await err("laDemandeAChangeDEtat") };
 
   await notifierClient(
     demande.client_id,
@@ -271,19 +275,19 @@ export async function proposerDevisTextile(
   try {
     userId = await requireProprietaireAvecId();
   } catch {
-    return { error: "Accès refusé : seul le propriétaire peut chiffrer une demande." };
+    return { error: await err("accesRefuseSeulLeProprietairePeut") };
   }
 
   const demandeId = ((formData.get("demande_id") as string) || "").trim();
   const montant = Number(formData.get("montant"));
   const validiteJours = Math.trunc(Number(formData.get("validite_jours") || 7));
 
-  if (!demandeId) return { error: "Demande invalide." };
+  if (!demandeId) return { error: await err("demandeInvalide") };
   if (!Number.isFinite(montant) || montant <= 0) {
-    return { error: "Le montant doit être un chiffre positif." };
+    return { error: await err("leMontantDoitEtreUnChiffre") };
   }
   if (!Number.isInteger(validiteJours) || validiteJours < 1 || validiteJours > 90) {
-    return { error: "La validité du devis va de 1 à 90 jours." };
+    return { error: await err("laValiditeDuDevisVaDe") };
   }
 
   const admin = getAdmin();
@@ -293,9 +297,9 @@ export async function proposerDevisTextile(
     .eq("id", demandeId)
     .single();
 
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
   if (!transitionTextileAutorisee(demande.statut, "devis_envoye")) {
-    return { error: "Cette demande n'est pas à un stade où un devis se propose." };
+    return { error: await err("cetteDemandeNEstPasA") };
   }
 
   const valable = new Date(Date.now() + validiteJours * 86_400_000);
@@ -314,7 +318,7 @@ export async function proposerDevisTextile(
     .eq("id", demandeId)
     .eq("statut", demande.statut);
 
-  if (!count) return { error: "La demande a changé d'état entre-temps. Rechargez la page." };
+  if (!count) return { error: await err("laDemandeAChangeDEtat") };
 
   await notifierClient(
     demande.client_id,
@@ -353,17 +357,17 @@ export async function creerArticlePagne(
   try {
     userId = await requireProprietaireAvecId();
   } catch {
-    return { error: "Accès refusé : propriétaire requis." };
+    return { error: await err("accesRefuseProprietaireRequis") };
   }
 
   const nom = ((formData.get("nom") as string) || "").trim();
   const typePagne = ((formData.get("type_pagne") as string) || "").trim();
-  if (!nom) return { error: "Donnez un nom à ce modèle." };
-  if (!typePagne) return { error: "Choisissez une gamme." };
+  if (!nom) return { error: await err("donnezUnNomACeModele") };
+  if (!typePagne) return { error: await err("choisissezUneGamme") };
 
   const types = await typesPagneActifs();
   if (!types.some((t) => t.cle === typePagne)) {
-    return { error: "Cette gamme n'existe pas." };
+    return { error: await err("cetteGammeNExistePas") };
   }
 
   // Les chemins viennent du navigateur : on n'accepte que ceux du dossier du
@@ -419,12 +423,12 @@ export async function basculerArticlePagne(
   try {
     userId = await requireProprietaireAvecId();
   } catch {
-    return { error: "Accès refusé : propriétaire requis." };
+    return { error: await err("accesRefuseProprietaireRequis") };
   }
 
   const id = ((formData.get("article_id") as string) || "").trim();
   const disponible = formData.get("disponible") === "1";
-  if (!id) return { error: "Article inconnu." };
+  if (!id) return { error: await err("articleInconnu") };
 
   const admin = getAdmin();
   const { error } = await admin
@@ -521,15 +525,15 @@ export async function creerTypePagne(
   try {
     userId = await requireProprietaireAvecId();
   } catch {
-    return { error: "Accès refusé : propriétaire requis." };
+    return { error: await err("accesRefuseProprietaireRequis") };
   }
 
   const marque = ((formData.get("marque") as string) || "").trim();
   const gamme = ((formData.get("gamme") as string) || "").trim();
   const description = ((formData.get("description") as string) || "").trim() || null;
 
-  if (!marque || marque.length > 60) return { error: "Marque manquante ou trop longue." };
-  if (!gamme || gamme.length > 60) return { error: "Gamme manquante ou trop longue." };
+  if (!marque || marque.length > 60) return { error: await err("marqueManquanteOuTropLongue") };
+  if (!gamme || gamme.length > 60) return { error: await err("gammeManquanteOuTropLongue") };
 
   // La clé se dérive du libellé plutôt que de se saisir : elle doit respecter
   // `^[a-z0-9_]+$`, et la faire taper à l'exploitant transformerait une
@@ -542,7 +546,7 @@ export async function creerTypePagne(
     .replace(/^_+|_+$/g, "")
     .slice(0, 50);
 
-  if (!cle) return { error: "Ce libellé ne donne aucune clé exploitable." };
+  if (!cle) return { error: await err("ceLibelleNeDonneAucuneCle") };
 
   const admin = getAdmin();
 
@@ -595,12 +599,12 @@ export async function basculerTypePagne(
   try {
     userId = await requireProprietaireAvecId();
   } catch {
-    return { error: "Accès refusé : propriétaire requis." };
+    return { error: await err("accesRefuseProprietaireRequis") };
   }
 
   const cle = ((formData.get("cle") as string) || "").trim();
   const actif = formData.get("actif") === "1";
-  if (!cle) return { error: "Gamme inconnue." };
+  if (!cle) return { error: await err("gammeInconnue") };
 
   const admin = getAdmin();
 
@@ -612,7 +616,7 @@ export async function basculerTypePagne(
       .select("cle", { count: "exact", head: true })
       .eq("actif", true);
     if ((count ?? 0) <= 1) {
-      return { error: "C'est la dernière gamme active : la retirer fermerait le formulaire." };
+      return { error: await err("cEstLaDerniereGammeActive") };
     }
   }
 

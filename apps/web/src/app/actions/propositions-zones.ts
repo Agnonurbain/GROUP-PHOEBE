@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { err } from "@/lib/i18n/erreurs";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import type { Database } from "@group-phoebe/database/types";
@@ -31,7 +32,7 @@ export async function proposerModificationZone(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non connecté." };
+  if (!user) return { error: await err("nonConnecte") };
 
   const { data: profile } = await supabase
     .from("users")
@@ -39,7 +40,7 @@ export async function proposerModificationZone(
     .eq("id", user.sub)
     .single();
   if (!profile || profile.role !== "operateur") {
-    return { error: "Seuls les opérateurs peuvent proposer une modification." };
+    return { error: await err("seulsLesOperateursPeuventProposerUne") };
   }
 
   const zoneId = formData.get("zone_id") as string;
@@ -48,11 +49,11 @@ export async function proposerModificationZone(
   const commentaire = (formData.get("commentaire") as string) || null;
 
   if (!zoneId || !champ || !valeurProposee) {
-    return { error: "Zone, champ et valeur proposée sont obligatoires." };
+    return { error: await err("zoneChampEtValeurProposeeSont") };
   }
 
   if (!CHAMPS_MODIFIABLES.includes(champ as typeof CHAMPS_MODIFIABLES[number])) {
-    return { error: "Champ invalide." };
+    return { error: await err("champInvalide") };
   }
 
   const admin = getAdmin();
@@ -62,7 +63,7 @@ export async function proposerModificationZone(
     .eq("id", zoneId)
     .single();
 
-  if (!zone) return { error: "Zone introuvable." };
+  if (!zone) return { error: await err("zoneIntrouvable") };
 
   const valeurActuelle = String((zone as Record<string, unknown>)[champ] ?? "");
 
@@ -115,7 +116,7 @@ export async function traiterPropositionZone(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non connecté." };
+  if (!user) return { error: await err("nonConnecte") };
 
   const { data: profile } = await supabase
     .from("users")
@@ -123,14 +124,14 @@ export async function traiterPropositionZone(
     .eq("id", user.sub)
     .single();
   if (!profile || profile.role !== "proprietaire") {
-    return { error: "Seul le propriétaire peut valider ou refuser." };
+    return { error: await err("seulLeProprietairePeutValiderOu") };
   }
 
   const propositionId = formData.get("proposition_id") as string;
   const decision = formData.get("decision") as string;
 
   if (!propositionId || !["acceptee", "refusee"].includes(decision)) {
-    return { error: "Décision invalide." };
+    return { error: await err("decisionInvalide") };
   }
 
   const admin = getAdmin();
@@ -142,9 +143,9 @@ export async function traiterPropositionZone(
 
   const prop = rawProp as { id: string; zone_id: string; champ: string; valeur_proposee: string; valeur_actuelle: string | null; statut: string } | null;
 
-  if (!prop) return { error: "Proposition introuvable." };
+  if (!prop) return { error: await err("propositionIntrouvable") };
   if (prop.statut !== "en_attente") {
-    return { error: "Cette proposition a déjà été traitée." };
+    return { error: await err("cettePropositionADejaEteTraitee") };
   }
 
   await admin

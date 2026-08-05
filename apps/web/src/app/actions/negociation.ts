@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { err } from "@/lib/i18n/erreurs";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -45,7 +46,7 @@ export async function creerDemandeNegociation(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
+  if (!user) return { error: await err("vousDevezEtreConnecte") };
 
   const { data: profile } = await supabase
     .from("users")
@@ -53,7 +54,7 @@ export async function creerDemandeNegociation(
     .eq("id", user.sub)
     .single();
 
-  if (!profile) return { error: "Profil introuvable." };
+  if (!profile) return { error: await err("profilIntrouvable") };
 
   const debut = formData.get("debut") as string;
   const fin = formData.get("fin") as string;
@@ -63,28 +64,28 @@ export async function creerDemandeNegociation(
   const lignesRaw = formData.get("lignes") as string;
 
   if (!debut || !fin) {
-    return { error: "Les dates de début et de fin sont obligatoires." };
+    return { error: await err("lesDatesDeDebutEtDe") };
   }
 
   if (new Date(fin) <= new Date(debut)) {
-    return { error: "La date de fin doit être postérieure à la date de début." };
+    return { error: await err("laDateDeFinDoitEtre") };
   }
 
   let lignes: LigneInput[];
   try {
     lignes = JSON.parse(lignesRaw);
   } catch {
-    return { error: "Données du panier invalides." };
+    return { error: await err("donneesDuPanierInvalides") };
   }
 
   if (!lignes || lignes.length === 0) {
-    return { error: "Le panier est vide." };
+    return { error: await err("lePanierEstVide") };
   }
 
   const nbJours = Math.ceil(
     (new Date(fin).getTime() - new Date(debut).getTime()) / (1000 * 60 * 60 * 24)
   );
-  if (nbJours < 1) return { error: "La durée minimale est d'un jour." };
+  if (nbJours < 1) return { error: await err("laDureeMinimaleEstDUn") };
 
   const periode = `[${new Date(debut).toISOString()},${new Date(fin).toISOString()})`;
   const parametres = await getParametresTransport();
@@ -238,7 +239,7 @@ export async function envoyerPrixNegocie(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Non authentifié" };
+  if (!user) return { error: await err("nonAuthentifie2") };
 
   const { data: profile } = await supabase
     .from("users")
@@ -247,7 +248,7 @@ export async function envoyerPrixNegocie(
     .single();
 
   if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
-    return { error: "Accès refusé" };
+    return { error: await err("accesRefuse2") };
   }
 
   const demandeId = formData.get("demande_id") as string;
@@ -255,7 +256,7 @@ export async function envoyerPrixNegocie(
   const prixNegocie = Number(prixNegocieStr);
 
   if (!demandeId || !prixNegocie || prixNegocie <= 0) {
-    return { error: "Le prix négocié doit être un montant positif." };
+    return { error: await err("lePrixNegocieDoitEtreUn") };
   }
 
   const admin = getAdmin();
@@ -265,9 +266,9 @@ export async function envoyerPrixNegocie(
     .eq("id", demandeId)
     .single();
 
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
   if (demande.statut !== "en_negociation") {
-    return { error: "Cette demande n'est pas en négociation." };
+    return { error: await err("cetteDemandeNEstPasEn") };
   }
 
   const { error } = await admin
@@ -300,13 +301,13 @@ export async function payerPrixNegocie(
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Vous devez être connecté." };
+  if (!user) return { error: await err("vousDevezEtreConnecte") };
 
   const demandeId = formData.get("demande_id") as string;
   const methode = formData.get("methode_paiement") as string;
 
   if (!["cinetpay", "stripe"].includes(methode)) {
-    return { error: "Méthode de paiement invalide." };
+    return { error: await err("methodeDePaiementInvalide") };
   }
 
   const admin = getAdmin();
@@ -317,9 +318,9 @@ export async function payerPrixNegocie(
     .eq("client_id", user.sub)
     .single();
 
-  if (!demande) return { error: "Demande introuvable." };
+  if (!demande) return { error: await err("demandeIntrouvable") };
   if (demande.statut !== "en_attente_paiement" || !demande.prix_negocie) {
-    return { error: "Cette demande n'a pas de prix négocié en attente." };
+    return { error: await err("cetteDemandeNAPasDe2") };
   }
 
   const total = Number(demande.prix_negocie);
@@ -372,9 +373,11 @@ export async function payerPrixNegocie(
         notifyUrl: `${baseUrl}/api/webhooks/cinetpay`,
       });
     }
-  } catch (err) {
+  } catch (erreurAttrapee) {
     return {
-      error: `Erreur d'initialisation du paiement : ${err instanceof Error ? err.message : "erreur inconnue"}`,
+      error: await err("erreurInitialisationPaiement", {
+          detail: erreurAttrapee instanceof Error ? erreurAttrapee.message : "",
+        }),
     };
   }
 

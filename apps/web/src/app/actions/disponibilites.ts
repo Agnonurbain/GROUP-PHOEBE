@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { err } from "@/lib/i18n/erreurs";
 import { createClient } from "@/lib/supabase/server";
 import { expirerReservationsAbandonnees } from "@/lib/payments/expiration";
 import { expirerDemandesSansReponse, expirerNonPresentations } from "@/lib/payments/expiration-demandes";
@@ -41,15 +42,15 @@ export async function ajouterBlocageVehicule(
   const recurrenceFin = formData.get("recurrence_fin") as string;
 
   if (!vehiculeId || !debut || !fin) {
-    return { error: "Véhicule, date de début et date de fin sont obligatoires." };
+    return { error: await err("vehiculeDateDeDebutEtDate") };
   }
 
   if (new Date(fin) <= new Date(debut)) {
-    return { error: "La date de fin doit être postérieure à la date de début." };
+    return { error: await err("laDateDeFinDoitEtre") };
   }
 
   if (!["maintenance", "bloque"].includes(type)) {
-    return { error: "Type invalide." };
+    return { error: await err("typeInvalide") };
   }
 
   const periods: { debut: Date; fin: Date }[] = [];
@@ -89,7 +90,7 @@ export async function ajouterBlocageVehicule(
 
   if (error) {
     if (error.code === "23P01") {
-      return { error: "Une ou plusieurs périodes chevauchent un blocage ou une réservation existante." };
+      return { error: await err("uneOuPlusieursPeriodesChevauchentUn") };
     }
     return { error: error.message };
   }
@@ -128,11 +129,11 @@ export async function ajouterBlocageChauffeur(
   const recurrenceFin = formData.get("recurrence_fin") as string;
 
   if (!chauffeurId || !debut || !fin) {
-    return { error: "Chauffeur, date de début et date de fin sont obligatoires." };
+    return { error: await err("chauffeurDateDeDebutEtDate") };
   }
 
   if (new Date(fin) <= new Date(debut)) {
-    return { error: "La date de fin doit être postérieure à la date de début." };
+    return { error: await err("laDateDeFinDoitEtre") };
   }
 
   const periods: { debut: Date; fin: Date }[] = [];
@@ -171,7 +172,7 @@ export async function ajouterBlocageChauffeur(
 
   if (error) {
     if (error.code === "23P01") {
-      return { error: "Cette période chevauche un blocage existant pour ce chauffeur." };
+      return { error: await err("cettePeriodeChevaucheUnBlocageExistant") };
     }
     return { error: error.message };
   }

@@ -213,7 +213,7 @@ describe("Rendez-vous — ce que fait le serveur", () => {
   it("le doublon est intercepté et expliqué", () => {
     const c = corps("reserverCreneau");
     expect(c).toContain('"23505"');
-    expect(c).toContain("déjà un rendez-vous");
+    expect(c).toContain('err("ceDossierADejaUnRendez")');
   });
 
   it("annuler ne touche qu'un rendez-vous réservé, et le sien", () => {

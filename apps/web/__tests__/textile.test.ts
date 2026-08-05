@@ -463,7 +463,7 @@ describe("Textile — les gammes se pilotent depuis l'admin", () => {
     const d = action.indexOf("export async function basculerTypePagne");
     const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
     expect(corps).toContain('.eq("actif", true)');
-    expect(corps).toContain("dernière gamme active");
+    expect(corps).toContain('err("cEstLaDerniereGammeActive")');
   });
 
   // Une gamme retirée reste référencée par les demandes passées.

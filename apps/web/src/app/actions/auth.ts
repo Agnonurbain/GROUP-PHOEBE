@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { err } from "@/lib/i18n/erreurs";
 import { accueilSelonRole } from "@/lib/roles";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -40,17 +41,17 @@ export async function inscription(
   const identifiant = mode === "email" ? email : telephone;
 
   if (!nom || !identifiant || !dateNaissance || !password) {
-    return { error: "Tous les champs sont obligatoires." };
+    return { error: await err("tousLesChampsSontObligatoires") };
   }
 
   // 18 ans : majorité légale pour ouvrir un compte. La contrainte propre à la
   // location de véhicule ne doit pas bloquer un dossier visa ou un envoi de colis.
   if (!hasMinimumAge(dateNaissance, 18)) {
-    return { error: "Vous devez avoir au moins 18 ans pour vous inscrire." };
+    return { error: await err("vousDevezAvoirAuMoins18") };
   }
 
   if (password.length < 8) {
-    return { error: "Le mot de passe doit contenir au moins 8 caractères." };
+    return { error: await err("leMotDePasseDoitContenir") };
   }
 
   let telephoneNormalise: string | null = null;
@@ -58,13 +59,13 @@ export async function inscription(
     const errTel = validerTelephone(telephone);
     if (errTel) return { error: errTel };
     telephoneNormalise = normaliserTelephone(telephone);
-    if (!telephoneNormalise) return { error: "Format de téléphone invalide." };
+    if (!telephoneNormalise) return { error: await err("formatDeTelephoneInvalide") };
   }
 
   // Seule action d'authentification qui n'était pas limitée — or une inscription
   // par téléphone déclenche l'envoi d'un SMS facturé.
   if (!checkRateLimit(cleLimite("signup", identifiant))) {
-    return { error: "Trop de tentatives. Réessayez dans une minute." };
+    return { error: await err("tropDeTentativesReessayezDansUne") };
   }
 
   const supabase = await createClient();
@@ -122,11 +123,11 @@ export async function connexion(
   const password = formData.get("password") as string;
 
   if (!identifiant || !password) {
-    return { error: "Tous les champs sont obligatoires." };
+    return { error: await err("tousLesChampsSontObligatoires") };
   }
 
   if (!checkRateLimit(cleLimite("login", identifiant))) {
-    return { error: "Trop de tentatives. Réessayez dans une minute." };
+    return { error: await err("tropDeTentativesReessayezDansUne") };
   }
 
   const supabase = await createClient();
@@ -136,7 +137,7 @@ export async function connexion(
   // espacé serait introuvable à la connexion.
   const telephone = isEmail ? null : normaliserTelephone(identifiant);
   if (!isEmail && !telephone) {
-    return { error: "Identifiant ou mot de passe incorrect." };
+    return { error: await err("identifiantOuMotDePasseIncorrect") };
   }
 
   const { error, data } = await supabase.auth.signInWithPassword(
@@ -146,7 +147,7 @@ export async function connexion(
   );
 
   if (error) {
-    return { error: "Identifiant ou mot de passe incorrect." };
+    return { error: await err("identifiantOuMotDePasseIncorrect") };
   }
 
   const { data: profile } = await supabase
@@ -170,14 +171,14 @@ export async function verifierOtp(
   const next = formData.get("next") as string | null;
 
   if (!phone || !token) {
-    return { error: "Le code de vérification est obligatoire." };
+    return { error: await err("leCodeDeVerificationEstObligatoire") };
   }
 
   const phoneNormalise = normaliserTelephone(phone);
-  if (!phoneNormalise) return { error: "Numéro de téléphone invalide." };
+  if (!phoneNormalise) return { error: await err("numeroDeTelephoneInvalide") };
 
   if (!checkRateLimit(cleLimite("otp", phone))) {
-    return { error: "Trop de tentatives. Réessayez dans une minute." };
+    return { error: await err("tropDeTentativesReessayezDansUne") };
   }
 
   const supabase = await createClient();
@@ -189,7 +190,7 @@ export async function verifierOtp(
   });
 
   if (error) {
-    return { error: "Code invalide ou expiré. Veuillez réessayer." };
+    return { error: await err("codeInvalideOuExpireVeuillezReessayer") };
   }
 
   const safeNext = next && next.startsWith("/") ? next : "/compte/profil";
@@ -203,17 +204,17 @@ export async function envoyerCodeReset(
   const telephone = formData.get("telephone") as string;
 
   if (!telephone) {
-    return { error: "Le numéro de téléphone est obligatoire." };
+    return { error: await err("leNumeroDeTelephoneEstObligatoire") };
   }
 
   const errTel = validerTelephone(telephone);
   if (errTel) return { error: errTel };
 
   const telephoneNormalise = normaliserTelephone(telephone);
-  if (!telephoneNormalise) return { error: "Format de téléphone invalide." };
+  if (!telephoneNormalise) return { error: await err("formatDeTelephoneInvalide") };
 
   if (!checkRateLimit(cleLimite("reset:sms", telephone))) {
-    return { error: "Trop de tentatives. Réessayez dans une minute." };
+    return { error: await err("tropDeTentativesReessayezDansUne") };
   }
 
   const supabase = await createClient();
@@ -221,7 +222,7 @@ export async function envoyerCodeReset(
   const { error } = await supabase.auth.signInWithOtp({ phone: telephoneNormalise });
 
   if (error) {
-    return { error: "Impossible d’envoyer le code. Vérifiez le numéro." };
+    return { error: await err("impossibleDEnvoyerLeCodeVerifiez") };
   }
 
   redirect(
@@ -236,11 +237,11 @@ export async function envoyerResetEmail(
   const email = formData.get("email") as string;
 
   if (!email) {
-    return { error: "L'adresse email est obligatoire." };
+    return { error: await err("lAdresseEmailEstObligatoire") };
   }
 
   if (!checkRateLimit(cleLimite("reset:email", email))) {
-    return { error: "Trop de tentatives. Réessayez dans une minute." };
+    return { error: await err("tropDeTentativesReessayezDansUne") };
   }
 
   const supabase = await createClient();
@@ -250,7 +251,7 @@ export async function envoyerResetEmail(
   });
 
   if (error) {
-    return { error: "Impossible d'envoyer l'email. Vérifiez l'adresse." };
+    return { error: await err("impossibleDEnvoyerLEmailVerifiez") };
   }
 
   return { codeSent: true };
@@ -264,15 +265,15 @@ export async function changerMotDePasse(
   const confirmation = formData.get("confirmation") as string;
 
   if (!password || !confirmation) {
-    return { error: "Tous les champs sont obligatoires." };
+    return { error: await err("tousLesChampsSontObligatoires") };
   }
 
   if (password.length < 8) {
-    return { error: "Le mot de passe doit contenir au moins 8 caractères." };
+    return { error: await err("leMotDePasseDoitContenir") };
   }
 
   if (password !== confirmation) {
-    return { error: "Les mots de passe ne correspondent pas." };
+    return { error: await err("lesMotsDePasseNeCorrespondent") };
   }
 
   const supabase = await createClient();
@@ -281,7 +282,7 @@ export async function changerMotDePasse(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "Session expirée. Veuillez recommencer." };
+    return { error: await err("sessionExpireeVeuillezRecommencer") };
   }
 
   const { error } = await supabase.auth.updateUser({ password });
@@ -305,16 +306,16 @@ export async function changerMotDePasseProfil(
   const confirmation = formData.get("confirmation") as string;
 
   if (!actuel || !nouveau || !confirmation) {
-    return { error: "Tous les champs sont obligatoires." };
+    return { error: await err("tousLesChampsSontObligatoires") };
   }
   if (nouveau.length < 8) {
-    return { error: "Le nouveau mot de passe doit contenir au moins 8 caractères." };
+    return { error: await err("leNouveauMotDePasseDoit") };
   }
   if (nouveau !== confirmation) {
-    return { error: "Les mots de passe ne correspondent pas." };
+    return { error: await err("lesMotsDePasseNeCorrespondent") };
   }
   if (nouveau === actuel) {
-    return { error: "Le nouveau mot de passe doit être différent de l'actuel." };
+    return { error: await err("leNouveauMotDePasseDoit2") };
   }
 
   const supabase = await createClient();
@@ -322,10 +323,10 @@ export async function changerMotDePasseProfil(
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) {
-    return { error: "Session expirée. Veuillez vous reconnecter." };
+    return { error: await err("sessionExpireeVeuillezVousReconnecter") };
   }
   if (!user.email && !user.phone) {
-    return { error: "Ce compte n'utilise pas de mot de passe (connexion via Google)." };
+    return { error: await err("ceCompteNUtilisePasDe") };
   }
 
   // Verifie le mot de passe actuel sur un client jetable : signInWithPassword
@@ -341,7 +342,7 @@ export async function changerMotDePasseProfil(
       : { phone: user.phone!, password: actuel }
   );
   if (verifErr) {
-    return { error: "Mot de passe actuel incorrect." };
+    return { error: await err("motDePasseActuelIncorrect") };
   }
 
   const { error } = await supabase.auth.updateUser({ password: nouveau });
@@ -361,7 +362,7 @@ export async function updateProfile(
   const dateNaissance = formData.get("date_naissance") as string;
 
   if (!nom) {
-    return { error: "Le nom est obligatoire." };
+    return { error: await err("leNomEstObligatoire") };
   }
 
   let telephoneNormalise: string | null = null;
@@ -369,20 +370,20 @@ export async function updateProfile(
     const errTel = validerTelephone(telephone);
     if (errTel) return { error: errTel };
     telephoneNormalise = normaliserTelephone(telephone);
-    if (!telephoneNormalise) return { error: "Format de téléphone invalide." };
+    if (!telephoneNormalise) return { error: await err("formatDeTelephoneInvalide") };
   }
 
   // Aligné sur l'inscription. Les 21 ans restent exigés à la vérification
   // d'identité (compte/verification), seule porte d'accès à la location.
   if (dateNaissance && !hasMinimumAge(dateNaissance, 18)) {
-    return { error: "Vous devez avoir au moins 18 ans." };
+    return { error: await err("vousDevezAvoirAuMoins182") };
   }
 
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
   if (!user) {
-    return { error: "Session expirée. Veuillez vous reconnecter." };
+    return { error: await err("sessionExpireeVeuillezVousReconnecter") };
   }
 
   const { error } = await supabase
@@ -395,7 +396,7 @@ export async function updateProfile(
     .eq("id", user.sub);
 
   if (error) {
-    return { error: "Impossible de mettre à jour le profil." };
+    return { error: await err("impossibleDeMettreAJourLe") };
   }
 
   redirect("/compte/profil");
@@ -408,24 +409,24 @@ export async function renvoyerCode(
   const phone = formData.get("phone") as string;
 
   if (!phone) {
-    return { error: "Numéro de téléphone requis." };
+    return { error: await err("numeroDeTelephoneRequis") };
   }
 
   const errTel = validerTelephone(phone);
   if (errTel) return { error: errTel };
 
   const phoneNormalise = normaliserTelephone(phone);
-  if (!phoneNormalise) return { error: "Format de téléphone invalide." };
+  if (!phoneNormalise) return { error: await err("formatDeTelephoneInvalide") };
 
   if (!checkRateLimit(cleLimite("renvoyer:code", phone))) {
-    return { error: "Trop de tentatives. Réessayez dans une minute." };
+    return { error: await err("tropDeTentativesReessayezDansUne") };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({ phone: phoneNormalise });
 
   if (error) {
-    return { error: "Impossible de renvoyer le code. Réessayez plus tard." };
+    return { error: await err("impossibleDeRenvoyerLeCodeReessayez") };
   }
 
   return { codeSent: true };
@@ -435,7 +436,7 @@ export async function supprimerCompte(): Promise<AuthState> {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const user = claimsData?.claims;
-  if (!user) return { error: "Session expirée." };
+  if (!user) return { error: await err("sessionExpiree") };
 
   const admin = createAdminClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -445,7 +446,7 @@ export async function supprimerCompte(): Promise<AuthState> {
   const { error: deleteError } = await admin.auth.admin.deleteUser(user.sub);
 
   if (deleteError) {
-    return { error: "Impossible de supprimer le compte." };
+    return { error: await err("impossibleDeSupprimerLeCompte") };
   }
 
   redirect("/");
