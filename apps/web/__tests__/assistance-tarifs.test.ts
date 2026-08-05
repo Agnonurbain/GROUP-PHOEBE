@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { fr } from "@/lib/i18n/fr";
 import {
   PAYS,
   getPays,
@@ -182,8 +183,11 @@ describe("Assistance — ce que l'assistance ne garantit pas", () => {
     );
     expect(page).toContain("MENTION_VISA_NON_GARANTI");
     // Le prix ne se lit plus comme un montant ferme : le dossier ne se règle
-    // pas en ligne, il s'arrête au rendez-vous.
-    expect(page).toContain("À titre indicatif");
+    // pas en ligne, il s'arrête au rendez-vous. La mention est passée au
+    // dictionnaire lors de la traduction : on la suit là où elle vit, sinon le
+    // test interdirait de traduire la page qu'il protège.
+    expect(page).toContain("t.assistance.titreIndicatif");
+    expect(fr.assistance.titreIndicatif).toContain("indicatif");
     expect(page).toContain("Postuler");
   });
 });

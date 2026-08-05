@@ -9,6 +9,8 @@ import {
   DialogTitle,
 } from "@/components/shadcn/dialog"
 
+import { useT } from "@/lib/langue-context"
+import { remplir } from "@/lib/i18n/format"
 interface VehicleGalleryProps {
   photos: { url: string }[]
   alt: string
@@ -16,6 +18,7 @@ interface VehicleGalleryProps {
 }
 
 export function VehicleGallery({ photos, alt, accentColor = "orange" }: VehicleGalleryProps) {
+  const t = useT()
   const [selected, setSelected] = useState(0)
   const [zoomOpen, setZoomOpen] = useState(false)
 
@@ -46,7 +49,7 @@ export function VehicleGallery({ photos, alt, accentColor = "orange" }: VehicleG
     return (
       <div className="flex aspect-video w-full flex-col items-center justify-center gap-2 rounded-2xl border border-public-border bg-public-bg-card">
         <ImageOff className="size-7 text-public-text-faint" aria-hidden="true" />
-        <p className="text-sm text-public-text-muted">Photo bientôt disponible</p>
+        <p className="text-sm text-public-text-muted">{t.transport.photoBientot}</p>
       </div>
     )
   }
@@ -101,7 +104,7 @@ export function VehicleGallery({ photos, alt, accentColor = "orange" }: VehicleG
           className="max-w-5xl border-none bg-transparent p-0 shadow-none sm:max-w-5xl"
         >
           <DialogTitle className="sr-only">
-            {alt} — photo {selected + 1} sur {photos.length}
+            {remplir(t.transport.photoSur, { vehicule: alt, n: selected + 1, total: photos.length })}
           </DialogTitle>
 
           <div className="relative h-[80vh] w-full">
@@ -120,7 +123,7 @@ export function VehicleGallery({ photos, alt, accentColor = "orange" }: VehicleG
               <button
                 type="button"
                 onClick={prev}
-                aria-label="Photo précédente"
+                aria-label={t.transport.photoPrecedente}
                 className="absolute left-2 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25"
               >
                 <ChevronLeft className="size-5" />
@@ -128,7 +131,7 @@ export function VehicleGallery({ photos, alt, accentColor = "orange" }: VehicleG
               <button
                 type="button"
                 onClick={next}
-                aria-label="Photo suivante"
+                aria-label={t.transport.photoSuivante}
                 className="absolute right-2 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25"
               >
                 <ChevronRight className="size-5" />

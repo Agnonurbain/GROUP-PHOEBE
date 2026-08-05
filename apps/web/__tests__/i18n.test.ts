@@ -47,7 +47,7 @@ describe("i18n — les deux dictionnaires restent alignés", () => {
     const exceptions = new Set([
       // Mots identiques en français et en anglais
       "Transport", "Blog", "Contact", "Menu", "Total", "Services", "Textile",
-      "Confirmation",
+      "Confirmation", "Minibus", "Diesel", "Transmission",
       "Administration", "Destination", "Dimensions", "Transaction", "Type",
       // Noms propres et devise
       "FCFA", "Mobile Money",
@@ -173,9 +173,15 @@ describe("i18n — l'interface est réellement branchée", () => {
   });
 });
 
-/** Mots et accents qui trahissent une phrase française. */
+/**
+ * Mots et accents qui trahissent une phrase française.
+ *
+ * La liste comporte aussi quelques mots ISOLÉS sans accent — « Recherche »,
+ * « Filtre » — qu'aucun autre signal ne trahit : une étiquette d'un seul mot
+ * n'a ni accent ni article, et passait inaperçue au milieu d'une page traduite.
+ */
 const FRANCAIS =
-  /[àâäéèêëîïôöùûüçœ]|\b(le|la|les|un|une|des|du|de|et|ou|pour|avec|sur|dans|vous|nous|votre|notre|est|sont|par|aux|cette|qui|que|plus|sans|tout|tous)\b/i;
+  /[àâäéèêëîïôöùûüçœ]|\b(le|la|les|un|une|des|du|de|et|ou|pour|avec|sur|dans|vous|nous|votre|notre|est|sont|par|aux|cette|qui|que|plus|sans|tout|tous|recherche|filtre|filtres|envoi|nom|prix|adresse|ville|date|dates|poids|photos)\b/i;
 
 function fichiersTsx(racine: string): string[] {
   const sortie: string[] = [];
@@ -208,16 +214,22 @@ function textesEnDur(chemin: string): string[] {
     // fait du code : `} export default function X() { const t = useT() `. Un
     // point-virgule, un `=` ou un mot-clé le trahissent — une phrase affichée
     // n'en contient pas.
-    if (/[;=]|\b(const|let|function|return|import|export|await)\b/.test(m[1])) continue;
+    if (/[;=]|&&|\|\||\(\s*$|\b(const|let|function|return|import|export|await)\b/.test(m[1])) continue;
     const brut = m[1].replace(/\{[^{}]*\}/g, " ").replace(/\s+/g, " ").trim();
     if (brut.length < 4 || !FRANCAIS.test(brut)) continue;
     if (/^[\d\s.,€%·—–-]+$/.test(brut)) continue;
     trouves.add(brut.slice(0, 80));
   }
 
-  // Attributs lus par un humain ou une synthèse vocale.
+  /**
+   * Attributs lus par un humain ou une synthèse vocale.
+   *
+   * `lede` et `eyebrow` manquaient : ce sont les phrases d'accroche des pages
+   * de service, affichées en gros sous le titre. La garde disait « traduit »
+   * sur une page dont le sous-titre était encore en français.
+   */
   for (const m of s.matchAll(
-    /(?:placeholder|aria-label|alt|title|label)=["']([^"'\n]{4,})["']/g
+    /(?:placeholder|aria-label|alt|title|label|lede|eyebrow|subtitle|description)=["']([^"'\n]{4,})["']/g
   )) {
     if (FRANCAIS.test(m[1])) trouves.add(m[1].slice(0, 80));
   }
@@ -234,9 +246,6 @@ function textesEnDur(chemin: string): string[] {
  * la liste permet de verrouiller ce qui est fait pendant que le reste avance.
  */
 const RESTE_A_TRADUIRE = new Set([
-  "app/(public)/assistance/confirmation/page.tsx",
-  "app/(public)/assistance/page-client.tsx",
-  "app/(public)/assistance/pays/[slug]/page-client.tsx",
   "app/(public)/avis/page-client.tsx",
   "app/(public)/blog/page-client.tsx",
   "app/(public)/compte/favoris/page.tsx",
@@ -245,26 +254,10 @@ const RESTE_A_TRADUIRE = new Set([
   "app/(public)/compte/verification/page.tsx",
   "app/(public)/compte/verification/verification-form.tsx",
   "app/(public)/contact/page.tsx",
-  "app/(public)/immobilier/confirmation/page.tsx",
-  "app/(public)/immobilier/[id]/page.tsx",
-  "app/(public)/immobilier/immobilier-filtres.tsx",
-  "app/(public)/immobilier/page.tsx",
   "app/(public)/legal/[slug]/page.tsx",
-  "app/(public)/livraison/commander/commander-client.tsx",
-  "app/(public)/livraison/confirmation/page.tsx",
-  "app/(public)/livraison/page.tsx",
   "app/(public)/page-client.tsx",
   "app/(public)/suivi/page.tsx",
-  "app/(public)/textile/catalogue-client.tsx",
-  "app/(public)/textile/confirmation/page.tsx",
-  "app/(public)/textile/demande-form.tsx",
-  "app/(public)/textile/page.tsx",
-  "app/(public)/transport/catalogue/filtres.tsx",
-  "app/(public)/transport/catalogue/groupe/[key]/choix/page.tsx",
-  "app/(public)/transport/catalogue/page.tsx",
-  "app/(public)/transport/vehicule/[slug]/page.tsx",
   "components/change-password-form.tsx",
-  "components/commune-search.tsx",
   "components/delete-account-button.tsx",
   "components/disponibilite-checker.tsx",
   "components/document-preview.tsx",
@@ -276,23 +269,15 @@ const RESTE_A_TRADUIRE = new Set([
   "components/profile-edit-form.tsx",
   "components/proposer-modification-zone-form.tsx",
   "components/public/accepter-cgv.tsx",
-  "components/public/bien-interaction-form.tsx",
-  "components/public/billet-form.tsx",
   "components/public/contact-form.tsx",
   "components/public/contre-offre-reponse.tsx",
   "components/public/deposer-avis.tsx",
   "components/public/dossier-pieces.tsx",
-  "components/public/garantie-documents.tsx",
   "components/public/message-equipe.tsx",
   "components/public/passeport-voyageur.tsx",
-  "components/public/payer-billet.tsx",
-  "components/public/preuve-livraison.tsx",
   "components/public/rendez-vous-depot.tsx",
   "components/public/reponse-creneau-visite.tsx",
   "components/public/smart-header.tsx",
-  "components/public/vehicle-booking.tsx",
-  "components/public/vehicle-gallery.tsx",
-  "components/public/vehicle-purchase.tsx",
   "components/theme-toggle.tsx",
   "components/whatsapp-float.tsx",
 ]);

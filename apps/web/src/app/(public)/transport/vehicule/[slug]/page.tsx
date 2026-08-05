@@ -14,6 +14,8 @@ import { ViewItemTracker } from "@/components/analytics/view-item-tracker"
 import { BackLink } from "@/components/public/back-link"
 import { serializeJsonLd } from "@/lib/json-ld"
 
+import { getT } from "@/lib/i18n/server"
+import { remplir } from "@/lib/i18n/format"
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const parsed = parseGroupKey(slug)
@@ -46,6 +48,7 @@ export default async function VehicleDetail({
   params: Promise<{ slug: string }>
   searchParams: Promise<{ mode?: string }>
 }) {
+  const t = await getT()
   const { slug } = await params
   const { mode } = await searchParams
   const supabase = await createClient()
@@ -224,7 +227,7 @@ export default async function VehicleDetail({
           <div className="mt-6 flex items-start justify-between gap-4">
             <div>
               <Badge variant={rep.statut === "disponible" ? "green" : "gold"}>
-                {rep.statut === "disponible" ? "Disponible" : "Sur demande"}
+                {rep.statut === "disponible" ? t.transport.disponible : t.transport.surDemande}
               </Badge>
               <h1 className="font-display mt-3 text-4xl font-medium tracking-tight text-public-text md:text-5xl">{rep.marque} {rep.modele}</h1>
             </div>
@@ -247,11 +250,12 @@ export default async function VehicleDetail({
           </div>
 
           <p className="mt-6 text-sm leading-relaxed text-public-text-muted">
-            {rep.description || `Le ${rep.marque} ${rep.modele} est le véhicule idéal pour vos déplacements. Alliant confort, puissance et fiabilité, il vous offre une expérience de conduite inégalée sur toutes les routes de Côte d'Ivoire.`}
+            {rep.description ||
+                  remplir(t.transport.descriptionDefaut, { vehicule: `${rep.marque} ${rep.modele}` })}
           </p>
 
           <div className="mt-10">
-            <h2 className="font-display border-b border-public-border pb-3 text-xl font-medium text-public-text">Caractéristiques techniques</h2>
+            <h2 className="font-display border-b border-public-border pb-3 text-xl font-medium text-public-text">{t.transport.caracteristiques}</h2>
             <div className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 md:grid-cols-4">
               {specs.map((s) => (
                 <div key={s.label}>
@@ -263,7 +267,7 @@ export default async function VehicleDetail({
           </div>
 
           <div className="mt-10">
-            <h2 className="font-display border-b border-public-border pb-3 text-xl font-medium text-public-text">Équipements</h2>
+            <h2 className="font-display border-b border-public-border pb-3 text-xl font-medium text-public-text">{t.transport.equipements}</h2>
             <div className="mt-5 grid grid-cols-2 gap-3">
               {[
                 rep.climatisation ? "Climatisation" : null,
@@ -293,7 +297,7 @@ export default async function VehicleDetail({
                   href={`/transport/vehicule/${slug}?mode=location`}
                   className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-orange transition-colors hover:text-accent-orange-hover"
                 >
-                  ← Plutôt le louer ?
+                  {t.transport.plutotLouer}
                 </Link>
               ) : (
                 <Link

@@ -24,6 +24,7 @@ import {
 import { getZonesTarifaires } from "@/lib/public-cache"
 import { serializeJsonLd } from "@/lib/json-ld"
 
+import { getT } from "@/lib/i18n/server"
 const PAGE_SIZE = 12
 
 const catalogueSchema = {
@@ -70,6 +71,7 @@ function GridSkeleton() {
 }
 
 async function VehiculeGrid({ searchParams }: { searchParams: Record<string, string | undefined> }) {
+  const t = await getT()
   const sp = searchParams
   const supabase = await createClient()
 
@@ -134,8 +136,8 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-public-bg-elevated">
           <SearchIcon size={32} className="text-public-text-faint" />
         </div>
-        <p className="text-lg font-semibold text-public-text">Aucun résultat pour ces filtres</p>
-        <p className="text-sm text-public-text-muted">Essayez d&apos;élargir vos critères ou de réinitialiser les filtres.</p>
+        <p className="text-lg font-semibold text-public-text">{t.transport.aucunResultatFiltres}</p>
+        <p className="text-sm text-public-text-muted">{t.transport.elargirCriteres}</p>
       </div>
     )
   }
@@ -197,7 +199,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
               <CardContent className="px-(--card-spacing) pt-(--card-spacing)">
                 <div className="mb-3">
                   <Badge variant={g.totalCount > 0 ? "green" : "default"}>
-                    {g.totalCount > 0 ? "Disponible" : "Sur demande"}
+                    {g.totalCount > 0 ? t.transport.disponible : t.transport.surDemande}
                   </Badge>
                 </div>
                 <h3 className="text-lg font-semibold text-public-text">{g.marque} {g.modele}</h3>
@@ -206,7 +208,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
                     ? `${g.prixJournalier.toLocaleString("fr-FR")} FCFA`
                     : hasVente
                       ? `${g.prixVente!.toLocaleString("fr-FR")} FCFA`
-                      : "Prix sur demande"}
+                      : t.transport.prixSurDemande}
                   {hasLoc && <span className="text-base font-normal text-public-text-muted"> /jour</span>}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-4 text-sm text-public-text-muted">
@@ -214,7 +216,7 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
                   {g.boite && <span>{g.boite}</span>}
                   {g.climatisation && <span>Clim</span>}
                   {g.gps && <span>GPS</span>}
-                  {g.chauffeurDisponible && <span>Chauffeur</span>}
+                  {g.chauffeurDisponible && <span>{t.transport.chauffeur}</span>}
                 </div>
               </CardContent>
               <CardFooter>
@@ -233,11 +235,11 @@ async function VehiculeGrid({ searchParams }: { searchParams: Record<string, str
           <PaginationContent>
             <PaginationItem>
               {page > 1 ? (
-                <PaginationPrevious href={pageUrl(page - 1)} text="Précédent" />
+                <PaginationPrevious href={pageUrl(page - 1)} text={t.commun.precedent} />
               ) : (
                 <span className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-sm text-public-text-faint opacity-50">
                   <ChevronRightIcon size={16} className="rotate-180" />
-                  <span className="hidden sm:block">Précédent</span>
+                  <span className="hidden sm:block">{t.commun.precedent}</span>
                 </span>
               )}
             </PaginationItem>
@@ -280,6 +282,7 @@ export default async function TransportCatalogue({
 }: {
   searchParams: Promise<Record<string, string | undefined>>
 }) {
+  const t = await getT()
   const sp = await searchParams
 
   const zones = await getZonesTarifaires()
@@ -291,13 +294,13 @@ export default async function TransportCatalogue({
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(catalogueSchema) }}
       />
       <div className="px-6 pt-6 sm:px-10">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t.commun.retourAccueil} />
       </div>
 
       <PageHero
-        eyebrow="Transport"
-        title="Notre Flotte"
-        lede="Découvrez nos véhicules d'exception pour vos déplacements."
+        eyebrow={t.nav.transport}
+        title={t.transport.notreFlotte}
+        lede={t.transport.heroLede}
         bgImage={{ src: "/images/hero-car.webp", alt: "Flotte de véhicules premium" }}
         aside={
           <Image
@@ -320,8 +323,8 @@ export default async function TransportCatalogue({
 
       <div className="mx-auto max-w-6xl px-6 pb-20 sm:px-10">
         <SectionHead
-          title="Véhicules disponibles"
-          lede="Cliquez sur un véhicule pour le réserver ou faire une demande d'achat."
+          title={t.transport.vehiculesDisponibles}
+          lede={t.transport.grilleLede}
         />
         <div className="mt-10">
           <Suspense fallback={<GridSkeleton />}>

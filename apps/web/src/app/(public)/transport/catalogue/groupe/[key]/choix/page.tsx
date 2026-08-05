@@ -8,6 +8,8 @@ import { CAT_LABELS } from "@/lib/constants"
 import { Badge, Card } from "@/components/ui"
 import { ClockIcon } from "@/components/icons"
 
+import { getT, langueCourante } from "@/lib/i18n/server"
+import { pluriel } from "@/lib/i18n/format"
 export async function generateMetadata({ params }: { params: Promise<{ key: string }> }): Promise<Metadata> {
   const { key } = await params
   const groupKey = decodeURIComponent(key)
@@ -29,6 +31,8 @@ export async function generateMetadata({ params }: { params: Promise<{ key: stri
 }
 
 export default async function GroupeChoixPage({ params }: { params: Promise<{ key: string }> }) {
+  const t = await getT()
+  const langue = await langueCourante()
   const { key } = await params
   const groupKey = decodeURIComponent(key)
 
@@ -98,13 +102,13 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
 
           {disponibles.length > 1 && (
             <p className="mt-2.5 text-sm font-semibold text-accent-green">
-              {disponibles.length} véhicules disponibles
+              {pluriel(langue, { un: t.transport.vehiculesDuGroupe_un, autre: t.transport.vehiculesDuGroupe_pluriel }, disponibles.length)}
             </p>
           )}
 
           <div className="mt-4 flex flex-wrap gap-2">
             {vehicules.some((v) => v.assurance_url) && (
-              <Badge variant="green">Véhicule assuré</Badge>
+              <Badge variant="green">{t.transport.vehiculeAssure}</Badge>
             )}
             {vehicules.some((v) => v.chauffeur_disponible) && (
               <Badge variant="orange">Chauffeur disponible</Badge>
@@ -112,7 +116,7 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
           </div>
 
           <h2 className="font-display mb-6 mt-10 border-b border-public-border pb-3 text-2xl font-medium text-public-text">
-            Que souhaitez-vous faire ?
+            {t.transport.queSouhaitezVous}
           </h2>
 
           <div className="grid gap-5 sm:grid-cols-2">
@@ -123,7 +127,7 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
               >
                 <ClockIcon size={44} className="text-accent-green transition-transform group-hover:scale-110" />
                 <span className="text-lg font-bold text-accent-green">Location</span>
-                <span className="text-sm text-public-text-muted">Courte ou longue durée</span>
+                <span className="text-sm text-public-text-muted">{t.transport.courteOuLongueDuree}</span>
               </Link>
             )}
 
@@ -136,7 +140,7 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
                   <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                 </svg>
                 <span className="text-lg font-bold text-accent-gold">Achat</span>
-                <span className="text-sm text-public-text-muted">Acheter ce véhicule</span>
+                <span className="text-sm text-public-text-muted">{t.transport.acheterCeVehicule}</span>
               </Link>
             )}
 

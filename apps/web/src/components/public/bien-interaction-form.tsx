@@ -5,6 +5,8 @@ import Link from "next/link"
 import { creerDemandeImmobilier, type ImmobilierState } from "@/app/actions/immobilier"
 import { TYPES_DEMANDE, TYPE_DEMANDE_LABELS } from "@/lib/immobilier"
 import { Obligatoire } from "@/components/ui/obligatoire"
+import { useT } from "@/lib/langue-context"
+import { remplir } from "@/lib/i18n/format"
 
 const inputClass =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-green focus:outline-none focus:ring-2 focus:ring-accent-green/20"
@@ -22,6 +24,7 @@ export function BienInteractionForm({
   /** Une location se négocie avec une période : loyer mensuel, début, durée. */
   estLocation: boolean
 }) {
+  const t = useT()
   const [state, action, pending] = useActionState<ImmobilierState, FormData>(creerDemandeImmobilier, {})
   const [type, setType] = useState<string>("information")
   const [methode, setMethode] = useState<"cinetpay" | "stripe">("cinetpay")
@@ -30,7 +33,7 @@ export function BienInteractionForm({
     return (
       <div className="rounded-2xl border border-public-border bg-public-bg-card p-6">
         <p className="text-sm text-public-text-muted">
-          Connectez-vous pour demander une information, réserver une visite ou faire une offre sur ce bien.
+          {t.immobilier.connexionPourDemander}
         </p>
         <Link
           href={`/connexion?redirect=/immobilier/${bienId}`}
@@ -47,7 +50,7 @@ export function BienInteractionForm({
       <input type="hidden" name="bien_id" value={bienId} />
       <input type="hidden" name="type" value={type} />
 
-      <h2 className="text-base font-semibold text-public-text">Ce bien vous intéresse ?</h2>
+      <h2 className="text-base font-semibold text-public-text">{t.immobilier.bienVousInteresse}</h2>
 
       {state.error && (
         <p role="alert" className="mt-3 rounded-xl border border-error/20 bg-error/5 px-4 py-2.5 text-sm text-error">
@@ -77,7 +80,7 @@ export function BienInteractionForm({
           <>
             <div>
               <label htmlFor="date_souhaitee" className="mb-1.5 block text-sm font-medium text-public-text">
-                Date souhaitée
+                {t.immobilier.dateSouhaitee}
               </label>
               <input
                 id="date_souhaitee"
@@ -90,7 +93,7 @@ export function BienInteractionForm({
 
             <div>
               <span className="mb-1.5 block text-sm font-medium text-public-text">
-                Moyen de paiement
+                {t.paiement.moyenPaiement}
               </span>
               <input type="hidden" name="methode_paiement" value={methode} />
               <div className="grid grid-cols-2 gap-2">
@@ -120,7 +123,7 @@ export function BienInteractionForm({
                 montant et son caractère définitif avant de cliquer. */}
             <div className="rounded-xl border border-accent-gold/30 bg-accent-gold/5 p-4">
               <p className="text-sm font-semibold text-public-text">
-                Frais de visite : {fraisVisite.toLocaleString("fr-FR")} FCFA
+                {remplir(t.immobilier.fraisVisite, { montant: fraisVisite.toLocaleString("fr-FR") })}
               </p>
               <p className="mt-1 text-xs text-public-text-muted">
                 À régler maintenant pour réserver votre visite. Ces frais couvrent
@@ -152,7 +155,7 @@ export function BienInteractionForm({
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="location_debut" className="mb-1.5 block text-sm font-medium text-public-text">
-                    Début souhaité<Obligatoire />
+                    {t.immobilier.debutSouhaite}<Obligatoire />
                   </label>
                   <input
                     id="location_debut"
@@ -165,7 +168,7 @@ export function BienInteractionForm({
                 </div>
                 <div>
                   <label htmlFor="location_duree_mois" className="mb-1.5 block text-sm font-medium text-public-text">
-                    Durée (mois)<Obligatoire />
+                    {t.immobilier.dureeMois}<Obligatoire />
                   </label>
                   <input
                     id="location_duree_mois"

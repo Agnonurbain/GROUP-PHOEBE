@@ -1,4 +1,6 @@
 import type { Metadata } from "next"
+import { getT } from "@/lib/i18n/server"
+import { remplir } from "@/lib/i18n/format"
 import Link from "next/link"
 import Image from "next/image"
 import { AlertTriangle, ChevronRight } from "lucide-react"
@@ -48,6 +50,7 @@ export default async function Livraison({
 }: {
   searchParams: Promise<{ echec?: string }>
 }) {
+  const t = await getT()
   const { echec } = await searchParams
   const { moyens, grilleMoyens, coefficientsMode } = await getTarifsLivraison()
   const maxKg = chargeMaxFlotte(moyens)
@@ -55,14 +58,14 @@ export default async function Livraison({
   return (
     <>
       <div className="px-6 pt-6 sm:px-10">
-        <BackLink href="/" label="Retour à l'accueil" />
+        <BackLink href="/" label={t.commun.retourAccueil} />
       </div>
 
       <PageHero
-        eyebrow="Livraison"
-        title={<>Livraison de colis &amp; Coursier</>}
-        lede="Envois rapides et sécurisés à Abidjan et partout en Côte d'Ivoire, livrés porte-à-porte."
-        bgImage={{ src: "/images/hero-livraison.webp", alt: "Livraison de colis" }}
+        eyebrow={t.nav.livraison}
+        title={t.livraison.heroTitre}
+        lede={t.livraison.heroLede}
+        bgImage={{ src: "/images/hero-livraison.webp", alt: t.livraison.heroAlt }}
         aside={
           <Image
             src="/logos/livraison.png"
@@ -77,13 +80,13 @@ export default async function Livraison({
         actions={
           <>
             <Link href="/livraison/commander">
-              <Button variant="orange" size="lg">Commander une livraison</Button>
+              <Button variant="orange" size="lg">{t.livraison.commander}</Button>
             </Link>
             <Link
               href="/suivi"
               className="text-sm font-semibold text-accent-orange transition-colors hover:text-accent-orange-hover"
             >
-              Suivre un colis <ChevronRight className="inline size-3.5" />
+              {t.livraison.suivreColis} <ChevronRight className="inline size-3.5" />
             </Link>
           </>
         }
@@ -92,15 +95,15 @@ export default async function Livraison({
       {echec && (
         <div role="alert" className="mx-6 mt-8 max-w-2xl rounded-xl border border-error/30 bg-error/5 px-5 py-3 text-sm text-error sm:mx-10">
           <AlertTriangle className="mr-2 inline size-4" />
-          Le paiement a été annulé. Vous pouvez relancer votre commande à tout moment.
+          {t.livraison.paiementAnnule}
         </div>
       )}
 
       <section className="px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
-            title="Nos tarifs"
-            lede="Le prix dépend de la distance entre la collecte et la livraison, du mode d'envoi et du poids du colis."
+            title={t.livraison.nosTarifs}
+            lede={t.livraison.tarifsLede}
           />
           {/* La grille est désormais zone × MOYEN : le véhicule a remplacé le
               poids dans le prix (00084). Le délai s'y applique en coefficient,
@@ -145,7 +148,7 @@ export default async function Livraison({
             </table>
           </div>
           <div className="mt-6 rounded-xl border border-public-border bg-public-bg-card p-5">
-            <p className="text-sm font-semibold text-public-text">Délai souhaité</p>
+            <p className="text-sm font-semibold text-public-text">{t.livraison.delaiSouhaite}</p>
             <p className="mt-1 text-xs text-public-text-muted">
               Les tarifs ci-dessus sont ceux du délai standard. Un délai plus court
               s&apos;applique en coefficient :
@@ -163,19 +166,18 @@ export default async function Livraison({
               ))}
             </ul>
             <p className="mt-3 text-xs text-public-text-faint">
-              Le poids ne change pas le prix : il détermine quels moyens peuvent
-              porter votre colis. Au-delà de {maxKg} kg, contactez-nous pour un devis.
+              {remplir(t.livraison.poidsNeFaitPasLePrix, { max: maxKg })}
             </p>
           </div>
           <p className="mt-4 text-xs text-public-text-faint">
-            La zone est déterminée automatiquement à partir des adresses de collecte et de livraison.
+            {t.livraison.zoneAutomatique}
           </p>
         </div>
       </section>
 
       <section className="border-t border-public-border bg-public-bg-card px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
-          <SectionHead title="Comment ça marche" className="border-b-0 pb-0" />
+          <SectionHead title={t.livraison.commentCaMarche} className="border-b-0 pb-0" />
           <div className="mt-12 grid gap-y-10 sm:grid-cols-2 sm:gap-x-10 lg:grid-cols-4 lg:gap-x-8">
             {ETAPES.map((s, i) => (
               <div key={s.title}>
@@ -196,8 +198,8 @@ export default async function Livraison({
         <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
           <div className="lg:sticky lg:top-28 lg:self-start">
             <SectionHead
-              title="Ce que nous transportons"
-              lede="Du pli administratif au gros colis, avec la même attention."
+              title={t.livraison.ceQueNousTransportons}
+              lede={t.livraison.transportonsLede}
               className="border-b-0 pb-0"
             />
           </div>
@@ -215,11 +217,11 @@ export default async function Livraison({
       <section className="border-t border-public-border bg-public-bg-card px-6 py-24 sm:px-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-10 lg:flex-row lg:items-end lg:justify-between">
           <h2 className="font-display max-w-2xl text-3xl font-medium leading-[1.15] tracking-tight text-public-text sm:text-4xl">
-            Un colis à envoyer <em className="italic text-accent-orange">aujourd&apos;hui</em> ?
+            {t.livraison.colisAujourdhui} <em className="italic text-accent-orange">{t.livraison.aujourdhui}</em>&nbsp;?
           </h2>
           <div className="flex flex-wrap gap-4 lg:shrink-0">
             <Link href="/livraison/commander">
-              <Button variant="orange" size="lg">Commander une livraison</Button>
+              <Button variant="orange" size="lg">{t.livraison.commander}</Button>
             </Link>
           </div>
         </div>

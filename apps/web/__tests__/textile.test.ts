@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { fr } from "@/lib/i18n/fr";
+import { en } from "@/lib/i18n/en";
 import {
   validerDemandeTextile,
   transitionTextileAutorisee,
@@ -167,10 +169,19 @@ describe("Textile — aucun prix au catalogue", () => {
 
   // Le client cherchera une grille : lui dire pourquoi il n'y en a pas vaut
   // mieux que de le laisser croire à un oubli.
+  /**
+   * L'explication est passée au dictionnaire lors de la traduction. Le test la
+   * suit là où elle vit : la chercher dans le JSX interdirait de traduire la
+   * page qu'il protège, ce qui reviendrait à faire garder une porte par un mur.
+   */
   it("l'écran explique l'absence de prix", () => {
     const form = src("app/(public)/textile/demande-form.tsx");
-    expect(form).toContain("Pourquoi pas de prix affiché");
-    expect(form).toContain("prix de référence");
+    expect(form).toContain("t.textile.pourquoiPasDePrix");
+    expect(fr.textile.pourquoiPasDePrix).toContain("prix");
+    expect(fr.textile.pourquoiPasDePrixTexte).toContain("prix de référence");
+    // Et l'anglais dit la même chose, sans quoi seule la moitié des visiteurs
+    // comprendrait pourquoi aucun montant n'est affiché.
+    expect(en.textile.pourquoiPasDePrixTexte).toContain("reference price");
   });
 });
 
@@ -318,7 +329,8 @@ describe("Catalogue de pagnes", () => {
 
   it("la description libre survit au catalogue", () => {
     const form = src("app/(public)/textile/demande-form.tsx");
-    expect(form).toContain("Vous n&apos;avez rien trouvé au catalogue");
+    expect(form).toContain("t.textile.rienAuCatalogue");
+    expect(fr.textile.rienAuCatalogue).toContain("catalogue");
     // Le champ motif reste présent dans les deux cas.
     expect(form).toContain('name="motif"');
   });

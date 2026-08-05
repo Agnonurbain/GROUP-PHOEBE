@@ -16,6 +16,7 @@ import {
   type TarifsAssistance,
   type Prestation,
 } from "@/lib/assistance"
+import { remplir } from "@/lib/i18n/format"
 
 function StepCard({ num, title, desc, index }: { num: string; title: string; desc?: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -75,7 +76,7 @@ function VisaCard({
           ordre de grandeur, arrêté au rendez-vous. Le taire laisserait croire
           à un prix ferme. */}
       {prestation.prix !== null && (
-        <p className="mt-0.5 text-xs text-public-text-faint">À titre indicatif</p>
+        <p className="mt-0.5 text-xs text-public-text-faint">{t.assistance.titreIndicatif}</p>
       )}
       {prestation.description && (
         <p className="mt-3 text-sm text-public-text-muted">{prestation.description}</p>
@@ -87,7 +88,7 @@ function VisaCard({
       {prestation.pieces.length > 0 && (
         <div className="mt-4 rounded-xl border border-public-border bg-public-bg p-3">
           <p className="text-xs font-semibold text-public-text">
-            Pièces à fournir ({prestation.pieces.length})
+            {remplir(t.assistance.piecesAFournir, { n: prestation.pieces.length })}
           </p>
           <ul className="mt-2 space-y-1">
             {prestation.pieces.map((piece) => (
@@ -143,7 +144,7 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
   return (
     <>
       <nav aria-label="Fil d'Ariane" className="flex flex-wrap items-center gap-3 px-6 pt-6 text-sm text-public-text-faint">
-        <BackLink href="/assistance" label="Retour à l'assistance" />
+        <BackLink href="/assistance" label={t.assistance.retourAssistance} />
         <span aria-hidden="true">·</span>
         <ol className="flex flex-wrap items-center gap-1.5">
           <li><Link href="/" className="transition-colors hover:text-accent-blue-on-dark">{t.nav.accueil}</Link></li>
@@ -237,7 +238,7 @@ export default function CountryDetail({ tarifs }: { tarifs: TarifsAssistance }) 
           {/* Placé sous les prestations, là où le client s'apprête à postuler :
               plus bas il ne le lirait pas, plus haut il l'aurait oublié. */}
           <p className="mt-6 rounded-xl border border-accent-blue/25 bg-accent-blue/5 p-4 text-xs leading-relaxed text-public-text-muted">
-            <strong className="text-public-text">Ce que couvre notre assistance.</strong>{" "}
+            <strong className="text-public-text">{t.assistance.ceQueCouvre}</strong>{" "}
             {MENTION_VISA_NON_GARANTI}
           </p>
         </div>
