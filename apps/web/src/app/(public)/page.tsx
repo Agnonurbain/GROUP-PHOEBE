@@ -1,25 +1,15 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import { createClient } from "@/lib/supabase/server"
 import { serializeJsonLd, createOrganizationSchema, createWebSiteSchema } from "@/lib/json-ld"
 import HomePageClient from "./page-client"
 import { getParametresContact, getStatsAccueil } from "@/lib/public-cache"
 
-export const metadata: Metadata = {
-  title: "GROUP PHOEBE — Transport, Immobilier & Assistance",
-  description:
-    "GROUP PHOEBE : transport et livraison, immobilier et assistance voyages à Abidjan et partout en Côte d'Ivoire. Location de véhicules, vente de biens, visas et études.",
-  openGraph: {
-    title: "GROUP PHOEBE — Transport, Immobilier & Assistance",
-    description:
-      "Location de véhicules, vente immobilière et assistance voyages en Côte d'Ivoire.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "GROUP PHOEBE",
-    description:
-      "Location de véhicules, vente immobilière et assistance voyages en Côte d'Ivoire.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.accueilTitre,
+    description: t.meta.accueilDescription,
+    partage: t.meta.accueilPartage,
+  }))
 
 export default async function HomePage() {
   const supabase = await createClient()

@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import AssistanceClient from "./page-client"
 import { serializeJsonLd } from "@/lib/json-ld"
 import { getTarifsAssistance, getParametresBillet } from "@/lib/public-cache"
@@ -57,19 +57,11 @@ const serviceSchema = {
   },
 }
 
-export const metadata: Metadata = {
-  title: "Assistance Voyages - Visas, Etudes & Formalites",
-  description: "GROUP PHOEBE vous accompagne dans vos demarches de visa, etudes a l'etranger et formalites administratives depuis la Cote d'Ivoire.",
-  openGraph: {
-    title: "Assistance Voyages - Visas, Etudes & Formalites",
-    description: "GROUP PHOEBE vous accompagne dans vos demarches de visa, etudes a l'etranger et formalites administratives depuis la Cote d'Ivoire.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Assistance Voyages - Visas, Etudes & Formalites",
-    description: "GROUP PHOEBE vous accompagne dans vos demarches de visa, etudes a l'etranger et formalites administratives depuis la Cote d'Ivoire.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.assistanceTitre,
+    description: t.meta.assistanceDescription,
+  }))
 
 export default async function AssistancePage() {
   const [tarifs, paramsBillet] = await Promise.all([getTarifsAssistance(), getParametresBillet()])

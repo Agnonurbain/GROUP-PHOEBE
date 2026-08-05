@@ -1,23 +1,12 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import { createClient } from "@/lib/supabase/server"
 import { BlogPageClient } from "./page-client"
 
-export const metadata: Metadata = {
-  title: "Blog & Guides — GROUP PHOEBE",
-  description:
-    "Conseils, guides et actualités sur le transport, l'immobilier, l'assistance voyages et la livraison en Côte d'Ivoire.",
-  openGraph: {
-    title: "Blog & Guides — GROUP PHOEBE",
-    description:
-      "Retrouvez nos articles et guides pratiques pour vos projets en Côte d'Ivoire.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Blog & Guides — GROUP PHOEBE",
-    description:
-      "Retrouvez nos articles et guides pratiques pour vos projets en Côte d'Ivoire.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.blogTitre,
+    description: t.meta.blogDescription,
+  }))
 
 export type ArticleListItem = {
   id: string

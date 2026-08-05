@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { VerificationBadge } from "@/components/verification-badge"
@@ -13,14 +13,11 @@ import { Button, Card } from "@/components/ui"
 import { BackLink } from "@/components/public/back-link"
 import { getT } from "@/lib/i18n/server"
 
-export const metadata: Metadata = {
-  title: "Mon Profil",
-  description: "Gérez vos informations personnelles, vos documents d'identité et préférences sur votre compte GROUP PHOEBE.",
-  openGraph: {
-    title: "Mon Profil",
-    description: "Gérez vos informations personnelles, vos documents d'identité et préférences sur votre compte GROUP PHOEBE.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.profilTitre,
+    description: t.meta.profilDescription,
+  }))
 
 export default async function CompteProfilPage({
   searchParams,

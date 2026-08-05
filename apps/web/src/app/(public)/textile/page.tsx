@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { BackLink } from "@/components/public/back-link"
@@ -7,11 +7,11 @@ import { typesPagneActifs, catalogueArticles } from "@/app/actions/textile"
 import { TextileClient } from "./textile-client"
 import { getT } from "@/lib/i18n/server"
 
-export const metadata: Metadata = {
-  title: "Textile — Pagnes Uniwax et Hollandais",
-  description:
-    "Pagnes Uniwax (Print, Block, Tabs) et wax hollandais. Dites-nous ce que vous cherchez, nous vous envoyons un devis.",
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.textileTitre,
+    description: t.meta.textileDescription,
+  }))
 
 export default async function TextilePage() {
   const t = await getT()

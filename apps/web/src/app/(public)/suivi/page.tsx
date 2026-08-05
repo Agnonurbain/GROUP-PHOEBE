@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
 import type { Database } from "@group-phoebe/database/types"
 import { BackLink } from "@/components/public/back-link"
@@ -10,10 +10,11 @@ import {
   STATUT_LIVRAISON_LABELS,
 } from "@/lib/livraison"
 
-export const metadata: Metadata = {
-  title: "Suivre un colis",
-  description: "Suivez votre livraison GROUP PHOEBE en temps réel grâce à votre numéro de suivi.",
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.suiviTitre,
+    description: t.meta.suiviDescription,
+  }))
 
 function getAdmin() {
   return createAdminClient<Database>(

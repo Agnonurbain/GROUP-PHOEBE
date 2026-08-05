@@ -838,6 +838,88 @@ export const en: Dictionnaire = {
     politiqueConfidentialite: "privacy policy",
   },
 
+  meta: {
+    accueilTitre: "GROUP PHOEBE — Transport, Property & Assistance",
+    accueilDescription:
+      "GROUP PHOEBE: transport and delivery, property and travel assistance in Abidjan and across Côte d'Ivoire. Vehicle rental, property sales, visas and studies.",
+    accueilPartage:
+      "Vehicle rental, property sales and travel assistance in Côte d'Ivoire.",
+
+    transportTitre: "Vehicle rental — Catalogue",
+    transportDescription:
+      "Discover our premium fleet for rental or purchase in Abidjan and across Côte d'Ivoire. SUVs, saloons, minibuses — book online.",
+    transportPartage:
+      "Discover our premium fleet for rental or purchase in Abidjan and across Côte d'Ivoire.",
+
+    livraisonTitre: "Parcel delivery — Transport & Courier",
+    livraisonDescription:
+      "Parcel delivery and courier service in Abidjan and across Côte d'Ivoire. Fast shipments, door-to-door delivery with GROUP PHOEBE.",
+    livraisonCommanderTitre: "Order a delivery",
+    livraisonCommanderDescription:
+      "Order a parcel delivery in Abidjan and across Côte d'Ivoire with GROUP PHOEBE.",
+    livraisonConfirmationTitre: "Delivery recorded — Confirmation",
+    livraisonConfirmationDescription: "Your GROUP PHOEBE delivery order has been recorded.",
+
+    immobilierTitre: "Property — Buy, Sell & Rent",
+    immobilierDescription:
+      "Find the property you are looking for in Côte d'Ivoire: flats, villas, land. Sales, rentals and free valuation with GROUP PHOEBE.",
+    immobilierConfirmationTitre: "Request sent — Property",
+    immobilierConfirmationDescription: "Your request has been recorded.",
+
+    assistanceTitre: "Travel Assistance — Visas, Studies & Formalities",
+    assistanceDescription:
+      "GROUP PHOEBE supports you with visa applications, studies abroad and administrative formalities from Côte d'Ivoire.",
+    assistanceConfirmationTitre: "File submitted — Assistance",
+    assistanceConfirmationDescription: "Your visa assistance request has been recorded.",
+
+    textileTitre: "Textile — Uniwax and Dutch wax fabrics",
+    textileDescription:
+      "Uniwax and Dutch wax fabrics. Tell us what you are looking for: we consult our suppliers and reply with a firm price.",
+    textileConfirmationTitre: "Request sent — Textile",
+    textileConfirmationDescription: "Your quote request has been recorded.",
+
+    panierTitre: "Cart — Booking",
+    panierDescription:
+      "Complete your vehicle, property or assistance booking with GROUP PHOEBE in a few steps.",
+    paiementTitre: "Payment — Complete the booking",
+    paiementDescription:
+      "Choose your payment method and complete your GROUP PHOEBE booking securely.",
+
+    profilTitre: "My profile",
+    profilDescription:
+      "Manage your personal details, identity documents and preferences on your GROUP PHOEBE account.",
+    reservationsTitre: "My bookings",
+    reservationsDescription:
+      "View and manage all your GROUP PHOEBE transport, property and travel assistance bookings.",
+    favorisTitre: "My favourites",
+    favorisDescription:
+      "Find your favourite GROUP PHOEBE vehicles and properties at a glance.",
+    verificationTitre: "Identity verification",
+    verificationDescription:
+      "Submit your identity documents and driving licence to verify your GROUP PHOEBE account.",
+
+    contactTitre: "Contact",
+    contactDescription:
+      "Contact GROUP PHOEBE for a transport, property or travel assistance quote in Abidjan and across Côte d'Ivoire.",
+    suiviTitre: "Track a parcel",
+    suiviDescription:
+      "Track your GROUP PHOEBE delivery in real time with your tracking number.",
+    avisTitre: "Client reviews — GROUP PHOEBE",
+    avisDescription:
+      "Genuine feedback from our clients on our transport, property, assistance and delivery services.",
+    blogTitre: "Blog & Guides — GROUP PHOEBE",
+    blogDescription:
+      "Practical advice, guides and news to support you in your transport, property, assistance and delivery projects.",
+
+    siteTitre: "GROUP PHOEBE — Transport, Delivery, Property & Migration Assistance",
+    siteDescription:
+      "Digital platform for professional services: transport, parcel delivery, property and migration, visa and study assistance in Côte d'Ivoire.",
+    sitePartageTitre: "GROUP PHOEBE — Professional services",
+    sitePartageDescription:
+      "Transport, delivery, property and migration, visa and study assistance in Côte d'Ivoire.",
+    ogLocale: "en_US",
+  },
+
   langue: {
     choisir: "Choose language",
     contenuNonTraduit:

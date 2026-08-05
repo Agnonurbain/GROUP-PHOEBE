@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import { BackLink } from "@/components/public/back-link"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
@@ -8,14 +8,11 @@ import { Button, Card } from "@/components/ui"
 import { getT } from "@/lib/i18n/server"
 import { remplir } from "@/lib/i18n/format"
 
-export const metadata: Metadata = {
-  title: "Vérification d'identité",
-  description: "Soumettez vos documents d'identité et permis de conduire pour vérifier votre compte GROUP PHOEBE.",
-  openGraph: {
-    title: "Vérification d'identité",
-    description: "Soumettez vos documents d'identité et permis de conduire pour vérifier votre compte GROUP PHOEBE.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.verificationTitre,
+    description: t.meta.verificationDescription,
+  }))
 
 export default async function VerificationPage() {
   const t = await getT()

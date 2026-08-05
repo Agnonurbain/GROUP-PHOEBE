@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import { BackLink } from "@/components/public/back-link"
 import Link from "next/link"
 import Image from "next/image"
@@ -30,14 +30,11 @@ import {
   type StatutTextile,
 } from "@/lib/textile"
 
-export const metadata: Metadata = {
-  title: "Mes Réservations",
-  description: "Consultez et gérez toutes vos réservations de transport, immobilier et assistance voyage GROUP PHOEBE.",
-  openGraph: {
-    title: "Mes Réservations",
-    description: "Consultez et gérez toutes vos réservations de transport, immobilier et assistance voyage GROUP PHOEBE.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.reservationsTitre,
+    description: t.meta.reservationsDescription,
+  }))
 
 type ReservationItem = {
   id: string

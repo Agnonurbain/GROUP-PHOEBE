@@ -10,6 +10,7 @@ import { ClockIcon } from "@/components/icons"
 
 import { getT, langueCourante } from "@/lib/i18n/server"
 import { pluriel } from "@/lib/i18n/format"
+
 export async function generateMetadata({ params }: { params: Promise<{ key: string }> }): Promise<Metadata> {
   const { key } = await params
   const groupKey = decodeURIComponent(key)

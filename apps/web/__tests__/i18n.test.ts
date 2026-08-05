@@ -48,6 +48,7 @@ describe("i18n — les deux dictionnaires restent alignés", () => {
       // Mots identiques en français et en anglais
       "Transport", "Blog", "Contact", "Menu", "Total", "Services", "Textile",
       "Confirmation", "Minibus", "Diesel", "Transmission",
+      "Blog & Guides — GROUP PHOEBE",
       "Administration", "Destination", "Dimensions", "Transaction", "Type",
       // Noms propres et devise
       "FCFA", "Mobile Money",
@@ -350,5 +351,59 @@ describe("i18n — les modèles gardent leurs trous", () => {
       return trousDe(lire(fr) as string).join(",") !== trousDe(lire(en) as string).join(",");
     });
     expect(divergents).toEqual([]);
+  });
+});
+
+/**
+ * Les métadonnées suivent la langue, elles aussi.
+ *
+ * `export const metadata` est évalué au chargement du module, sans requête :
+ * un titre d'onglet ainsi déclaré ne PEUT PAS suivre la langue du visiteur,
+ * quoi qu'on écrive dedans. Seul `generateMetadata` s'exécute par requête.
+ *
+ * Le test vise donc la forme, pas le contenu : c'est la seule chose qui rende
+ * la traduction possible.
+ */
+describe("i18n — les métadonnées suivent la langue", () => {
+  const pages = [
+    ...fichiersTsx(join(RACINE, "app", "(public)")),
+    join(RACINE, "app", "layout.tsx"),
+  ].filter((f) => /\/(page|layout)\.tsx$/.test(f));
+
+  it("aucune page publique ne fige ses métadonnées", () => {
+    const figees = pages
+      // La DÉCLARATION, en début de ligne : viser la simple chaîne ferait
+      // correspondre le commentaire qui explique pourquoi elle est proscrite.
+      .filter((f) => /^export const metadata\s*(:|=)/m.test(readFileSync(f, "utf8")))
+      .map((f) => f.slice(RACINE.length + 1));
+    expect(figees).toEqual([]);
+  });
+
+  /**
+   * Le titre et la description étaient recopiés trois fois par page — onglet,
+   * Open Graph, Twitter. Trois copies divergent : le catalogue transport
+   * annonçait déjà deux titres différents. `metadonnees()` les tire d'une
+   * seule paire.
+   */
+  it("le helper évite la triple recopie", () => {
+    const helper = src("lib/i18n/metadonnees.ts");
+    expect(helper).toContain("openGraph:");
+    expect(helper).toContain("twitter:");
+    expect(helper).toContain("descriptionPartage");
+    // Il lit la langue de la requête, sinon il ne servirait à rien.
+    expect(helper).toContain("await getT()");
+  });
+
+  /**
+   * `openGraph.locale` annonçait `fr_CI` même sur une page servie en anglais :
+   * les réseaux sociaux affichaient la mauvaise variante à qui la partageait.
+   */
+  it("la locale Open Graph suit la langue", () => {
+    expect(src("app/layout.tsx")).toContain("locale: t.meta.ogLocale");
+    // Et dans le helper aussi : Next REMPLACE l'openGraph racine par celui de
+    // la page, il ne le fusionne pas. `og:locale` disparaissait donc partout.
+    expect(src("lib/i18n/metadonnees.ts")).toContain("locale: t.meta.ogLocale");
+    expect(fr.meta.ogLocale).toBe("fr_CI");
+    expect(en.meta.ogLocale).toBe("en_US");
   });
 });

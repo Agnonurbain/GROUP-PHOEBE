@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getCommunes, getTarifsLivraison } from "@/lib/public-cache"
@@ -6,10 +6,11 @@ import CommanderClient from "./commander-client"
 import { getParametresIndemnisation } from "@/lib/legal"
 import { libelleIndemnisation } from "@/lib/indemnisation"
 
-export const metadata: Metadata = {
-  title: "Commander une livraison",
-  description: "Commandez une livraison de colis à Abidjan et partout en Côte d'Ivoire avec GROUP PHOEBE.",
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.livraisonCommanderTitre,
+    description: t.meta.livraisonCommanderDescription,
+  }))
 
 export default async function CommanderLivraisonPage() {
   const supabase = await createClient()

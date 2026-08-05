@@ -1,14 +1,16 @@
 import { getT } from "@/lib/i18n/server"
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import Link from "next/link"
 import { Button } from "@/components/ui"
 import { CheckIcon } from "@/components/icons"
 import { remplir } from "@/lib/i18n/format"
 
-export const metadata: Metadata = {
-  title: "Dossier soumis — Assistance",
-  description: "Votre demande d'assistance visa a bien été enregistrée.",
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.assistanceConfirmationTitre,
+    description: t.meta.assistanceConfirmationDescription,
+    noindex: true,
+  }))
 
 export default async function ConfirmationAssistance({
   searchParams,

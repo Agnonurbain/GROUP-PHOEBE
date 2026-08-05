@@ -16,6 +16,7 @@ import { serializeJsonLd } from "@/lib/json-ld"
 
 import { getT } from "@/lib/i18n/server"
 import { remplir } from "@/lib/i18n/format"
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
   const parsed = parseGroupKey(slug)

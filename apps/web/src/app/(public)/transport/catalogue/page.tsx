@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import Link from "next/link"
 import Image from "next/image"
 import { Suspense } from "react"
@@ -25,6 +25,7 @@ import { getZonesTarifaires } from "@/lib/public-cache"
 import { serializeJsonLd } from "@/lib/json-ld"
 
 import { getT } from "@/lib/i18n/server"
+
 const PAGE_SIZE = 12
 
 const catalogueSchema = {
@@ -34,19 +35,12 @@ const catalogueSchema = {
   description: "Flotte de véhicules premium à la location ou à l'achat à Abidjan et partout en Côte d'Ivoire",
 }
 
-export const metadata: Metadata = {
-  title: "Location de véhicules — Catalogue",
-  description: "Découvrez notre flotte de véhicules premium à la location ou à l'achat à Abidjan et partout en Côte d'Ivoire. SUV, berlines, minibus — réservez en ligne.",
-  openGraph: {
-    title: "Location de véhicules — Catalogue | GROUP PHOEBE",
-    description: "Découvrez notre flotte de véhicules premium à la location ou à l'achat à Abidjan et partout en Côte d'Ivoire.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Location de véhicules — Catalogue",
-    description: "Découvrez notre flotte de véhicules premium à la location ou à l'achat à Abidjan et partout en Côte d'Ivoire. SUV, berlines, minibus — réservez en ligne.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.transportTitre,
+    description: t.meta.transportDescription,
+    partage: t.meta.transportPartage,
+  }))
 
 function GridSkeleton() {
   return (

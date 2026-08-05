@@ -1,15 +1,17 @@
 import { getT } from "@/lib/i18n/server"
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import Link from "next/link"
 import { Button } from "@/components/ui"
 import { CheckIcon } from "@/components/icons"
 import { TYPE_DEMANDE_LABELS } from "@/lib/immobilier"
 import { remplir } from "@/lib/i18n/format"
 
-export const metadata: Metadata = {
-  title: "Demande envoyée — Immobilier",
-  description: "Votre demande a bien été enregistrée.",
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.immobilierConfirmationTitre,
+    description: t.meta.immobilierConfirmationDescription,
+    noindex: true,
+  }))
 
 export default async function ConfirmationImmobilier({
   searchParams,

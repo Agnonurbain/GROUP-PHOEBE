@@ -1,5 +1,5 @@
 import { getT } from "@/lib/i18n/server"
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronRight } from "lucide-react"
@@ -19,19 +19,11 @@ import { FavoriButton } from "@/components/favori-button"
 import { getFavorisBienIds } from "@/app/actions/favoris"
 import { remplir } from "@/lib/i18n/format"
 
-export const metadata: Metadata = {
-  title: "Immobilier — Achat, Vente & Location",
-  description: "Trouvez le bien immobilier de vos rêves en Côte d'Ivoire : appartements, villas, terrains. Vente, location et estimation gratuite avec GROUP PHOEBE.",
-  openGraph: {
-    title: "Immobilier — Achat, Vente & Location",
-    description: "Trouvez le bien immobilier de vos rêves en Côte d'Ivoire : appartements, villas, terrains. Vente, location et estimation gratuite avec GROUP PHOEBE.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Immobilier — Achat, Vente & Location",
-    description: "Trouvez le bien immobilier de vos rêves en Côte d'Ivoire : appartements, villas, terrains. Vente, location et estimation gratuite avec GROUP PHOEBE.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.immobilierTitre,
+    description: t.meta.immobilierDescription,
+  }))
 
 export default async function Immobilier({
   searchParams,
