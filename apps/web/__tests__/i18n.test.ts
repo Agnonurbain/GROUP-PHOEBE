@@ -1,12 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fr } from "@/lib/i18n/fr";
 import { en } from "@/lib/i18n/en";
 import { dictionnaire, estLangueTraduite, LANGUES_TRADUITES } from "@/lib/i18n";
 import { detecterLangue } from "@/lib/langues";
 
-const src = (p: string) => readFileSync(join(process.cwd(), "src", p), "utf8");
+const RACINE = join(process.cwd(), "src");
+const src = (p: string) => readFileSync(join(RACINE, p), "utf8");
 
 /** Aplatit un dictionnaire en chemins « a.b.c » pour comparer les deux langues. */
 function chemins(objet: unknown, prefixe = ""): string[] {
@@ -46,9 +47,13 @@ describe("i18n — les deux dictionnaires restent alignés", () => {
     const exceptions = new Set([
       // Mots identiques en français et en anglais
       "Transport", "Blog", "Contact", "Menu", "Total", "Services", "Textile",
+      "Confirmation",
       "Administration", "Destination", "Dimensions", "Transaction", "Type",
       // Noms propres et devise
       "FCFA", "Mobile Money",
+      // La signature de la maison est un élément de marque, comme le logo :
+      // elle s'affiche telle quelle dans les deux langues.
+      "Leader Excellence Efficacité.",
       // Exemples de saisie : un numéro ivoirien et des noms de communes ne se
       // traduisent pas.
       "+225 07 00 00 00 00", "Abidjan, Cocody…",
@@ -132,6 +137,26 @@ describe("i18n — l'interface est réellement branchée", () => {
     expect(src("lib/langue-context.tsx")).not.toContain("@/lib/i18n/server");
   });
 
+  /**
+   * La langue se décidait à DEUX endroits : `langueCourante` (cookie puis
+   * `Accept-Language`) et le layout public, qui ajoutait une condition — la
+   * langue doit être active dans la table `langues`. Le layout alimente le
+   * contexte client, `getT()` sert les composants serveur : désactiver
+   * l'anglais en base aurait donné un en-tête français au-dessus d'une page
+   * anglaise, sans que rien ne le signale.
+   */
+  it("la langue se résout à un seul endroit", () => {
+    const serveur = src("lib/i18n/server.ts")
+    // La condition d'activation vit désormais dans la résolution unique.
+    expect(serveur).toContain("getLangues()")
+    expect(serveur).toMatch(/langues\.some\(\(l\) => l\.code === detectee\)/)
+
+    const layout = src("app/(public)/layout.tsx")
+    expect(layout).toContain("langueCourante()")
+    // Et plus dans le layout, qui la réécrivait.
+    expect(layout).not.toContain("detecterLangue(")
+  })
+
   // Figé à "fr", il faisait annoncer du français à un lecteur d'écran servant
   // une interface anglaise.
   it("l'attribut lang suit la langue choisie", () => {
@@ -145,5 +170,192 @@ describe("i18n — l'interface est réellement branchée", () => {
     const composant = src("components/public/contenu-francais.tsx");
     expect(composant).toMatch(/langue === "fr"\) return null/);
     expect(src("app/(public)/blog/[slug]/page.tsx")).toContain("ContenuFrancais");
+  });
+});
+
+/** Mots et accents qui trahissent une phrase française. */
+const FRANCAIS =
+  /[àâäéèêëîïôöùûüçœ]|\b(le|la|les|un|une|des|du|de|et|ou|pour|avec|sur|dans|vous|nous|votre|notre|est|sont|par|aux|cette|qui|que|plus|sans|tout|tous)\b/i;
+
+function fichiersTsx(racine: string): string[] {
+  const sortie: string[] = [];
+  const marche = (d: string) => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const p = join(d, e.name);
+      if (e.isDirectory()) marche(p);
+      else if (e.name.endsWith(".tsx")) sortie.push(p);
+    }
+  };
+  marche(racine);
+  return sortie;
+}
+
+/**
+ * Les textes français écrits en dur dans un fichier.
+ *
+ * On retire d'abord les commentaires : ils sont en français dans tout le
+ * dépôt, et c'est très bien — ils ne s'affichent pas.
+ */
+function textesEnDur(chemin: string): string[] {
+  let s = readFileSync(chemin, "utf8");
+  s = s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+
+  const trouves = new Set<string>();
+
+  // Texte entre deux balises, éventuellement réparti sur plusieurs lignes.
+  for (const m of s.matchAll(/>([^<>]*?)</g)) {
+    // Entre la fin d'un composant et le début du suivant, ce « texte » est en
+    // fait du code : `} export default function X() { const t = useT() `. Un
+    // point-virgule, un `=` ou un mot-clé le trahissent — une phrase affichée
+    // n'en contient pas.
+    if (/[;=]|\b(const|let|function|return|import|export|await)\b/.test(m[1])) continue;
+    const brut = m[1].replace(/\{[^{}]*\}/g, " ").replace(/\s+/g, " ").trim();
+    if (brut.length < 4 || !FRANCAIS.test(brut)) continue;
+    if (/^[\d\s.,€%·—–-]+$/.test(brut)) continue;
+    trouves.add(brut.slice(0, 80));
+  }
+
+  // Attributs lus par un humain ou une synthèse vocale.
+  for (const m of s.matchAll(
+    /(?:placeholder|aria-label|alt|title|label)=["']([^"'\n]{4,})["']/g
+  )) {
+    if (FRANCAIS.test(m[1])) trouves.add(m[1].slice(0, 80));
+  }
+
+  return [...trouves];
+}
+
+/**
+ * Ce qui reste à traduire, nommément.
+ *
+ * Cette liste est le contraire d'une exemption : elle RÉTRÉCIT. Chaque tranche
+ * de traduction en retire des lignes, et le test interdit d'en ajouter. Sans
+ * elle, il aurait fallu tout traduire d'un coup ou n'avoir aucun garde-fou —
+ * la liste permet de verrouiller ce qui est fait pendant que le reste avance.
+ */
+const RESTE_A_TRADUIRE = new Set([
+  "app/(public)/assistance/confirmation/page.tsx",
+  "app/(public)/assistance/page-client.tsx",
+  "app/(public)/assistance/pays/[slug]/page-client.tsx",
+  "app/(public)/avis/page-client.tsx",
+  "app/(public)/blog/page-client.tsx",
+  "app/(public)/compte/favoris/page.tsx",
+  "app/(public)/compte/profil/page.tsx",
+  "app/(public)/compte/reservations/page.tsx",
+  "app/(public)/compte/verification/page.tsx",
+  "app/(public)/compte/verification/verification-form.tsx",
+  "app/(public)/contact/page.tsx",
+  "app/(public)/immobilier/confirmation/page.tsx",
+  "app/(public)/immobilier/[id]/page.tsx",
+  "app/(public)/immobilier/immobilier-filtres.tsx",
+  "app/(public)/immobilier/page.tsx",
+  "app/(public)/legal/[slug]/page.tsx",
+  "app/(public)/livraison/commander/commander-client.tsx",
+  "app/(public)/livraison/confirmation/page.tsx",
+  "app/(public)/livraison/page.tsx",
+  "app/(public)/page-client.tsx",
+  "app/(public)/suivi/page.tsx",
+  "app/(public)/textile/catalogue-client.tsx",
+  "app/(public)/textile/confirmation/page.tsx",
+  "app/(public)/textile/demande-form.tsx",
+  "app/(public)/textile/page.tsx",
+  "app/(public)/transport/catalogue/filtres.tsx",
+  "app/(public)/transport/catalogue/groupe/[key]/choix/page.tsx",
+  "app/(public)/transport/catalogue/page.tsx",
+  "app/(public)/transport/vehicule/[slug]/page.tsx",
+  "components/change-password-form.tsx",
+  "components/commune-search.tsx",
+  "components/delete-account-button.tsx",
+  "components/disponibilite-checker.tsx",
+  "components/document-preview.tsx",
+  "components/gps-capture.tsx",
+  "components/logout-button.tsx",
+  "components/notifications-dropdown.tsx",
+  "components/offline-banner.tsx",
+  "components/photo-lightbox.tsx",
+  "components/profile-edit-form.tsx",
+  "components/proposer-modification-zone-form.tsx",
+  "components/public/accepter-cgv.tsx",
+  "components/public/bien-interaction-form.tsx",
+  "components/public/billet-form.tsx",
+  "components/public/contact-form.tsx",
+  "components/public/contre-offre-reponse.tsx",
+  "components/public/deposer-avis.tsx",
+  "components/public/dossier-pieces.tsx",
+  "components/public/garantie-documents.tsx",
+  "components/public/message-equipe.tsx",
+  "components/public/passeport-voyageur.tsx",
+  "components/public/payer-billet.tsx",
+  "components/public/preuve-livraison.tsx",
+  "components/public/rendez-vous-depot.tsx",
+  "components/public/reponse-creneau-visite.tsx",
+  "components/public/smart-header.tsx",
+  "components/public/vehicle-booking.tsx",
+  "components/public/vehicle-gallery.tsx",
+  "components/public/vehicle-purchase.tsx",
+  "components/theme-toggle.tsx",
+  "components/whatsapp-float.tsx",
+]);
+
+describe("Traduction — le site public passe par le dictionnaire", () => {
+  /**
+   * `components/public/` ne suffisait pas : le fil d'étapes du tunnel de
+   * paiement vit dans `components/`, et son « Récapitulatif · Paiement ·
+   * Confirmation » restait en français au-dessus d'une page traduite — sans
+   * que la garde le voie. On balaie donc tout `components/`, sauf les
+   * primitives d'interface, qui ne portent pas de texte métier.
+   */
+  const fichiers = [
+    ...fichiersTsx(join(RACINE, "app", "(public)")),
+    ...fichiersTsx(join(RACINE, "components")),
+  ]
+    .filter((f) => !/[/\\]components[/\\](shadcn|admin-ui|ui)[/\\]/.test(f))
+    .map((f) => ({ chemin: f, relatif: f.slice(RACINE.length + 1) }));
+
+  const enDefaut = fichiers
+    .map((f) => ({ ...f, textes: textesEnDur(f.chemin) }))
+    .filter((f) => f.textes.length > 0);
+
+  it("aucun fichier déjà traduit ne réintroduit de texte en dur", () => {
+    const nouveaux = enDefaut.filter((f) => !RESTE_A_TRADUIRE.has(f.relatif));
+    expect(
+      nouveaux.map((f) => `${f.relatif} → ${f.textes.slice(0, 3).join(" | ")}`)
+    ).toEqual([]);
+  });
+
+  /**
+   * L'inverse compte autant : une entrée qui n'a plus lieu d'être doit sortir
+   * de la liste, sinon elle protégerait un fichier qu'on croit traduit.
+   */
+  it("la liste ne garde pas de fichier déjà traduit", () => {
+    const enDefautRelatifs = new Set(enDefaut.map((f) => f.relatif));
+    const perimes = [...RESTE_A_TRADUIRE].filter((r) => !enDefautRelatifs.has(r));
+    expect(perimes).toEqual([]);
+  });
+});
+
+/**
+ * Les deux dictionnaires doivent avoir exactement les mêmes clés.
+ *
+ * Le type l'impose déjà dans un sens — `en.ts` dérive du type de `fr.ts`, donc
+ * une clé française sans traduction fait échouer la compilation. Ce test
+ * couvre l'autre sens et le cas d'une valeur vide, que le type laisse passer.
+ */
+
+/**
+ * Les trous d'un modèle doivent survivre à la traduction.
+ *
+ * `{montant}` traduit en `{amount}` ne serait jamais rempli : `remplir` ne
+ * trouverait pas la clé et laisserait `{amount}` s'afficher au client.
+ */
+describe("i18n — les modèles gardent leurs trous", () => {
+  it("les trous nommés sont les mêmes dans les deux langues", () => {
+    const trousDe = (s: string) => [...s.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort();
+    const divergents = chemins(fr).filter((chemin) => {
+      const lire = (o: unknown) =>
+        chemin.split(".").reduce<unknown>((acc, k) => (acc as Record<string, unknown>)?.[k], o);
+      return trousDe(lire(fr) as string).join(",") !== trousDe(lire(en) as string).join(",");
+    });
+    expect(divergents).toEqual([]);
   });
 });

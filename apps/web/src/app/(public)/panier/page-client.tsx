@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { useT } from "@/lib/langue-context"
+import { useT, useLangue } from "@/lib/langue-context"
+import { pluriel } from "@/lib/i18n/format"
 import { useCart } from "@/lib/cart-context"
 import { PanierStepper } from "@/components/panier-stepper"
 import { BackLink } from "@/components/public/back-link"
@@ -12,6 +13,7 @@ import { useEffect } from "react"
 
 export default function Panier({ communes, delai }: { communes: CommuneOption[]; delai: string }) {
   const t = useT()
+  const { langue } = useLangue()
   const { items, removeItem, updateQuantity, toggleChauffeur, clearCart, count } = useCart()
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function Panier({ communes, delai }: { communes: CommuneOption[];
             href="/transport/catalogue"
             className="rounded-lg bg-accent-orange px-6 py-3 text-sm font-semibold text-[#0A0A0A] hover:bg-accent-orange-hover transition-colors"
           >
-            Voir le catalogue
+            {t.panier.voirCatalogue}
           </Link>
         </div>
       </>
@@ -73,19 +75,19 @@ export default function Panier({ communes, delai }: { communes: CommuneOption[];
       <PanierStepper current={0} />
 
       <div className="mx-auto max-w-6xl px-6 pt-6 sm:px-10">
-        <BackLink href="/transport/catalogue" label="Retour au catalogue" />
+        <BackLink href="/transport/catalogue" label={t.panier.retourCatalogue} />
       </div>
 
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-8 sm:px-10">
-        <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">Panier ({count} véhicule{count > 1 ? "s" : ""})</h1>
+        <h1 className="font-display text-4xl font-medium tracking-tight text-public-text">{pluriel(langue, { un: t.panier.titre_un, autre: t.panier.titre_pluriel }, count)}</h1>
         <Button
           variant="text-link"
           onClick={() => {
-            if (window.confirm("Vider le panier ? Cette action retire tous les véhicules.")) clearCart()
+            if (window.confirm(t.panier.viderConfirmation)) clearCart()
           }}
           className="text-error hover:text-error/80"
         >
-          Vider le panier
+          {t.panier.vider}
         </Button>
       </div>
 
@@ -129,7 +131,7 @@ export default function Panier({ communes, delai }: { communes: CommuneOption[];
                   <button
                     onClick={() => updateQuantity(item.groupKey, item.quantite - 1)}
                     disabled={item.quantite <= 1}
-                    aria-label="Diminuer la quantité"
+                    aria-label={t.panier.diminuerQuantite}
                     className="flex h-7 w-7 items-center justify-center rounded-lg border border-public-border text-public-text-muted hover:border-accent-orange/30 hover:text-public-text disabled:opacity-30 transition-colors"
                   >
                     −
@@ -138,7 +140,7 @@ export default function Panier({ communes, delai }: { communes: CommuneOption[];
                   <button
                     onClick={() => updateQuantity(item.groupKey, item.quantite + 1)}
                     disabled={item.quantite >= item.maxDisponible}
-                    aria-label="Augmenter la quantité"
+                    aria-label={t.panier.augmenterQuantite}
                     className="flex h-7 w-7 items-center justify-center rounded-lg border border-public-border text-public-text-muted hover:border-accent-orange/30 hover:text-public-text disabled:opacity-30 transition-colors"
                   >
                     +
@@ -153,7 +155,7 @@ export default function Panier({ communes, delai }: { communes: CommuneOption[];
                       onChange={() => toggleChauffeur(item.groupKey)}
                       className="h-4 w-4 rounded border-public-border bg-public-bg accent-accent-orange"
                     />
-                    Avec chauffeur
+                    {t.panier.avecChauffeur}
                   </label>
                 )}
               </div>
@@ -173,7 +175,9 @@ export default function Panier({ communes, delai }: { communes: CommuneOption[];
             <h2 className="font-display border-b border-public-border pb-3 text-2xl font-medium text-public-text">{t.panier.recapitulatif}</h2>
             <div className="mt-6 space-y-3">
               <div className="flex items-baseline justify-between gap-4 text-sm">
-                <span className="text-public-text-muted">Location ({count} véhicule{count > 1 ? "s" : ""})</span>
+                <span className="text-public-text-muted">
+                  {pluriel(langue, { un: t.panier.location_un, autre: t.panier.location_pluriel }, count)}
+                </span>
                 <span className="font-display text-lg font-medium text-public-text">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
               </div>
               <p className="text-sm text-public-text-muted">{t.panier.prixHorsCaution}</p>
@@ -182,19 +186,17 @@ export default function Panier({ communes, delai }: { communes: CommuneOption[];
                 <span className="text-sm font-semibold text-public-text">{t.panier.sousTotalJour}</span>
                 <span className="font-display text-3xl font-medium text-accent-orange">{sousTotalParJour.toLocaleString("fr-FR")} FCFA</span>
               </div>
-              <p className="text-xs text-public-text-muted">
-                Total final (durée, destination et caution) calculé à l&apos;étape suivante.
-              </p>
+              <p className="text-xs text-public-text-muted">{t.panier.totalProvisoire}</p>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-3 text-sm text-public-text-muted">
               <span className="flex items-center gap-1">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Paiement sécurisé
+                {t.panier.paiementSecurise}
               </span>
               <span className="flex items-center gap-1">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-                Annulation gratuite
+                {t.panier.annulationGratuite}
               </span>
               <span className="flex items-center gap-1">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>

@@ -60,12 +60,9 @@ export async function Footer() {
               />
             </Link>
             <p className="font-display mt-5 text-2xl font-medium leading-snug text-public-text">
-              Leader Excellence Efficacité.
+              {t.footer.slogan}
             </p>
-            <p className="mt-3 max-w-xs text-sm text-public-text-muted">
-              Transport, immobilier, assistance voyages, livraison et textile en
-              Côte d&apos;Ivoire.
-            </p>
+            <p className="mt-3 max-w-xs text-sm text-public-text-muted">{t.footer.presentation}</p>
             {contact.adresse && (
               <p className="mt-3 text-sm text-public-text-muted">{contact.adresse}</p>
             )}

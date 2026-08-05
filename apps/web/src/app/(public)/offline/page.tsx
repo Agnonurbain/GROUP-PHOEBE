@@ -1,12 +1,20 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import { getT } from "@/lib/i18n/server"
 
-export const metadata: Metadata = {
-  title: "Hors ligne — GROUP PHOEBE",
-  description: "Vous êtes actuellement hors ligne.",
+// Statique, `generateMetadata` suit la langue de la requête : un titre
+// d'onglet en français sur un site consulté en anglais se remarque.
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT()
+  return {
+    title: `${t.etats.horsLigneTitre} — GROUP PHOEBE`,
+    description: t.etats.horsLigneMeta,
+  }
 }
 
-export default function OfflinePage() {
+export default async function OfflinePage() {
+  const t = await getT()
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-public-bg px-6 text-center">
       <div className="max-w-md">
@@ -21,15 +29,13 @@ export default function OfflinePage() {
             <line x1="12" y1="20" x2="12.01" y2="20" />
           </svg>
         </div>
-        <h1 className="text-4xl font-bold text-public-text">Vous êtes hors ligne</h1>
-        <p className="mt-3 text-sm text-public-text-muted">
-          Vérifiez votre connexion internet. Les pages déjà consultées restent accessibles.
-        </p>
+        <h1 className="text-4xl font-bold text-public-text">{t.etats.horsLigneTitre}</h1>
+        <p className="mt-3 text-sm text-public-text-muted">{t.etats.horsLigneTexte}</p>
         <Link
           href="/"
           className="mt-8 inline-flex items-center gap-2 rounded-lg bg-accent-gold px-6 py-3 text-sm font-semibold text-black transition-colors hover:bg-accent-gold-hover"
         >
-          Retour à l&apos;accueil
+          {t.commun.retourAccueil}
         </Link>
       </div>
     </div>
