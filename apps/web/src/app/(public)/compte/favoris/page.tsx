@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import { BackLink } from "@/components/public/back-link"
 import Image from "next/image"
 import Link from "next/link"
@@ -9,14 +9,11 @@ import { makeGroupKey } from "@/lib/vehicle-group"
 import { typeBienLabel, statutBienLabel } from "@/lib/immobilier"
 import { getT } from "@/lib/i18n/server"
 
-export const metadata: Metadata = {
-  title: "Mes Favoris",
-  description: "Retrouvez vos véhicules et biens immobiliers favoris GROUP PHOEBE en un coup d'œil.",
-  openGraph: {
-    title: "Mes Favoris",
-    description: "Retrouvez vos véhicules et biens immobiliers favoris GROUP PHOEBE en un coup d'œil.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.favorisTitre,
+    description: t.meta.favorisDescription,
+  }))
 
 function formatPrice(val: number | null): string | null {
   if (!val) return null

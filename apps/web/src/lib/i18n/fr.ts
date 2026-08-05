@@ -907,6 +907,101 @@ export const fr = {
     politiqueConfidentialite: "politique de confidentialité",
   },
 
+  /**
+   * Titres d'onglet et descriptions de partage.
+   *
+   * Ils vivaient dans des `export const metadata`, évalués au chargement du
+   * module : ils ne pouvaient pas suivre la langue du visiteur, quoi qu'on
+   * fasse. Ils passent par `generateMetadata`, une requête à la fois.
+   */
+  meta: {
+    accueilTitre: "GROUP PHOEBE — Transport, Immobilier & Assistance",
+    accueilDescription:
+      "GROUP PHOEBE : transport et livraison, immobilier et assistance voyages à Abidjan et partout en Côte d'Ivoire. Location de véhicules, vente de biens, visas et études.",
+    accueilPartage:
+      "Location de véhicules, vente immobilière et assistance voyages en Côte d'Ivoire.",
+
+    transportTitre: "Location de véhicules — Catalogue",
+    transportDescription:
+      "Découvrez notre flotte de véhicules premium à la location ou à l'achat à Abidjan et partout en Côte d'Ivoire. SUV, berlines, minibus — réservez en ligne.",
+    transportPartage:
+      "Découvrez notre flotte de véhicules premium à la location ou à l'achat à Abidjan et partout en Côte d'Ivoire.",
+
+    livraisonTitre: "Livraison de colis — Transport & Coursier",
+    livraisonDescription:
+      "Service de livraison de colis et coursier à Abidjan et partout en Côte d'Ivoire. Envois rapides, livraison porte-à-porte avec GROUP PHOEBE.",
+    livraisonCommanderTitre: "Commander une livraison",
+    livraisonCommanderDescription:
+      "Commandez une livraison de colis à Abidjan et partout en Côte d'Ivoire avec GROUP PHOEBE.",
+    livraisonConfirmationTitre: "Livraison enregistrée — Confirmation",
+    livraisonConfirmationDescription:
+      "Votre commande de livraison GROUP PHOEBE a été enregistrée.",
+
+    immobilierTitre: "Immobilier — Achat, Vente & Location",
+    immobilierDescription:
+      "Trouvez le bien immobilier de vos rêves en Côte d'Ivoire : appartements, villas, terrains. Vente, location et estimation gratuite avec GROUP PHOEBE.",
+    immobilierConfirmationTitre: "Demande envoyée — Immobilier",
+    immobilierConfirmationDescription: "Votre demande a bien été enregistrée.",
+
+    assistanceTitre: "Assistance Voyages — Visas, Études & Formalités",
+    assistanceDescription:
+      "GROUP PHOEBE vous accompagne dans vos démarches de visa, études à l'étranger et formalités administratives depuis la Côte d'Ivoire.",
+    assistanceConfirmationTitre: "Dossier soumis — Assistance",
+    assistanceConfirmationDescription:
+      "Votre demande d'assistance visa a bien été enregistrée.",
+
+    textileTitre: "Textile — Pagnes Uniwax et Hollandais",
+    textileDescription:
+      "Pagnes Uniwax et wax hollandais. Dites-nous ce que vous cherchez : nous consultons nos fournisseurs et vous répondons avec un prix ferme.",
+    textileConfirmationTitre: "Demande envoyée — Textile",
+    textileConfirmationDescription: "Votre demande de devis a bien été enregistrée.",
+
+    panierTitre: "Panier — Réservation",
+    panierDescription:
+      "Finalisez votre réservation de véhicule, bien immobilier ou service d'assistance GROUP PHOEBE en toute simplicité.",
+    paiementTitre: "Paiement — Finaliser la réservation",
+    paiementDescription:
+      "Choisissez votre moyen de paiement et finalisez votre réservation GROUP PHOEBE en toute sécurité.",
+
+    profilTitre: "Mon Profil",
+    profilDescription:
+      "Gérez vos informations personnelles, vos documents d'identité et préférences sur votre compte GROUP PHOEBE.",
+    reservationsTitre: "Mes Réservations",
+    reservationsDescription:
+      "Consultez et gérez toutes vos réservations de transport, immobilier et assistance voyage GROUP PHOEBE.",
+    favorisTitre: "Mes Favoris",
+    favorisDescription:
+      "Retrouvez vos véhicules et biens immobiliers favoris GROUP PHOEBE en un coup d'œil.",
+    verificationTitre: "Vérification d'identité",
+    verificationDescription:
+      "Soumettez vos documents d'identité et permis de conduire pour vérifier votre compte GROUP PHOEBE.",
+
+    contactTitre: "Contact",
+    contactDescription:
+      "Contactez GROUP PHOEBE pour un devis transport, immobilier ou assistance voyage à Abidjan et partout en Côte d'Ivoire.",
+    suiviTitre: "Suivre un colis",
+    suiviDescription:
+      "Suivez votre livraison GROUP PHOEBE en temps réel grâce à votre numéro de suivi.",
+    avisTitre: "Avis clients — GROUP PHOEBE",
+    avisDescription:
+      "Des retours authentiques de nos clients sur nos services de transport, immobilier, assistance et livraison.",
+    blogTitre: "Blog & Guides — GROUP PHOEBE",
+    blogDescription:
+      "Conseils pratiques, guides et actualités pour vous accompagner dans vos projets de transport, immobilier, assistance et livraison.",
+
+    // Le gabarit racine : titre par défaut, et le « | GROUP PHOEBE » ajouté aux
+    // titres des pages.
+    siteTitre: "GROUP PHOEBE — Transport, Livraison, Immobilier & Assistance Migration",
+    siteDescription:
+      "Plateforme numérique de services professionnels : transport, livraison de colis, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
+    sitePartageTitre: "GROUP PHOEBE — Services professionnels",
+    sitePartageDescription:
+      "Transport, livraison, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
+    // La locale Open Graph suit la langue : annoncer `fr_CI` sur une page
+    // servie en anglais fait afficher la mauvaise variante aux réseaux.
+    ogLocale: "fr_CI",
+  },
+
   langue: {
     choisir: "Choisir la langue",
     // Affiché sous le contenu métier resté en français : le taire laisserait

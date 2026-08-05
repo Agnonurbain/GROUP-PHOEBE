@@ -6,7 +6,7 @@ import { WhatsAppFloat } from "@/components/whatsapp-float";
 import { PushNotificationSetup } from "@/components/push-notification-setup";
 import { OfflineBanner } from "@/components/offline-banner";
 import { getParametresContact } from "@/lib/public-cache";
-import { langueCourante } from "@/lib/i18n/server";
+import { getT, langueCourante } from "@/lib/i18n/server";
 import "./globals.css";
 
 const inter = Inter({
@@ -29,36 +29,47 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://group-phoebe.com"),
-  title: {
-    default: "GROUP PHOEBE — Transport, Livraison, Immobilier & Assistance Migration",
-    template: "%s | GROUP PHOEBE",
-  },
-  description:
-    "Plateforme numérique de services professionnels : transport, livraison de colis, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
-  openGraph: {
-    type: "website",
-    locale: "fr_CI",
-    siteName: "GROUP PHOEBE",
-    title: "GROUP PHOEBE — Services professionnels",
-    description: "Transport, livraison, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "GROUP PHOEBE",
-    description: "Transport, livraison, immobilier et assistance migration, visa et études en Côte d'Ivoire.",
-  },
-  icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-icon.png",
-  },
-  manifest: "/manifest.json",
-  other: {
-    "mobile-web-app-capable": "yes",
-    "apple-mobile-web-app-status-bar-style": "black-translucent",
-  },
-};
+/**
+ * Le gabarit racine, dans la langue du visiteur.
+ *
+ * `export const metadata` est évalué au chargement du module, sans requête :
+ * il ne pouvait pas suivre la langue. Et `openGraph.locale` annonçait `fr_CI`
+ * même sur une page servie en anglais — les réseaux sociaux affichaient donc
+ * la mauvaise variante à qui la partageait.
+ */
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://group-phoebe.com"),
+    title: {
+      default: t.meta.siteTitre,
+      template: "%s | GROUP PHOEBE",
+    },
+    description: t.meta.siteDescription,
+    openGraph: {
+      type: "website",
+      locale: t.meta.ogLocale,
+      siteName: "GROUP PHOEBE",
+      title: t.meta.sitePartageTitre,
+      description: t.meta.sitePartageDescription,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "GROUP PHOEBE",
+      description: t.meta.sitePartageDescription,
+    },
+    icons: {
+      icon: "/favicon.ico",
+      apple: "/apple-icon.png",
+    },
+    manifest: "/manifest.json",
+    other: {
+      "mobile-web-app-capable": "yes",
+      "apple-mobile-web-app-status-bar-style": "black-translucent",
+    },
+  };
+}
 
 export default async function RootLayout({
   children,

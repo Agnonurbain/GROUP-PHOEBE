@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { createClient as createAdminClient } from "@supabase/supabase-js"
@@ -9,10 +9,13 @@ import { PhotoLightbox } from "@/components/photo-lightbox"
 import { ZONE_LABELS, MODE_LABELS, STATUT_LIVRAISON_LABELS } from "@/lib/livraison"
 
 import { getT } from "@/lib/i18n/server"
-export const metadata: Metadata = {
-  title: "{t.livraison.enregistree} — Confirmation",
-  description: "Votre commande de livraison GROUP PHOEBE a été enregistrée.",
-}
+
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.livraisonConfirmationTitre,
+    description: t.meta.livraisonConfirmationDescription,
+    noindex: true,
+  }))
 
 export default async function ConfirmationLivraison({
   searchParams,

@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import { BackLink } from "@/components/public/back-link"
 import { Badge, Card } from "@/components/ui"
 import { MailIcon, PhoneIcon } from "@/components/icons"
@@ -20,19 +20,11 @@ function mapSujet(raw: string): { category: string; message: string } {
   return { category: "Transport & Livraison", message: raw ? `Objet : ${raw}` : "" }
 }
 
-export const metadata: Metadata = {
-  title: "Contact",
-  description: "Contactez GROUP PHOEBE pour un devis transport, immobilier ou assistance voyage à Abidjan et partout en Côte d'Ivoire.",
-  openGraph: {
-    title: "Contact",
-    description: "Contactez GROUP PHOEBE pour un devis transport, immobilier ou assistance voyage à Abidjan et partout en Côte d'Ivoire.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Contact",
-    description: "Contactez GROUP PHOEBE pour un devis transport, immobilier ou assistance voyage à Abidjan et partout en Côte d'Ivoire.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.contactTitre,
+    description: t.meta.contactDescription,
+  }))
 
 export default async function Contact({
   searchParams,

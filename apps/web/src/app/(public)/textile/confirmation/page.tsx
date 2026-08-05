@@ -1,14 +1,15 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import Link from "next/link"
 import { CheckCircle2 } from "lucide-react"
 import { BackLink } from "@/components/public/back-link"
 import { getT } from "@/lib/i18n/server"
 
-export const metadata: Metadata = {
-  title: "Demande envoyée — Textile",
-  // La page n'a rien à indexer : elle ne se voit qu'après un envoi.
-  robots: { index: false, follow: false },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.textileConfirmationTitre,
+    description: t.meta.textileConfirmationDescription,
+    noindex: true,
+  }))
 
 export default async function ConfirmationTextile() {
   const t = await getT()

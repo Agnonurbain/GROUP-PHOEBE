@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import { metadonnees } from "@/lib/i18n/metadonnees"
 import { getT } from "@/lib/i18n/server"
 import { remplir } from "@/lib/i18n/format"
 import Link from "next/link"
@@ -17,19 +17,11 @@ import {
 } from "@/lib/livraison"
 import { getTarifsLivraison } from "@/lib/public-cache"
 
-export const metadata: Metadata = {
-  title: "Livraison de colis — Transport & Coursier",
-  description: "Service de livraison de colis et coursier à Abidjan et partout en Côte d'Ivoire. Envois rapides, livraison porte-à-porte avec GROUP PHOEBE.",
-  openGraph: {
-    title: "Livraison de colis — Transport & Coursier",
-    description: "Service de livraison de colis et coursier à Abidjan et partout en Côte d'Ivoire. Envois rapides, livraison porte-à-porte avec GROUP PHOEBE.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Livraison de colis — Transport & Coursier",
-    description: "Service de livraison de colis et coursier à Abidjan et partout en Côte d'Ivoire.",
-  },
-}
+export const generateMetadata = () =>
+  metadonnees((t) => ({
+    titre: t.meta.livraisonTitre,
+    description: t.meta.livraisonDescription,
+  }))
 
 
 export default async function Livraison({
