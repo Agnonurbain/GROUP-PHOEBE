@@ -69,7 +69,7 @@ group-phoebe/
 │       └── index.ts             # Exports
 │
 ├── supabase/                    # Projet Supabase — UNIQUE source de vérité
-│   ├── migrations/              # 87 migrations SQL
+│   ├── migrations/              # 88 migrations SQL
 │   ├── tests/                   # SQL de vérification (contrainte d'exclusion)
 │   ├── config.toml              # Ports de la pile locale
 │   └── seed*.sql                # Jeux de données de développement
@@ -211,7 +211,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-87 migrations Supabase (00001 → 00087), toutes dans `supabase/migrations/`.
+88 migrations Supabase (00001 → 00088), toutes dans `supabase/migrations/`.
 
 ### 5.1 Tables
 
@@ -245,7 +245,12 @@ c'est la référence en cas de doute.
 | `communes` | Livraison | Communes rattachées à une zone |
 | `propositions_zones_tarifaires` | Livraison | Propositions de modification de zone |
 | `tarifs_livraison` | Livraison | Grille zone × mode, pilotable |
-| `paliers_poids` | Livraison | Paliers de poids, pilotables |
+| `paliers_poids` | Livraison | Paliers de poids. **Plus utilisés dans le prix** depuis 00084 : conservés le temps de la reprise d'historique |
+| `moyens_livraison` | Livraison | Moto, tricycle, camionnette, camion… `famille` est un **champ libre** : l'exploitant ajoute un moyen sans déploiement. `charge_max_kg` borne ce qu'on accepte, `actif` le retire du choix sans l'effacer |
+| `tarifs_livraison_moyen` | Livraison | Grille **zone × moyen**, pilotable. Remplace le couple zone × poids : c'est le véhicule mobilisé qui fait le coût, pas la masse |
+| `coefficients_mode_livraison` | Livraison | Coefficient par mode (standard, express, programmée), pilotable. Prix = tarif(zone × moyen) × coefficient(mode) |
+| `parametres_livraison` | Livraison | Singleton : paramètres du module |
+| `parametres_transport` | Transport | Singleton : paramètres du module. Les heures d'ouverture l'ont **quitté** en 00083 — elles valent pour toute la maison |
 | `categories_article` | Contenu | Catégories du blog (slug, nom, ordre) |
 | `biens` | Immobilier | Types, transactions, géolocalisation |
 | `bien_medias` | Immobilier | Photos/vidéos |
@@ -259,6 +264,12 @@ c'est la référence en cas de doute.
 | `passagers_billet` | Assistance | Passagers d'une demande de billet : nom, date naissance, passeport — collectés au paiement pour l'émission |
 | `documents_dossier_voyage` | Assistance | Pièces d'un dossier : `url` porte un **chemin** dans le bucket privé `dossiers-documents`, jamais une URL. Unicité `(dossier_id, type_document)` — redéposer une pièce rejetée la remplace |
 | `tarifs_assistance` | Assistance | Tarifs pilotables |
+| `messages_dossier` | Assistance | Fil de discussion sur un dossier : le client écrit à l'équipe, l'équipe répond. Sans lui, une question sur un dossier n'avait pas d'endroit où aller |
+| `rendez_vous_dossier` | Assistance | Rendez-vous pris sur un créneau, à partir des jours ouvrés |
+| `parametres_rendez_vous` | Assistance | Singleton : durée du créneau, préavis, horizon de réservation |
+| `types_pagne` | Textile | Uniwax (Print, Block, Tabs) et hollandais. `marque` est un champ libre. **Aucune colonne de prix**, délibérément (00087) |
+| `articles_pagne` | Textile | Le catalogue photo : nom, référence fabricant, couleurs en toutes lettres, photos (bucket **public** `catalogue-pagnes`). **Aucun prix** non plus. `disponible` retire un article de la vitrine sans l'effacer — des demandes passées le désignent |
+| `demandes_textile` | Textile | Demandes de devis. `article_id` est **nullable**, et c'est le point : le client désigne un modèle du catalogue **ou** décrit ce qu'il cherche. `montant_propose` réservé au propriétaire (action + trigger) |
 | `paiements` | Transverse | Multi-module, multi-méthode (`stripe` \| `cinetpay` \| `a_la_livraison` \| `agence` \| `virement`), remboursements. Types : `montant`, `caution`, `acompte`, `commission`, `frais` — `frais` porte les frais de visite immobiliers, non remboursables |
 | `webhook_idempotency` | Transverse | Anti-rejeu des webhooks de paiement |
 | `notifications_log` | Transverse | Log multi-canal |
@@ -272,10 +283,13 @@ c'est la référence en cas de doute.
 | `parametres_avis` | Transverse | Singleton : modération obligatoire, délai après terme |
 | `parametres_contact` | Transverse | Coordonnées (WhatsApp, tel, email, réseau) |
 | `parametres_facturation` | Transverse | Singleton : TVA, numérotation factures, préfixe |
+| `parametres_ouverture` | Transverse | Singleton : jours ouvrés et heures d'ouverture de **toute la maison**. Vivait dans `parametres_transport` jusqu'en 00083, où ces heures servaient déjà à l'assistance |
+| `fermetures_agence` | Transverse | Jours fermés à la date près (fêtes, congés), en plus des jours ouvrés hebdomadaires |
+| `pages_legales` | Transverse | CGU, mentions légales, confidentialité — éditables sans déploiement |
 
 ### 5.2 RLS et sécurité
 
-- RLS activée sur les 52 tables. Ce n'était pas le cas avant la migration 00048 :
+- RLS activée sur les 62 tables. Ce n'était pas le cas avant la migration 00048 :
   10 tables en étaient dépourvues tout en portant `GRANT ALL TO anon`, donc
   lisibles et modifiables par quiconque détenait la clé anon (`visites`,
   `agents_immobiliers`, `audit_log`, `notifications_log`, `chauffeurs`,
@@ -707,7 +721,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 666 tests dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 824 tests dans 45 fichiers, dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -733,7 +747,7 @@ casser doit être un choix conscient, pas un effet de bord :
 | `champs-obligatoires.test.ts` | **Règle de dépôt** : tout champ obligatoire le dit à l'écran. Balaie tous les `.tsx` et casse dès qu'un `required` n'est pas marqué. Couvre aussi `PasswordInput` — un composant, donc invisible à un balayage limité aux balises HTML, ce qui avait laissé le mot de passe de la page de connexion sans étoile. Et la réciproque : une étoile sur un champ que rien n'oblige à remplir promet une contrainte qui n'existe pas |
 | `verticales.test.ts` | Le service d'une page se décide à **un seul endroit**. Vérifie que l'en-tête et la mise en page passent par la même fonction, qu'aucune n'a recopié de liste de préfixes, et — en lisant l'arborescence des routes — qu'aucune page d'un dossier de service n'est laissée sans rattachement |
 | `rendez-vous.test.ts` | Créneaux de dépôt : un dimanche ne propose rien, une fermeture exceptionnelle vide la journée, le dernier créneau tient entier avant la fermeture, le délai de prévenance écarte le trop proche. Et le branchement — créneau revalidé côté serveur, doublon intercepté, **un seul calendrier** partagé avec les délais transport |
-| `textile.test.ts` | Le service textile n'affiche **aucun prix**, et c'est le cœur du métier, pas un oubli : le test vérifie que la table des types ne porte aucune colonne de prix, que le module n'expose aucun calcul, et que l'écran explique l'absence. Plus le cycle (une demande livrée ne se rechiffre pas) et la garde propriétaire sur le montant, en action comme en trigger |
+| `textile.test.ts` | Le service textile n'affiche **aucun prix**, et c'est le cœur du métier, pas un oubli : le test vérifie que la table des types ne porte aucune colonne de prix, que le module n'expose aucun calcul, et que l'écran explique l'absence. Plus le cycle (une demande livrée ne se rechiffre pas) et la garde propriétaire sur le montant, en action comme en trigger. Depuis le catalogue (00088), il vérifie aussi qu'`article_id` reste **facultatif** — la description libre est un chemin qu'on ne referme pas — et qu'aucune colonne de prix n'est apparue sur `articles_pagne` |
 | `tables-migrees.test.ts` | **Règle de dépôt** : toute table lue ou écrite par le code est créée par une migration de `supabase/migrations/`, et n'a pas été supprimée depuis. Née d'une table vivante dont la seule définition dormait dans un ancien dossier de migrations figé — la production l'avait, une reconstruction ne l'aurait pas eue |
 | `heures-ouvrees.test.ts` | Décompte en heures ouvrées : une demande du vendredi 17 h expire le lundi matin, un dimanche ne consomme rien, des horaires inexploitables retombent sur le calendaire. Et la propriété dont dépendent les crons — le temps ouvré ne dépasse jamais le calendaire |
 | `crons.test.ts` | Toute route cron est planifiée, toute planification vise une route existante, aucune expression n'est réutilisée, et chaque route échoue fermée sans secret |
@@ -749,6 +763,8 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-08-05 | **Un catalogue de pagnes, qui ne ferme rien** (00088). Le service ne montrait rien : le client décrivait ce qu'il cherchait en toutes lettres, sans savoir ce que la maison a en rayon. Le catalogue lui donne quelque chose à regarder — et à désigner. Le point de conception est ce qu'il **ne** change pas : `demandes_textile.article_id` est **nullable**, la description libre reste, et le formulaire s'adapte au lieu de se restreindre (la carte du modèle choisi remplace le sélecteur de gamme, le motif devient « précisions sur ce modèle »). Un lien obligatoire aurait signifié ne plus vendre que ce qui est déjà photographié. Toujours **aucun prix**, pour la raison de 00087 : une photo assortie d'un montant serait exactement ce que l'exploitant a refusé. Le bucket `catalogue-pagnes` est **public** — ce sont des photos de vitrine, pas des pièces d'identité ; les signer à chaque vignette protégerait ce qu'on cherche à montrer. Les photos montent depuis le navigateur, jamais par une Server Action : trois clichés de plusieurs mégaoctets buteraient sur son plafond. Recherche et filtres tournent côté client, avec le compte affiché (« 3 sur 12 ») — sans lui, filtrer donne l'impression que le catalogue a rétréci sans qu'on sache de combien. |
+| 2026-08-05 | **Quatorze tables absentes de la section 5.1** — rattrapées. Elles étaient nées correctement (RLS, policies, commentaires) mais n'avaient jamais rejoint la liste qui se dit « la référence en cas de doute » : `moyens_livraison`, `tarifs_livraison_moyen`, `coefficients_mode_livraison`, `messages_dossier`, `rendez_vous_dossier`, `parametres_rendez_vous`, `parametres_ouverture`, `fermetures_agence`, `pages_legales`, `parametres_transport`, `parametres_livraison`, `types_pagne`, `articles_pagne`, `demandes_textile`. Le compte RLS disait encore 52 tables pour 62. Une documentation qui se présente comme la référence et qui a dix tables de retard est pire qu'une absence de documentation : on la croit. |
 | 2026-08-04 | **Cinquième service : Textile** (00087). Vente de pagnes — Uniwax (Print, Block, Tabs) et wax hollandais. Son trait central est une **absence** : aucun prix n'est affiché, et ce n'est pas un tarif qu'on finira par renseigner. « Il y a tellement de fournisseurs qui les vendent à leur prix […] on ne peut pas afficher un prix comme ça. » Le marché du pagne n'a pas de prix de référence tenable : chaque revendeur fixe le sien. La table des types ne porte donc **aucune colonne de prix**, délibérément — en ajouter une inviterait à la remplir, et le site annoncerait un montant intenable. Le montant naît sur la demande, après consultation des fournisseurs, et reste réservé au propriétaire (action + trigger `security invoker`, même construction qu'en 00047 et 00049). Les types de pagne sont pilotables, marque libre. L'écran **explique** l'absence de prix plutôt que de laisser le client chercher une grille qui n'existe pas. |
 | 2026-08-04 | **Le tarif de la bourse Master : 2 000 000 FCFA** (00086). 00080 l'avait créée au tarif de la Licence faute d'un montant communiqué — une hypothèse, signalée comme telle. GROUP PHOEBE a tranché. Le montant est pilotable, et le corriger en admin aurait suffi pour la production ; mais il n'aurait alors vécu que dans une base, et une reconstruction serait repartie de l'hypothèse. Une valeur donnée par l'exploitant appartient aux migrations et au repli codé, pas seulement à la ligne qu'elle corrige. |
 | 2026-08-04 | **Retrait de l'ancienne tarification de livraison** (00085). `tarifs_livraison` (grille zone × mode) et `paliers_poids` ne pilotaient plus aucun prix depuis 00084 ; elles étaient conservées le temps que le nouveau chemin tourne en production, pour ne pas casser un déploiement en cours. Les laisser plus longtemps aurait produit ce que ce dépôt a passé la journée à corriger — deux endroits décrivant la même chose, dont un seul est vrai, et le périmé porte le meilleur nom. Retirés avec eux : la grille et les paliers de `lib/livraison.ts`, leur lecture dans le cache, les deux actions propriétaire devenues orphelines et leur formulaire. Le plafond de poids vient désormais de la flotte (`chargeMaxFlotte`) et non du dernier palier — un plafond doit dire ce que les véhicules portent, pas où s'arrêtait une grille. L'atelier des moyens prend la place de l'ancien formulaire dans l'onglet Livraison, et la page publique affiche la grille zone × moyen avec les coefficients de délai sous le tableau. |

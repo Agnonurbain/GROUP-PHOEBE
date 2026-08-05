@@ -12,6 +12,7 @@ import {
   STATUT_TEXTILE_LABELS,
   libelleTypePagne,
   type TypePagne,
+  type ArticlePagne,
 } from "@/lib/textile";
 import { notifierClient } from "@/lib/notifications";
 import { notifierAdminNouvelleDemandeTextile } from "./notifications-admin";
@@ -69,6 +70,37 @@ export async function typesPagneActifs(): Promise<TypePagne[]> {
 }
 
 /**
+ * Le catalogue, prêt à afficher.
+ *
+ * Les URLs publiques sont construites ici, une bonne fois : le bucket est
+ * public — ce sont des photos de vitrine, pas des pièces d'identité — et les
+ * signer à chaque vignette reviendrait à protéger ce qu'on cherche à montrer.
+ */
+export async function catalogueArticles(): Promise<ArticlePagne[]> {
+  const admin = getAdmin();
+  const { data } = await admin
+    .from("articles_pagne")
+    .select("id, type_pagne, reference, nom, description, couleurs, photos, vedette, ordre")
+    .eq("disponible", true)
+    .order("vedette", { ascending: false })
+    .order("ordre")
+    .order("created_at", { ascending: false });
+
+  const base = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/catalogue-pagnes/`;
+
+  return (data ?? []).map((a) => ({
+    id: a.id,
+    typePagne: a.type_pagne,
+    reference: a.reference,
+    nom: a.nom,
+    description: a.description,
+    couleurs: a.couleurs,
+    photos: (a.photos ?? []).map((chemin: string) => `${base}${chemin}`),
+    vedette: a.vedette,
+  }));
+}
+
+/**
  * Demande de devis pour du pagne.
  *
  * Aucun montant n'est calculé ici, et il n'y en a nulle part à calculer : le
@@ -93,6 +125,7 @@ export async function creerDemandeTextile(
 
   const saisie = {
     typePagne: ((formData.get("type_pagne") as string) || "").trim(),
+    articleId: ((formData.get("article_id") as string) || "").trim() || null,
     motif: ((formData.get("motif") as string) || "").trim(),
     couleurs: ((formData.get("couleurs") as string) || "").trim(),
     quantite: Math.trunc(Number(formData.get("quantite"))),
@@ -105,12 +138,31 @@ export async function creerDemandeTextile(
   const validation = validerDemandeTextile(saisie, types.map((t) => t.cle));
   if ("error" in validation) return { error: validation.error };
 
+  // L'article est vérifié en base, pas cru sur parole : un identifiant reçu du
+  // formulaire pourrait désigner un article retiré du catalogue — ou n'importe
+  // quoi. On le laisse tomber plutôt que de refuser la demande : le client a
+  // décrit son besoin, l'essentiel est là.
+  let articleValide: string | null = null;
+  if (saisie.articleId) {
+    const admin0 = getAdmin();
+    const { data: article } = await admin0
+      .from("articles_pagne")
+      .select("id, type_pagne")
+      .eq("id", saisie.articleId)
+      .eq("disponible", true)
+      .maybeSingle();
+    if (article && article.type_pagne === saisie.typePagne) {
+      articleValide = article.id;
+    }
+  }
+
   const admin = getAdmin();
   const { data: demande, error } = await admin
     .from("demandes_textile")
     .insert({
       client_id: user.sub as string,
       type_pagne: saisie.typePagne,
+      article_id: articleValide,
       motif: saisie.motif || null,
       couleurs: saisie.couleurs || null,
       quantite: saisie.quantite,
@@ -281,4 +333,148 @@ export async function proposerDevisTextile(
   revalidatePath("/admin/textile");
   revalidatePath("/compte/reservations");
   return { success: true };
+}
+
+// ─── Le catalogue, côté propriétaire ─────────────────────────────────────────
+// Sans ces actions, le catalogue serait une vitrine qu'on ne peut pas garnir.
+
+/**
+ * Créer un article.
+ *
+ * Les photos sont déposées AVANT, depuis le navigateur : le bucket est public
+ * et les fichiers pèsent lourd — une Server Action plafonne à 10 Mo pour
+ * l'ensemble d'une requête, et un article en compte volontiers trois.
+ */
+export async function creerArticlePagne(
+  _prev: TextileState,
+  formData: FormData
+): Promise<TextileState> {
+  let userId: string;
+  try {
+    userId = await requireProprietaireAvecId();
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." };
+  }
+
+  const nom = ((formData.get("nom") as string) || "").trim();
+  const typePagne = ((formData.get("type_pagne") as string) || "").trim();
+  if (!nom) return { error: "Donnez un nom à ce modèle." };
+  if (!typePagne) return { error: "Choisissez une gamme." };
+
+  const types = await typesPagneActifs();
+  if (!types.some((t) => t.cle === typePagne)) {
+    return { error: "Cette gamme n'existe pas." };
+  }
+
+  // Les chemins viennent du navigateur : on n'accepte que ceux du dossier du
+  // catalogue, un chemin forgé désignerait un fichier d'un autre bucket.
+  const photos = formData
+    .getAll("photos")
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter((c) => c && !c.includes("..") && c.startsWith("articles/"));
+
+  const admin = getAdmin();
+  const { data: dernier } = await admin
+    .from("articles_pagne")
+    .select("ordre")
+    .order("ordre", { ascending: false })
+    .limit(1);
+
+  const { error } = await admin.from("articles_pagne").insert({
+    type_pagne: typePagne,
+    nom,
+    reference: ((formData.get("reference") as string) || "").trim() || null,
+    couleurs: ((formData.get("couleurs") as string) || "").trim() || null,
+    description: ((formData.get("description") as string) || "").trim() || null,
+    photos,
+    vedette: formData.get("vedette") === "on",
+    ordre: (dernier?.[0]?.ordre ?? 0) + 1,
+  });
+
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: "creer_article_pagne",
+    tableName: "articles_pagne",
+    newValues: { nom, typePagne, photos: photos.length },
+  });
+
+  revalidatePath("/admin/textile");
+  revalidatePath("/textile");
+  return { success: true };
+}
+
+/**
+ * Retirer ou remettre un article au catalogue.
+ *
+ * On ne supprime pas : des demandes passées le désignent, et effacer son nom
+ * rendrait leur historique illisible.
+ */
+export async function basculerArticlePagne(
+  _prev: TextileState,
+  formData: FormData
+): Promise<TextileState> {
+  let userId: string;
+  try {
+    userId = await requireProprietaireAvecId();
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." };
+  }
+
+  const id = ((formData.get("article_id") as string) || "").trim();
+  const disponible = formData.get("disponible") === "1";
+  if (!id) return { error: "Article inconnu." };
+
+  const admin = getAdmin();
+  const { error } = await admin
+    .from("articles_pagne")
+    .update({ disponible, updated_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: disponible ? "remettre_article_pagne" : "retirer_article_pagne",
+    tableName: "articles_pagne",
+    recordId: id,
+    newValues: { disponible },
+  });
+
+  revalidatePath("/admin/textile");
+  revalidatePath("/textile");
+  return { success: true };
+}
+
+/** Le catalogue complet, disponibles et retirés — pour l'écran propriétaire. */
+export async function catalogueComplet(): Promise<
+  (ArticlePagne & { disponible: boolean })[]
+> {
+  try {
+    await requireStaff();
+  } catch {
+    return [];
+  }
+
+  const admin = getAdmin();
+  const { data } = await admin
+    .from("articles_pagne")
+    .select("id, type_pagne, reference, nom, description, couleurs, photos, vedette, disponible, ordre")
+    .order("disponible", { ascending: false })
+    .order("ordre");
+
+  const base = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/catalogue-pagnes/`;
+
+  return (data ?? []).map((a) => ({
+    id: a.id,
+    typePagne: a.type_pagne,
+    reference: a.reference,
+    nom: a.nom,
+    description: a.description,
+    couleurs: a.couleurs,
+    photos: (a.photos ?? []).map((c: string) => `${base}${c}`),
+    vedette: a.vedette,
+    disponible: a.disponible,
+  }));
 }

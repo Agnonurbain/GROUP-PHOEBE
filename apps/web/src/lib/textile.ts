@@ -23,6 +23,47 @@ export function libelleTypePagne(t: TypePagne): string {
 }
 
 /**
+ * Un article du catalogue.
+ *
+ * Aucun prix, pour la même raison que le type qui le porte : montrer une photo
+ * avec un montant serait exactement ce que l'exploitant a refusé. Le catalogue
+ * montre, il ne chiffre pas.
+ */
+export type ArticlePagne = {
+  id: string;
+  typePagne: string;
+  reference: string | null;
+  nom: string;
+  description: string | null;
+  couleurs: string | null;
+  /** URLs publiques, prêtes à afficher. */
+  photos: string[];
+  vedette: boolean;
+};
+
+/**
+ * Filtre le catalogue sur une recherche libre.
+ *
+ * Le client tape ce qui lui vient — un nom, une couleur, une référence — et
+ * n'a pas à savoir dans quel champ ça se trouve. Fonction pure : la recherche
+ * se fait dans le navigateur, sans aller-retour serveur à chaque lettre.
+ */
+export function filtrerArticles(
+  articles: ArticlePagne[],
+  recherche: string,
+  typePagne?: string | null
+): ArticlePagne[] {
+  const q = recherche.trim().toLowerCase();
+  return articles.filter((a) => {
+    if (typePagne && a.typePagne !== typePagne) return false;
+    if (!q) return true;
+    return [a.nom, a.reference, a.couleurs, a.description]
+      .filter(Boolean)
+      .some((champ) => (champ as string).toLowerCase().includes(q));
+  });
+}
+
+/**
  * Unités de vente.
  *
  * Le pagne se compte au « pagne » — six yards, l'usage courant à Abidjan — mais
@@ -101,6 +142,8 @@ export const STATUTS_TEXTILE_OUVERTS: StatutTextile[] = [
 
 export type DemandeTextileSaisie = {
   typePagne: string;
+  /** Article du catalogue désigné, ou null quand le client décrit. */
+  articleId?: string | null;
   motif: string;
   couleurs: string;
   quantite: number;
@@ -137,8 +180,14 @@ export function validerDemandeTextile(
     return { error: "Au-delà de 10 000, contactez-nous directement : c'est une commande de gros." };
   }
 
-  // Le motif n'est pas obligatoire — un client peut vouloir « ce qui est
-  // disponible » — mais s'il en donne un, qu'il tienne dans un champ lisible.
+  /**
+   * Le motif reste facultatif, catalogue ou pas.
+   *
+   * Un client qui a choisi un article n'a rien à décrire ; un autre qui n'a
+   * rien trouvé décrit. Exiger l'un ou l'autre fermerait un des deux chemins,
+   * et c'est précisément ce qu'on veut éviter : le catalogue ajoute une porte,
+   * il n'en condamne aucune.
+   */
   if (saisie.motif.length > 500) {
     return { error: "Description du motif trop longue (500 caractères maximum)." };
   }

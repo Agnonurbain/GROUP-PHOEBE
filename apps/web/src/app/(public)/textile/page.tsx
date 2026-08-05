@@ -3,9 +3,8 @@ import Image from "next/image"
 import { createClient } from "@/lib/supabase/server"
 import { BackLink } from "@/components/public/back-link"
 import { PageHero, SectionHead } from "@/components/public/section-head"
-import { ScrollReveal } from "@/components/effects"
-import { typesPagneActifs } from "@/app/actions/textile"
-import { DemandeTextileForm } from "./demande-form"
+import { typesPagneActifs, catalogueArticles } from "@/app/actions/textile"
+import { TextileClient } from "./textile-client"
 
 export const metadata: Metadata = {
   title: "Textile — Pagnes Uniwax et Hollandais",
@@ -18,7 +17,10 @@ export default async function TextilePage() {
   const { data: claimsData } = await supabase.auth.getClaims()
   const isLoggedIn = !!claimsData?.claims
 
-  const types = await typesPagneActifs()
+  const [types, articles] = await Promise.all([
+    typesPagneActifs(),
+    catalogueArticles(),
+  ])
 
   return (
     <>
@@ -43,51 +45,19 @@ export default async function TextilePage() {
         }
       />
 
-      <section className="px-6 py-20 sm:px-10">
+      <section id="catalogue" className="scroll-mt-24 px-6 py-20 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHead
-            title="Ce que nous proposons"
-            lede="Les gammes que nous sourçons auprès de nos fournisseurs."
-            className="border-b-0 pb-0"
-          />
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {types.map((t) => (
-              <ScrollReveal key={t.cle} variant="fade-up">
-                <div className="h-full rounded-2xl border border-public-border bg-public-bg-card p-5">
-                  <p className="text-[11px] uppercase tracking-wider text-public-text-faint">
-                    {t.marque}
-                  </p>
-                  <h3 className="mt-1 text-base font-semibold text-public-text">
-                    {t.gamme}
-                  </h3>
-                  {t.description && (
-                    <p className="mt-2 text-sm text-public-text-muted">{t.description}</p>
-                  )}
-                  <p className="mt-3 text-sm font-semibold text-accent-gold">Sur devis</p>
-                </div>
-              </ScrollReveal>
-            ))}
-          </div>
-          {types.length === 0 && (
-            <p className="mt-8 text-sm text-public-text-muted">
-              Le catalogue est en cours de constitution. Contactez-nous en attendant.
-            </p>
-          )}
-        </div>
-      </section>
-
-      <section id="devis" className="border-t border-public-border bg-public-bg-card px-6 py-20 sm:px-10">
-        <div className="mx-auto max-w-3xl">
-          <SectionHead
-            title="Demander un devis"
-            lede="Aucun engagement : nous vous répondons avec un prix, vous décidez ensuite."
+            title="Notre catalogue"
+            lede="Choisissez un modèle, ou décrivez ce que vous cherchez — les deux mènent au même devis."
             className="border-b-0 pb-0"
           />
           <div className="mt-10">
-            <DemandeTextileForm isLoggedIn={isLoggedIn} types={types} />
+            <TextileClient isLoggedIn={isLoggedIn} types={types} articles={articles} />
           </div>
         </div>
       </section>
+
     </>
   )
 }

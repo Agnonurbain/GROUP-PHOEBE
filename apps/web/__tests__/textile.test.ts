@@ -9,6 +9,7 @@ import {
   STATUT_TEXTILE_LABELS,
   libelleTypePagne,
   isUnitePagne,
+  filtrerArticles,
   type TypePagne,
 } from "@/lib/textile";
 
@@ -233,5 +234,143 @@ describe("Textile — le service est branché", () => {
   it("l'équipe a son écran, atteignable depuis la navigation", () => {
     expect(src("app/(admin)/admin/textile/page.tsx")).toContain("TextileActions");
     expect(src("app/(admin)/admin/_lib/nav.ts")).toContain("/admin/textile");
+  });
+});
+
+/**
+ * Le catalogue.
+ *
+ * « Ajoute un catalogue mais garde le fait que le client décrit ce qu'il
+ * cherche. » Les deux chemins coexistent : désigner un modèle, ou le décrire.
+ * Fermer l'un des deux reviendrait à ne plus vendre que ce qui est déjà
+ * photographié.
+ */
+describe("Catalogue de pagnes", () => {
+  const migration = readFileSync(
+    join(process.cwd(), "..", "..", "supabase", "migrations", "00088_catalogue_pagnes.sql"),
+    "utf8"
+  );
+
+  it("un article n'a pas de prix, comme le type qui le porte", () => {
+    const debut = migration.indexOf("create table if not exists public.articles_pagne");
+    const corps = migration.slice(debut, migration.indexOf(");", debut));
+    expect(corps).not.toMatch(/\bprix\b/i);
+    expect(corps).not.toMatch(/\bmontant\b/i);
+  });
+
+  /**
+   * Le lien est NULLABLE, et c'est le point : sans cela, on ne vendrait plus
+   * que ce qui est déjà au catalogue.
+   */
+  it("désigner un article reste facultatif", () => {
+    expect(migration).toMatch(/add column if not exists article_id uuid references public\.articles_pagne\(id\) on delete set null/);
+    expect(migration).not.toMatch(/article_id uuid not null/);
+  });
+
+  // Retirer un modèle ne doit pas effacer les demandes qui le visaient.
+  it("retirer un article n'efface pas les demandes qui le visaient", () => {
+    expect(migration).toContain("on delete set null");
+  });
+
+  // Un article épuisé sort de la vitrine sans être effacé : des demandes
+  // passées le désignent.
+  it("un article se retire, il ne se supprime pas", () => {
+    const action = src("app/actions/textile.ts");
+    const d = action.indexOf("export async function basculerArticlePagne");
+    const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
+    expect(corps).toContain("update({ disponible");
+    expect(corps).not.toContain(".delete()");
+  });
+
+  /**
+   * Le bucket est PUBLIC, contrairement à `dossiers-documents` : ce sont des
+   * photos de vitrine, pas des pièces d'identité. Les signer reviendrait à
+   * protéger ce qu'on cherche à montrer.
+   */
+  it("les photos sont publiques, le dépôt réservé au propriétaire", () => {
+    expect(migration).toMatch(/values \('catalogue-pagnes', 'catalogue-pagnes', true\)/);
+    expect(migration).toContain("catalogue_pagnes_manage_proprietaire");
+    const d = migration.indexOf("catalogue_pagnes_manage_proprietaire");
+    expect(migration.slice(d, d + 400)).toContain("public.is_proprietaire()");
+  });
+
+  /**
+   * L'identifiant reçu du formulaire n'est pas cru sur parole : il pourrait
+   * désigner un article retiré, ou d'une autre gamme que celle demandée.
+   */
+  it("l'article reçu est vérifié en base avant d'être lié", () => {
+    const action = src("app/actions/textile.ts");
+    const d = action.indexOf("export async function creerDemandeTextile");
+    const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
+    expect(corps).toContain('.eq("disponible", true)');
+    expect(corps).toContain("article.type_pagne === saisie.typePagne");
+  });
+
+  // Les chemins viennent du navigateur : un chemin forgé désignerait un
+  // fichier d'un autre bucket.
+  it("les chemins de photos sont bornés au dossier du catalogue", () => {
+    const action = src("app/actions/textile.ts");
+    const d = action.indexOf("export async function creerArticlePagne");
+    const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
+    expect(corps).toContain('startsWith("articles/")');
+    expect(corps).toContain('includes("..")');
+  });
+
+  it("la description libre survit au catalogue", () => {
+    const form = src("app/(public)/textile/demande-form.tsx");
+    expect(form).toContain("Vous n&apos;avez rien trouvé au catalogue");
+    // Le champ motif reste présent dans les deux cas.
+    expect(form).toContain('name="motif"');
+  });
+
+  it("catalogue et formulaire partagent un seul état", () => {
+    const parent = src("app/(public)/textile/textile-client.tsx");
+    expect(parent).toContain("CatalogueClient");
+    expect(parent).toContain("DemandeTextileForm");
+    // Deux états séparés auraient fini par diverger.
+    expect(parent).toContain("useState<ArticlePagne | null>");
+  });
+
+  it("l'atelier du propriétaire est branché", () => {
+    expect(src("app/(admin)/admin/textile/page.tsx")).toContain("CatalogueForm");
+    expect(src("app/(admin)/admin/textile/catalogue-form.tsx")).toContain("creerArticlePagne");
+  });
+});
+
+/**
+ * La recherche se fait dans le navigateur : à cette échelle, un aller-retour
+ * serveur à chaque lettre coûterait plus qu'il ne rapporte.
+ */
+describe("Recherche dans le catalogue", () => {
+  const article = (over: Partial<import("@/lib/textile").ArticlePagne> = {}) => ({
+    id: "1", typePagne: "uniwax_print", reference: "UW23458",
+    nom: "Fleur de mariage", description: null, couleurs: "bleu et or",
+    photos: [], vedette: false, ...over,
+  });
+
+  it("sans recherche, tout passe", () => {
+    const a = [article(), article({ id: "2", nom: "Autre" })];
+    expect(filtrerArticles(a, "")).toHaveLength(2);
+  });
+
+  // Le client tape ce qui lui vient et n'a pas à savoir dans quel champ ça se
+  // trouve.
+  it.each([
+    ["fleur", "le nom"],
+    ["UW23458", "la référence"],
+    ["bleu", "les couleurs"],
+  ])("« %s » trouve par %s", (q) => {
+    expect(filtrerArticles([article()], q)).toHaveLength(1);
+  });
+
+  it("la casse et les espaces ne comptent pas", () => {
+    expect(filtrerArticles([article()], "  FLEUR  ")).toHaveLength(1);
+  });
+
+  it("le filtre de gamme se combine à la recherche", () => {
+    const a = [article(), article({ id: "2", typePagne: "hollandais" })];
+    expect(filtrerArticles(a, "", "hollandais")).toHaveLength(1);
+    expect(filtrerArticles(a, "fleur", "hollandais")).toHaveLength(1);
+    expect(filtrerArticles(a, "introuvable", "hollandais")).toHaveLength(0);
   });
 });
