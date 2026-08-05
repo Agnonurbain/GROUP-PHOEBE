@@ -69,7 +69,7 @@ group-phoebe/
 │       └── index.ts             # Exports
 │
 ├── supabase/                    # Projet Supabase — UNIQUE source de vérité
-│   ├── migrations/              # 88 migrations SQL
+│   ├── migrations/              # 89 migrations SQL
 │   ├── tests/                   # SQL de vérification (contrainte d'exclusion)
 │   ├── config.toml              # Ports de la pile locale
 │   └── seed*.sql                # Jeux de données de développement
@@ -211,7 +211,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-88 migrations Supabase (00001 → 00088), toutes dans `supabase/migrations/`.
+89 migrations Supabase (00001 → 00089), toutes dans `supabase/migrations/`.
 
 ### 5.1 Tables
 
@@ -721,7 +721,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 824 tests dans 45 fichiers, dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 838 tests dans 45 fichiers, dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -763,6 +763,8 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-08-05 | **Le textile était livré, pas branché** (00089). Cinq raccords manquaient, tous silencieux. (1) `article_id` était **écrit et jamais lu** : le client désignait un modèle, l'équipe ne le voyait nulle part et devait le déduire du motif décrit à côté — une écriture sans lecture, et elle portait la commande. (2) `/compte/reservations` agrégeait cinq services sur six : un client envoyait une demande de devis et ne la revoyait **plus jamais**, ni son avancement ni le montant proposé. (3) Les gammes, annoncées « pilotables » en 00087, l'étaient en base et nulle part ailleurs — en ajouter une demandait du SQL ; une pilotabilité sans écran n'existe pas pour celui qui exploite. (4) `avis_refus_motif` (00077) énumère les services un par un : le textile, né après elle, tombait dans `service_inconnu`, si bien qu'une commande livrée affichait « Donner mon avis » sur un bouton qui ne pouvait pas aboutir. (5) Le pied de page listait quatre services sur cinq. Chaque correctif s'accompagne d'un test qui **lit la liste ailleurs** au lieu de la recopier : les services attendus par la garde des avis sont extraits de l'espace client, ceux du pied de page viennent de `VERTICALES`. Une liste recopiée oublie toujours le service suivant. |
+| 2026-08-05 | **Deux défauts trouvés en vérifiant, sans rapport avec le textile.** Le séparateur du fil d'Ariane (`BreadcrumbSeparator`, un `<li>`) était rendu **dans** `BreadcrumbItem`, également un `<li>` : erreur d'hydratation React sur **chaque page de l'administration**, depuis toujours. Et `next/image` refusait les photos servies par la Supabase locale — Next 16 bloque l'optimisation depuis une IP privée, à raison — ce qui rendait toute vérification d'image au navigateur impossible en développement, catalogue comme véhicules. La dérogation (`dangerouslyAllowLocalIP` + hôte `127.0.0.1`) est **bornée au développement** : en production, l'optimiseur ne doit pas pouvoir être dirigé vers le réseau interne du serveur. |
 | 2026-08-05 | **Un catalogue de pagnes, qui ne ferme rien** (00088). Le service ne montrait rien : le client décrivait ce qu'il cherchait en toutes lettres, sans savoir ce que la maison a en rayon. Le catalogue lui donne quelque chose à regarder — et à désigner. Le point de conception est ce qu'il **ne** change pas : `demandes_textile.article_id` est **nullable**, la description libre reste, et le formulaire s'adapte au lieu de se restreindre (la carte du modèle choisi remplace le sélecteur de gamme, le motif devient « précisions sur ce modèle »). Un lien obligatoire aurait signifié ne plus vendre que ce qui est déjà photographié. Toujours **aucun prix**, pour la raison de 00087 : une photo assortie d'un montant serait exactement ce que l'exploitant a refusé. Le bucket `catalogue-pagnes` est **public** — ce sont des photos de vitrine, pas des pièces d'identité ; les signer à chaque vignette protégerait ce qu'on cherche à montrer. Les photos montent depuis le navigateur, jamais par une Server Action : trois clichés de plusieurs mégaoctets buteraient sur son plafond. Recherche et filtres tournent côté client, avec le compte affiché (« 3 sur 12 ») — sans lui, filtrer donne l'impression que le catalogue a rétréci sans qu'on sache de combien. |
 | 2026-08-05 | **Quatorze tables absentes de la section 5.1** — rattrapées. Elles étaient nées correctement (RLS, policies, commentaires) mais n'avaient jamais rejoint la liste qui se dit « la référence en cas de doute » : `moyens_livraison`, `tarifs_livraison_moyen`, `coefficients_mode_livraison`, `messages_dossier`, `rendez_vous_dossier`, `parametres_rendez_vous`, `parametres_ouverture`, `fermetures_agence`, `pages_legales`, `parametres_transport`, `parametres_livraison`, `types_pagne`, `articles_pagne`, `demandes_textile`. Le compte RLS disait encore 52 tables pour 62. Une documentation qui se présente comme la référence et qui a dix tables de retard est pire qu'une absence de documentation : on la croit. |
 | 2026-08-04 | **Cinquième service : Textile** (00087). Vente de pagnes — Uniwax (Print, Block, Tabs) et wax hollandais. Son trait central est une **absence** : aucun prix n'est affiché, et ce n'est pas un tarif qu'on finira par renseigner. « Il y a tellement de fournisseurs qui les vendent à leur prix […] on ne peut pas afficher un prix comme ça. » Le marché du pagne n'a pas de prix de référence tenable : chaque revendeur fixe le sien. La table des types ne porte donc **aucune colonne de prix**, délibérément — en ajouter une inviterait à la remplir, et le site annoncerait un montant intenable. Le montant naît sur la demande, après consultation des fournisseurs, et reste réservé au propriétaire (action + trigger `security invoker`, même construction qu'en 00047 et 00049). Les types de pagne sont pilotables, marque libre. L'écran **explique** l'absence de prix plutôt que de laisser le client chercher une grille qui n'existe pas. |

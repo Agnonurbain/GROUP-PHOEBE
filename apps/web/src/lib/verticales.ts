@@ -44,6 +44,16 @@ const PREFIXES: Record<Verticale, string[]> = {
   textile: ["/textile"],
 }
 
+/**
+ * Les services, tels qu'ils sont déclarés ici.
+ *
+ * Exposés pour que les tests et l'affichage n'aient pas à recopier la liste :
+ * une liste recopiée oublie le service suivant, ce qui est exactement arrivé
+ * au textile — arrivé cinquième, absent du pied de page et de la garde des
+ * avis alors qu'il était bien branché ailleurs.
+ */
+export const VERTICALES = Object.keys(PREFIXES) as Verticale[]
+
 /** Le service d'un chemin, ou `null` pour les pages transverses. */
 export function verticaleDeChemin(pathname: string): Verticale | null {
   for (const [verticale, prefixes] of Object.entries(PREFIXES) as [Verticale, string[]][]) {

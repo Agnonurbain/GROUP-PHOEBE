@@ -1,4 +1,5 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { ScrollReveal } from "@/components/effects"
@@ -10,9 +11,10 @@ import {
   type StatutTextile,
   type UnitePagne,
 } from "@/lib/textile"
-import { catalogueComplet } from "@/app/actions/textile"
+import { catalogueComplet, typesPagneComplet } from "@/app/actions/textile"
 import { TextileActions } from "./textile-actions"
 import { CatalogueForm } from "./catalogue-form"
+import { GammesForm } from "./gammes-form"
 
 export const metadata: Metadata = {
   title: "Textile — Administration",
@@ -30,6 +32,9 @@ const STATUT_COLORS: Record<string, string> = {
 
 const dateFr = (v: string) => new Date(v).toLocaleDateString("fr-FR")
 
+// Le bucket est public : le chemin suffit à faire une URL, sans signature.
+const BASE_PHOTOS = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/catalogue-pagnes/`
+
 export default async function AdminTextile() {
   const supabase = await createClient()
   const { data: claimsData } = await supabase.auth.getClaims()
@@ -46,9 +51,12 @@ export default async function AdminTextile() {
   }
   const estProprietaire = profile.role === "proprietaire"
 
+  // La jointure sur l'article n'est pas décorative : quand le client a désigné
+  // un modèle du catalogue, c'est CE modèle qu'il faut commander. Sans elle,
+  // l'équipe lisait « Uniwax — Print » et devait deviner lequel.
   const { data: demandes } = await supabase
     .from("demandes_textile")
-    .select("*")
+    .select("*, articles_pagne(nom, reference, couleurs, photos)")
     .order("created_at", { ascending: false })
 
   const lignes = demandes ?? []
@@ -65,8 +73,10 @@ export default async function AdminTextile() {
     .eq("actif", true)
     .order("ordre")
 
-  // Le catalogue, complet : le propriétaire voit aussi ce qu'il a retiré.
-  const articles = estProprietaire ? await catalogueComplet() : []
+  // Catalogue et gammes, complets : le propriétaire voit aussi ce qu'il a retiré.
+  const [articles, gammes] = estProprietaire
+    ? await Promise.all([catalogueComplet(), typesPagneComplet()])
+    : [[], []]
   const typeById = new Map(
     (types ?? []).map((t) => [t.cle, libelleTypePagne({ ...t, description: t.description })])
   )
@@ -91,6 +101,12 @@ export default async function AdminTextile() {
 
       {/* Le catalogue avant les demandes : sans vitrine garnie, les demandes
           n'arrivent pas. Propriétaire seul — il engage l'image de la maison. */}
+      {estProprietaire && (
+        <ScrollReveal variant="fade-up" delay={0.04}>
+          <GammesForm types={gammes} />
+        </ScrollReveal>
+      )}
+
       {estProprietaire && (
         <ScrollReveal variant="fade-up" delay={0.05}>
           <CatalogueForm
@@ -134,6 +150,28 @@ export default async function AdminTextile() {
                       {" · "}
                       demandé le {dateFr(d.created_at)}
                     </p>
+                    {/* Le modèle désigné, quand il y en a un. C'est la
+                        commande à passer : le montrer évite de la déduire du
+                        motif décrit à côté. */}
+                    {d.articles_pagne && (
+                      <div className="mt-2 flex items-center gap-2 rounded-lg border border-phoebe-gold/30 bg-phoebe-gold/5 px-2 py-1.5">
+                        {d.articles_pagne.photos?.[0] ? (
+                          <Image
+                            src={`${BASE_PHOTOS}${d.articles_pagne.photos[0]}`}
+                            alt=""
+                            width={32}
+                            height={40}
+                            className="h-10 w-8 rounded object-cover"
+                          />
+                        ) : null}
+                        <p className="text-xs text-phoebe-anthracite">
+                          Modèle du catalogue :{" "}
+                          <span className="font-medium">{d.articles_pagne.nom}</span>
+                          {d.articles_pagne.reference ? ` · réf. ${d.articles_pagne.reference}` : ""}
+                          {d.articles_pagne.couleurs ? ` · ${d.articles_pagne.couleurs}` : ""}
+                        </p>
+                      </div>
+                    )}
                     {(d.motif || d.couleurs) && (
                       <p className="mt-1 text-xs text-phoebe-anthracite/70">
                         {d.motif && <>Motif : {d.motif}</>}

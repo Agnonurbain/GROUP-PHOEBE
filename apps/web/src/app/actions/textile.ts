@@ -478,3 +478,160 @@ export async function catalogueComplet(): Promise<
     disponible: a.disponible,
   }));
 }
+
+/** Les gammes, actives et retirées — pour l'écran propriétaire. */
+export async function typesPagneComplet(): Promise<(TypePagne & { actif: boolean })[]> {
+  try {
+    await requireStaff();
+  } catch {
+    return [];
+  }
+
+  const admin = getAdmin();
+  const { data } = await admin
+    .from("types_pagne")
+    .select("cle, marque, gamme, description, ordre, actif")
+    .order("ordre");
+
+  return (data ?? []).map((t) => ({
+    cle: t.cle,
+    marque: t.marque,
+    gamme: t.gamme,
+    description: t.description,
+    ordre: t.ordre,
+    actif: t.actif,
+  }));
+}
+
+/**
+ * Ajouter une gamme.
+ *
+ * 00087 annonçait les types « pilotables, marque libre », et ils l'étaient — en
+ * base. Aucun écran ne les touchait : ajouter une marque demandait du SQL. Une
+ * pilotabilité qui n'a pas d'écran n'existe pas pour celui qui exploite.
+ *
+ * Propriétaire seul, comme le catalogue : une gamme engage ce que la maison
+ * déclare vendre.
+ */
+export async function creerTypePagne(
+  _prev: TextileState,
+  formData: FormData
+): Promise<TextileState> {
+  let userId: string;
+  try {
+    userId = await requireProprietaireAvecId();
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." };
+  }
+
+  const marque = ((formData.get("marque") as string) || "").trim();
+  const gamme = ((formData.get("gamme") as string) || "").trim();
+  const description = ((formData.get("description") as string) || "").trim() || null;
+
+  if (!marque || marque.length > 60) return { error: "Marque manquante ou trop longue." };
+  if (!gamme || gamme.length > 60) return { error: "Gamme manquante ou trop longue." };
+
+  // La clé se dérive du libellé plutôt que de se saisir : elle doit respecter
+  // `^[a-z0-9_]+$`, et la faire taper à l'exploitant transformerait une
+  // contrainte technique en message d'erreur pour lui.
+  const cle = `${marque}_${gamme}`
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // les accents, invisibles autrement
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 50);
+
+  if (!cle) return { error: "Ce libellé ne donne aucune clé exploitable." };
+
+  const admin = getAdmin();
+
+  // `ordre` est unique : le calculer évite de demander un numéro à l'exploitant
+  // pour ne rien lui dire d'utile.
+  const { data: dernier } = await admin
+    .from("types_pagne")
+    .select("ordre")
+    .order("ordre", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const { error } = await admin
+    .from("types_pagne")
+    .insert({ cle, marque, gamme, description, ordre: (dernier?.ordre ?? 0) + 1 });
+
+  if (error) {
+    return {
+      error: error.code === "23505"
+        ? "Cette gamme existe déjà."
+        : error.message,
+    };
+  }
+
+  await logAudit({
+    userId,
+    action: "creer_type_pagne",
+    tableName: "types_pagne",
+    recordId: cle,
+    newValues: { marque, gamme },
+  });
+
+  revalidatePath("/admin/textile");
+  revalidatePath("/textile");
+  return { success: true };
+}
+
+/**
+ * Retirer ou remettre une gamme.
+ *
+ * Elle ne se supprime pas : des demandes passées la référencent, et
+ * `demandes_textile.type_pagne` est une clé étrangère. `actif` la sort du choix
+ * sans effacer l'historique — même raison que `disponible` sur un article.
+ */
+export async function basculerTypePagne(
+  _prev: TextileState,
+  formData: FormData
+): Promise<TextileState> {
+  let userId: string;
+  try {
+    userId = await requireProprietaireAvecId();
+  } catch {
+    return { error: "Accès refusé : propriétaire requis." };
+  }
+
+  const cle = ((formData.get("cle") as string) || "").trim();
+  const actif = formData.get("actif") === "1";
+  if (!cle) return { error: "Gamme inconnue." };
+
+  const admin = getAdmin();
+
+  // Retirer la dernière gamme active fermerait le formulaire public : il n'y
+  // aurait plus rien à choisir, et la demande deviendrait impossible à envoyer.
+  if (!actif) {
+    const { count } = await admin
+      .from("types_pagne")
+      .select("cle", { count: "exact", head: true })
+      .eq("actif", true);
+    if ((count ?? 0) <= 1) {
+      return { error: "C'est la dernière gamme active : la retirer fermerait le formulaire." };
+    }
+  }
+
+  const { error } = await admin
+    .from("types_pagne")
+    .update({ actif, updated_at: new Date().toISOString() })
+    .eq("cle", cle);
+
+  if (error) return { error: error.message };
+
+  await logAudit({
+    userId,
+    action: actif ? "remettre_type_pagne" : "retirer_type_pagne",
+    tableName: "types_pagne",
+    recordId: cle,
+    newValues: { actif },
+  });
+
+  revalidatePath("/admin/textile");
+  revalidatePath("/textile");
+  return { success: true };
+}

@@ -21,6 +21,13 @@ import { creneauxDisponibles, messagesDuDossier, type MessageDossier } from "@/a
 import { formaterCreneau } from "@/lib/immobilier"
 import { getT } from "@/lib/i18n/server"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
+import {
+  libelleTypePagne,
+  UNITE_LABELS,
+  STATUT_TEXTILE_LABELS,
+  type UnitePagne,
+  type StatutTextile,
+} from "@/lib/textile"
 
 export const metadata: Metadata = {
   title: "Mes Réservations",
@@ -127,7 +134,7 @@ export default async function CompteReservations({
     )
   }
 
-  const [transportRes, immobilierRes, assistanceRes, livraisonRes, billetsRes] = await Promise.all([
+  const [transportRes, immobilierRes, assistanceRes, livraisonRes, billetsRes, textileRes] = await Promise.all([
     supabase
       .from("demandes_transport")
       .select("id, created_at, statut, montant, categorie, type, prix_negocie, vehicule_id, caution_retenue, etat_lieux_depart_photos, etat_lieux_retour_photos, kilometrage_depart, devis_expire_at, vehicules!inner(marque, modele)")
@@ -151,6 +158,14 @@ export default async function CompteReservations({
     supabase
       .from("demandes_billet")
       .select("id, created_at, statut, type_trajet, depart, destination, date_depart, date_retour, nb_adultes, nb_enfants, nb_bebes, montant_propose, frais_service, devis_valable_jusqu_a")
+      .eq("client_id", user.id)
+      .order("created_at", { ascending: false }),
+    // Le textile manquait à cette liste : un client envoyait une demande de
+    // devis et ne la revoyait plus jamais — ni son avancement, ni le montant
+    // qu'on lui avait proposé.
+    supabase
+      .from("demandes_textile")
+      .select("id, created_at, statut, type_pagne, motif, couleurs, quantite, unite, montant_propose, devis_valable_jusqu_a, articles_pagne(nom, photos)")
       .eq("client_id", user.id)
       .order("created_at", { ascending: false }),
   ])
@@ -463,7 +478,47 @@ export default async function CompteReservations({
     dossier: null,
   })) ?? []
 
-  const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations, ...billetReservations]
+  // Les gammes, pour nommer une demande qui n'a pas désigné d'article. On ne
+  // les charge que s'il y a du textile à afficher.
+  const { data: typesPagne } = (textileRes.data?.length ?? 0) > 0
+    ? await supabase.from("types_pagne").select("cle, marque, gamme, description, ordre")
+    : { data: null }
+  const libelleGamme = new Map(
+    (typesPagne ?? []).map((t) => [t.cle, libelleTypePagne(t)])
+  )
+  const basePhotos = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/catalogue-pagnes/`
+
+  const textileReservations: ReservationItem[] = textileRes.data?.map((d) => ({
+    id: d.id,
+    created_at: d.created_at,
+    // Le modèle choisi prime sur la gamme : c'est sous ce nom que le client
+    // reconnaît sa demande.
+    title: d.articles_pagne?.nom ?? libelleGamme.get(d.type_pagne) ?? d.type_pagne,
+    category: "Textile",
+    referenceTable: "demandes_textile",
+    detailHref: "/textile",
+    period: `${d.quantite} × ${UNITE_LABELS[d.unite as UnitePagne] ?? d.unite}${
+      d.motif ? ` · ${d.motif}` : ""
+    }${d.couleurs ? ` · ${d.couleurs}` : ""}`,
+    // « Sur devis » plutôt qu'un tiret : l'absence de prix est le principe du
+    // service, pas une donnée manquante.
+    price: d.montant_propose != null
+      ? `${Number(d.montant_propose).toLocaleString("fr-FR")} FCFA`
+      : "Sur devis",
+    status: d.statut,
+    photoUrl: d.articles_pagne?.photos?.[0] ? `${basePhotos}${d.articles_pagne.photos[0]}` : null,
+    // Aucun paiement en ligne sur le textile : le devis se règle avec l'équipe.
+    aPayer: null,
+    isAchat: false,
+    contreOffre: null,
+    factures: facturesDe(d.id),
+    preuve: null,
+    documents: null,
+    creneauAConfirmer: null,
+    dossier: null,
+  })) ?? []
+
+  const allReservations = [...transportReservations, ...immobilierReservations, ...assistanceReservations, ...livraisonReservations, ...billetReservations, ...textileReservations]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const filtered =
@@ -473,7 +528,10 @@ export default async function CompteReservations({
         ? allReservations.filter((r) => isAnnulee(r.status))
         : allReservations.filter((r) => isActive(r.status))
 
-  const statusStyle = (status: string) => {
+  // La catégorie entre dans le calcul : `en_cours_traitement` se dit
+  // « Recherche en cours » pour un billet et « En cours de traitement » pour du
+  // pagne. Sans elle, le premier libellé rencontré s'appliquait aux deux.
+  const statusStyle = (status: string, category?: string) => {
     if (STATUTS_TERMINES.includes(status)) return { color: "text-public-text-muted", label: "Terminé" }
     if (["annulee", "annule", "refusee", "refuse"].includes(status)) return { color: "text-[#EF4444]", label: "Annulé" }
     // Le client doit agir : le libellé le dit plutôt que « En attente ».
@@ -481,6 +539,12 @@ export default async function CompteReservations({
     if (status === "devis_envoye") return { color: "text-accent-gold", label: "Devis reçu" }
     if (status === "payee") return { color: "text-accent-green", label: "Payé" }
     if (status === "emise") return { color: "text-accent-green", label: "Billet émis" }
+    if (category === "Textile" && STATUT_TEXTILE_LABELS[status as StatutTextile]) {
+      return {
+        color: status === "confirmee" ? "text-accent-green" : "text-accent-orange",
+        label: STATUT_TEXTILE_LABELS[status as StatutTextile],
+      }
+    }
     if (STATUT_BILLET_LABELS[status]) return { color: "text-accent-orange", label: STATUT_BILLET_LABELS[status] }
     return { color: "text-accent-orange", label: "En attente" }
   }
@@ -523,7 +587,7 @@ export default async function CompteReservations({
             </p>
           </div>
         ) : filtered.map((r) => {
-          const st = statusStyle(r.status)
+          const st = statusStyle(r.status, r.category)
           return (
             <Card key={r.id} className="flex items-center gap-4">
               {r.photoUrl && (
