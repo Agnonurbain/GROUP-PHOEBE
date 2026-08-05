@@ -2,12 +2,14 @@
 
 import { useActionState, useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Scissors } from "lucide-react"
+import Image from "next/image"
+import { ArrowRight, Scissors, X } from "lucide-react"
 import { creerDemandeTextile, type TextileState } from "@/app/actions/textile"
 import {
   UNITES_PAGNE,
   UNITE_LABELS,
   type TypePagne,
+  type ArticlePagne,
 } from "@/lib/textile"
 import { Obligatoire } from "@/components/ui/obligatoire"
 
@@ -26,15 +28,35 @@ const label = "mb-1.5 block text-xs font-medium text-public-text-muted"
 export function DemandeTextileForm({
   isLoggedIn,
   types,
+  article = null,
+  onRetirerArticle,
 }: {
   isLoggedIn: boolean
   types: TypePagne[]
+  /** Modèle choisi au catalogue, s'il y en a un. */
+  article?: ArticlePagne | null
+  onRetirerArticle?: () => void
 }) {
   const [state, action, pending] = useActionState<TextileState, FormData>(
     creerDemandeTextile,
     {}
   )
   const [type, setType] = useState(types[0]?.cle ?? "")
+
+  /**
+   * Choisir un modèle fixe sa gamme : demander « Uniwax Print » puis désigner
+   * un hollandais serait une contradiction que le serveur refuserait.
+   *
+   * Ajustement d'état PENDANT le rendu, et non dans un effet : un effet
+   * déclencherait un second rendu en cascade, et l'écran afficherait un instant
+   * la mauvaise gamme. Même motif que `smart-header`.
+   * cf. https://react.dev/learn/you-might-not-need-an-effect
+   */
+  const [articlePrecedent, setArticlePrecedent] = useState(article?.id ?? null)
+  if ((article?.id ?? null) !== articlePrecedent) {
+    setArticlePrecedent(article?.id ?? null)
+    if (article) setType(article.typePagne)
+  }
 
   const marques = [...new Set(types.map((t) => t.marque))]
   const choisi = types.find((t) => t.cle === type) ?? null
@@ -69,6 +91,7 @@ export function DemandeTextileForm({
   return (
     <form action={action} className="space-y-5">
       <input type="hidden" name="type_pagne" value={type} />
+      <input type="hidden" name="article_id" value={article?.id ?? ""} />
 
       {state.error && (
         <p role="alert" className="rounded-xl border border-error/20 bg-error/5 px-4 py-3 text-sm text-error">
@@ -76,8 +99,45 @@ export function DemandeTextileForm({
         </p>
       )}
 
-      {/* Le client choisit d'abord la marque, puis la gamme — c'est ainsi que
-          le pagne se demande au marché. */}
+      {/* Un modèle choisi remplace le sélecteur de gamme : elle est déjà
+          décidée, et redemander ce qui vient d'être choisi ferait douter. */}
+      {article ? (
+        <div className="flex items-start gap-4 rounded-2xl border border-accent-gold/40 bg-accent-gold/5 p-4">
+          {article.photos[0] && (
+            <Image
+              src={article.photos[0]}
+              alt={article.nom}
+              width={80}
+              height={100}
+              sizes="80px"
+              className="h-24 w-20 shrink-0 rounded-lg object-cover"
+            />
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] uppercase tracking-wider text-accent-gold">
+              Modèle choisi
+            </p>
+            <p className="mt-0.5 text-sm font-semibold text-public-text">{article.nom}</p>
+            <p className="mt-0.5 text-xs text-public-text-muted">
+              {article.reference ? `Réf. ${article.reference}` : null}
+              {article.reference && article.couleurs ? " · " : null}
+              {article.couleurs}
+            </p>
+            {onRetirerArticle && (
+              <button
+                type="button"
+                onClick={onRetirerArticle}
+                className="mt-2 inline-flex items-center gap-1 text-[11px] text-public-text-faint underline decoration-dotted hover:text-public-text"
+              >
+                <X size={12} aria-hidden="true" />
+                Choisir autre chose, ou décrire moi-même
+              </button>
+            )}
+          </div>
+        </div>
+      ) : (
+      /* Sans modèle choisi, le client désigne sa gamme — c'est ainsi que le
+         pagne se demande au marché. */
       <fieldset className="rounded-2xl border border-public-border bg-public-bg-card p-5">
         <legend className="px-1 text-sm font-semibold text-public-text">
           Quel pagne cherchez-vous ?<Obligatoire />
@@ -114,6 +174,7 @@ export function DemandeTextileForm({
           <p className="mt-3 text-xs text-public-text-muted">{choisi.description}</p>
         )}
       </fieldset>
+      )}
 
       <div className="grid gap-4 rounded-2xl border border-public-border bg-public-bg-card p-5 sm:grid-cols-2">
         <div>
@@ -140,14 +201,26 @@ export function DemandeTextileForm({
         </div>
 
         <div className="sm:col-span-2">
-          <label htmlFor="motif" className={label}>Motif recherché</label>
+          <label htmlFor="motif" className={label}>
+            {article ? "Précisions sur ce modèle" : "Motif recherché"}
+          </label>
           <input
             id="motif"
             name="motif"
             maxLength={500}
-            placeholder="Décrivez le motif, ou laissez vide si vous êtes ouvert"
+            placeholder={
+              article
+                ? "Une variante, une autre teinte du même motif…"
+                : "Décrivez le motif, ou laissez vide si vous êtes ouvert"
+            }
             className={champ}
           />
+          {!article && (
+            <p className="mt-1 text-[11px] text-public-text-faint">
+              Vous n&apos;avez rien trouvé au catalogue ? Décrivez-le : nous le
+              cherchons chez nos fournisseurs.
+            </p>
+          )}
         </div>
         <div className="sm:col-span-2">
           <label htmlFor="couleurs" className={label}>Couleurs souhaitées</label>

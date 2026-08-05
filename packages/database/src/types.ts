@@ -115,6 +115,59 @@ export type Database = {
           },
         ]
       }
+      articles_pagne: {
+        Row: {
+          couleurs: string | null
+          created_at: string
+          description: string | null
+          disponible: boolean
+          id: string
+          nom: string
+          ordre: number
+          photos: string[]
+          reference: string | null
+          type_pagne: string
+          updated_at: string
+          vedette: boolean
+        }
+        Insert: {
+          couleurs?: string | null
+          created_at?: string
+          description?: string | null
+          disponible?: boolean
+          id?: string
+          nom: string
+          ordre?: number
+          photos?: string[]
+          reference?: string | null
+          type_pagne: string
+          updated_at?: string
+          vedette?: boolean
+        }
+        Update: {
+          couleurs?: string | null
+          created_at?: string
+          description?: string | null
+          disponible?: boolean
+          id?: string
+          nom?: string
+          ordre?: number
+          photos?: string[]
+          reference?: string | null
+          type_pagne?: string
+          updated_at?: string
+          vedette?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "articles_pagne_type_pagne_fkey"
+            columns: ["type_pagne"]
+            isOneToOne: false
+            referencedRelation: "types_pagne"
+            referencedColumns: ["cle"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -728,6 +781,7 @@ export type Database = {
       }
       demandes_textile: {
         Row: {
+          article_id: string | null
           client_id: string
           conseiller_id: string | null
           couleurs: string | null
@@ -744,6 +798,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          article_id?: string | null
           client_id: string
           conseiller_id?: string | null
           couleurs?: string | null
@@ -760,6 +815,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          article_id?: string | null
           client_id?: string
           conseiller_id?: string | null
           couleurs?: string | null
@@ -776,6 +832,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "demandes_textile_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "articles_pagne"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "demandes_textile_client_id_fkey"
             columns: ["client_id"]

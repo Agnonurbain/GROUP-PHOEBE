@@ -10,7 +10,9 @@ import {
   type StatutTextile,
   type UnitePagne,
 } from "@/lib/textile"
+import { catalogueComplet } from "@/app/actions/textile"
 import { TextileActions } from "./textile-actions"
+import { CatalogueForm } from "./catalogue-form"
 
 export const metadata: Metadata = {
   title: "Textile — Administration",
@@ -60,6 +62,11 @@ export default async function AdminTextile() {
   const { data: types } = await supabase
     .from("types_pagne")
     .select("cle, marque, gamme, description, ordre")
+    .eq("actif", true)
+    .order("ordre")
+
+  // Le catalogue, complet : le propriétaire voit aussi ce qu'il a retiré.
+  const articles = estProprietaire ? await catalogueComplet() : []
   const typeById = new Map(
     (types ?? []).map((t) => [t.cle, libelleTypePagne({ ...t, description: t.description })])
   )
@@ -81,6 +88,23 @@ export default async function AdminTextile() {
           </p>
         </div>
       </ScrollReveal>
+
+      {/* Le catalogue avant les demandes : sans vitrine garnie, les demandes
+          n'arrivent pas. Propriétaire seul — il engage l'image de la maison. */}
+      {estProprietaire && (
+        <ScrollReveal variant="fade-up" delay={0.05}>
+          <CatalogueForm
+            types={(types ?? []).map((t) => ({
+              cle: t.cle,
+              marque: t.marque,
+              gamme: t.gamme,
+              description: t.description,
+              ordre: t.ordre,
+            }))}
+            articles={articles}
+          />
+        </ScrollReveal>
+      )}
 
       {lignes.length === 0 ? (
         <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
