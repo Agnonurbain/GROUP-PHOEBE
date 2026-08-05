@@ -12,6 +12,7 @@ export const en: Dictionnaire = {
     livraison: "Delivery",
     immobilier: "Real estate",
     assistance: "Travel assistance",
+    textile: "Textile",
     blog: "Blog",
     avis: "Reviews",
     suivi: "Track a parcel",
@@ -64,6 +65,7 @@ export const en: Dictionnaire = {
     immobilierDesc: "Buy, sell and rent property in Abidjan and beyond.",
     assistanceDesc: "Visas, studies and international travel, supported end to end.",
     livraisonDesc: "Parcels collected, tracked and delivered nationwide.",
+    textileDesc: "Uniwax and Dutch wax fabrics, quoted on request.",
   },
 
   compte: {
@@ -233,6 +235,8 @@ export const en: Dictionnaire = {
     assistanceDesc: "Visas, studies and international travel, guided from start to finish.",
     livraisonTitre: "Delivery",
     livraisonDesc: "Parcels collected, tracked and delivered across the country.",
+    textileTitre: "Textile",
+    textileDesc: "Uniwax and Dutch wax fabrics, quoted on request.",
     explorer: "Explore",
   },
 

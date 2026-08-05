@@ -1,0 +1,156 @@
+import type { Metadata } from "next"
+import { redirect } from "next/navigation"
+import { createClient } from "@/lib/supabase/server"
+import { ScrollReveal } from "@/components/effects"
+import {
+  STATUT_TEXTILE_LABELS,
+  STATUTS_TEXTILE_OUVERTS,
+  UNITE_LABELS,
+  libelleTypePagne,
+  type StatutTextile,
+  type UnitePagne,
+} from "@/lib/textile"
+import { TextileActions } from "./textile-actions"
+
+export const metadata: Metadata = {
+  title: "Textile — Administration",
+  description: "Demandes de devis pagne.",
+}
+
+const STATUT_COLORS: Record<string, string> = {
+  soumise: "bg-blue-50 text-blue-700",
+  en_cours_traitement: "bg-amber-50 text-amber-700",
+  devis_envoye: "bg-phoebe-gold/15 text-phoebe-gold-dark",
+  confirmee: "bg-phoebe-green/10 text-phoebe-green-deep",
+  livree: "bg-phoebe-pearl text-phoebe-anthracite",
+  annulee: "bg-error/10 text-error",
+}
+
+const dateFr = (v: string) => new Date(v).toLocaleDateString("fr-FR")
+
+export default async function AdminTextile() {
+  const supabase = await createClient()
+  const { data: claimsData } = await supabase.auth.getClaims()
+  const user = claimsData?.claims
+  if (!user) redirect("/connexion")
+
+  const { data: profile } = await supabase
+    .from("users")
+    .select("role")
+    .eq("id", user.sub)
+    .single()
+  if (!profile || !["operateur", "proprietaire"].includes(profile.role)) {
+    redirect("/admin")
+  }
+  const estProprietaire = profile.role === "proprietaire"
+
+  const { data: demandes } = await supabase
+    .from("demandes_textile")
+    .select("*")
+    .order("created_at", { ascending: false })
+
+  const lignes = demandes ?? []
+
+  const clientIds = [...new Set(lignes.map((d) => d.client_id))]
+  const { data: clients } = clientIds.length
+    ? await supabase.from("users").select("id, nom, telephone").in("id", clientIds)
+    : { data: [] }
+  const clientById = new Map((clients ?? []).map((c) => [c.id, c]))
+
+  const { data: types } = await supabase
+    .from("types_pagne")
+    .select("cle, marque, gamme, description, ordre")
+  const typeById = new Map(
+    (types ?? []).map((t) => [t.cle, libelleTypePagne({ ...t, description: t.description })])
+  )
+
+  // Les demandes ouvertes d'abord : ce sont celles qui attendent quelque chose
+  // de l'équipe.
+  const ouvertes = lignes.filter((d) => STATUTS_TEXTILE_OUVERTS.includes(d.statut as StatutTextile))
+  const closes = lignes.filter((d) => !STATUTS_TEXTILE_OUVERTS.includes(d.statut as StatutTextile))
+
+  return (
+    <div className="space-y-8">
+      <ScrollReveal variant="fade-up">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-phoebe-anthracite">Textile</h1>
+          <p className="mt-2 text-sm text-phoebe-anthracite/70">
+            Demandes de devis pagne. Aucun prix n&apos;est affiché au catalogue :
+            le montant se fixe ici, demande par demande, après consultation des
+            fournisseurs.
+          </p>
+        </div>
+      </ScrollReveal>
+
+      {lignes.length === 0 ? (
+        <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
+          <p className="text-phoebe-anthracite/70">Aucune demande pour le moment.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {[...ouvertes, ...closes].map((d) => {
+            const client = clientById.get(d.client_id)
+            return (
+              <div key={d.id} className="rounded-2xl border border-phoebe-pearl bg-white p-5 shadow-sm">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-base font-semibold text-phoebe-anthracite">
+                        {typeById.get(d.type_pagne) ?? d.type_pagne}
+                      </span>
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUT_COLORS[d.statut] ?? "bg-phoebe-pearl text-phoebe-anthracite"}`}>
+                        {STATUT_TEXTILE_LABELS[d.statut as StatutTextile] ?? d.statut}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-phoebe-anthracite/70">
+                      Client : {client?.nom ?? "—"}
+                      {client?.telephone ? ` · ${client.telephone}` : ""}
+                      {" · "}
+                      {d.quantite} × {UNITE_LABELS[d.unite as UnitePagne] ?? d.unite}
+                      {" · "}
+                      demandé le {dateFr(d.created_at)}
+                    </p>
+                    {(d.motif || d.couleurs) && (
+                      <p className="mt-1 text-xs text-phoebe-anthracite/70">
+                        {d.motif && <>Motif : {d.motif}</>}
+                        {d.motif && d.couleurs && " · "}
+                        {d.couleurs && <>Couleurs : {d.couleurs}</>}
+                      </p>
+                    )}
+                    {d.message && (
+                      <p className="mt-2 max-w-prose rounded-lg bg-phoebe-pearl/50 px-3 py-2 text-xs italic text-phoebe-anthracite/80">
+                        « {d.message} »
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="text-right">
+                    {d.montant_propose != null && (
+                      <p className="text-lg font-bold text-phoebe-green-deep">
+                        {Number(d.montant_propose).toLocaleString("fr-FR")} FCFA
+                      </p>
+                    )}
+                    {d.devis_valable_jusqu_a && (
+                      new Date(d.devis_valable_jusqu_a) < new Date()
+                        ? <p className="text-[11px] font-semibold text-error">Devis expiré</p>
+                        : <p className="text-[11px] text-phoebe-anthracite/60">
+                            Valable jusqu&apos;au {dateFr(d.devis_valable_jusqu_a)}
+                          </p>
+                    )}
+                  </div>
+                </div>
+
+                <TextileActions
+                  demandeId={d.id}
+                  statut={d.statut as StatutTextile}
+                  estProprietaire={estProprietaire}
+                  montant={d.montant_propose != null ? Number(d.montant_propose) : null}
+                />
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}

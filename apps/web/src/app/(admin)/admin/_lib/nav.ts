@@ -23,6 +23,7 @@ import {
   Scale,
   PenLine,
   Receipt,
+  Scissors,
   type LucideIcon,
 } from "lucide-react"
 
@@ -114,6 +115,12 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/dossiers-voyage", label: "Dossiers visa", icon: Plane },
       { href: "/admin/billets", label: "Billets d'avion", icon: Ticket },
+    ],
+  },
+  {
+    title: "Textile",
+    items: [
+      { href: "/admin/textile", label: "Demandes de pagne", icon: Scissors },
     ],
   },
   {

@@ -154,6 +154,26 @@ export async function notifierAdminMessageDossier(
   });
 }
 
+/**
+ * Une demande de devis pagne vient d'arriver.
+ *
+ * Le service n'affiche aucun prix : sans cette notification, une demande
+ * attendrait qu'on pense à ouvrir l'écran.
+ */
+export async function notifierAdminNouvelleDemandeTextile(
+  _demandeId: string,
+  clientNom: string,
+  typePagne: string,
+  quantite: string
+) {
+  await notifierStaff({
+    evenement: "nouvelle_demande_textile",
+    titre: "Demande de devis pagne",
+    message: `${clientNom} · ${typePagne} · ${quantite}`,
+    lien: `/admin/textile`,
+  });
+}
+
 export async function notifierAdminNouvelleDemandeImmobilier(
   _demandeId: string,
   clientNom: string,

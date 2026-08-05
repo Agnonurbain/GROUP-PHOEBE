@@ -12,7 +12,7 @@ import type { Langue } from "@/lib/langues"
 import { verticaleDeChemin } from "@/lib/verticales"
 import { useT } from "@/lib/langue-context"
 
-type Vertical = "transport" | "livraison" | "immobilier" | "assistance" | "default"
+type Vertical = "transport" | "livraison" | "immobilier" | "assistance" | "textile" | "default"
 
 interface SmartHeaderProps {
   vertical?: Vertical
@@ -33,6 +33,7 @@ const logos: Record<Vertical, { src: string; alt: string; w: number; h: number }
   livraison: { src: "/logos/livraison.png", alt: "Livraison", w: 411, h: 424 },
   immobilier: { src: "/logos/immobilier.png", alt: "Immobilier", w: 407, h: 424 },
   assistance: { src: "/logos/assistance.png", alt: "Assistance Voyages & Études", w: 423, h: 429 },
+  textile: { src: "/logos/textile.png", alt: "Textile", w: 478, h: 473 },
 }
 
 const verticales = [
@@ -40,6 +41,7 @@ const verticales = [
   { id: "livraison" as const, cle: "livraison" as const, href: "/livraison" },
   { id: "immobilier" as const, cle: "immobilier" as const, href: "/immobilier" },
   { id: "assistance" as const, cle: "assistance" as const, href: "/assistance" },
+  { id: "textile" as const, cle: "textile" as const, href: "/textile" },
 ]
 
 /**
