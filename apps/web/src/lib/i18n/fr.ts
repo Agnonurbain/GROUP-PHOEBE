@@ -15,6 +15,7 @@ export const fr = {
     livraison: "Livraison",
     immobilier: "Immobilier",
     assistance: "Assistance Voyages",
+    textile: "Textile",
     blog: "Blog",
     avis: "Avis",
     suivi: "Suivre un colis",
@@ -68,6 +69,7 @@ export const fr = {
     assistanceDesc:
       "Visas, études et voyages internationaux, accompagnés de bout en bout.",
     livraisonDesc: "Colis pris en charge, suivis et livrés partout dans le pays.",
+    textileDesc: "Pagnes Uniwax et wax hollandais, sur devis.",
   },
 
   compte: {
@@ -239,6 +241,8 @@ export const fr = {
     assistanceDesc: "Visas, études et voyages internationaux, accompagnés de bout en bout.",
     livraisonTitre: "Livraison",
     livraisonDesc: "Colis pris en charge, suivis et livrés partout dans le pays.",
+    textileTitre: "Textile",
+    textileDesc: "Pagnes Uniwax et wax hollandais, sur devis.",
     explorer: "Explorer",
   },
 

@@ -51,6 +51,16 @@ const services = [
     logoW: 411,
     logoH: 424,
   },
+  {
+    cle: "textile" as const,
+    // Bordeaux : les quatre autres tiennent l'orange, le vert, le bleu et l'or.
+    color: "#9F1239",
+    href: "/textile",
+    logo: "/logos/textile.png",
+    logoAlt: "Textile",
+    logoW: 478,
+    logoH: 473,
+  },
 ]
 
 const engagements = [
@@ -99,7 +109,7 @@ export default function HomePage({
   const stats = [
     { target: vehiculeCount, suffix: "", label: "Véhicules" },
     { target: modeleCount, suffix: "", label: "Modèles" },
-    { target: 4, suffix: "", label: "Métiers" },
+    { target: 5, suffix: "", label: "Métiers" },
   ]
 
   return (
@@ -123,7 +133,7 @@ export default function HomePage({
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={0.2}>
               <p className="mx-auto mt-6 max-w-xl text-lg text-white/85 [text-shadow:0_1px_12px_rgba(0,0,0,0.85)]">
-                Transport, immobilier, assistance voyages et livraison — quatre métiers, une même exigence, partout en Côte d&apos;Ivoire.
+                Transport, immobilier, assistance voyages, livraison et textile — cinq métiers, une même exigence, partout en Côte d&apos;Ivoire.
               </p>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={0.3}>
@@ -166,7 +176,7 @@ export default function HomePage({
             <div className="flex flex-col gap-4 border-b border-public-border pb-8 sm:flex-row sm:items-end sm:justify-between">
               <h2 className="font-display text-4xl font-medium tracking-tight text-public-text md:text-5xl">{t.verticales.nosServices}</h2>
               <p className="max-w-xs text-sm text-public-text-muted sm:text-right">
-                Quatre métiers complémentaires, une même signature de qualité.
+                Cinq métiers complémentaires, une même signature de qualité.
               </p>
             </div>
           </ScrollReveal>

@@ -45,7 +45,7 @@ describe("i18n — les deux dictionnaires restent alignés", () => {
     // manquante ferait taire le test au lieu de le satisfaire.
     const exceptions = new Set([
       // Mots identiques en français et en anglais
-      "Transport", "Blog", "Contact", "Menu", "Total", "Services",
+      "Transport", "Blog", "Contact", "Menu", "Total", "Services", "Textile",
       "Administration", "Destination", "Dimensions", "Transaction", "Type",
       // Noms propres et devise
       "FCFA", "Mobile Money",

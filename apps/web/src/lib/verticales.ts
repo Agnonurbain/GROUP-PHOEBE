@@ -16,7 +16,7 @@
  * elle.
  */
 
-export type Verticale = "transport" | "livraison" | "immobilier" | "assistance"
+export type Verticale = "transport" | "livraison" | "immobilier" | "assistance" | "textile"
 
 /**
  * Préfixes de chemin, par service.
@@ -41,6 +41,7 @@ const PREFIXES: Record<Verticale, string[]> = {
   ],
   immobilier: ["/immobilier"],
   assistance: ["/assistance"],
+  textile: ["/textile"],
 }
 
 /** Le service d'un chemin, ou `null` pour les pages transverses. */

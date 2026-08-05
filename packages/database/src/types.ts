@@ -726,6 +726,79 @@ export type Database = {
           },
         ]
       }
+      demandes_textile: {
+        Row: {
+          client_id: string
+          conseiller_id: string | null
+          couleurs: string | null
+          created_at: string
+          devis_valable_jusqu_a: string | null
+          id: string
+          message: string | null
+          montant_propose: number | null
+          motif: string | null
+          quantite: number
+          statut: string
+          type_pagne: string
+          unite: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          conseiller_id?: string | null
+          couleurs?: string | null
+          created_at?: string
+          devis_valable_jusqu_a?: string | null
+          id?: string
+          message?: string | null
+          montant_propose?: number | null
+          motif?: string | null
+          quantite: number
+          statut?: string
+          type_pagne: string
+          unite?: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          conseiller_id?: string | null
+          couleurs?: string | null
+          created_at?: string
+          devis_valable_jusqu_a?: string | null
+          id?: string
+          message?: string | null
+          montant_propose?: number | null
+          motif?: string | null
+          quantite?: number
+          statut?: string
+          type_pagne?: string
+          unite?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "demandes_textile_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demandes_textile_conseiller_id_fkey"
+            columns: ["conseiller_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "demandes_textile_type_pagne_fkey"
+            columns: ["type_pagne"]
+            isOneToOne: false
+            referencedRelation: "types_pagne"
+            referencedColumns: ["cle"]
+          },
+        ]
+      }
       demandes_transport: {
         Row: {
           accepte_cgv: boolean
@@ -2241,6 +2314,36 @@ export type Database = {
             referencedColumns: ["cle"]
           },
         ]
+      }
+      types_pagne: {
+        Row: {
+          actif: boolean
+          cle: string
+          description: string | null
+          gamme: string
+          marque: string
+          ordre: number
+          updated_at: string
+        }
+        Insert: {
+          actif?: boolean
+          cle: string
+          description?: string | null
+          gamme: string
+          marque: string
+          ordre: number
+          updated_at?: string
+        }
+        Update: {
+          actif?: boolean
+          cle?: string
+          description?: string | null
+          gamme?: string
+          marque?: string
+          ordre?: number
+          updated_at?: string
+        }
+        Relationships: []
       }
       users: {
         Row: {
