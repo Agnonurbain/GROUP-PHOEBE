@@ -355,11 +355,14 @@ export async function creerArticlePagne(
   _prev: TextileState,
   formData: FormData
 ): Promise<TextileState> {
+  // Personnel, et non propriétaire seul : un article ne porte AUCUN prix
+  // (00087). Le réserver au propriétaire faisait du remplissage de la vitrine
+  // un goulot, pour un risque qui n'existe pas — cf. 00092.
   let userId: string;
   try {
-    userId = await requireProprietaireAvecId();
+    ({ userId } = await requireStaff());
   } catch {
-    return { error: await err("accesRefuseProprietaireRequis") };
+    return { error: await err("sessionExpireeOuAccesRefuse") };
   }
 
   const nom = ((formData.get("nom") as string) || "").trim();
@@ -421,11 +424,14 @@ export async function basculerArticlePagne(
   _prev: TextileState,
   formData: FormData
 ): Promise<TextileState> {
+  // Personnel, et non propriétaire seul : un article ne porte AUCUN prix
+  // (00087). Le réserver au propriétaire faisait du remplissage de la vitrine
+  // un goulot, pour un risque qui n'existe pas — cf. 00092.
   let userId: string;
   try {
-    userId = await requireProprietaireAvecId();
+    ({ userId } = await requireStaff());
   } catch {
-    return { error: await err("accesRefuseProprietaireRequis") };
+    return { error: await err("sessionExpireeOuAccesRefuse") };
   }
 
   const id = ((formData.get("article_id") as string) || "").trim();
@@ -639,5 +645,71 @@ export async function basculerTypePagne(
 
   revalidatePath("/admin/textile");
   revalidatePath("/textile");
+  return { success: true };
+}
+
+// ─── Paramètres du module ────────────────────────────────────────────────────
+
+/**
+ * La marge appliquée au tarif de gros, en pourcentage.
+ *
+ * Elle ne sort JAMAIS vers le site public : annoncer une marge revient à
+ * annoncer un prix d'achat à qui sait faire une règle de trois, et ce service
+ * n'affiche aucun prix (00087). Elle est lue par l'écran d'administration,
+ * pour celui qui chiffre une demande de revendeur.
+ */
+export async function margeRevendeur(): Promise<number> {
+  try {
+    await requireStaff();
+  } catch {
+    // Un appel hors du personnel ne renvoie pas la valeur, et n'en invente pas
+    // non plus : c'est au consommateur de ne rien afficher.
+    return 0;
+  }
+  const admin = getAdmin();
+  const { data } = await admin
+    .from("parametres_textile")
+    .select("marge_revendeur_pct")
+    .eq("id", true)
+    .maybeSingle();
+  return Number(data?.marge_revendeur_pct ?? 50);
+}
+
+/**
+ * Modifier la marge. Propriétaire seul : elle détermine un montant facturé, et
+ * la règle du dépôt vaut ici comme partout.
+ */
+export async function modifierMargeRevendeur(
+  _prev: TextileState,
+  formData: FormData
+): Promise<TextileState> {
+  let userId: string;
+  try {
+    userId = await requireProprietaireAvecId();
+  } catch {
+    return { error: await err("accesRefuseProprietaireRequis") };
+  }
+
+  const valeur = Number(formData.get("marge_revendeur_pct"));
+  if (!Number.isFinite(valeur) || valeur < 0 || valeur > 500) {
+    return { error: await err("margeHorsBornes") };
+  }
+
+  const admin = getAdmin();
+  const { error: e } = await admin
+    .from("parametres_textile")
+    .update({ marge_revendeur_pct: valeur, updated_at: new Date().toISOString() })
+    .eq("id", true);
+  if (e) return { error: e.message };
+
+  await logAudit({
+    userId,
+    action: "modifier_marge_revendeur",
+    tableName: "parametres_textile",
+    recordId: "true",
+    newValues: { marge_revendeur_pct: valeur },
+  });
+
+  revalidatePath("/admin/textile");
   return { success: true };
 }

@@ -2074,6 +2074,24 @@ export type Database = {
         }
         Relationships: []
       }
+      parametres_textile: {
+        Row: {
+          id: boolean
+          marge_revendeur_pct: number
+          updated_at: string
+        }
+        Insert: {
+          id?: boolean
+          marge_revendeur_pct?: number
+          updated_at?: string
+        }
+        Update: {
+          id?: boolean
+          marge_revendeur_pct?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       parametres_transport: {
         Row: {
           delai_negociation_heures: number

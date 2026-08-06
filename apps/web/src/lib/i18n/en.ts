@@ -931,6 +931,7 @@ export const en: Dictionnaire = {
   },
 
   err: {
+    margeHorsBornes: "The margin must be between 0 and 500%.",
     vehiculePlusDisponible: "{vehicule} is no longer available.",
     demandeClose: "Request {statut}: it is closed.",
     erreurInitialisationPaiement: "Payment could not be started: {detail}",
