@@ -379,6 +379,7 @@ export const fr = {
 
   /** Le textile : le catalogue de pagnes et la demande de devis. */
   textile: {
+    gammeSansModele: "Aucun modèle photographié dans cette gamme pour le moment.",
     unites: {
       pagne: "Pagne (6 yards)",
       yard: "Yard",

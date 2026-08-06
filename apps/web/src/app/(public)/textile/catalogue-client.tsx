@@ -208,8 +208,14 @@ export function CatalogueClient({
 
       {visibles.length === 0 ? (
         <div className="rounded-2xl border border-public-border bg-public-bg-card p-6 text-center">
+          {/* Une recherche sans résultat et une gamme encore vide ne sont pas
+              la même chose. Sans cette distinction, filtrer sur une gamme dont
+              aucun modèle n'est photographié affichait « Rien ne correspond à
+              «  » » — une phrase à trou vide, qui donne l'air cassé. */}
           <p className="text-sm text-public-text-muted">
-            {remplir(t.textile.rienNeCorrespond, { recherche })}
+            {recherche
+              ? remplir(t.textile.rienNeCorrespond, { recherche })
+              : t.textile.gammeSansModele}
           </p>
           <p className="mt-1 text-xs text-public-text-faint">
             {t.textile.decrivezQuandMeme}
