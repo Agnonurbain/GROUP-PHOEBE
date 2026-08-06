@@ -24,7 +24,6 @@ import { remplir } from "@/lib/i18n/format"
 import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
 import {
   libelleTypePagne,
-  UNITE_LABELS,
   STATUT_TEXTILE_LABELS,
   type UnitePagne,
   type StatutTextile,
@@ -495,7 +494,7 @@ export default async function CompteReservations({
     category: "Textile",
     referenceTable: "demandes_textile",
     detailHref: "/textile",
-    period: `${d.quantite} × ${UNITE_LABELS[d.unite as UnitePagne] ?? d.unite}${
+    period: `${d.quantite} × ${t.textile.unites[d.unite as UnitePagne] ?? d.unite}${
       d.motif ? ` · ${d.motif}` : ""
     }${d.couleurs ? ` · ${d.couleurs}` : ""}`,
     // « Sur devis » plutôt qu'un tiret : l'absence de prix est le principe du

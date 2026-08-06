@@ -131,6 +131,7 @@ export async function creerDemandeTextile(
     couleurs: ((formData.get("couleurs") as string) || "").trim(),
     quantite: Math.trunc(Number(formData.get("quantite"))),
     unite: ((formData.get("unite") as string) || "pagne").trim(),
+    pourRevente: formData.get("pour_revente") === "on",
   };
 
   // Les types viennent de la base : un type retiré du catalogue ne doit plus
@@ -168,6 +169,7 @@ export async function creerDemandeTextile(
       couleurs: saisie.couleurs || null,
       quantite: saisie.quantite,
       unite: saisie.unite,
+      pour_revente: saisie.pourRevente,
       message: ((formData.get("message") as string) || "").trim() || null,
       statut: "soumise",
     })

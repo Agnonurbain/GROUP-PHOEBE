@@ -11,6 +11,7 @@ import {
   STATUT_TEXTILE_LABELS,
   libelleTypePagne,
   isUnitePagne,
+  UNITES_PAGNE,
   filtrerArticles,
   type TypePagne,
 } from "@/lib/textile";
@@ -67,10 +68,17 @@ describe("Demande de pagne — validation", () => {
     expect("error" in validerDemandeTextile({ ...base, quantite: q }, TYPES)).toBe(true);
   });
 
-  // Au-delà, c'est une commande de gros : elle se traite de vive voix.
-  it("renvoie une commande de gros vers l'équipe", () => {
+  /**
+   * Ce test disait l'inverse jusqu'au 05/08/2026 : « renvoie une commande de
+   * gros vers l'équipe », et vérifiait que le message contenait « gros ». Le
+   * gros est devenu un métier de la maison — il ne se repousse plus. Ce qui
+   * reste est une garde contre la faute de frappe, et le message invite à
+   * appeler plutôt qu'il n'éconduit.
+   */
+  it("un volume aberrant invite à appeler, sans fermer la porte", () => {
     const r = validerDemandeTextile({ ...base, quantite: 20000 }, TYPES);
-    expect("error" in r && r.error).toContain("gros");
+    expect("error" in r && r.error).toContain("Vérifiez la quantité");
+    expect("error" in r && r.error).not.toContain("commande de gros");
   });
 
   it("borne la longueur du motif et des couleurs", () => {
@@ -472,5 +480,95 @@ describe("Textile — les gammes se pilotent depuis l'admin", () => {
     const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
     expect(corps).toContain("update({ actif");
     expect(corps).not.toContain(".delete()");
+  });
+});
+
+/**
+ * Woodin, et la vente en gros.
+ *
+ * « Maintenant, on va vendre en gros et puis vendre en balles. […] Nous, on est
+ * grossiste. Ceux qui veulent revendre les pagnes, on peut les fournir à un bon
+ * coût. » (retour du 05/08/2026)
+ *
+ * Le gros devient un métier de la maison : ce qui change, ce n'est pas une
+ * option de plus, c'est que le formulaire ne doit plus renvoyer les gros
+ * volumes vers le téléphone.
+ */
+describe("Textile — Woodin et la vente en gros", () => {
+  const migration = readFileSync(
+    join(process.cwd(), "..", "..", "supabase", "migrations", "00090_textile_woodin_gros.sql"),
+    "utf8"
+  );
+
+  it("Woodin rejoint les marques", () => {
+    expect(migration).toContain("'woodin', 'Woodin'");
+    // Une seule gamme : l'exploitant n'en a pas détaillé, et en inventer
+    // reviendrait à annoncer un catalogue qu'on n'a pas.
+    expect(migration).toContain("Wax Woodin");
+  });
+
+  it("la balle est une unité à part entière", () => {
+    expect(UNITES_PAGNE).toContain("balle");
+    expect(migration).toContain("'pagne', 'yard', 'piece', 'balle'");
+  });
+
+  /**
+   * Le plafond disait « au-delà de 10 000, c'est une commande de gros » et
+   * renvoyait vers le téléphone. Le gros étant désormais ce qu'on cherche à
+   * vendre, la porte reste ouverte : il ne reste qu'une garde contre la faute
+   * de frappe, réglée sur l'unité.
+   */
+  it("le formulaire ne repousse plus les gros volumes", () => {
+    // Le message RENVOYÉ, pas le commentaire qui raconte l'ancien : viser la
+    // simple chaîne ferait correspondre l'explication elle-même.
+    const r = validerDemandeTextile(
+      { typePagne: "woodin", motif: "", couleurs: "", unite: "pagne", quantite: 20000 },
+      ["woodin"]
+    );
+    expect("error" in r && r.error).not.toContain("commande de gros");
+
+    // 500 balles passent la validation ; 501 relèvent de la faute de frappe.
+    const base = {
+      typePagne: "woodin", motif: "", couleurs: "", unite: "balle" as const,
+    };
+    const types = ["woodin"];
+    expect(validerDemandeTextile({ ...base, quantite: 500 }, types)).toEqual({ ok: true });
+    expect(validerDemandeTextile({ ...base, quantite: 501 }, types)).toHaveProperty("error");
+
+    // Et le plafond suit l'unité : 501 pagnes restent parfaitement normaux.
+    expect(
+      validerDemandeTextile({ ...base, unite: "pagne", quantite: 501 }, types)
+    ).toEqual({ ok: true });
+  });
+
+  /**
+   * Une intention écrite doit être lue quelque part — c'est la leçon de
+   * `article_id` (00089), qui était renseigné et n'apparaissait nulle part.
+   */
+  it("l'intention de revente est enregistrée ET montrée à l'équipe", () => {
+    expect(migration).toContain("add column if not exists pour_revente");
+    expect(src("app/actions/textile.ts")).toContain("pour_revente: saisie.pourRevente");
+    expect(src("app/(public)/textile/demande-form.tsx")).toContain('name="pour_revente"');
+
+    const admin = src("app/(admin)/admin/textile/page.tsx");
+    expect(admin).toContain("d.pour_revente");
+    expect(admin).toContain("tarif de gros");
+  });
+
+  /**
+   * Le retour annonce une marge — « 40 % ou 50 % » selon une transcription,
+   * « 80 % […] 50 % » selon l'autre. Trois chiffres pour une phrase, et
+   * annoncer une marge revient à annoncer un prix : le service n'en affiche
+   * aucun (00087).
+   */
+  it("aucun taux de marge n'entre dans le code", () => {
+    for (const fichier of ["lib/textile.ts", "app/actions/textile.ts",
+                           "app/(public)/textile/demande-form.tsx"]) {
+      expect(src(fichier), fichier).not.toMatch(/\b(40|50|80)\s*%/);
+    }
+    // Dans les VALEURS insérées, pas dans les commentaires : celui de la
+    // migration explique justement pourquoi aucun taux n'y figure.
+    const sansCommentaires = migration.replace(/^--.*$/gm, "");
+    expect(sansCommentaires).not.toMatch(/\b(40|50|80)\s*%/);
   });
 });

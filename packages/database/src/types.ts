@@ -791,6 +791,7 @@ export type Database = {
           message: string | null
           montant_propose: number | null
           motif: string | null
+          pour_revente: boolean
           quantite: number
           statut: string
           type_pagne: string
@@ -808,6 +809,7 @@ export type Database = {
           message?: string | null
           montant_propose?: number | null
           motif?: string | null
+          pour_revente?: boolean
           quantite: number
           statut?: string
           type_pagne: string
@@ -825,6 +827,7 @@ export type Database = {
           message?: string | null
           montant_propose?: number | null
           motif?: string | null
+          pour_revente?: boolean
           quantite?: number
           statut?: string
           type_pagne?: string
