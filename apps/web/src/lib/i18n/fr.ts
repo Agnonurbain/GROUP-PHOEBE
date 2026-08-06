@@ -785,6 +785,8 @@ export const fr = {
 
   /** Ce qui reste du site public : accueil, contact, avis, blog, favoris. */
   divers: {
+    slideTextile: "Pagnes Uniwax, Woodin et hollandais",
+    altTextile: "Rouleaux de pagne empilés",
     modeles: "Modèles",
     metiers: "Métiers",
     adresse: "Adresse",
