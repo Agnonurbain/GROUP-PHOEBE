@@ -1,6 +1,6 @@
 import { metadonnees } from "@/lib/i18n/metadonnees"
 import { getT } from "@/lib/i18n/server"
-import { remplir } from "@/lib/i18n/format"
+import { libelle, remplir } from "@/lib/i18n/format"
 import Link from "next/link"
 import Image from "next/image"
 import { AlertTriangle, ChevronRight } from "lucide-react"
@@ -10,9 +10,6 @@ import { PageHero, SectionHead } from "@/components/public/section-head"
 import {
   ZONES_LIVRAISON,
   MODES_LIVRAISON,
-  ZONE_LABELS,
-  ZONE_DESCRIPTIONS,
-  MODE_LABELS,
   chargeMaxFlotte,
 } from "@/lib/livraison"
 import { getTarifsLivraison } from "@/lib/public-cache"
@@ -124,9 +121,9 @@ export default async function Livraison({
                 {ZONES_LIVRAISON.map((zone) => (
                   <tr key={zone} className="border-b border-public-border transition-colors hover:bg-public-bg-elevated/40">
                     <th scope="row" className="py-5 pr-6 pl-4 align-top">
-                      <span className="block text-sm font-semibold text-public-text">{ZONE_LABELS[zone]}</span>
+                      <span className="block text-sm font-semibold text-public-text">{libelle(t.libelles.zoneLivraison, zone)}</span>
                       <span className="mt-1 block max-w-[14rem] text-xs font-normal text-public-text-muted">
-                        {ZONE_DESCRIPTIONS[zone]}
+                        {libelle(t.libelles.zoneDescription, zone)}
                       </span>
                     </th>
                     {moyens.map((m) => (
@@ -150,7 +147,7 @@ export default async function Livraison({
             <ul className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
               {MODES_LIVRAISON.map((mode) => (
                 <li key={mode} className="text-sm text-public-text-muted">
-                  {MODE_LABELS[mode]}
+                  {libelle(t.libelles.modeLivraison, mode)}
                   <span className="ml-1.5 font-semibold text-accent-orange">
                     {(coefficientsMode[mode] ?? 1) === 1
                       ? "tarif de base"

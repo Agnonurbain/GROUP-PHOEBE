@@ -48,6 +48,8 @@ describe("i18n — les deux dictionnaires restent alignés", () => {
       // Mots identiques en français et en anglais
       "Transport", "Blog", "Contact", "Menu", "Total", "Services", "Textile",
       "Confirmation", "Minibus", "Diesel", "Transmission",
+      // Classes de voyage et types de bien : les mots sont les mêmes.
+      "Premium", "Standard", "Express",
       // Unité de mesure : « yard » s'écrit pareil dans les deux langues.
       "Yard",
       "Blog & Guides — GROUP PHOEBE",
@@ -469,5 +471,72 @@ describe("i18n — les erreurs des actions publiques", () => {
   it("le catalogue d'erreurs est fourni dans les deux langues", () => {
     expect(Object.keys(fr.err).length).toBeGreaterThan(200);
     expect(Object.keys(en.err).sort()).toEqual(Object.keys(fr.err).sort());
+  });
+});
+
+/**
+ * Les tables de constantes de `lib/` — le sixième angle mort de cette garde.
+ *
+ * `UNITE_LABELS`, `STATUT_LIVRAISON_LABELS`, `MODE_DESCRIPTIONS`… vivent dans
+ * des fichiers `.ts`, que le balayage ne lisait pas : il ne visait que le JSX.
+ * Un client anglophone voyait donc « En cours de traitement » sur sa demande et
+ * « Même jour » dans le choix du mode de livraison, au milieu d'une page par
+ * ailleurs traduite.
+ *
+ * Ces tables RESTENT — en repli français, pour ce qui ne s'affiche pas au
+ * visiteur : notifications internes, journal, administration. Ce que ce test
+ * interdit, c'est qu'une page publique les lise directement.
+ */
+describe("i18n — les libellés d'état passent par le dictionnaire", () => {
+  /** Les tables dont le contenu est montré au visiteur. */
+  const TABLES = [
+    "TYPE_DOCUMENT_LABELS", "STATUT_DOCUMENT_LABELS", "STATUT_DOSSIER_LABELS",
+    "CLASSE_LABELS", "STATUT_BILLET_LABELS", "TYPE_TRAJET_LABELS",
+    "CAT_LABELS", "TRANSACTION_LABELS", "TYPE_DEMANDE_LABELS",
+    "ZONE_LABELS", "ZONE_DESCRIPTIONS", "MODE_LABELS", "MODE_DESCRIPTIONS",
+    "STATUT_LIVRAISON_LABELS", "STATUT_TEXTILE_LABELS", "UNITE_LABELS",
+  ];
+
+  const fichiersPublics = [
+    ...fichiersTsx(join(RACINE, "app", "(public)")),
+    ...fichiersTsx(join(RACINE, "components")),
+  ].filter((f) => !/[/\\]components[/\\](shadcn|admin-ui|ui)[/\\]/.test(f));
+
+  it.each(TABLES)("%s n'est plus lue par une page publique", (table) => {
+    const coupables = fichiersPublics
+      .filter((f) => new RegExp(`\\b${table}\\b`).test(readFileSync(f, "utf8")))
+      .map((f) => f.slice(RACINE.length + 1));
+    expect(coupables).toEqual([]);
+  });
+
+  /**
+   * Les clés du dictionnaire sont celles de la BASE. Une clé perdue en cours
+   * de route afficherait la valeur brute — « en_cours_traitement » au lieu de
+   * « En cours de traitement ».
+   */
+  it("les clés du dictionnaire suivent celles des tables", () => {
+    const paires: [Record<string, string>, string, string][] = [
+      [fr.libelles.statutLivraison, "lib/livraison.ts", "STATUT_LIVRAISON_LABELS"],
+      [fr.libelles.statutTextile, "lib/textile.ts", "STATUT_TEXTILE_LABELS"],
+      [fr.libelles.statutBillet, "lib/billets.ts", "STATUT_BILLET_LABELS"],
+      [fr.libelles.modeLivraison, "lib/livraison.ts", "MODE_LABELS"],
+      [fr.libelles.typeDocument, "lib/assistance.ts", "TYPE_DOCUMENT_LABELS"],
+    ];
+    for (const [dico, fichier, table] of paires) {
+      const code = src(fichier);
+      const i = code.indexOf(`export const ${table}`);
+      const corps = code.slice(i, code.indexOf("\n}", i));
+      const cles = [...corps.matchAll(/^\s+("?[\w-]+"?):/gm)].map((m) => m[1].replace(/"/g, ""));
+      expect(Object.keys(dico).sort(), table).toEqual(cles.sort());
+    }
+  });
+
+  // Et l'anglais couvre exactement les mêmes clés que le français.
+  it("les deux langues couvrent les mêmes états", () => {
+    for (const ns of Object.keys(fr.libelles) as (keyof typeof fr.libelles)[]) {
+      expect(Object.keys(en.libelles[ns]).sort(), ns).toEqual(
+        Object.keys(fr.libelles[ns]).sort()
+      );
+    }
   });
 });

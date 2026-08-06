@@ -6,9 +6,7 @@ import { ArrowRight, Plane } from "lucide-react"
 import { creerDemandeBillet, type BilletState } from "@/app/actions/billets"
 import {
   CLASSES,
-  CLASSE_LABELS,
   TYPES_TRAJET,
-  TYPE_TRAJET_LABELS,
   libelleVoyageurs,
   libelleDelai,
   type ParametresBillet,
@@ -16,8 +14,7 @@ import {
 import { DeposerPasseport, PasseportAccompagnant } from "@/components/public/passeport-voyageur"
 import { Obligatoire } from "@/components/ui/obligatoire"
 import { useT } from "@/lib/langue-context"
-import { remplir } from "@/lib/i18n/format"
-
+import { libelle, remplir } from "@/lib/i18n/format"
 const champ =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-blue focus:outline-none focus:ring-2 focus:ring-accent-blue/20"
 const label = "mb-1.5 block text-xs font-medium text-public-text-muted"
@@ -100,23 +97,23 @@ export function BilletForm({
       {/* Barre supérieure : type de trajet et classe */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex flex-wrap gap-4" role="radiogroup" aria-label={t.assistance.typeTrajet}>
-          {TYPES_TRAJET.map((t) => (
+          {TYPES_TRAJET.map((trajet) => (
             <button
-              key={t}
+              key={trajet}
               type="button"
               role="radio"
-              aria-checked={typeTrajet === t}
-              onClick={() => setTypeTrajet(t)}
+              aria-checked={typeTrajet === trajet}
+              onClick={() => setTypeTrajet(trajet)}
               className="flex items-center gap-2 text-sm font-medium text-public-text"
             >
               <span
                 className={`flex h-4 w-4 items-center justify-center rounded-full border-2 transition-colors ${
-                  typeTrajet === t ? "border-accent-blue" : "border-public-border"
+                  typeTrajet === trajet ? "border-accent-blue" : "border-public-border"
                 }`}
               >
-                {typeTrajet === t && <span className="h-2 w-2 rounded-full bg-accent-blue" />}
+                {typeTrajet === trajet && <span className="h-2 w-2 rounded-full bg-accent-blue" />}
               </span>
-              {TYPE_TRAJET_LABELS[t]}
+              {libelle(t.libelles.typeTrajet, trajet)}
             </button>
           ))}
         </div>
@@ -127,7 +124,7 @@ export function BilletForm({
           </label>
           <select id="classe" name="classe" defaultValue="economique" className={`${champ} w-auto py-2`}>
             {CLASSES.map((c) => (
-              <option key={c} value={c}>{CLASSE_LABELS[c]}</option>
+              <option key={c} value={c}>{libelle(t.libelles.classeVol, c)}</option>
             ))}
           </select>
         </div>

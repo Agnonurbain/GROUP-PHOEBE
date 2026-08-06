@@ -5,13 +5,10 @@ import Link from "next/link"
 import { BackLink } from "@/components/public/back-link"
 import { Card } from "@/components/ui"
 import { useT } from "@/lib/langue-context"
-import { remplir } from "@/lib/i18n/format"
+import { libelle, remplir } from "@/lib/i18n/format"
 import { creerExpedition, type LivraisonState } from "@/app/actions/livraison"
 import {
   MODES_LIVRAISON,
-  MODE_LABELS,
-  MODE_DESCRIPTIONS,
-  ZONE_LABELS,
   computeLivraisonPrixMoyen,
   moyensPossibles,
   deriverZoneLivraison,
@@ -207,10 +204,10 @@ export default function CommanderClient({
               <label htmlFor="mode" className={labelClass}>{t.livraisonForm.mode}</label>
               <select id="mode" name="mode" value={mode} onChange={(e) => setMode(e.target.value)} className={inputClass}>
                 {MODES_LIVRAISON.map((m) => (
-                  <option key={m} value={m}>{MODE_LABELS[m]}</option>
+                  <option key={m} value={m}>{libelle(t.libelles.modeLivraison, m)}</option>
                 ))}
               </select>
-              <p className="mt-1 text-xs text-public-text-faint">{MODE_DESCRIPTIONS[mode as keyof typeof MODE_DESCRIPTIONS]}</p>
+              <p className="mt-1 text-xs text-public-text-faint">{libelle(t.libelles.modeDescription, mode)}</p>
             </div>
 
             {/* « Programmée » promettait « vous choisissez la date » sans jamais
@@ -373,12 +370,12 @@ export default function CommanderClient({
               <div className="flex justify-between">
                 <span className="text-public-text-muted">{t.livraisonForm.zoneAuto}</span>
                 <span className="font-medium text-public-text">
-                  {adressesRenseignees ? ZONE_LABELS[zone] : "—"}
+                  {adressesRenseignees ? libelle(t.libelles.zoneLivraison, zone) : "—"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-public-text-muted">{t.livraisonForm.mode}</span>
-                <span className="font-medium text-public-text">{MODE_LABELS[mode as keyof typeof MODE_LABELS]}</span>
+                <span className="font-medium text-public-text">{libelle(t.libelles.modeLivraison, mode)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-public-text-muted">Moyen</span>

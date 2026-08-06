@@ -3,11 +3,10 @@
 import { useActionState, useState } from "react"
 import Link from "next/link"
 import { creerDemandeImmobilier, type ImmobilierState } from "@/app/actions/immobilier"
-import { TYPES_DEMANDE, TYPE_DEMANDE_LABELS } from "@/lib/immobilier"
+import { TYPES_DEMANDE } from "@/lib/immobilier"
 import { Obligatoire } from "@/components/ui/obligatoire"
 import { useT } from "@/lib/langue-context"
-import { remplir } from "@/lib/i18n/format"
-
+import { libelle, remplir } from "@/lib/i18n/format"
 const inputClass =
   "w-full rounded-xl border border-public-border bg-public-bg px-4 py-2.5 text-sm text-public-text placeholder:text-public-text-faint transition-all duration-200 focus:border-accent-green focus:outline-none focus:ring-2 focus:ring-accent-green/20"
 
@@ -214,7 +213,7 @@ export function BienInteractionForm({
           ? "Envoi…"
           : type === "visite"
             ? `Payer ${fraisVisite.toLocaleString("fr-FR")} FCFA et demander la visite`
-            : `Envoyer ma ${TYPE_DEMANDE_LABELS[type].toLowerCase()}`}
+            : `Envoyer ma ${libelle(t.libelles.typeDemandeImmo, type).toLowerCase()}`}
       </button>
       <p className="mt-3 text-center text-xs text-public-text-faint">
         {type === "visite"

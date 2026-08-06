@@ -11,13 +11,11 @@ import { creerDossierVoyage, type AssistanceState } from "@/app/actions/assistan
 import {
   getPays,
   prixLabel,
-  TYPE_DOCUMENT_LABELS,
   MENTION_VISA_NON_GARANTI,
   type TarifsAssistance,
   type Prestation,
 } from "@/lib/assistance"
-import { remplir } from "@/lib/i18n/format"
-
+import { libelle, remplir } from "@/lib/i18n/format"
 function StepCard({ num, title, desc, index }: { num: string; title: string; desc?: string; index: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const [inView, setInView] = useState(false)
@@ -94,7 +92,7 @@ function VisaCard({
             {prestation.pieces.map((piece) => (
               <li key={piece} className="flex items-start gap-2 text-xs text-public-text-muted">
                 <span aria-hidden="true" className="mt-0.5 text-accent-green">✓</span>
-                {TYPE_DOCUMENT_LABELS[piece]}
+                {libelle(t.libelles.typeDocument, piece)}
               </li>
             ))}
           </ul>
