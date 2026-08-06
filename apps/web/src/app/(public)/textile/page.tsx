@@ -34,6 +34,7 @@ export default async function TextilePage() {
         eyebrow={t.nav.textile}
         title={t.textile.lePagneQuIlVousFaut}
         lede={t.textile.heroLede}
+        bgImage={{ src: "/images/hero-textile.webp", alt: t.divers.altTextile }}
         aside={
           <Image
             src="/logos/textile.png"

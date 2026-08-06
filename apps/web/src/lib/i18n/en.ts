@@ -725,6 +725,8 @@ export const en: Dictionnaire = {
   },
 
   divers: {
+    slideTextile: "Uniwax, Woodin and Dutch wax fabrics",
+    altTextile: "Rolls of wax fabric stacked",
     modeles: "Models",
     metiers: "Trades",
     adresse: "Address",

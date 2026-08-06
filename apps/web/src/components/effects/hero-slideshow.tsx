@@ -11,6 +11,7 @@ const SOURCES = [
   { src: "/images/hero-immobilier.webp", alt: "altImmobilier", label: "slideImmobilier" },
   { src: "/images/hero-voyages.webp", alt: "altVoyages", label: "slideVisasEtudes" },
   { src: "/images/hero-luxe.webp", alt: "altLuxe", label: "slideVehiculesLuxe" },
+  { src: "/images/hero-textile.webp", alt: "altTextile", label: "slideTextile" },
 ] as const;
 
 
