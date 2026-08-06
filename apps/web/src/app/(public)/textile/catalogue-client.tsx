@@ -88,10 +88,17 @@ function Vignette({
 
       <div className="p-3">
         <p className="text-sm font-medium text-public-text">{article.nom}</p>
-        <p className="mt-0.5 text-[11px] text-public-text-faint">
-          {article.reference ? remplir(t.textile.reference, { reference: article.reference }) : t.textile.surDevis}
-          {article.couleurs ? ` · ${article.couleurs}` : ""}
-        </p>
+        {/* La référence n'est PAS affichée, et c'est délibéré.
+            Elle sert à deux choses : qu'un client fidèle redemande le même
+            motif, et que l'équipe commande chez Uniwax. Le premier reconnaît
+            son pagne à la photo ; le second travaille en admin. En face,
+            l'afficher permet de taper « WP583A » chez un concurrent et de
+            comparer en dix secondes — exactement ce que l'absence de prix
+            cherche à éviter (00087). Elle reste cherchable : `filtrerArticles`
+            la lit, un client qui la connaît tombe sur le bon modèle. */}
+        {article.couleurs && (
+          <p className="mt-0.5 text-[11px] text-public-text-faint">{article.couleurs}</p>
+        )}
       </div>
     </button>
   )

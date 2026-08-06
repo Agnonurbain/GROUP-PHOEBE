@@ -1024,6 +1024,7 @@ export const fr = {
    * mal choisie se relit moins bien qu'une clé mécanique.
    */
   err: {
+    margeHorsBornes: "La marge doit être comprise entre 0 et 500 %.",
     vehiculePlusDisponible: "{vehicule} n'est plus disponible.",
     demandeClose: "Demande {statut} : elle est close.",
     erreurInitialisationPaiement: "Erreur d'initialisation du paiement : {detail}",
