@@ -354,6 +354,7 @@ export const en: Dictionnaire = {
   },
 
   textile: {
+    gammeSansModele: "No design photographed in this range yet.",
     unites: {
       pagne: "Wrapper (6 yards)",
       yard: "Yard",

@@ -572,3 +572,27 @@ describe("Textile — Woodin et la vente en gros", () => {
     expect(sansCommentaires).not.toMatch(/\b(40|50|80)\s*%/);
   });
 });
+
+/**
+ * Un filtre vide n'est pas une recherche infructueuse.
+ *
+ * Les cinq Woodin ont été retirés du catalogue (photos d'un autre revendeur) :
+ * filtrer sur cette gamme affichait alors « Rien ne correspond à «  » » — une
+ * phrase à trou vide, qui donne l'air cassé alors que tout fonctionne.
+ */
+describe("Catalogue — filtre sans résultat", () => {
+  const client = src("app/(public)/textile/catalogue-client.tsx");
+
+  it("distingue la recherche infructueuse de la gamme sans modèle", () => {
+    expect(client).toContain("t.textile.gammeSansModele");
+    // La phrase à trou n'est utilisée QUE lorsqu'il y a quelque chose à citer.
+    expect(client).toMatch(/recherche\s*\?\s*remplir\(t\.textile\.rienNeCorrespond/);
+  });
+
+  it("les deux messages existent dans les deux langues", () => {
+    for (const d of [fr, en]) {
+      expect(d.textile.gammeSansModele.length).toBeGreaterThan(10);
+      expect(d.textile.rienNeCorrespond).toContain("{recherche}");
+    }
+  });
+});

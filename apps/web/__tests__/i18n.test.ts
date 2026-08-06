@@ -238,7 +238,19 @@ function textesEnDur(chemin: string): string[] {
     // point-virgule, un `=` ou un mot-clé le trahissent — une phrase affichée
     // n'en contient pas.
     if (/[;=]|&&|\|\||\(\s*$|\b(const|let|function|return|import|export|await)\b/.test(m[1])) continue;
-    const brut = m[1].replace(/\{[^{}]*\}/g, " ").replace(/\s+/g, " ").trim();
+    /**
+     * Les accolades se retirent en boucle, pas en une passe.
+     *
+     * `{recherche ? remplir(t.x, { recherche }) : t.y}` contient une accolade
+     * dans une accolade : une seule passe ne mange que l'intérieure et laisse
+     * le reste, qui ressemble alors à du texte. On répète jusqu'à stabilité.
+     */
+    let brut = m[1];
+    for (let avant = ""; avant !== brut; ) {
+      avant = brut;
+      brut = brut.replace(/\{[^{}]*\}/g, " ");
+    }
+    brut = brut.replace(/\s+/g, " ").trim();
     if (brut.length < 4 || !FRANCAIS.test(brut)) continue;
     if (/^[\d\s.,€%·—–-]+$/.test(brut)) continue;
     trouves.add(brut.slice(0, 80));
