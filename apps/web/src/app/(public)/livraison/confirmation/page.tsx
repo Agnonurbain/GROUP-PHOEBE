@@ -6,9 +6,9 @@ import type { Database } from "@group-phoebe/database/types"
 import { Button } from "@/components/ui"
 import { CheckIcon } from "@/components/icons"
 import { PhotoLightbox } from "@/components/photo-lightbox"
-import { ZONE_LABELS, MODE_LABELS, STATUT_LIVRAISON_LABELS } from "@/lib/livraison"
 
 import { getT } from "@/lib/i18n/server"
+import { libelle } from "@/lib/i18n/format"
 
 export const generateMetadata = () =>
   metadonnees((t) => ({
@@ -73,7 +73,7 @@ export default async function ConfirmationLivraison({
           <dl className="mt-5 space-y-2 text-sm">
             <div className="flex justify-between">
               <dt className="text-public-text-muted">Statut</dt>
-              <dd className="font-medium text-public-text">{STATUT_LIVRAISON_LABELS[expedition.statut] ?? expedition.statut}</dd>
+              <dd className="font-medium text-public-text">{libelle(t.libelles.statutLivraison, expedition.statut)}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="text-public-text-muted">Destinataire</dt>
@@ -82,7 +82,7 @@ export default async function ConfirmationLivraison({
             <div className="flex justify-between">
               <dt className="text-public-text-muted">Zone · Mode</dt>
               <dd className="font-medium text-public-text">
-                {ZONE_LABELS[expedition.zone as keyof typeof ZONE_LABELS] ?? expedition.zone} · {MODE_LABELS[expedition.mode as keyof typeof MODE_LABELS] ?? expedition.mode}
+                {libelle(t.libelles.zoneLivraison, expedition.zone)} · {libelle(t.libelles.modeLivraison, expedition.mode)}
               </dd>
             </div>
             {expedition.prix != null && (

@@ -8,14 +8,11 @@ import {
 } from "@/app/actions/assistance"
 import {
   TYPES_DOCUMENT,
-  TYPE_DOCUMENT_LABELS,
-  STATUT_DOCUMENT_LABELS,
   type TypeDocument,
 } from "@/lib/assistance"
 import { Obligatoire } from "@/components/ui/obligatoire"
 import { useT } from "@/lib/langue-context"
-import { remplir } from "@/lib/i18n/format"
-
+import { libelle, remplir } from "@/lib/i18n/format"
 export type PieceClient = {
   id: string
   type_document: string
@@ -85,8 +82,8 @@ export function DossierPieces({
           className="w-full rounded-lg border border-public-border bg-public-bg px-2 py-1.5 text-xs"
         >
           <option value="" disabled>{t.divers.typePiece}</option>
-          {TYPES_DOCUMENT.map((t) => (
-            <option key={t} value={t}>{TYPE_DOCUMENT_LABELS[t as TypeDocument]}</option>
+          {TYPES_DOCUMENT.map((type) => (
+            <option key={type} value={type}>{libelle(t.libelles.typeDocument, type)}</option>
           ))}
         </select>
         <label htmlFor={`fichier-${dossierId}`} className="block text-[11px] font-medium">
@@ -126,6 +123,7 @@ export function DossierPieces({
 }
 
 function LignePiece({ piece }: { piece: PieceClient }) {
+  const t = useT()
   const [pending, startTransition] = useTransition()
   const [erreur, setErreur] = useState<string | null>(null)
 
@@ -151,10 +149,10 @@ function LignePiece({ piece }: { piece: PieceClient }) {
           disabled={pending}
           className="text-public-text underline decoration-dotted disabled:opacity-50"
         >
-          {TYPE_DOCUMENT_LABELS[piece.type_document as TypeDocument] ?? piece.type_document}
+          {libelle(t.libelles.typeDocument, piece.type_document as TypeDocument)}
         </button>
         <span className={COULEURS[piece.statut] ?? "text-public-text-muted"}>
-          {STATUT_DOCUMENT_LABELS[piece.statut as keyof typeof STATUT_DOCUMENT_LABELS] ?? piece.statut}
+          {libelle(t.libelles.statutDocument, piece.statut)}
         </span>
       </span>
       {/* Le motif du rejet : sans lui, le client redépose la même pièce. */}

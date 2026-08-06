@@ -20,11 +20,10 @@ import { MessageEquipe } from "@/components/public/message-equipe"
 import { creneauxDisponibles, messagesDuDossier, type MessageDossier } from "@/app/actions/assistance"
 import { formaterCreneau } from "@/lib/immobilier"
 import { getT } from "@/lib/i18n/server"
-import { remplir } from "@/lib/i18n/format"
-import { TYPE_TRAJET_LABELS, STATUT_BILLET_LABELS, libelleVoyageurs } from "@/lib/billets"
+import { libelle, remplir } from "@/lib/i18n/format"
+import { libelleVoyageurs } from "@/lib/billets"
 import {
   libelleTypePagne,
-  STATUT_TEXTILE_LABELS,
   type UnitePagne,
   type StatutTextile,
 } from "@/lib/textile"
@@ -451,7 +450,7 @@ export default async function CompteReservations({
     category: "Billet",
     referenceTable: "demandes_billet",
     detailHref: "/assistance#billet",
-    period: `${TYPE_TRAJET_LABELS[d.type_trajet] ?? d.type_trajet} · ${new Date(d.date_depart).toLocaleDateString("fr-FR")}${
+    period: `${libelle(t.libelles.typeTrajet, d.type_trajet)} · ${new Date(d.date_depart).toLocaleDateString("fr-FR")}${
       d.date_retour ? ` → ${new Date(d.date_retour).toLocaleDateString("fr-FR")}` : ""
     } · ${libelleVoyageurs({ adultes: d.nb_adultes, enfants: d.nb_enfants, bebes: d.nb_bebes })}`,
     // Le devis prime, et c'est le TOTAL qui est annoncé : prix du vol plus les
@@ -536,13 +535,13 @@ export default async function CompteReservations({
     if (status === "devis_envoye") return { color: "text-accent-gold", label: t.compte.statut.devisRecu }
     if (status === "payee") return { color: "text-accent-green", label: t.compte.statut.paye }
     if (status === "emise") return { color: "text-accent-green", label: t.compte.statut.billetEmis }
-    if (category === "Textile" && STATUT_TEXTILE_LABELS[status as StatutTextile]) {
+    if (category === "Textile" && libelle(t.libelles.statutTextile, status as StatutTextile)) {
       return {
         color: status === "confirmee" ? "text-accent-green" : "text-accent-orange",
-        label: STATUT_TEXTILE_LABELS[status as StatutTextile],
+        label: libelle(t.libelles.statutTextile, status as StatutTextile),
       }
     }
-    if (STATUT_BILLET_LABELS[status]) return { color: "text-accent-orange", label: STATUT_BILLET_LABELS[status] }
+    if (libelle(t.libelles.statutBillet, status)) return { color: "text-accent-orange", label: libelle(t.libelles.statutBillet, status) }
     return { color: "text-accent-orange", label: t.compte.statut.enAttente }
   }
 

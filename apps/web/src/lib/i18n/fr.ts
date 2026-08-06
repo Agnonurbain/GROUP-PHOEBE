@@ -1260,6 +1260,156 @@ export const fr = {
     lesDeuxDocumentsSontObligatoires: "Les deux documents sont obligatoires.",
   },
 
+  /**
+   * Les libellés des états et des types — statuts d'une demande, gammes,
+   * modes de livraison, pièces d'un dossier.
+   *
+   * Ils vivaient dans des tables de constantes de `lib/` : des fichiers `.ts`,
+   * que la garde de traduction ne balayait pas — elle ne lisait que le JSX.
+   * Résultat, un client anglophone voyait « En cours de traitement » sur sa
+   * demande et « Même jour » dans le choix du mode de livraison, au milieu
+   * d'une page par ailleurs traduite.
+   *
+   * Les CLÉS sont celles de la base : `statutLivraison.en_transit` correspond
+   * à la valeur stockée. Les tables de `lib/` restent, en repli français, pour
+   * ce qui ne s'affiche pas au visiteur — notifications internes, journal,
+   * administration.
+   */
+  libelles: {
+    // Généré depuis les tables de `lib/` : ce sont les mêmes clés.
+    typeDocument: {
+      passeport: "Passeport",
+      photo_identite: "Photos d'identité",
+      bac: "Baccalauréat",
+      diplome_licence: "Diplôme de licence",
+      releve_notes: "Relevés de notes",
+      casier_judiciaire: "Casier judiciaire",
+      lettre_motivation: "Lettre de motivation",
+      acte_naissance: "Acte de naissance",
+      diplome: "Diplôme",
+      releve_bancaire: "Relevé bancaire",
+      attestation_travail: "Attestation de travail",
+      autre: "Autre pièce",
+    },
+    statutDocument: {
+      soumis: "À vérifier",
+      valide: "Validée",
+      rejete: "Rejetée",
+    },
+    statutDossier: {
+      soumis: "Soumis",
+      en_cours_traitement: "En cours de traitement",
+      pieces_complementaires_requises: "Pièces complémentaires requises",
+      finalise: "Finalisé",
+    },
+    classeVol: {
+      economique: "Économique",
+      premium: "Premium",
+      affaires: "Affaires",
+      premiere: "Première",
+    },
+    statutBillet: {
+      soumise: "Soumise",
+      en_cours_traitement: "Recherche en cours",
+      devis_envoye: "Devis envoyé",
+      payee: "Payée",
+      emise: "Billet émis",
+      annulee: "Annulée",
+    },
+    typeTrajet: {
+      aller_simple: "Aller simple",
+      aller_retour: "Aller-retour",
+    },
+    categorieVehicule: {
+      leger: "Véhicule léger",
+      car: "Car",
+      minibus: "Minibus",
+    },
+    transaction: {
+      vente: "À vendre",
+      location: "À louer",
+    },
+    typeDemandeImmo: {
+      information: "Demande d'information",
+      visite: "Réserver une visite",
+      offre: "Faire une offre",
+    },
+    typeBien: {
+      terrain: "Terrain",
+      maison: "Maison",
+      appartement: "Appartement",
+      bureau: "Bureau",
+    },
+    statutBien: {
+      disponible: "Disponible",
+      reserve: "Réservé",
+      loue: "Loué",
+      vendu: "Vendu",
+      indisponible: "Indisponible",
+    },
+    statutDemandeImmo: {
+      en_attente: "En attente",
+      en_cours_traitement: "En cours de traitement",
+      visite_programmee: "Visite programmée",
+      visite_realisee: "Visite réalisée",
+      offre_soumise: "Offre soumise",
+      contre_offre: "Contre-offre envoyée",
+      acceptee: "Acceptée",
+      refusee: "Refusée",
+      annulee: "Annulée",
+      finalisee: "Finalisée",
+    },
+    statutVisite: {
+      proposee: "Proposée",
+      confirmee: "Confirmée",
+      realisee: "Réalisée",
+      annulee: "Annulée",
+    },
+    pageLegale: {
+      "mentions-legales": "Mentions légales",
+      cgv: "Conditions générales de vente",
+      confidentialite: "Politique de confidentialité",
+    },
+    zoneLivraison: {
+      intracommunale: "Même commune",
+      intercommunale: "Entre communes (Grand Abidjan)",
+      nationale: "National (autres villes)",
+    },
+    zoneDescription: {
+      intracommunale: "Livraison à l'intérieur d'une même commune.",
+      intercommunale: "D'une commune à une autre au sein du Grand Abidjan.",
+      nationale: "Vers les autres villes de Côte d'Ivoire.",
+    },
+    modeLivraison: {
+      standard: "Standard",
+      express: "Express",
+      meme_jour: "Même jour",
+      programmee: "Programmée",
+    },
+    modeDescription: {
+      standard: "Livraison économique sous 48 à 72h.",
+      express: "Livraison prioritaire sous 24h.",
+      meme_jour: "Collecte et livraison dans la journée.",
+      programmee: "Vous choisissez la date de livraison.",
+    },
+    statutLivraison: {
+      creee: "Commande enregistrée",
+      prise_en_charge: "Colis pris en charge",
+      en_transit: "En transit",
+      livree: "Livrée",
+      echec_livraison: "Échec de livraison",
+      annulee: "Annulée",
+    },
+    statutTextile: {
+      soumise: "Soumise",
+      en_cours_traitement: "En cours de traitement",
+      devis_envoye: "Devis envoyé",
+      confirmee: "Confirmée",
+      livree: "Livrée",
+      annulee: "Annulée",
+    },
+  },
+
   langue: {
     choisir: "Choisir la langue",
     // Affiché sous le contenu métier resté en français : le taire laisserait

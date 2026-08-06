@@ -4,11 +4,7 @@ import type { Database } from "@group-phoebe/database/types"
 import { BackLink } from "@/components/public/back-link"
 import { getT } from "@/lib/i18n/server"
 import { PhotoLightbox } from "@/components/photo-lightbox"
-import {
-  ZONE_LABELS,
-  MODE_LABELS,
-  STATUT_LIVRAISON_LABELS,
-} from "@/lib/livraison"
+import { libelle } from "@/lib/i18n/format"
 
 export const generateMetadata = () =>
   metadonnees((t) => ({
@@ -103,12 +99,12 @@ export default async function SuiviPage({
           <div className="flex items-center justify-between">
             <span className="font-mono text-lg font-bold text-public-text">{expedition.numero_suivi}</span>
             <span className="rounded-full bg-accent-orange/10 px-3 py-1 text-xs font-semibold text-accent-orange">
-              {STATUT_LIVRAISON_LABELS[expedition.statut] ?? expedition.statut}
+              {libelle(t.libelles.statutLivraison, expedition.statut)}
             </span>
           </div>
           <p className="mt-1 text-sm text-public-text-muted">
-            {ZONE_LABELS[expedition.zone as keyof typeof ZONE_LABELS] ?? expedition.zone} ·{" "}
-            {MODE_LABELS[expedition.mode as keyof typeof MODE_LABELS] ?? expedition.mode}
+            {libelle(t.libelles.zoneLivraison, expedition.zone)} ·{" "}
+            {libelle(t.libelles.modeLivraison, expedition.mode)}
           </p>
 
           {photos.length > 0 && (
@@ -132,7 +128,7 @@ export default async function SuiviPage({
                     </div>
                     <div className="pb-1">
                       <p className={`text-sm font-medium ${dernier ? "text-public-text" : "text-public-text-muted"}`}>
-                        {STATUT_LIVRAISON_LABELS[h.statut] ?? h.statut}
+                        {libelle(t.libelles.statutLivraison, h.statut)}
                       </p>
                       <p className="text-xs text-public-text-faint">
                         {new Date(h.horodatage).toLocaleString("fr-FR")}

@@ -17,11 +17,9 @@ import {
   statutBienLabel,
   statutBienBadgeVariant,
   typeBienLabel,
-  TRANSACTION_LABELS,
 } from "@/lib/immobilier"
 import { getT, langueCourante } from "@/lib/i18n/server"
-import { remplir, pluriel } from "@/lib/i18n/format"
-
+import { libelle, pluriel, remplir } from "@/lib/i18n/format"
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params
   const result = await getBienById(id)
@@ -61,7 +59,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
 
   const specs: { label: string; value: string }[] = [
     { label: "Type", value: typeBienLabel(bien.type) },
-    { label: "Transaction", value: TRANSACTION_LABELS[bien.transaction] ?? bien.transaction },
+    { label: "Transaction", value: libelle(t.libelles.transaction, bien.transaction) },
     { label: "Surface", value: bien.surface_m2 ? `${bien.surface_m2} m²` : "—" },
     { label: "Chambres", value: bien.nb_chambres ? String(bien.nb_chambres) : "—" },
     { label: "Localisation", value: bien.localisation },
@@ -117,7 +115,7 @@ export default async function BienDetail({ params }: { params: Promise<{ id: str
           <div className="mt-6 flex flex-wrap items-center gap-2">
             <Badge variant={statutBienBadgeVariant(bien.statut)}>{statutBienLabel(bien.statut)}</Badge>
             <Badge variant="green">{typeBienLabel(bien.type)}</Badge>
-            <Badge variant="blue">{TRANSACTION_LABELS[bien.transaction] ?? bien.transaction}</Badge>
+            <Badge variant="blue">{libelle(t.libelles.transaction, bien.transaction)}</Badge>
           </div>
 
           <div className="mt-3 flex items-start justify-between gap-4">

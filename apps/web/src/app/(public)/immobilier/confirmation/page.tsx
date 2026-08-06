@@ -3,9 +3,7 @@ import { metadonnees } from "@/lib/i18n/metadonnees"
 import Link from "next/link"
 import { Button } from "@/components/ui"
 import { CheckIcon } from "@/components/icons"
-import { TYPE_DEMANDE_LABELS } from "@/lib/immobilier"
-import { remplir } from "@/lib/i18n/format"
-
+import { libelle, remplir } from "@/lib/i18n/format"
 export const generateMetadata = () =>
   metadonnees((t) => ({
     titre: t.meta.immobilierConfirmationTitre,
@@ -20,7 +18,7 @@ export default async function ConfirmationImmobilier({
 }) {
   const t = await getT()
   const { type } = await searchParams
-  const label = type && TYPE_DEMANDE_LABELS[type] ? TYPE_DEMANDE_LABELS[type].toLowerCase() : "demande"
+  const label = type && libelle(t.libelles.typeDemandeImmo, type) ? libelle(t.libelles.typeDemandeImmo, type).toLowerCase() : "demande"
 
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-4 py-16 text-center">

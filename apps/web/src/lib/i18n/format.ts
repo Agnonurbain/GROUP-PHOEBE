@@ -43,3 +43,23 @@ export function pluriel(
   const modele = regle === "one" ? formes.un : formes.autre;
   return remplir(modele, { n, ...valeurs });
 }
+
+/**
+ * Le libellé d'une valeur de base — statut, mode, type de pièce.
+ *
+ * Les tables du dictionnaire sont indexées par les valeurs stockées en base :
+ * `libelle(t.libelles.statutLivraison, "en_transit")`. La clé arrive presque
+ * toujours en `string`, jamais en littéral, d'où cet accesseur plutôt qu'un
+ * `as keyof typeof …` répété à chaque appel.
+ *
+ * Une clé inconnue renvoie la valeur brute, comme le faisait le `?? statut` des
+ * tables de `lib/` : un statut ajouté en base et pas encore traduit s'affiche
+ * tel quel plutôt que de laisser un vide.
+ */
+export function libelle(
+  table: Record<string, string>,
+  cle: string | null | undefined
+): string {
+  if (!cle) return "";
+  return table[cle] ?? cle;
+}

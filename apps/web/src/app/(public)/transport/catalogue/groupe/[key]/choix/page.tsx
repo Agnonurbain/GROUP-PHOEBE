@@ -4,13 +4,11 @@ import Image from "next/image"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase/server"
 import { makeGroupKey } from "@/lib/vehicle-group"
-import { CAT_LABELS } from "@/lib/constants"
 import { Badge, Card } from "@/components/ui"
 import { ClockIcon } from "@/components/icons"
 
 import { getT, langueCourante } from "@/lib/i18n/server"
-import { pluriel } from "@/lib/i18n/format"
-
+import { libelle, pluriel } from "@/lib/i18n/format"
 export async function generateMetadata({ params }: { params: Promise<{ key: string }> }): Promise<Metadata> {
   const { key } = await params
   const groupKey = decodeURIComponent(key)
@@ -96,7 +94,7 @@ export default async function GroupeChoixPage({ params }: { params: Promise<{ ke
             {rep.marque} {rep.modele}
           </h1>
           <p className="mt-1.5 text-sm text-public-text-muted">
-            {CAT_LABELS[rep.categorie] ?? rep.categorie}
+            {libelle(t.libelles.categorieVehicule, rep.categorie)}
             {rep.annee ? ` · ${rep.annee}` : ""}
             {rep.nb_places ? ` · ${rep.nb_places} places` : ""}
           </p>
