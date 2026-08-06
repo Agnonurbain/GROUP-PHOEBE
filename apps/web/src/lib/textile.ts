@@ -69,13 +69,30 @@ export function filtrerArticles(
  * Le pagne se compte au « pagne » — six yards, l'usage courant à Abidjan — mais
  * un client peut vouloir un métrage précis ou des pièces entières.
  */
-export const UNITES_PAGNE = ["pagne", "yard", "piece"] as const;
+/**
+ * Les unités dans lesquelles une demande se compte.
+ *
+ * `balle` est celle du grossiste : « on va vendre en gros et puis vendre en
+ * balles » (retour du 05/08/2026). Une demande exprimée en balles ne se chiffre
+ * pas comme une demande au détail — d'où l'unité à part, plutôt qu'un nombre de
+ * pagnes très élevé qu'il aurait fallu deviner.
+ */
+export const UNITES_PAGNE = ["pagne", "yard", "piece", "balle"] as const;
 export type UnitePagne = (typeof UNITES_PAGNE)[number];
 
+/**
+ * Libellés de REPLI, en français.
+ *
+ * L'affichage passe par `t.textile.unites` : une table de constantes dans un
+ * module ne peut pas suivre la langue, et celle-ci s'affichait en français
+ * dans un formulaire anglais. Elle reste pour les usages hors interface —
+ * notification interne, journal — où la langue du visiteur n'a pas de sens.
+ */
 export const UNITE_LABELS: Record<UnitePagne, string> = {
   pagne: "Pagne (6 yards)",
   yard: "Yard",
   piece: "Pièce entière",
+  balle: "Balle (gros)",
 };
 
 export function isUnitePagne(v: unknown): v is UnitePagne {
@@ -148,6 +165,8 @@ export type DemandeTextileSaisie = {
   couleurs: string;
   quantite: number;
   unite: string;
+  /** Le client déclare acheter pour revendre : le devis se fait au tarif de gros. */
+  pourRevente?: boolean;
 };
 
 /**
@@ -174,10 +193,21 @@ export function validerDemandeTextile(
   if (!Number.isInteger(saisie.quantite) || saisie.quantite < 1) {
     return { error: "Indiquez une quantité d'au moins 1." };
   }
-  // Au-delà, c'est une commande de gros : elle se traite de vive voix, et un
-  // formulaire ne rendrait pas service.
-  if (saisie.quantite > 10000) {
-    return { error: "Au-delà de 10 000, contactez-nous directement : c'est une commande de gros." };
+  /**
+   * Un plafond de bon sens, pas un refus du gros.
+   *
+   * Il disait « au-delà de 10 000, c'est une commande de gros » et renvoyait le
+   * client vers le téléphone. Depuis le 05/08/2026, le gros EST un métier de la
+   * maison : le repousser hors du formulaire reviendrait à fermer la porte à ce
+   * qu'on cherche à vendre. Ce qui reste, c'est une garde contre la faute de
+   * frappe — et elle se règle sur l'unité, parce que 500 balles et 500 pagnes ne
+   * sont pas la même chose.
+   */
+  const plafond = saisie.unite === "balle" ? 500 : 10000;
+  if (saisie.quantite > plafond) {
+    return {
+      error: `Vérifiez la quantité : au-delà de ${plafond.toLocaleString("fr-FR")}, appelez-nous, nous organiserons l'envoi avec vous.`,
+    };
   }
 
   /**

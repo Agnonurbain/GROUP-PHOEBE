@@ -69,7 +69,7 @@ export const fr = {
     assistanceDesc:
       "Visas, études et voyages internationaux, accompagnés de bout en bout.",
     livraisonDesc: "Colis pris en charge, suivis et livrés partout dans le pays.",
-    textileDesc: "Pagnes Uniwax et wax hollandais, sur devis.",
+    textileDesc: "Pagnes Uniwax, Woodin et wax hollandais, sur devis.",
   },
 
   compte: {
@@ -379,10 +379,19 @@ export const fr = {
 
   /** Le textile : le catalogue de pagnes et la demande de devis. */
   textile: {
+    unites: {
+      pagne: "Pagne (6 yards)",
+      yard: "Yard",
+      piece: "Pièce entière",
+      balle: "Balle (gros)",
+    },
+    pourRevente: "J'achète pour revendre",
+    pourReventeAide: "Nous sommes grossistes : dites-le nous et nous chiffrons au tarif de gros, en pagnes ou en balles.",
+    revendeur: "Revendeur",
     devisSuite: "Nous consultons nos fournisseurs et revenons vers vous avec un prix ferme. Vous le retrouverez dans « Mes réservations », et vous serez prévenu dès qu'il est prêt.",
     devisSansEngagement: "Un devis n'engage à rien : vous décidez après l'avoir vu.",
     aucunTypeProposé: "Aucun type de pagne n'est proposé pour le moment. Contactez-nous directement.",
-    heroLede: "Uniwax et wax hollandais. Dites-nous ce que vous cherchez — nous consultons nos fournisseurs et vous répondons avec un prix ferme.",
+    heroLede: "Uniwax, Woodin et wax hollandais, au détail comme en gros. Dites-nous ce que vous cherchez — nous consultons nos fournisseurs et vous répondons avec un prix ferme.",
     lePagneQuIlVousFaut: "Le pagne qu'il vous faut",
     notreCatalogue: "Notre catalogue",
     catalogueLede:
@@ -556,7 +565,7 @@ export const fr = {
     livraisonTitre: "Livraison",
     livraisonDesc: "Colis pris en charge, suivis et livrés partout dans le pays.",
     textileTitre: "Textile",
-    textileDesc: "Pagnes Uniwax et wax hollandais, sur devis.",
+    textileDesc: "Pagnes Uniwax, Woodin et wax hollandais, sur devis.",
     explorer: "Explorer",
   },
 
@@ -950,9 +959,9 @@ export const fr = {
     assistanceConfirmationDescription:
       "Votre demande d'assistance visa a bien été enregistrée.",
 
-    textileTitre: "Textile — Pagnes Uniwax et Hollandais",
+    textileTitre: "Textile — Pagnes Uniwax, Woodin et Hollandais",
     textileDescription:
-      "Pagnes Uniwax et wax hollandais. Dites-nous ce que vous cherchez : nous consultons nos fournisseurs et vous répondons avec un prix ferme.",
+      "Pagnes Uniwax, Woodin et wax hollandais, au détail comme en gros. Dites-nous ce que vous cherchez : nous consultons nos fournisseurs et vous répondons avec un prix ferme.",
     textileConfirmationTitre: "Demande envoyée — Textile",
     textileConfirmationDescription: "Votre demande de devis a bien été enregistrée.",
 

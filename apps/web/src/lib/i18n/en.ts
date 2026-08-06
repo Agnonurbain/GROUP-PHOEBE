@@ -65,7 +65,7 @@ export const en: Dictionnaire = {
     immobilierDesc: "Buy, sell and rent property in Abidjan and beyond.",
     assistanceDesc: "Visas, studies and international travel, supported end to end.",
     livraisonDesc: "Parcels collected, tracked and delivered nationwide.",
-    textileDesc: "Uniwax and Dutch wax fabrics, quoted on request.",
+    textileDesc: "Uniwax, Woodin and Dutch wax fabrics, quoted on request.",
   },
 
   compte: {
@@ -354,10 +354,19 @@ export const en: Dictionnaire = {
   },
 
   textile: {
+    unites: {
+      pagne: "Wrapper (6 yards)",
+      yard: "Yard",
+      piece: "Full piece",
+      balle: "Bale (wholesale)",
+    },
+    pourRevente: "I am buying to resell",
+    pourReventeAide: "We are wholesalers: tell us and we will quote at wholesale rates, by the piece or by the bale.",
+    revendeur: "Reseller",
     devisSuite: "We consult our suppliers and come back to you with a firm price. You will find it in “My bookings”, and you will be notified as soon as it is ready.",
     devisSansEngagement: "A quote commits you to nothing: you decide once you have seen it.",
     aucunTypeProposé: "No fabric type is offered at the moment. Contact us directly.",
-    heroLede: "Uniwax and Dutch wax. Tell us what you are looking for — we consult our suppliers and reply with a firm price.",
+    heroLede: "Uniwax, Woodin and Dutch wax, retail and wholesale. Tell us what you are looking for — we consult our suppliers and reply with a firm price.",
     lePagneQuIlVousFaut: "The fabric you are looking for",
     notreCatalogue: "Our catalogue",
     catalogueLede:
@@ -524,7 +533,7 @@ export const en: Dictionnaire = {
     livraisonTitre: "Delivery",
     livraisonDesc: "Parcels collected, tracked and delivered across the country.",
     textileTitre: "Textile",
-    textileDesc: "Uniwax and Dutch wax fabrics, quoted on request.",
+    textileDesc: "Uniwax, Woodin and Dutch wax fabrics, quoted on request.",
     explorer: "Explore",
   },
 
@@ -872,9 +881,9 @@ export const en: Dictionnaire = {
     assistanceConfirmationTitre: "File submitted — Assistance",
     assistanceConfirmationDescription: "Your visa assistance request has been recorded.",
 
-    textileTitre: "Textile — Uniwax and Dutch wax fabrics",
+    textileTitre: "Textile — Uniwax, Woodin and Dutch wax fabrics",
     textileDescription:
-      "Uniwax and Dutch wax fabrics. Tell us what you are looking for: we consult our suppliers and reply with a firm price.",
+      "Uniwax, Woodin and Dutch wax fabrics, retail and wholesale. Tell us what you are looking for: we consult our suppliers and reply with a firm price.",
     textileConfirmationTitre: "Request sent — Textile",
     textileConfirmationDescription: "Your quote request has been recorded.",
 

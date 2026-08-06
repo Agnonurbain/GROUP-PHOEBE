@@ -141,6 +141,14 @@ export default async function AdminTextile() {
                       <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${STATUT_COLORS[d.statut] ?? "bg-phoebe-pearl text-phoebe-anthracite"}`}>
                         {STATUT_TEXTILE_LABELS[d.statut as StatutTextile] ?? d.statut}
                       </span>
+                      {/* Un revendeur ne se chiffre pas comme un particulier :
+                          l'équipe doit le voir AVANT d'aller consulter ses
+                          fournisseurs, pas en relisant le message. */}
+                      {d.pour_revente && (
+                        <span className="rounded-full bg-phoebe-gold/20 px-2.5 py-0.5 text-[11px] font-semibold text-phoebe-gold-dark">
+                          Revendeur — tarif de gros
+                        </span>
+                      )}
                     </div>
                     <p className="mt-1 text-xs text-phoebe-anthracite/70">
                       Client : {client?.nom ?? "—"}

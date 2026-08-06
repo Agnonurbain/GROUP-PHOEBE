@@ -7,7 +7,6 @@ import { ArrowRight, Scissors, X } from "lucide-react"
 import { creerDemandeTextile, type TextileState } from "@/app/actions/textile"
 import {
   UNITES_PAGNE,
-  UNITE_LABELS,
   type TypePagne,
   type ArticlePagne,
 } from "@/lib/textile"
@@ -196,9 +195,26 @@ export function DemandeTextileForm({
           <label htmlFor="unite" className={label}>{t.textile.unite}<Obligatoire /></label>
           <select id="unite" name="unite" defaultValue="pagne" required className={champ}>
             {UNITES_PAGNE.map((u) => (
-              <option key={u} value={u}>{UNITE_LABELS[u]}</option>
+              <option key={u} value={u}>{t.textile.unites[u]}</option>
             ))}
           </select>
+        </div>
+
+        {/* Le gros est un métier de la maison depuis le 05/08/2026 : le client
+            dit s'il achète pour revendre, et l'équipe chiffre en conséquence.
+            Déclaratif — la case n'ouvre aucun droit, elle informe le devis. */}
+        <div className="sm:col-span-2">
+          <label className="flex cursor-pointer items-start gap-2.5 rounded-xl border border-public-border bg-public-bg-card p-3 text-sm text-public-text-muted">
+            <input
+              type="checkbox"
+              name="pour_revente"
+              className="mt-0.5 h-4 w-4 shrink-0 accent-accent-gold"
+            />
+            <span>
+              <span className="font-medium text-public-text">{t.textile.pourRevente}</span>
+              <span className="mt-0.5 block text-xs">{t.textile.pourReventeAide}</span>
+            </span>
+          </label>
         </div>
 
         <div className="sm:col-span-2">

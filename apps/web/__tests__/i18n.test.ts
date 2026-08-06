@@ -48,6 +48,8 @@ describe("i18n — les deux dictionnaires restent alignés", () => {
       // Mots identiques en français et en anglais
       "Transport", "Blog", "Contact", "Menu", "Total", "Services", "Textile",
       "Confirmation", "Minibus", "Diesel", "Transmission",
+      // Unité de mesure : « yard » s'écrit pareil dans les deux langues.
+      "Yard",
       "Blog & Guides — GROUP PHOEBE",
       "Administration", "Destination", "Dimensions", "Transaction", "Type",
       // Noms propres et devise
