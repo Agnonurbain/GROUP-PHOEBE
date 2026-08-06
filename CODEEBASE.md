@@ -69,7 +69,7 @@ group-phoebe/
 │       └── index.ts             # Exports
 │
 ├── supabase/                    # Projet Supabase — UNIQUE source de vérité
-│   ├── migrations/              # 90 migrations SQL
+│   ├── migrations/              # 92 migrations SQL
 │   ├── tests/                   # SQL de vérification (contrainte d'exclusion)
 │   ├── config.toml              # Ports de la pile locale
 │   └── seed*.sql                # Jeux de données de développement
@@ -211,7 +211,7 @@ Toutes les routes `cron/*` exigent l'en-tête `Authorization: Bearer $CRON_SECRE
 
 ## 5. SCHÉMA DE BASE DE DONNÉES
 
-90 migrations Supabase (00001 → 00090), toutes dans `supabase/migrations/`.
+92 migrations Supabase (00001 → 00092), toutes dans `supabase/migrations/`.
 
 ### 5.1 Tables
 
@@ -250,6 +250,7 @@ c'est la référence en cas de doute.
 | `tarifs_livraison_moyen` | Livraison | Grille **zone × moyen**, pilotable. Remplace le couple zone × poids : c'est le véhicule mobilisé qui fait le coût, pas la masse |
 | `coefficients_mode_livraison` | Livraison | Coefficient par mode (standard, express, programmée), pilotable. Prix = tarif(zone × moyen) × coefficient(mode) |
 | `parametres_livraison` | Livraison | Singleton : paramètres du module |
+| `parametres_textile` | Textile | Singleton : **marge revendeur** (50 % par défaut). Ne s'affiche JAMAIS côté public — annoncer une marge revient à annoncer un prix d'achat à qui sait faire une règle de trois |
 | `parametres_transport` | Transport | Singleton : paramètres du module. Les heures d'ouverture l'ont **quitté** en 00083 — elles valent pour toute la maison |
 | `categories_article` | Contenu | Catégories du blog (slug, nom, ordre) |
 | `biens` | Immobilier | Types, transactions, géolocalisation |
@@ -721,7 +722,7 @@ NEXT_PUBLIC_GA_MEASUREMENT_ID=
 
 ## 11. TESTS
 
-- **Unitaires** : Vitest — 884 tests dans 46 fichiers, dans `apps/web/__tests__/`
+- **Unitaires** : Vitest — 899 tests dans 46 fichiers, dans `apps/web/__tests__/`
 - **E2E** : Playwright (dans apps/web/e2e/)
 - **Coverage** : @vitest/coverage-v8
 
@@ -763,6 +764,7 @@ casser doit être un choix conscient, pas un effet de bord :
 
 | Date | Changement |
 |---|---|
+| 2026-08-05 | **La marge revendeur, pilotable** (00091) — et **le catalogue s'alimente à deux mains** (00092). L'exploitant a tranché **50 %**, le seul chiffre sur lequel ses deux transcriptions s'accordaient. La valeur vit en base parce qu'une marge se négocie et se révise : la figer dans le code obligerait à passer par un déploiement, et le repli codé finirait par mentir. Elle ne franchit **jamais** la frontière du public — annoncer une marge revient à donner le prix d'achat à qui sait faire une règle de trois, et ce service n'affiche aucun prix (00087). Un test le verrouille fichier par fichier. **Le catalogue passe au personnel.** Il était réservé au propriétaire (00088) au motif qu'il « engage l'image de la maison » : c'était un jugement, pas une règle de sûreté — un article ne porte AUCUN prix. Le réserver faisait du remplissage de la vitrine un goulot pour un risque inexistant. La policy storage suit, sans quoi l'opérateur aurait vu le formulaire et son envoi aurait échoué : un écran qui promet ce que la base refuse. Restent au propriétaire la marge (elle détermine un montant facturé) et les gammes (elles déclarent ce que la maison vend) — vérifié par session réelle : l'opérateur modifie **0 ligne** de `parametres_textile`, le propriétaire **1**. **La référence quitte la vignette publique.** Elle servait à deux choses : qu'un client fidèle redemande le même motif, et que l'équipe commande chez le fabricant. Le premier reconnaît son pagne à la photo, le second travaille en admin. En face, afficher « WP583A » permet de le taper chez un concurrent et de comparer en dix secondes — exactement ce que l'absence de prix cherche à éviter. Elle reste **cherchable** : un client qui la connaît tombe sur le bon modèle. |
 | 2026-08-05 | **Woodin, et la vente en gros** (00090). Retour de l'exploitant : « Maintenant, on va vendre en gros et puis vendre en balles. […] Nous, on est grossiste. Ceux qui veulent revendre les pagnes, on peut les fournir à un bon coût. » Trois choses en découlent. (1) **Woodin** rejoint Uniwax et le hollandais — une seule gamme, l'exploitant n'en a pas détaillé et en inventer reviendrait à annoncer un catalogue qu'on n'a pas. (2) **La balle** devient une unité à part entière : c'est le conditionnement dans lequel le pagne se négocie entre professionnels, et une demande exprimée ainsi ne se chiffre pas comme une demande au détail. (3) **`pour_revente`** — le client déclare acheter pour revendre, et l'équipe le voit sur la demande *avant* de consulter ses fournisseurs. Déclaratif, non vérifié : la case n'ouvre aucun droit, elle informe un devis établi à la main. **Ce que ce retour change dans l'existant** : la validation repoussait les gros volumes vers le téléphone (« au-delà de 10 000, c'est une commande de gros »). Le gros étant devenu ce qu'on cherche à vendre, la porte reste ouverte — il ne subsiste qu'une garde contre la faute de frappe, réglée sur l'unité (500 balles, 10 000 pagnes). Le test qui verrouillait l'ancienne règle a été réécrit, pas contourné. **Aucun taux de marge n'entre dans le code** : le retour en annonce un, mais les deux transcriptions donnent trois chiffres différents — et annoncer une marge revient à annoncer un prix, ce que ce service ne fait pas (00087). **Sixième angle mort de la garde i18n** : `UNITE_LABELS` est une table de constantes dans `lib/textile.ts`, un fichier `.ts` — le détecteur ne balaie que les `.tsx`. Les unités s'affichaient en français dans un formulaire anglais. Celle-ci passe au dictionnaire ; **66 autres libellés du même genre subsistent dans `lib/`** (statuts d'assistance, d'immobilier, de livraison), non traités ici. |
 | 2026-08-05 | **Traduction FR/EN, tranche 5 : les messages d'erreur des actions.** 346 messages, dans les 19 fichiers d'actions atteignables depuis le site public, passent par un catalogue de **218 clés** — beaucoup se répétaient d'un fichier à l'autre (« Non authentifié. » huit fois). Un visiteur anglophone remplissait un formulaire et recevait « Vous devez être connecté » au moment précis où il a besoin de comprendre ce qui bloque. L'accesseur `err()` est une **fonction** et non un `const t = await getT()` en tête d'action : les messages naissent partout, y compris dans des fonctions auxiliaires et des `catch` imbriqués, et un accesseur s'appelle là où le message est produit sans dépendre de ce qui est en portée. Il accepte des valeurs à insérer, pour les messages qui en portaient (« Passage impossible de {de} à {vers} »). **Les clés dérivent mécaniquement du texte français** : elles sont laides, et c'est délibéré — les inventer aurait demandé de juger 218 fois, et une clé mal choisie se relit moins bien qu'une clé mécanique. L'administration garde ses messages en français : les 143 restants vivent dans des actions qu'elle seule appelle. **`catch (err)` masquait la fonction `err()`** dans cinq fichiers — renommé. Enfin, 25 assertions de test visaient des messages français littéraux ; elles visent désormais la clé. Six d'entre elles ont dû être remises en l'état : elles portaient sur une valeur d'exécution produite par une fonction pure, ou sur une route d'API non concernée. |
 | 2026-08-05 | **Traduction FR/EN, tranche 4 : les métadonnées.** Les 22 `export const metadata` du site public passent en `generateMetadata`. Ce n'était pas un choix de style : `export const metadata` est évalué au **chargement du module**, sans requête — un titre d'onglet ainsi déclaré ne peut pas suivre la langue du visiteur, quoi qu'on écrive dedans. Un helper `metadonnees()` tire l'onglet, l'Open Graph et Twitter d'**une seule** paire titre/description : chaque page les recopiait trois fois, et trois copies divergent — le catalogue transport annonçait déjà deux titres différents. **Deux défauts trouvés en chemin.** (1) `og:locale` annonçait `fr_CI` même en anglais, et pire : la valeur du gabarit racine **disparaissait de toutes les pages**, parce que Next REMPLACE l'`openGraph` racine par celui de la page au lieu de le fusionner. La locale est donc répétée dans le helper. (2) La confirmation de livraison portait `title: "{t.livraison.enregistree} — Confirmation"` — une expression JSX tombée dans une chaîne lors d'un remplacement de la tranche 2, qui s'affichait littéralement dans l'onglet. Un test interdit désormais tout `export const metadata` dans le public. |

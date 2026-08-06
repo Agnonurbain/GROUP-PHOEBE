@@ -11,10 +11,11 @@ import {
   type StatutTextile,
   type UnitePagne,
 } from "@/lib/textile"
-import { catalogueComplet, typesPagneComplet } from "@/app/actions/textile"
+import { catalogueComplet, typesPagneComplet, margeRevendeur } from "@/app/actions/textile"
 import { TextileActions } from "./textile-actions"
 import { CatalogueForm } from "./catalogue-form"
 import { GammesForm } from "./gammes-form"
+import { MargeForm } from "./marge-form"
 
 export const metadata: Metadata = {
   title: "Textile — Administration",
@@ -74,9 +75,16 @@ export default async function AdminTextile() {
     .order("ordre")
 
   // Catalogue et gammes, complets : le propriétaire voit aussi ce qu'il a retiré.
-  const [articles, gammes] = estProprietaire
-    ? await Promise.all([catalogueComplet(), typesPagneComplet()])
-    : [[], []]
+  // Le catalogue est alimenté par le personnel ; les gammes restent au
+  // propriétaire — elles déclarent ce que la maison vend.
+  const [articles, gammes] = await Promise.all([
+    catalogueComplet(),
+    estProprietaire ? typesPagneComplet() : Promise.resolve([]),
+  ])
+
+  // La marge sert à CHIFFRER : l'opérateur qui prépare un devis en a besoin,
+  // même s'il n'a pas le droit de la changer.
+  const marge = await margeRevendeur()
   const typeById = new Map(
     (types ?? []).map((t) => [t.cle, libelleTypePagne({ ...t, description: t.description })])
   )
@@ -102,25 +110,29 @@ export default async function AdminTextile() {
       {/* Le catalogue avant les demandes : sans vitrine garnie, les demandes
           n'arrivent pas. Propriétaire seul — il engage l'image de la maison. */}
       {estProprietaire && (
+        <ScrollReveal variant="fade-up" delay={0.03}>
+          <MargeForm marge={marge} />
+        </ScrollReveal>
+      )}
+
+      {estProprietaire && (
         <ScrollReveal variant="fade-up" delay={0.04}>
           <GammesForm types={gammes} />
         </ScrollReveal>
       )}
 
-      {estProprietaire && (
-        <ScrollReveal variant="fade-up" delay={0.05}>
-          <CatalogueForm
-            types={(types ?? []).map((t) => ({
-              cle: t.cle,
-              marque: t.marque,
-              gamme: t.gamme,
-              description: t.description,
-              ordre: t.ordre,
-            }))}
-            articles={articles}
-          />
-        </ScrollReveal>
-      )}
+      <ScrollReveal variant="fade-up" delay={0.05}>
+        <CatalogueForm
+          types={(types ?? []).map((t) => ({
+            cle: t.cle,
+            marque: t.marque,
+            gamme: t.gamme,
+            description: t.description,
+            ordre: t.ordre,
+          }))}
+          articles={articles}
+        />
+      </ScrollReveal>
 
       {lignes.length === 0 ? (
         <div className="rounded-2xl border border-phoebe-pearl bg-white py-12 text-center shadow-sm">
@@ -146,7 +158,7 @@ export default async function AdminTextile() {
                           fournisseurs, pas en relisant le message. */}
                       {d.pour_revente && (
                         <span className="rounded-full bg-phoebe-gold/20 px-2.5 py-0.5 text-[11px] font-semibold text-phoebe-gold-dark">
-                          Revendeur — tarif de gros
+                          Revendeur — tarif de gros, marge {marge} %
                         </span>
                       )}
                     </div>

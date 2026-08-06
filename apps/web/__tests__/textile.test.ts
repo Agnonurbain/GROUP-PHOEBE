@@ -596,3 +596,156 @@ describe("Catalogue — filtre sans résultat", () => {
     }
   });
 });
+
+/**
+ * La marge revendeur : pilotable, et strictement interne.
+ *
+ * L'exploitant a tranché 50 % le 05/08/2026. La valeur vit en base parce
+ * qu'une marge se négocie et se révise — la figer dans le code obligerait à
+ * passer par un déploiement, et le repli codé finirait par mentir.
+ */
+describe("Textile — la marge revendeur", () => {
+  const migration = readFileSync(
+    join(process.cwd(), "..", "..", "supabase", "migrations", "00091_parametres_textile.sql"),
+    "utf8"
+  );
+
+  it("vaut 50 par défaut, et se change sans déploiement", () => {
+    expect(migration).toContain("marge_revendeur_pct numeric(5,2) not null default 50");
+    expect(src("app/(admin)/admin/textile/marge-form.tsx")).toContain("modifierMargeRevendeur");
+  });
+
+  // Une marge détermine un montant facturé : règle du dépôt, propriétaire seul.
+  it("seul le propriétaire la modifie", () => {
+    const action = src("app/actions/textile.ts");
+    const d = action.indexOf("export async function modifierMargeRevendeur");
+    const corps = action.slice(d, action.indexOf("\nexport ", d + 1));
+    expect(corps).toContain("requireProprietaireAvecId");
+    expect(migration).toContain("parametres_textile_update_proprietaire");
+    expect(migration).toContain("public.is_proprietaire()");
+  });
+
+  /**
+   * Le point le plus important : annoncer une marge revient à donner le prix
+   * d'achat à qui sait faire une règle de trois. Ce service n'affiche aucun
+   * prix — la marge ne doit donc jamais franchir la frontière du public.
+   */
+  it("elle ne franchit jamais la frontière du site public", () => {
+    for (const f of [
+      "app/(public)/textile/page.tsx",
+      "app/(public)/textile/catalogue-client.tsx",
+      "app/(public)/textile/demande-form.tsx",
+      "app/(public)/compte/reservations/page.tsx",
+    ]) {
+      expect(src(f), f).not.toContain("margeRevendeur");
+      expect(src(f), f).not.toContain("marge_revendeur");
+    }
+    // Et la table n'est pas lisible sans session de personnel.
+    expect(migration).toContain("parametres_textile_select_staff");
+    expect(migration).not.toMatch(/for select using \(true\)/);
+  });
+});
+
+/**
+ * La référence ne s'affiche plus sur la vignette publique.
+ *
+ * Elle servait à deux choses : qu'un client fidèle redemande le même motif, et
+ * que l'équipe commande chez le fabricant. Le premier reconnaît son pagne à la
+ * photo ; le second travaille en admin. En face, l'afficher permet de taper
+ * « WP583A » chez un concurrent et de comparer en dix secondes — exactement ce
+ * que l'absence de prix cherche à éviter.
+ */
+describe("Catalogue — la référence reste interne", () => {
+  it("la vignette publique ne l'affiche pas", () => {
+    const client = src("app/(public)/textile/catalogue-client.tsx");
+    const debut = client.indexOf('<div className="p-3">');
+    const carte = client.slice(debut, debut + 700);
+    expect(carte).not.toContain("t.textile.reference");
+  });
+
+  /**
+   * Mais elle reste CHERCHABLE : un client qui la connaît doit tomber sur le
+   * bon modèle. La retirer du filtre reviendrait à la rendre inutile.
+   */
+  it("elle reste trouvable par la recherche", () => {
+    const a = {
+      id: "1", typePagne: "uniwax_print", reference: "WP583A", nom: "Losanges",
+      description: null, couleurs: "vert", photos: [], vedette: false,
+    };
+    expect(filtrerArticles([a], "WP583A")).toHaveLength(1);
+    expect(filtrerArticles([a], "wp583a")).toHaveLength(1);
+  });
+
+  // L'équipe, elle, en a besoin pour commander.
+  it("l'administration l'affiche toujours", () => {
+    expect(src("app/(admin)/admin/textile/page.tsx")).toContain("reference");
+  });
+});
+
+/**
+ * Qui peut quoi, dans le back-office textile.
+ *
+ * Le catalogue était réservé au propriétaire (00088), au motif qu'il « engage
+ * l'image de la maison ». C'était un jugement, pas une règle de sûreté : un
+ * article ne porte AUCUN prix. Le réserver faisait du remplissage de la
+ * vitrine un goulot, pour un risque qui n'existe pas.
+ */
+describe("Textile — le partage des droits en back-office", () => {
+  const action = src("app/actions/textile.ts");
+  const m92 = readFileSync(
+    join(process.cwd(), "..", "..", "supabase", "migrations", "00092_catalogue_operateur.sql"),
+    "utf8"
+  );
+
+  const corpsDe = (nom: string) => {
+    const d = action.indexOf(`export async function ${nom}`);
+    return action.slice(d, action.indexOf("\nexport ", d + 1));
+  };
+
+  it.each(["creerArticlePagne", "basculerArticlePagne"])(
+    "%s est ouvert au personnel : un article n'a pas de prix",
+    (nom) => {
+      expect(corpsDe(nom)).toContain("requireStaff()");
+      expect(corpsDe(nom)).not.toContain("requireProprietaireAvecId");
+    }
+  );
+
+  /**
+   * Les photos montent du NAVIGATEUR avec la session de celui qui dépose. Sans
+   * la policy storage, l'opérateur verrait le formulaire et son envoi
+   * échouerait — un écran qui promet ce que la base refuse.
+   */
+  it("la policy des photos suit celle des articles", () => {
+    expect(m92).toContain("articles_pagne_manage_staff");
+    expect(m92).toContain("catalogue_pagnes_manage_staff");
+    expect(m92).toContain("drop policy if exists \"catalogue_pagnes_manage_proprietaire\"");
+  });
+
+  // Ce qui RESTE au propriétaire, et pourquoi.
+  it.each([
+    ["modifierMargeRevendeur", "elle détermine un montant facturé"],
+    ["creerTypePagne", "elle déclare ce que la maison vend"],
+    ["basculerTypePagne", "elle déclare ce que la maison vend"],
+  ])("%s reste au propriétaire — %s", (nom) => {
+    expect(corpsDe(nom)).toContain("requireProprietaireAvecId");
+  });
+
+  // L'écran suit les droits : le formulaire du catalogue n'est plus derrière
+  // la condition propriétaire, la marge et les gammes le restent.
+  it("l'écran montre à chacun ce qu'il peut faire", () => {
+    const page = src("app/(admin)/admin/textile/page.tsx");
+
+    // Le formulaire du catalogue n'est plus sous condition : son ScrollReveal
+    // s'ouvre directement, sans `{estProprietaire && (` juste avant.
+    expect(page).toMatch(
+      /\n      <ScrollReveal variant="fade-up" delay=\{0\.05\}>\n\s*<CatalogueForm/
+    );
+
+    // La marge et les gammes, elles, le restent.
+    for (const delai of ["0.03", "0.04"]) {
+      expect(page, delai).toContain(
+        `{estProprietaire && (\n        <ScrollReveal variant="fade-up" delay={${delai}}>`
+      );
+    }
+  });
+});
